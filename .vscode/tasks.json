@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "地图：启动开发服务",
+      "type": "shell",
+      "command": "npm run dev",
+      "windows": { "command": "npm.cmd run dev" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "umeda",
+        "pattern": { "regexp": "^$" },
+        "background": { "activeOnStart": true, "beginsPattern": "^Built ", "endsPattern": "^Local: http://127\\.0\\.0\\.1:5173" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "runOptions": { "instanceLimit": 1 }
+    },
+    { "label": "地图：类型检查", "type": "shell", "command": "npm run typecheck", "windows": { "command": "npm.cmd run typecheck" }, "problemMatcher": "$tsc" },
+    { "label": "地图：构建网页", "type": "shell", "command": "npm run build", "windows": { "command": "npm.cmd run build" }, "group": { "kind": "build", "isDefault": true }, "problemMatcher": [] },
+    { "label": "地图：运行测试", "type": "shell", "command": "npm test", "windows": { "command": "npm.cmd test" }, "problemMatcher": [] }
+  ]
+}

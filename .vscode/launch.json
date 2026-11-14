@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "JR 大阪站 · 启动服务",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/dev.ts",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "JR 大阪站 · 本地预览",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:5173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "地图：启动开发服务"
+    }
+  ]
+}

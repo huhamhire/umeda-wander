@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3f1e9" />
+  <title>UMEDA ATLAS · 大阪站立体导览</title>
+  <!-- STYLES -->
+  <!-- LICENSE -->
+</head>
+<body>
+  <main class="atlas">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="重置地图"><span class="brand-mark">U<span>↗</span></span><span>UMEDA<span class="brand-light"> ATLAS</span><small>大阪梅田 · 立体步行地图</small></span></a>
+      <div class="header-right"><span class="local-badge"><i></i> 局部探索</span><span class="edition">OSAKA / 01</span></div>
+    </header>
+    <section class="map-heading"><p class="eyebrow">STATION STUDY — JR OSAKA</p><h1>从城市，走进车站。</h1><p>展开楼层，看清下一段路。</p></section>
+    <div id="viewport" role="region" aria-label="JR 大阪站等轴测立体地图；可拖动平移、双指缩放，并使用旁边的楼层与设施按钮"></div>
+    <div id="labels" aria-hidden="true"></div>
+    <div id="fallback" class="fallback" hidden><h2>当前设备无法显示立体地图</h2><p>请使用支持 WebGL 2 的浏览器。仍可通过设施列表查看样板信息。</p></div>
+    <aside class="layers panel" aria-label="楼层控制">
+      <div class="section-heading"><span>探索楼层</span><span class="micro">LAYERS</span></div>
+      <button class="floor active" data-level="all"><span class="floor-number">▱</span><span>建筑总览<small>全部楼层</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="bridge"><span class="floor-number">3F</span><span>南北连络桥<small>连接南北两侧</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="platform"><span class="floor-number">2F</span><span>站台区域<small>轨道与乘车空间</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="concourse"><span class="floor-number">1F</span><span>中央站厅<small>出入口与售票服务</small></span><span class="floor-dot"></span></button>
+      <div class="layer-options"><label for="explode">分层展开 <output id="explode-value">48%</output></label><input id="explode" type="range" min="0" max="100" value="48" aria-label="分层展开程度" /><label class="roof-option"><span>显示标志性屋顶</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
+    </aside>
+    <aside class="inspector panel" aria-label="设施详情">
+      <div class="section-heading"><span>站内设施</span><span class="micro">POINTS OF INTEREST</span></div>
+      <div class="poi-list" id="poi-list"></div>
+      <div class="detail" aria-live="polite"><span class="detail-tag" id="detail-tag">JR OSAKA / STUDY</span><h2 id="detail-title">一座车站，三个层次</h2><p id="detail-note">点选设施，查看它在楼层中的位置。也可以先试走一段从站厅到站台的路线。</p></div>
+      <div class="legend"><span><i class="public"></i>公共区域</span><span><i class="paid"></i>付费区域</span><span><i class="rail"></i>站台</span></div>
+    </aside>
+    <nav class="map-tools panel" aria-label="地图视图"><button id="zoom-in" aria-label="放大">＋</button><button id="zoom-out" aria-label="缩小">−</button><span></span><button id="reset" aria-label="复位地图">⌖</button></nav>
+    <div class="orientation" aria-label="方位示意，左上为北，右下为南；尚未地理校准"><span class="compass"><b class="north">北 N</b><span class="compass-line">↖<i></i>↘</span><b class="south">南 S</b></span><span>固定等轴测<small>方位示意 · 待地理校准</small></span></div>
+    <section class="route-card panel" aria-label="路线预览">
+      <div class="route-icon">↗</div><div class="route-summary"><span class="micro">TRY A WALK / 路线体验</span><h2>中央口 <span>→</span> 站台区域</h2><p id="route-caption">经过闸机，沿扶梯上至 2F</p></div><button id="route-button" class="primary">查看路线 <span>↗</span></button>
+      <ol id="route-steps" hidden><li><b>01</b> 1F 中央口出发</li><li><b>02</b> 通过中央闸机 · 进入付费区</li><li><b>03</b> 乘扶梯上至 2F</li><li><b>04</b> 到达站台区域</li></ol>
+    </section>
+    <footer><span><i></i> 视觉与交互样板 · 局部布局及路线为示意，不能用于现场导航</span><span>JR 大阪站 / CENTRAL SECTION</span></footer>
+  </main>
+  <!-- APP -->
+</body>
+</html>
