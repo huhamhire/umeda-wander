@@ -22,23 +22,29 @@
       <div class="section-heading"><span>探索楼层</span><span class="micro">LAYERS</span></div>
       <button class="floor active" data-level="all"><span class="floor-number">▱</span><span>建筑总览<small>全部楼层</small></span><span class="floor-dot"></span></button>
       <button class="floor" data-level="bridge"><span class="floor-number">3F</span><span>南北连络桥<small>连接南北两侧</small></span><span class="floor-dot"></span></button>
-      <button class="floor" data-level="platform"><span class="floor-number">2F</span><span>站台区域<small>轨道与乘车空间</small></span><span class="floor-dot"></span></button>
-      <button class="floor" data-level="concourse"><span class="floor-number">1F</span><span>中央站厅<small>出入口与售票服务</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="platform"><span class="floor-number">2F</span><span>1–11 番线<small>六组地面站台</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="mezzanine"><span class="floor-number">M2F</span><span>夹层通道<small>中央口与樱桥口内</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="concourse"><span class="floor-number">1F</span><span>中央改札与西口<small>地上站厅 · 出入口</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="underground-hall"><span class="floor-number">B1F</span><span>梅北地下口<small>地下改札与站厅</small></span><span class="floor-dot"></span></button>
+      <button class="floor" data-level="underground-platform"><span class="floor-number">B2F</span><span>梅北 21–24 番线<small>地下站台与连接通道</small></span><span class="floor-dot"></span></button>
+      <p id="level-description" class="level-description" aria-live="polite"></p>
       <div class="layer-options"><label for="explode">分层展开 <output id="explode-value">48%</output></label><input id="explode" type="range" min="0" max="100" value="48" aria-label="分层展开程度" /><label class="roof-option"><span>显示标志性屋顶</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
     </aside>
     <aside class="inspector panel" aria-label="设施详情">
       <div class="section-heading"><span>站内设施</span><span class="micro">POINTS OF INTEREST</span></div>
       <div class="poi-list" id="poi-list"></div>
-      <div class="detail" aria-live="polite"><span class="detail-tag" id="detail-tag">JR OSAKA / STUDY</span><h2 id="detail-title">一座车站，三个层次</h2><p id="detail-note">点选设施，查看它在楼层中的位置。也可以先试走一段从站厅到站台的路线。</p></div>
+      <label class="picker-label" for="facility-picker">按名称定位</label><select id="facility-picker"><option value="">选择闸口、设施或站台…</option></select>
+      <div class="detail" aria-live="polite"><span class="detail-tag" id="detail-tag">JR OSAKA / STUDY</span><h2 id="detail-title">中央改札，在地上 1F</h2><p id="detail-note">中央改札与梅北地下口分属不同楼层。选择楼层或设施，查看布局与参考图依据。</p></div>
       <div class="legend"><span><i class="public"></i>公共区域</span><span><i class="paid"></i>付费区域</span><span><i class="rail"></i>站台</span></div>
     </aside>
     <nav class="map-tools panel" aria-label="地图视图"><button id="zoom-in" aria-label="放大">＋</button><button id="zoom-out" aria-label="缩小">−</button><span></span><button id="reset" aria-label="复位地图">⌖</button></nav>
-    <div class="orientation" aria-label="方位示意，左上为北，右下为南；尚未地理校准"><span class="compass"><b class="north">北 N</b><span class="compass-line">↖<i></i>↘</span><b class="south">南 S</b></span><span>固定等轴测<small>方位示意 · 待地理校准</small></span></div>
+    <div class="orientation" aria-label="方位示意，左上为北，右下为南；尚未地理校准"><span class="compass"><b class="north">北 N</b><span class="compass-line">↖<i></i>↘</span><b class="south">南 S</b></span><span>固定正交斜视<small>方位示意 · 待地理校准</small></span></div>
     <section class="route-card panel" aria-label="路线预览">
-      <div class="route-icon">↗</div><div class="route-summary"><span class="micro">TRY A WALK / 路线体验</span><h2>中央口 <span>→</span> 站台区域</h2><p id="route-caption">经过闸机，沿扶梯上至 2F</p></div><button id="route-button" class="primary">查看路线 <span>↗</span></button>
-      <ol id="route-steps" hidden><li><b>01</b> 1F 中央口出发</li><li><b>02</b> 通过中央闸机 · 进入付费区</li><li><b>03</b> 乘扶梯上至 2F</li><li><b>04</b> 到达站台区域</li></ol>
+      <div class="route-switch" role="group" aria-label="选择路线"><button data-route="surface" aria-pressed="true">地上站台</button><button data-route="umekita" aria-pressed="false">西口闸内</button><button data-route="public" aria-pressed="false">站外地下</button><span>通行结构演示</span></div>
+      <div class="route-icon">↗</div><div class="route-summary"><span class="micro">TRY A WALK / 路线体验</span><h2 id="route-title">中央改札 <span>→</span> 5/6 番线</h2><p id="route-caption">1F 中央改札入闸，沿扶梯上至 2F</p></div><button id="route-button" class="primary">查看路线 <span>↗</span></button>
+      <ol id="route-steps" hidden></ol>
     </section>
-    <footer><span><i></i> 视觉与交互样板 · 局部布局及路线为示意，不能用于现场导航</span><span>JR 大阪站 / CENTRAL SECTION</span></footer>
+    <footer><span><i></i> 按参考图整理层级与名称 · 几何及路径为示意，不能用于现场导航</span><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">朝向参考 © OpenStreetMap contributors</a></footer>
   </main>
   <!-- APP -->
 </body>

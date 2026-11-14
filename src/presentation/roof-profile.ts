@@ -1,0 +1,4 @@
+/** Roof relief in scene units: station north side is -Z, south side is +Z. */
+export function roofHeightAt(z: number): number {
+  return 2.5 + (36 - z) * 0.15 + Math.cos(z / 72 * Math.PI) * 1.5;
+}

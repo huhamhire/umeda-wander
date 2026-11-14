@@ -1,7 +1,18 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { Facility, Level, LevelId, RouteNode } from '../domain/map/model.ts';
+import type { Facility, Level, LevelId, RouteNode, StationLayout, FloorOpening } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
+import { displayElevation } from '../application/display-elevation.ts';
+import { platformPoint, pointInPolygon } from '../domain/map/geometry.ts';
+import { planFloorOpenings } from '../application/connection-openings.ts';
+import { planGateBoundaries } from '../application/gate-boundaries.ts';
+import type { GateBoundary } from '../application/gate-boundaries.ts';
+import { buildFloorGeometry } from './floor-geometry.ts';
+import { VerticalConnectionModel } from './vertical-connection-model.ts';
+import { layerRole } from '../application/layer-focus.ts';
+import { LayerAppearance } from './layer-appearance.ts';
+import { cameraOffset, viewBasis } from './view-orientation.ts';
+import { roofHeightAt } from './roof-profile.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -13,6 +24,9 @@ export class MapScene {
   private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 1200);
   private groups = new Map<LevelId, T.Group>();
   private roof = new T.Group();
+  private base = new T.Group();
+  private ground?: T.Mesh;
+  private appearance = new LayerAppearance();
   private labels: MapLabel[] = [];
   private pickables: T.Object3D[] = [];
   private raycaster = new T.Raycaster();
@@ -31,10 +45,12 @@ export class MapScene {
   private selected: T.Group = new T.Group();
   private activeFacility?: Facility;
   private nodeById: Map<string, RouteNode>;
-  private escalators: { x: number; y: number; z: number; rise: number; steps: T.Mesh[]; rails: T.Mesh[] }[] = [];
+  private connectors: VerticalConnectionModel[] = [];
+  private openings: FloorOpening[] = [];
+  private gateBoundaries: GateBoundary[] = [];
 
   constructor(private host: HTMLElement, private labelHost: HTMLElement,
-    private levels: Level[], private facilities: Facility[], nodes: RouteNode[],
+    private levels: Level[], private facilities: Facility[], nodes: RouteNode[], private layout: StationLayout,
     initial: MapViewState, private onSelect: (facility: Facility) => void) {
     this.state = { ...initial }; this.displayedExplode = initial.explode;
     this.nodeById = new Map(nodes.map(n => [n.id, n]));
@@ -54,8 +70,10 @@ export class MapScene {
     Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, near: 1, far: 300 });
     sun.shadow.bias = -0.001; sun.shadow.normalBias = 0.12;
     this.scene.add(sun);
-    const ground = new T.Mesh(new T.PlaneGeometry(650, 650), new T.ShadowMaterial({ opacity: 0.075 }));
-    ground.rotation.x = -Math.PI / 2; ground.position.y = -4; ground.receiveShadow = true; this.scene.add(ground);
+    const ground = new T.Mesh(new T.PlaneGeometry(142, 130), new T.ShadowMaterial({ opacity: 0.075, depthWrite: false }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -4; ground.receiveShadow = true; this.scene.add(ground); this.ground=ground;
+    this.openings = planFloorOpenings(this.layout.connections, this.levels, this.layout.platforms);
+    this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
     this.buildStation();
     this.scene.add(this.roof, this.route, this.selected);
     this.bindGestures();
@@ -86,91 +104,151 @@ export class MapScene {
   }
 
   private buildStation(): void {
-    const base = new T.Group(); this.scene.add(base);
-    this.box(base, 0, -2.5, 0, 118, 2, 75, 0xe0dfcf);
-    this.box(base, 0, -1.35, 0, 114, 0.5, 71, 0xefecdb);
-    // Fine paving lines add scale without copying a photographic texture.
-    for (let x = -54; x <= 54; x += 6) this.box(base, x, -1.06, 0, 0.08, 0.02, 68, 0xd9dece);
-    for (let z = -30; z <= 30; z += 6) this.box(base, 0, -1.05, z, 110, 0.02, 0.08, 0xd9dece);
+    const base = this.base; this.scene.add(base);
+    // Keep the west-side descent clear of the main station plinth.
+    this.box(base, 4, -2.5, 0, 130, 2, 130, 0xe0dfcf);
+    this.box(base, 4, -1.35, 0, 127, 0.5, 127, 0xefecdb);
+    for (let x = -58; x <= 66; x += 8) this.box(base, x, -1.06, 0, 0.06, 0.02, 122, 0xd9dece);
+    for (let z = -60; z <= 60; z += 8) this.box(base, 4, -1.05, z, 124, 0.02, 0.06, 0xd9dece);
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
-    const concourse = this.groups.get('concourse')!;
-    this.box(concourse, 0, 0, 0, 98, 1.1, 55, colors.slab);
-    this.box(concourse, 0, 0.6, -8, 70, 0.12, 33, colors.mint);
-    // Public hall, service counters and a paid boundary.
-    this.box(concourse, -35, 1.9, -17, 15, 3, 10, 0xe4ded0);
-    this.box(concourse, 35, 1.9, -17, 15, 3, 10, 0xe4ded0);
-    for (let x = -40; x <= 40; x += 16) {
-      for (const z of [-23, 23]) this.box(concourse, x, 3.8, z, 0.8, 7, 0.8, 0xd6d9c7);
-    }
-    // Gate row, with short glass wings and entry markers.
-    for (let x = -6; x <= 6; x += 2) {
-      this.box(concourse, x, 1.6, 13, 0.85, 2, 3.7, 0x778d87);
-      this.box(concourse, x, 2.67, 12, 0.65, 0.12, 0.5, 0x92b594);
-      if (x < 6) this.box(concourse, x + 1, 1.55, 13, 1.1, 0.6, 0.12, 0xc6d9cc);
-    }
-    this.box(concourse, -21, 1.5, 19, 10, 2, 3, 0xc8b78f);
-    this.box(concourse, -21, 2.65, 19, 10.4, 0.3, 3.2, colors.white);
-    for (let x = -30; x < -23; x += 2) {
-      this.box(concourse, x, 2, 18, 1.6, 3, 1.3, 0x718d82);
-      this.box(concourse, x, 2.5, 18.72, 1, 0.8, 0.06, 0xc9e1d5);
-    }
-    this.escalator(concourse, 8, 0.8, -3, 8);
-    this.escalator(concourse, 12, 0.8, -3, 8);
-    this.box(concourse, -16, 4.8, -3, 4, 8, 4, 0xb5c7c1);
-    this.box(concourse, -16, 2.5, -0.92, 2.5, 3.5, 0.1, 0x668780);
-    this.box(concourse, -16, 9, -3, 4.5, 0.4, 4.5, colors.white);
-
-    const platforms = this.groups.get('platform')!;
-    for (const z of [-31, -17, -1, 15, 31]) {
-      this.box(platforms, 0, -0.7, z, 104, 0.5, 3, 0xc4c5b7);
-      for (const dz of [-0.8, 0.8]) this.box(platforms, 0, -0.35, z + dz, 104, 0.16, 0.12, 0x7d8984);
-      for (let x = -50; x < 52; x += 2) this.box(platforms, x, -0.4, z, 0.5, 0.16, 2.5, 0x9fa59a);
-    }
-    for (const [index, z] of [-24, -8, 8, 24].entries()) {
-      this.box(platforms, 0, 0, z, 104, 1.2, 9, colors.blue);
-      for (const dz of [-4, 4]) this.box(platforms, 0, 0.64, z + dz, 103, 0.08, 0.35, 0xe9d694);
-      // Leave an opening beside the sample escalator arrival.
-      for (const x of [-34, 34]) {
-        this.box(platforms, x, 4, z, 25, 0.35, 6.4, 0xe7e9dc);
-        for (const px of [x - 8, x + 8]) this.box(platforms, px, 2.2, z, 0.35, 3.5, 0.35, colors.steel);
+    const areaColors = { public: colors.slab, paid: colors.mint, commercial: 0xe4d4c3, service: 0xd7dfc4 };
+    for (const area of this.layout.areas) {
+      const cuts = this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline);
+      const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
+      if (!geometry.getAttribute('position')) continue;
+      const mesh = new T.Mesh(geometry, this.material(areaColors[area.kind]));
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      this.groups.get(area.level)!.add(mesh);
+      if (area.label) {
+        const x = area.outline.reduce((sum, point) => sum + point.x, 0) / area.outline.length;
+        const z = area.outline.reduce((sum, point) => sum + point.z, 0) / area.outline.length;
+        this.label(area.name, x, (area.height ?? 0.55) + (area.elevationOffset??0) + 1, z, area.level, false,
+          area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised');
       }
-      for (const x of [-22, 22]) this.box(platforms, x, 1, z, 4, 0.6, 1, 0x8ba79c);
-      this.label(`${index * 2 + 2} · ${index * 2 + 3}`, 48, 2, z, 'platform');
     }
-    const bridge = this.groups.get('bridge')!;
-    this.box(bridge, -10, 0, 0, 12, 0.8, 67, colors.slab);
-    this.box(bridge, -10, 0.48, 0, 8, 0.12, 65, 0xd7dfc1);
-    for (const x of [-15.7, -4.3]) {
-      this.box(bridge, x, 1.2, 0, 0.18, 1.7, 66, 0xb7c9bc);
-      this.box(bridge, x, 2.1, 0, 0.22, 0.16, 67, 0x7e978c);
+    for (const platform of this.layout.platforms) {
+      const { x, z, length, width, tracks, level } = platform;
+      const platformGroup = this.groups.get(level)!;
+      const position = (along: number, across: number) => platformPoint(platform, along, across);
+      const block = (along: number, y: number, across: number, w: number, h: number, d: number, color: number) => {
+        const p = position(along, across);
+        const mesh = this.box(platformGroup, p.x, y, p.z, w, h, d, color);
+        mesh.rotation.y = -platform.rotationRad;
+        return mesh;
+      };
+      const outline = [position(-length/2,-width/2),position(length/2,-width/2),position(length/2,width/2),position(-length/2,width/2)];
+      const slab = new T.Mesh(buildFloorGeometry(outline, this.openings.filter(opening => opening.level === level).map(opening => opening.outline), 0.95, -0.475),
+        this.material(level === 'platform' ? colors.blue : 0x90b6c5));
+      slab.name = `platform-slab-${platform.id}`; slab.castShadow = true; slab.receiveShadow = true; platformGroup.add(slab);
+      for (const [index, number] of tracks.entries()) {
+        const side = tracks.length === 1 || index === 0 ? 1 : -1;
+        const across = side * (width / 2 + 1.65);
+        block(0, -0.62, across, length + 7, 0.3, 2.5, 0xb9bcae);
+        for (const offset of [-0.7, 0.7]) block(0, -0.36, across + offset, length + 7, 0.12, 0.12, 0x6d7c77);
+        for (let railX = -length / 2; railX <= length / 2; railX += 2.2) block(railX, -0.45, across, 0.45, 0.13, 2.2, 0x939c8e);
+        block(0, 0.53, side * (width / 2 - 0.4), length - 1, 0.08, 0.3, 0xe9d694);
+        const label = position(length / 2 - 2, across);
+        this.label(`${number} 番线`, label.x, 1, label.z, level);
+        if (level === 'underground-platform') {
+          // Repeated screen-door modules give the underground platforms their own identity.
+          for (let px = -length / 2 + 2; px < length / 2 - 2; px += 3) {
+            block(px, 1.45, side * (width / 2 - 0.2), 0.16, 1.8, 0.2, 0x648e9b);
+            block(px + 1.3, 1.2, side * (width / 2 - 0.2), 2.4, 1.2, 0.12, 0xbad3d1);
+          }
+        }
+      }
+      if (level === 'platform') {
+        for (const canopy of [{ x: -48, length: 18 }, { x: 31, length: 15 }]) {
+          block(canopy.x, 3.2, 0, canopy.length, 0.3, width - 1.4, 0xe7e9dc);
+          for (const dx of [-5, 5]) block(canopy.x + dx, 1.8, 0, 0.3, 2.7, 0.3, colors.steel);
+        }
+      }
+      block(length / 5, 0.9, 0, 3, 0.65, 0.85, 0x789887);
+      block(-6, 3, 0, 5, 0.75, 0.35, 0x416c67);
+      const label = position(-length / 2 + 8, 0);
+      this.label(tracks.join(' / ') + ' 番线', label.x, 3.7, label.z, level, false, true);
     }
-    this.box(bridge, 0, 0, 27, 32, 0.8, 12, colors.slab);
-    for (let x = -3; x < 6; x += 2) this.box(bridge, x, 1.4, 25, 0.8, 1.9, 3, 0x6e8980);
-    this.escalator(bridge, -11, 0.5, -13, -8);
-    this.label('1F 中央站厅', -25, 1, 29, 'concourse', false, true);
-    this.label('3F 南北连络桥', -10, 1, -32, 'bridge', false, true);
-    this.label('中央改札', 2, 4, 14, 'concourse');
+    // Handrails frame the narrow elevated passages, not imaginary full floor plates.
+    for (const id of ['mezzanine', 'bridge'] as const) {
+      const group = this.groups.get(id)!;
+      const sides = id === 'bridge' ? [-12, 9] : [-43, -22];
+      for (const x of sides) {
+        const inOpening = (z: number) => this.openings.some(opening => opening.level === id && pointInPolygon({x,z},opening.outline));
+        const half = id === 'bridge' ? 37 : 31;
+        for (let z = -half; z < half; z += 1) if (!inOpening(z + 0.5)) this.box(group, x, 1.45, z+0.5, 0.14, 0.12, 1, 0x78968a);
+        for (let z = -30; z <= 30; z += 6) if(!inOpening(z)) this.box(group, x, 0.95, z, 0.12, 0.9, 0.12, 0x9fb3a0);
+      }
+    }
+    const boundaries=new Map(this.gateBoundaries.map(boundary=>[boundary.boundaryId,boundary]));
+    for (const boundary of boundaries.values()) this.buildGateFences(boundary);
+    for (const facility of this.facilities) this.buildFacility(facility);
+    for (const connection of this.layout.connections) {
+      const model = new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
+      this.connectors.push(model); this.scene.add(model.group);
+    }
+    this.label('1F 中央改札口', -9, 3.5, 4, 'concourse', false, true);
+    this.label('3F 桥上改札口', -3, 3.5, 4, 'bridge');
     this.buildRoof();
     for (const group of [base, ...this.groups.values(), this.roof]) this.batchStaticMeshes(group);
     for (const facility of this.facilities) {
-      const target = new T.Mesh(new T.BoxGeometry(9, 6, 8), new T.MeshBasicMaterial({ visible: false }));
-      target.position.set(facility.x, 3, facility.z); target.userData.facility = facility;
+      const target = new T.Mesh(new T.BoxGeometry(7, 5, 7), new T.MeshBasicMaterial({ visible: false }));
+      target.position.set(facility.x, 2.5+(facility.elevationOffset??0), facility.z); target.userData.facility = facility;
       this.groups.get(facility.level)!.add(target); this.pickables.push(target);
     }
   }
 
-  private escalator(group: T.Group, x: number, y: number, z: number, rise: number): void {
-    const steps: T.Mesh[] = [], rails: T.Mesh[] = [];
-    for (let i = 0; i < 14; i++) {
-      const t = i / 13;
-      const step = this.box(group, x, y + t * rise, z + 5 - t * 10, 2.6, 0.38, 0.85, i % 2 ? 0x91aaa4 : 0xc8d3bf);
-      step.userData.dynamic = true; steps.push(step);
+  private buildFacility(facility: Facility): void {
+    const group = this.groups.get(facility.level)!;
+    if (facility.kind === 'gate') {
+      const boundary = this.gateBoundaries.find(item => item.gateId === facility.id)!;
+      const rotation = boundary.rotationRad;
+      for (let offset = -4.2; offset <= 4.3; offset += 1.7) {
+        const x = boundary.center.x + Math.cos(rotation) * offset, z = boundary.center.z + Math.sin(rotation) * offset;
+        this.box(group, x, 1.3, z, 0.7, 1.5, 2.7, 0x718c82).rotation.y = -rotation;
+        this.box(group, x, 2.09, z, 0.6, 0.1, 2, 0xa4c3a3).rotation.y = -rotation;
+      }
+      if (!['gate', 'bridge'].includes(facility.id)) this.label(facility.name, facility.x, 3, facility.z, facility.level);
+    } else if (facility.kind === 'ticket') {
+      this.box(group, facility.x, 2.7, facility.z, 12, 0.4, 4, colors.white);
+      for (let i = 0; i < 4; i++) {
+        this.box(group, facility.x - 5 + i * 2.3, 3.5, facility.z, 1.2, 1, 0.3, 0x69877a);
+      }
+      this.label('JR 售票处', facility.x, 4.7, facility.z, facility.level);
+    } else if (facility.kind === 'ticket-machine') {
+      const angle=facility.rotationRad??0;
+      const point=(along:number,across:number)=>({x:facility.x+along*Math.cos(angle)-across*Math.sin(angle),z:facility.z+along*Math.sin(angle)+across*Math.cos(angle)});
+      const cabinet=(along:number,y:number,across:number,w:number,h:number,d:number,color:number)=>{
+        const p=point(along,across);this.box(group,p.x,y,p.z,w,h,d,color).rotation.y=-angle;
+      };
+      for(const offset of [-1.8,0,1.8]){
+        cabinet(offset,1.8,0,1.45,2.5,0.85,0x668b87);
+        cabinet(offset,2.2,0.46,1.04,0.72,0.045,0xd5e9dd);
+        cabinet(offset,1.48,0.49,0.66,0.1,0.05,0x3c5c54);
+        cabinet(offset,3.1,0,1.4,0.12,0.88,0x91b397);
+      }
+      this.label('自动售票机',facility.x,3.6,facility.z,facility.level);
+    } else if (facility.kind === 'information') {
+      this.box(group, facility.x, 2.1, facility.z, 7, 0.4, 3, colors.white);
+      this.label('咨询 i', facility.x, 3.5, facility.z, facility.level);
+    } else if (['stairs', 'escalator', 'elevator'].includes(facility.kind)) {
+      this.label(facility.kind === 'elevator' ? '直梯 ↕' : facility.kind === 'stairs' ? '夹层楼梯' : '扶梯 ↗', facility.x, 2.2, facility.z, facility.level);
     }
-    for (const dx of [-1.5, 1.5]) {
-      const rail = this.beam(group, new T.Vector3(x + dx, y + 1.4, z + 5), new T.Vector3(x + dx, y + rise + 1.4, z - 5), 0.16, 0x587e7a);
-      rail.userData.dynamic = true; rails.push(rail);
+  }
+
+  private buildGateFences(boundary: GateBoundary): void {
+    const group = this.groups.get(boundary.level)!;
+    for (const segment of boundary.fences) {
+      const dx = segment.to.x-segment.from.x, dz = segment.to.z-segment.from.z, length = Math.hypot(dx,dz);
+      const rotation = -Math.atan2(dz,dx);
+      for (const height of [0.95,1.85]) {
+        this.box(group,(segment.from.x+segment.to.x)/2,height,(segment.from.z+segment.to.z)/2,length,0.12,0.13,0x587c70).rotation.y=rotation;
+      }
+      const count = Math.ceil(length/1.8);
+      for (let i=0;i<=count;i++) {
+        const t=i/count;
+        this.box(group,segment.from.x+dx*t,1.22,segment.from.z+dz*t,0.12,1.35,0.12,0x6f9182);
+      }
     }
-    this.escalators.push({ x, y, z, rise, steps, rails });
   }
 
   private batchStaticMeshes(group: T.Group): void {
@@ -191,28 +269,28 @@ export class MapScene {
   }
 
   private buildRoof(): void {
-    const slope = (z: number): number => 2.5 + (z + 30) * 0.15 + Math.cos(z / 60 * Math.PI) * 1.5;
+    const slope = roofHeightAt;
     // Low-poly roof profile: shallow curved slope, separate strips for the skylights.
-    for (let x = -55; x < 55; x += 5) {
-      for (let z = -30; z < 30; z += 6) {
+    for (let x = -63; x < 63; x += 6) {
+      for (let z = -36; z < 36; z += 6) {
         const a = slope(z), b = slope(z + 6);
-        const vertices = new Float32Array([x, a, z, x + 4.9, a, z, x + 4.9, b, z + 6,
-          x, a, z, x + 4.9, b, z + 6, x, b, z + 6]);
+        const vertices = new Float32Array([x, a, z, x + 5.9, a, z, x + 5.9, b, z + 6,
+          x, a, z, x + 5.9, b, z + 6, x, b, z + 6]);
         const geometry = new T.BufferGeometry(); geometry.setAttribute('position', new T.BufferAttribute(vertices, 3)); geometry.computeVertexNormals();
         const glass = x > -43 && x < 42 && z > -25 && z < 20;
-        const material = this.material(glass ? (x % 10 === 0 ? 0x99bdc3 : colors.glass) : colors.roof);
+        const material = this.material(glass ? (Math.round((x + 63) / 6) % 2 === 0 ? 0x99bdc3 : colors.glass) : colors.roof);
         material.side = T.DoubleSide;
         const mesh = new T.Mesh(geometry, material); mesh.castShadow = true; mesh.receiveShadow = true; this.roof.add(mesh);
       }
     }
-    for (const x of [-55, 55]) {
-      for (let z = -30; z < 30; z += 6) this.beam(this.roof, new T.Vector3(x, slope(z), z), new T.Vector3(x, slope(z + 6), z + 6), 0.65, colors.white);
+    for (const x of [-63, 63]) {
+      for (let z = -36; z < 36; z += 6) this.beam(this.roof, new T.Vector3(x, slope(z), z), new T.Vector3(x, slope(z + 6), z + 6), 0.65, colors.white);
     }
-    for (const z of [-30, 30]) {
-      this.box(this.roof, 0, slope(z), z, 111, 0.85, 0.8, colors.white);
+    for (const z of [-36, 36]) {
+      this.box(this.roof, 0, slope(z), z, 127, 0.85, 0.8, colors.white);
       // Triangular steel truss below the roof edge.
-      this.beam(this.roof, new T.Vector3(-54, slope(z) - 3, z), new T.Vector3(54, slope(z) - 3, z), 0.23, colors.steel);
-      for (let x = -54; x < 54; x += 9) {
+      this.beam(this.roof, new T.Vector3(-63, slope(z) - 3, z), new T.Vector3(63, slope(z) - 3, z), 0.23, colors.steel);
+      for (let x = -63; x < 63; x += 9) {
         this.beam(this.roof, new T.Vector3(x, slope(z) - 3, z), new T.Vector3(x + 4.5, slope(z) - 0.5, z), 0.13, colors.steel);
         this.beam(this.roof, new T.Vector3(x + 4.5, slope(z) - 0.5, z), new T.Vector3(x + 9, slope(z) - 3, z), 0.13, colors.steel);
       }
@@ -235,8 +313,7 @@ export class MapScene {
   zoom(factor: number): void { this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, 0.55, 2.8); this.requestRender(); }
   reset(): void { this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.clear(); this.requestRender(); }
   private levelY(id: LevelId): number {
-    const index = this.levels.findIndex(l => l.id === id);
-    return this.levels[index]!.y + index * this.displayedExplode * 18;
+    return displayElevation(this.levels, id, this.displayedExplode);
   }
   private clearRoute(): void {
     this.route.traverse(obj => { if (obj instanceof T.Mesh) { obj.geometry.dispose(); } });
@@ -245,7 +322,7 @@ export class MapScene {
   private buildRoute(): void {
     this.clearRoute();
     const ids = this.state.route; if (!ids) return;
-    const points = ids.map(id => { const node = this.nodeById.get(id)!; return new T.Vector3(node.x, this.levelY(node.level) + 1.3, node.z); });
+    const points = ids.map(id => { const node = this.nodeById.get(id)!; return new T.Vector3(node.x, this.levelY(node.level) + (node.elevationOffset??0) + 1.3, node.z); });
     for (let i = 0; i < points.length - 1; i++) {
       const a = points[i]!, b = points[i + 1]!;
       this.beam(this.route, a, b, 0.38, colors.route);
@@ -266,52 +343,81 @@ export class MapScene {
     this.frame = 0;
     const delta = this.state.explode - this.displayedExplode;
     const animate = Math.abs(delta) > 0.002 && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const previousExplode = this.displayedExplode;
     this.displayedExplode = animate ? this.displayedExplode + delta * 0.18 : this.state.explode;
     for (const [id, group] of this.groups) {
       group.position.y = this.levelY(id);
-      group.visible = this.state.level === 'all' || this.state.level === id;
+      const role=layerRole(this.levels,this.state.level,id);
+      group.visible=role!=='hidden';this.appearance.apply(group,role==='context');
     }
-    for (const escalator of this.escalators) {
-      const rise = escalator.rise + Math.sign(escalator.rise) * this.displayedExplode * 18;
-      escalator.steps.forEach((step, i) => { step.position.y = escalator.y + i / 13 * rise; });
-      escalator.rails.forEach((rail, i) => {
-        const x = escalator.x + (i === 0 ? -1.5 : 1.5);
-        const a = new T.Vector3(x, escalator.y + 1.4, escalator.z + 5);
-        const b = new T.Vector3(x, escalator.y + rise + 1.4, escalator.z - 5);
-        rail.position.copy(a).add(b).multiplyScalar(0.5);
-        rail.scale.y = a.distanceTo(b) / Math.hypot(10, escalator.rise);
-        rail.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), b.sub(a).normalize());
-      });
+    const baseRole=layerRole(this.levels,this.state.level,'concourse');
+    this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context');
+    if(this.ground)this.ground.visible=this.base.visible;
+    for (const connector of this.connectors) {
+      connector.update(id => this.levelY(id), this.state.level);
+      const {from,to}=connector.connection;
+      const upper=this.levels.find(level=>level.id===from.level)!.y>this.levels.find(level=>level.id===to.level)!.y?from.level:to.level;
+      this.appearance.apply(connector.group,layerRole(this.levels,this.state.level,upper)==='context');
     }
-    this.roof.position.y = 26 + this.displayedExplode * 54;
+    this.roof.position.y = 26 + this.displayedExplode * 56;
     this.roof.visible = this.state.roof && this.state.level === 'all';
     this.route.visible = !!this.state.route;
-    if (animate && this.state.route) this.buildRoute();
+    if (previousExplode !== this.displayedExplode && this.state.route) this.buildRoute();
     this.selected.visible = !!this.activeFacility && (this.state.level === 'all' || this.state.level === this.activeFacility.level);
-    if (this.activeFacility) this.selected.position.set(this.activeFacility.x, this.levelY(this.activeFacility.level) + 0.9, this.activeFacility.z);
+    if (this.activeFacility) this.selected.position.set(this.activeFacility.x, this.levelY(this.activeFacility.level) + (this.activeFacility.elevationOffset??0) + 0.9, this.activeFacility.z);
     // Fit around the visible floor envelope; reserve side panels on desktop.
     const mobile = this.width < 761;
     const aspect = this.width / Math.max(1, this.height);
     const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.45, this.width - 570);
-    const targetHeight = 24 + this.displayedExplode * 20;
-    const span = Math.max(115, 165 * this.height / usableWidth) / this.zoomValue;
+    const envelope: T.Vector3[] = [];
+    for (const area of this.layout.areas) {
+      if (layerRole(this.levels,this.state.level,area.level)==='hidden') continue;
+      for (const point of area.outline) envelope.push(new T.Vector3(point.x, this.levelY(area.level) + (area.elevationOffset??0) + (area.height ?? 0.55), point.z));
+    }
+    for (const platform of this.layout.platforms) {
+      if (layerRole(this.levels,this.state.level,platform.level)==='hidden') continue;
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        const point = platformPoint(platform, sx * (platform.length / 2 + 5), sz * (platform.width / 2 + 4));
+        envelope.push(new T.Vector3(point.x, this.levelY(platform.level) + 4, point.z));
+      }
+    }
+    if (this.roof.visible) for (const x of [-64, 64]) for (const z of [-37, 37]) envelope.push(new T.Vector3(x, this.roof.position.y + 14, z));
+    const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
+    const {right,up} = viewBasis();
+    const boundsX = envelope.map(point => point.clone().sub(center).dot(right));
+    const boundsY = envelope.map(point => point.clone().sub(center).dot(up));
+    const minX = Math.min(...boundsX), maxX = Math.max(...boundsX), minY = Math.min(...boundsY), maxY = Math.max(...boundsY);
+    center.addScaledVector(right, (minX + maxX) / 2).addScaledVector(up, (minY + maxY) / 2).add(this.pan);
+    const span = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * this.height / usableWidth * 1.12) / this.zoomValue;
     this.camera.left = -span * aspect / 2; this.camera.right = span * aspect / 2;
     this.camera.top = span / 2; this.camera.bottom = -span / 2;
-    // Sample axes: +X follows the tracks eastward, +Z points southward.
-    // This fixed quadrant projects the tracks from bottom-left to top-right.
-    this.camera.position.copy(new T.Vector3(-180, 180, 180).add(this.pan).add(new T.Vector3(0, targetHeight, 0)));
-    this.camera.lookAt(this.pan.clone().add(new T.Vector3(0, targetHeight, 0)));
+    this.camera.position.copy(center).add(cameraOffset);
+    this.camera.lookAt(center);
     this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
     this.scene.updateMatrixWorld(true);
     this.renderer.render(this.scene, this.camera);
     const rect = this.host.getBoundingClientRect();
-    for (const label of this.labels) {
-      let visible = label.roof ? this.roof.visible : this.state.level === 'all' || this.state.level === label.level;
-      if (mobile && this.zoomValue < 1.2 && !label.element.classList.contains('emphasis')) visible = false;
+    const occupied: { x: number; y: number; w: number; h: number }[] = [];
+    const priority=(label:MapLabel)=>Number(label.level===this.state.level)*4+Number(label.element.classList.contains('emphasis'));
+    const orderedLabels = [...this.labels].sort((a,b)=>priority(b)-priority(a));
+    for (const label of orderedLabels) {
+      const role=label.level?layerRole(this.levels,this.state.level,label.level):'normal';
+      let visible = label.roof ? this.roof.visible : role!=='hidden';
+      label.element.classList.toggle('context',role==='context');
+      if(role==='context'&&!label.element.classList.contains('emphasis'))visible=false;
+      if ((mobile || this.state.level === 'all') && this.zoomValue < 1.2 && !label.element.classList.contains('emphasis')) visible = false;
       const point = label.position.clone();
       point.y += label.roof ? this.roof.position.y : label.level ? this.levelY(label.level) : 0;
       point.project(this.camera);
-      label.element.hidden = !visible || Math.abs(point.x) > 0.96 || Math.abs(point.y) > 0.94;
+      visible = visible && Math.abs(point.x) < 0.96 && Math.abs(point.y) < 0.94;
+      label.element.hidden = !visible;
+      const x = rect.left + (point.x + 1) * this.width / 2, y = rect.top + (1 - point.y) * this.height / 2;
+      if (visible) {
+        const w = label.element.offsetWidth, h = label.element.offsetHeight;
+        const collides = occupied.some(other => Math.abs(x - other.x) < (w + other.w) / 2 + 5 && Math.abs(y - other.y) < (h + other.h) / 2 + 4);
+        label.element.hidden = collides;
+        if (!collides) occupied.push({ x, y, w, h });
+      }
       label.element.style.left = `${rect.left + (point.x + 1) * this.width / 2}px`;
       label.element.style.top = `${rect.top + (1 - point.y) * this.height / 2}px`;
     }
@@ -347,7 +453,7 @@ export class MapScene {
       if (!this.dragged && this.down) {
         const rect = canvas.getBoundingClientRect();
         this.raycaster.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), this.camera);
-        const candidates = this.pickables.filter(obj => obj.parent?.visible);
+        const candidates = this.pickables.filter(obj => obj.parent?.visible && (this.state.level==='all'||(obj.userData.facility as Facility).level===this.state.level));
         const hit = this.raycaster.intersectObjects(candidates, false)[0];
         if (hit) this.onSelect(hit.object.userData.facility as Facility);
       }
