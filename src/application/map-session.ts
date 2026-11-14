@@ -1,8 +1,8 @@
-import type { LevelId, RouteEdge } from '../domain/map/model.ts';
+import type { LevelId, RouteEdge,StationId } from '../domain/map/model.ts';
 import { findRoute } from '../domain/navigation/find-route.ts';
 
 export interface MapViewState {
-  explode: number; roof: boolean; level: LevelId | 'all'; route: string[] | null;
+  explode: number; roof: boolean; level: LevelId | 'all'; route: string[] | null; station?:StationId|'all';
 }
 export class MapSession {
   state: MapViewState = { explode: 0.48, roof: true, level: 'all', route: null };

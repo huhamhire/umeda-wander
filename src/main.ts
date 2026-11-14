@@ -1,12 +1,26 @@
-import { facilities, levels, nodes, edges, layout } from './infrastructure/jr-osaka-map.ts';
-import type { Facility, LevelId } from './domain/map/model.ts';
+import { facilities, levels, nodes, edges, layout, stations } from './infrastructure/umeda-map.ts';
+import type { Facility, LevelId, StationId } from './domain/map/model.ts';
 import { MapSession } from './application/map-session.ts';
 import { MapScene } from './presentation/map-scene.ts';
 import { element } from './utils/dom.ts';
+import {bindSidebarTabs} from './presentation/sidebar-tabs.ts';
+import {stationPalettes} from './presentation/station-palette.ts';
 
 const session = new MapSession(edges);
 let scene: MapScene | undefined;
-const floorButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-level]')];
+const floorList=element('#floor-list');
+for(const level of [{id:'all',label:'▱',name:'建筑总览'},...levels.slice().sort((a,b)=>b.y-a.y)]){
+  const button=document.createElement('button');button.className='floor';button.dataset.level=level.id;button.type='button';
+  const number=document.createElement('span');number.className='floor-number';number.textContent=level.label;
+  const name=document.createElement('span');name.textContent=level.name;
+  button.append(number,name);floorList.append(button);
+}
+const floorButtons=[...floorList.querySelectorAll<HTMLButtonElement>('button')];
+const stationPicker=element<HTMLSelectElement>('#station-picker');
+for(const station of [...stations,{id:'all',name:'地区总览 · 三站'}]){
+  const option=document.createElement('option');option.value=station.id;option.textContent=station.name;stationPicker.append(option);
+}
+session.state.station='jr-osaka';
 const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
 const routeButton = element<HTMLButtonElement>('#route-button');
@@ -19,14 +33,23 @@ const routeScenarios = {
   public: { start: 'public-b1-entry', end: 'underground-destination', title: '北侧 B1F → 梅北地下口',
     caption: 'B1F 闸外通路 → 梅北入闸 → B2F 站台',
     steps: ['北门大楼 B1F 公共通路出发', '沿闸外地下联络通路前往梅北', '通过 B1F 梅北地下改札', '下至 B2F 的 21/22 番线'] },
+  hankyu: {start:'hankyu-umeda-route-entry',end:'hankyu-umeda-destination',title:'阪急入口 → 京都线 1 番线',caption:'1F → 2F 中央改札 → 3F 站台',steps:['阪急 1F 入口出发','上至 2F 中央口','经中央改札进入付费区','扶梯至 3F 京都线站台']},
+  metro: {start:'metro-umeda-route-entry',end:'metro-umeda-destination',title:'M16 北改札 → 1 番线',caption:'站厅 → 中间层 → 御堂筋线站台',steps:['北改札闸外出发','通过 Metro 改札','经中间层落台','抵达 1 番线站台']},
 };
 let routeChoice: keyof typeof routeScenarios = 'surface';
 
 function sync(): void {
   scene?.update(session.state);
+  stationPicker.value=session.state.station??'jr-osaka';
+  const palette=stationPalettes[session.state.station==='all'?'jr-osaka':session.state.station??'jr-osaka'];
+  element('.atlas').style.setProperty('--paid-color',`#${palette.paid.toString(16).padStart(6,'0')}`);
+  for(const button of floorButtons){
+    const level=levels.find(l=>l.id===button.dataset.level);
+    button.hidden=!!level&&session.state.station!=='all'&&level.station!==(session.state.station??'jr-osaka');
+  }
   slider.value = String(Math.round(session.state.explode * 100));
   element('#explode-value').textContent = `${slider.value}%`;
-  roof.checked = session.state.roof;
+  roof.checked = session.state.roof; roof.disabled=session.state.station!=='jr-osaka'&&session.state.station!=='all';
   for (const button of floorButtons) {
     const active = button.dataset.level === session.state.level;
     button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active));
@@ -42,31 +65,50 @@ function sync(): void {
   element('#route-steps').innerHTML = scenario.steps.map((step, i) => `<li><b>0${i + 1}</b>${step}</li>`).join('');
   document.querySelectorAll<HTMLButtonElement>('[data-route]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.route === routeChoice)));
   const level = levels.find(item => item.id === session.state.level);
-  element('#level-description').textContent = level ? `${level.description} 当前层高亮，下层灰化保留。` : '地上 1F–3F 与梅北地下 B1F–B2F 分层查看；夹层不是地下层。';
+  element('#level-description').textContent = level ? `${level.description} 当前层高亮，下层灰化保留。` : '按站点查看楼层，或选择地区总览。各站楼层独立命名；站间位置与层高为示意，跨站导航尚未接通。';
 }
 function select(facility: Facility): void {
-  session.state.level = facility.level; session.state.route = null;
+  session.state.level = facility.level; session.state.station=levels.find(l=>l.id===facility.level)!.station; session.state.route = null; refreshFacilities();
   element('#detail-title').textContent = facility.name;
   element('#detail-note').textContent = facility.note;
-  element('#detail-tag').textContent = `${levels.find(l => l.id === facility.level)!.label} / 参考图 P${facility.evidence.pages.join('、')}`;
+  element('#detail-tag').textContent = `${levels.find(l => l.id === facility.level)!.label} / ${({jr:'JR 参考图',hankyu:'阪急 SVG',metro:'Metro 参考图'})[facility.evidence.source??'jr']} ${facility.evidence.source==='hankyu'?'':'P'+facility.evidence.pages.join('、')}`;
   element<HTMLSelectElement>('#facility-picker').value = facility.id;
   element('.inspector').classList.add('has-selection');
   document.querySelectorAll<HTMLButtonElement>('[data-poi]').forEach(b => b.classList.toggle('selected', b.dataset.poi === facility.id));
-  scene?.select(facility); sync();
+  scene?.select(facility); showSidebarTab(1); sync();
 }
 const icons: Partial<Record<Facility['kind'], string>> = { gate: '▥', ticket: '▤', escalator: '↗', elevator: '↕', 'ticket-machine': '▣' };
-for (const id of ['gate', 'ticket', 'machines-central', 'escalator', 'lift']) {
-  const facility = facilities.find(f => f.id === id)!;
-  const button = document.createElement('button'); button.type = 'button'; button.dataset.poi = id;
-  button.innerHTML = `<span aria-hidden="true">${icons[facility.kind]}</span>${({ gate: '中央改札', ticket: '售票处', escalator: '扶梯', elevator: '直梯', 'ticket-machine': '售票机' } as Partial<Record<Facility['kind'], string>>)[facility.kind]}`;
-  button.addEventListener('click', () => select(facility)); element('#poi-list').append(button);
-}
 const facilityPicker = element<HTMLSelectElement>('#facility-picker');
-for (const facility of facilities) {
-  const option = document.createElement('option'); option.value = facility.id;
-  option.textContent = `${levels.find(l => l.id === facility.level)!.label} · ${facility.name}`;
-  facilityPicker.append(option);
+function refreshFacilities():void {
+  const visible=facilities.filter(f=>session.state.station==='all'||levels.find(l=>l.id===f.level)!.station===(session.state.station??'jr-osaka'));
+  facilityPicker.replaceChildren(new Option('选择闸口、设施或站台…',''));
+  for(const facility of visible){
+    const option=new Option(`${levels.find(l=>l.id===facility.level)!.label} · ${facility.name}`,facility.id);facilityPicker.append(option);
+  }
+  element('#poi-list').replaceChildren();
+  for(const kind of ['gate','ticket','ticket-machine','escalator','elevator'] as const){
+    const facility=visible.find(f=>f.kind===kind);if(!facility)continue;
+    const button=document.createElement('button');button.type='button';button.dataset.poi=facility.id;
+    const labels={gate:'改札口',ticket:'售票处','ticket-machine':'售票机',escalator:'扶梯',elevator:'直梯'};
+    button.innerHTML=`<span aria-hidden="true">${icons[kind]}</span>${labels[kind]}`;
+    button.addEventListener('click',()=>select(facility));element('#poi-list').append(button);
+  }
 }
+const showSidebarTab=bindSidebarTabs(
+  [element<HTMLButtonElement>('#tab-layers'),element<HTMLButtonElement>('#tab-facilities')],
+  [element('#panel-layers'),element('#panel-facilities')]);
+refreshFacilities();
+function clearInspector():void {
+  element('.inspector').classList.remove('has-selection');
+  element('#detail-tag').textContent='UMEDA / STATION STUDY';
+  element('#detail-title').textContent='选择站内设施';
+  element('#detail-note').textContent='按名称定位，查看设施、独立楼层和参考资料来源。';
+}
+stationPicker.addEventListener('change',()=>{
+  session.state.station=stationPicker.value as StationId|'all';session.state.level='all';session.state.route=null;
+  routeChoice=session.state.station==='hankyu-umeda'?'hankyu':session.state.station==='metro-umeda'?'metro':'surface';
+  scene?.reset();refreshFacilities();clearInspector();sync();
+});
 facilityPicker.addEventListener('change', () => { const facility = facilities.find(item => item.id === facilityPicker.value); if (facility) select(facility); });
 try { scene = new MapScene(element('#viewport'), element('#labels'), levels, facilities, nodes, layout, session.state, select); }
 catch (error) {
@@ -86,17 +128,23 @@ slider.addEventListener('input', () => {
 roof.addEventListener('change', () => { session.state.roof = roof.checked; sync(); });
 routeButton.addEventListener('click', () => {
   if (session.state.route) session.state.route = null;
-  else { const scenario = routeScenarios[routeChoice]; session.showRoute(scenario.start, scenario.end); }
+  else {
+    const scenario=routeScenarios[routeChoice]; session.state.station=routeChoice==='hankyu'?'hankyu-umeda':routeChoice==='metro'?'metro-umeda':'jr-osaka';
+    session.showRoute(scenario.start,scenario.end);refreshFacilities();
+  }
   sync();
 });
 document.querySelectorAll<HTMLButtonElement>('[data-route]').forEach(button => button.addEventListener('click', () => {
   routeChoice = button.dataset.route as keyof typeof routeScenarios;
+  session.state.station=routeChoice==='hankyu'?'hankyu-umeda':routeChoice==='metro'?'metro-umeda':'jr-osaka';
+  session.state.level='all';scene?.reset();refreshFacilities();
+  clearInspector();
   if (session.state.route) { const scenario = routeScenarios[routeChoice]; session.showRoute(scenario.start, scenario.end); }
   sync();
 }));
 function reset(): void {
   routeChoice = 'surface';
-  session.reset(); scene?.reset(); element('.inspector').classList.remove('has-selection');
+  session.reset(); session.state.station='jr-osaka';refreshFacilities();showSidebarTab(0); scene?.reset(); element('.inspector').classList.remove('has-selection');
   document.querySelectorAll('[data-poi]').forEach(b => b.classList.remove('selected'));
   element('#detail-tag').textContent = 'JR OSAKA / STUDY';
   facilityPicker.value = '';

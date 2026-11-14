@@ -19,7 +19,7 @@
 
 ### Osaka Metro：新增 M16 梅田站资料
 
-用户新增 `references/M16_梅田_構内図_1.pdf`，1 页，已提取文本并渲染检查。可用于御堂筋线站台、四组改札、站内中间层与无障碍路线关系的整理；尚未将 Metro 模型接入运行页面。具体可确认事项、标高待核对项与分区改造方案见 [M16 接入评估](./midosuji-umeda-layout.md)。
+用户新增 `references/M16_梅田_構内図_1.pdf`，1 页，已提取文本并渲染检查。御堂筋线站台、四组改札、站内中间层与选取竖向设施已作为首版接入页面；跨站换乘与完整无障碍路线未完成。具体证据边界见 [M16 接入评估](./midosuji-umeda-layout.md)及[实现记录](./hankyu-and-metro-implementation.md)。
 
 ### 阪急：`references/umeda.svg`
 

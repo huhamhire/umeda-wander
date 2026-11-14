@@ -12,3 +12,34 @@
 footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-decoration:underline}@media(max-width:760px){footer{gap:8px}footer>span{max-width:75%}footer a{font-size:6px;max-width:25%;text-align:right}.route-switch>span{display:none}}
 
 .map-label.context{color:#939d90;background:#eef0e5d9;border-color:#dce1d5;box-shadow:none;font-weight:400;opacity:.65}
+
+/* One sidebar: station selection, then floors and facilities on separate pages. */
+.sidebar{position:absolute;z-index:3;left:36px;top:235px;width:250px;max-height:calc(100% - 300px);padding:15px;overflow-y:auto;scrollbar-width:thin}
+.station-label{display:block;font-size:10px;color:#7c8c7b;margin:0 2px 7px}
+#station-picker{width:100%;font:inherit;font-size:11px;color:#315d51;background:#f4f6ed;border:1px solid #dce3d3;border-radius:8px;padding:9px 7px}
+.sidebar-tabs{display:flex;gap:5px;padding:12px 0;border-bottom:1px solid #e6e9dd;margin-bottom:12px}
+.sidebar-tabs button{flex:1;border:0;background:transparent;border-radius:7px;padding:9px;font-size:11px;color:#87927f}
+.sidebar-tabs button[aria-selected=true]{background:#e8eee2;color:#245e50;font-weight:600}
+.sidebar .layers,.sidebar .inspector{position:static;inset:auto;width:auto;max-height:none;overflow:visible;padding:0;display:block;background:none;border:0;box-shadow:none;border-radius:0}
+.sidebar .section-heading{padding:2px 3px 12px}.sidebar .section-heading .micro{display:none}
+.sidebar .detail{padding-left:3px;padding-right:3px}.sidebar .detail p{font-size:11px}.sidebar .poi-list button{font-size:11px}
+.sidebar .legend{justify-content:space-between}.sidebar .level-description{margin-left:3px;margin-right:3px}
+.sidebar .legend .paid{background:var(--paid-color,#bbd1bd)}
+#floor-list{display:block}
+.sidebar .floor-number{flex:0 0 42px;font-size:12px}.sidebar .floor>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis}
+.route-card{width:min(650px,calc(100% - 360px));left:auto;right:30px;transform:none}
+.route-switch{flex-wrap:wrap}.route-switch button{padding:5px 7px}
+@media(max-width:760px){
+  .sidebar{left:16px;right:16px;top:auto;bottom:195px;width:auto;max-height:40dvh;padding:9px 11px;overflow-y:auto;border-radius:12px}
+  .sidebar .station-label{display:none}#station-picker{font-size:10px;padding:7px}
+  .sidebar-tabs{padding:6px 0;margin-bottom:5px;gap:8px}.sidebar-tabs button{font-size:10px;padding:6px}
+  .sidebar .section-heading{display:none}#floor-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .sidebar .floor{font-size:8px;padding:6px 2px}.sidebar .floor-number{font-size:10px;flex:none;width:auto}
+  .sidebar .level-description{font-size:8px;min-height:0}.sidebar .layer-options{margin:5px 0 0;gap:8px}
+  .sidebar .inspector.has-selection{width:auto}.sidebar .inspector .detail{display:block;font-size:10px;padding-top:7px;margin-top:8px}
+  .sidebar .inspector .detail p{font-size:9px;min-height:0}.sidebar .poi-list{grid-template-columns:repeat(5,1fr);gap:5px}
+  .sidebar .poi-list button{font-size:9px;padding:7px 2px}.sidebar .poi-list button span{font-size:15px}
+  .sidebar .legend{display:flex;margin-top:9px}.sidebar .picker-label{margin-top:9px}
+  .route-card{width:auto;right:16px;left:16px;transform:none}.route-switch button{font-size:8px;padding:4px 6px}
+  .atlas.routing .sidebar{bottom:265px}.inspector{position:static}
+}

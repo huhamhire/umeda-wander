@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 仓库名称为 `umeda-h5`，已实现 JR 大阪站局部视觉与交互样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
-- `references/` 存放参考素材，当前包括 `station_osaka.pdf` 和 `umeda.svg`。
+- 仓库名称为 `umeda-h5`，已实现 JR 大阪站、阪急大阪梅田与御堂筋线梅田站的局部样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
+- `references/` 存放参考素材，当前包括 `station_osaka.pdf`、`umeda.svg` 与 `M16_梅田_構内図_1.pdf`。
 - Node.js 版本要求为 24 或以上。使用 `npm install` 安装锁定依赖，`npm run dev` 启动本地服务，`npm run typecheck` 检查类型，`npm test` 运行测试，`npm run build` 构建网页。Windows PowerShell 如阻止 npm 脚本，使用 `npm.cmd`。
 - 应用代码采用 TypeScript，源码放在 `src/`；构建产物输出到 `dist/`，最终入口为 `dist/index.html`。
 - HTML 保持单入口，JS、CSS、模型与图片等资源可独立加载，无需全部内嵌；部署和复制时保留整个 `dist/`。
@@ -28,6 +28,10 @@
 - 连接通道直梯可用 `doorFacingRad` 指定通道门向，不强制归属站台。双排扶梯使用 `lanes`，模型和开口共用逐条展开的端点。选下层时仍显示完整扶梯和楼梯，并将上端落台计入取景；不要将隐藏踏步压成零尺寸网格。
 - 北中庭 2/3 采用 `placement: exterior`，斜段位于上层楼板外侧，端点接楼板边缘，不生成内部井口。夹层 17–31 与南端大楼连接数据在 `jr-osaka-upper-links.ts`；51 只连至 M2F，不能直接连至站台。南门大楼 3F 对应站台标高、4F 对应联络桥标高，区域保留建筑楼层名称。
 - 同层局部高差使用 `elevationOffset`，例如中央口往大丸的小半层台阶；不要为了小高差新增完整逻辑楼层。自动售票机作为独立设施，与售票柜台区分。
+- `umeda-map.ts` 组装各站数据；各站使用独立 `LevelId`、`station` 和 `stackIndex`，展开偏移不能依赖组合数组下标。JR 原有层名保留兼容；Metro 中间层不能归入 JR M2F。开口按所属站点过滤。
+- 新站设施和区域的 `Evidence.source` 必须指向自己的资料；阪急 SVG 不伪装成 JR PDF 页码。站间接口未经核对不添加导航边，三站相邻不代表闸内互通。
+- 阪急仅使用浅灰粉、淡栗红作为主题提示，付费区、闸机与边界均保持浅色，不使用深色栗红；三条线路的绿/橙/蓝标识独立保留。调色定义在 `presentation/station-palette.ts`，属于呈现规则。
+- 导览统一位于左侧：楼层为第一个 Tab、设施为第二个 Tab，站点选择位于 Tab 之上。维护移动端滚动、键盘切换和设施自动切页。
 - 将 `references/` 视为原始参考资料；除非任务明确要求，否则不要覆盖或删除。生成或转换的素材放到单独目录。
 - 不提交密钥、令牌、真实环境配置、依赖目录及构建产物；需要配置示例时提供不含秘密的 `.env.example`。
 

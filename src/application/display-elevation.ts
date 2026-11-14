@@ -5,5 +5,5 @@ export function displayElevation(levels: Level[], id: LevelId, explode: number):
   const index = levels.findIndex(level => level.id === id);
   if (index < 0) throw new Error(`Unknown level: ${id}`);
   const groundIndex = levels.findIndex(level => level.id === 'concourse');
-  return levels[index]!.y + (index - groundIndex) * explode * 14;
+  return levels[index]!.y + (levels[index]!.stackIndex??(index-groundIndex)) * explode * 14;
 }

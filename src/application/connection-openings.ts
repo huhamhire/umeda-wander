@@ -18,6 +18,9 @@ export function planFloorOpenings(connections: VerticalConnection[], levels: Lev
     const run = Math.hypot(dx, dz);
     const direction = { x: run > 0 ? dx / run : 1, z: run > 0 ? dz / run : 0 };
     for (const level of surfaces) {
+      const owner=levels.find(l=>l.id===level.id)?.station??'jr-osaka';
+      const owners=[connection.from.level,connection.to.level].map(id=>levels.find(l=>l.id===id)?.station??'jr-osaka');
+      if(!owners.includes(owner))continue;
       if (level.y < lowY || level.y > highY) continue;
       if (connection.kind !== 'elevator' && level.y === lowY) continue;
       const t = (level.y - fromY) / (toY - fromY);
