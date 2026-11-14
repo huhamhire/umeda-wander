@@ -34,7 +34,7 @@ test('modeled objects reference valid floors, source pages and graph nodes', () 
 });
 test('Umekita route uses the connecting walkway and B1F concourse before descending again', () => {
   const path = findRoute(edges, 'west-entry', 'underground-destination', true);
-  assert.deepEqual(path, ['west-entry','west-inside','west-lower','walkway-start','walkway-end','umekita-arrival','underground-lower','underground-upper','underground-destination']);
+  assert.deepEqual(path, ['west-entry','west-inside','west-lower','walkway-start','walkway-end','umekita-arrival','umekita-arrival-bypass','umekita-hall-south','underground-lower','underground-upper','underground-side-south','underground-side-north','underground-destination']);
   assert.equal(findRoute(edges, 'west-entry', 'underground-destination', false), null);
   // No invented paid shortcut from the central platform graph into the new branch.
   assert.equal(findRoute(edges, 'destination', 'underground-destination', true), null);

@@ -23,6 +23,9 @@ export interface VerticalConnection {
   id: string; kind: 'stairs' | 'escalator' | 'elevator'; from: RouteNode; to: RouteNode; evidence: Evidence;
   platformId?: string;
   width?:number;
+  lanes?:1|2;
+  doorFacingRad?:number;
+  placement?:'exterior';
 }
 export interface StationLayout {
   areas: FloorArea[]; platforms: Platform[]; connections: VerticalConnection[];

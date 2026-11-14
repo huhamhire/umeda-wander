@@ -1,21 +1,23 @@
 import type { FloorOpening, Level, Platform, Point2, VerticalConnection } from '../domain/map/model.ts';
 import { passageOutline, rotatePoint } from '../domain/map/geometry.ts';
 import { connectionHeading } from './connection-orientation.ts';
+import {connectionLanes,escalatorOverallWidth} from './connection-lanes.ts';
 
 // Diagram units shared by the clearance plan and its rendered equipment.
-export const escalatorWidth = 3.5;
+export const escalatorWidth = escalatorOverallWidth;
 export const elevatorShaftWidth = 4;
 
-export function planFloorOpenings(connections: VerticalConnection[], levels: Level[], platforms:Platform[]): FloorOpening[] {
+export function planFloorOpenings(connections: VerticalConnection[], levels: Level[], platforms:Platform[], surfaces:Pick<Level,'id'|'y'>[]=levels): FloorOpening[] {
   const openings: FloorOpening[] = [];
-  for (const connection of connections) {
+  for (const bank of connections) for(const connection of connectionLanes(bank)) {
+    if(connection.placement==='exterior')continue;
     const fromY = levels.find(level => level.id === connection.from.level)!.y+(connection.from.elevationOffset??0);
     const toY = levels.find(level => level.id === connection.to.level)!.y+(connection.to.elevationOffset??0);
     const lowY = Math.min(fromY, toY), highY = Math.max(fromY, toY);
     const dx = connection.to.x - connection.from.x, dz = connection.to.z - connection.from.z;
     const run = Math.hypot(dx, dz);
     const direction = { x: run > 0 ? dx / run : 1, z: run > 0 ? dz / run : 0 };
-    for (const level of levels) {
+    for (const level of surfaces) {
       if (level.y < lowY || level.y > highY) continue;
       if (connection.kind !== 'elevator' && level.y === lowY) continue;
       const t = (level.y - fromY) / (toY - fromY);
@@ -35,7 +37,7 @@ export function planFloorOpenings(connections: VerticalConnection[], levels: Lev
           { x:center.x+direction.x*sign*0.8,z:center.z+direction.z*sign*0.8 },
           connection.width ? connection.width+0.5 : connection.kind === 'escalator' ? escalatorWidth + 0.5 : 3.4);
       }
-      openings.push({ connectionId: connection.id, level: level.id, kind: connection.kind, outline });
+      openings.push({ connectionId: bank.id, level: level.id, kind: connection.kind, outline });
     }
   }
   return openings;

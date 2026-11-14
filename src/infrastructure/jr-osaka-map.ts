@@ -1,5 +1,6 @@
 import { passageOutline, platformLocalPoint, rotatePoint } from '../domain/map/geometry.ts';
 import { undergroundRotationRad, undergroundSketchCorrectionRad } from './station-orientation.ts';
+import { refineUpperLevelLinks } from './jr-osaka-upper-links.ts';
 import type { Evidence, Facility, FloorArea, Level, Platform, RouteNode, RouteEdge, StationLayout, VerticalConnection } from '../domain/map/model.ts';
 
 // Source: references/station_osaka.pdf, current as of 2026-01-14.
@@ -9,9 +10,9 @@ export const levels: Level[] = [
   { id: 'underground-platform', label: 'B2F', name: '梅北 21–24 番线', y: -16, description: '梅北地下站台位于 B2F，两组站台为 21/22 与 23/24 番线。HARUKA 等列车在此区域停靠，乘车以当天站内信息为准。' },
   { id: 'underground-hall', label: 'B1F', name: '梅北地下口', y: -8, description: 'B1F 梅北地下口与闸内站厅，向下连接 B2F 站台；它与 1F 中央改札口是不同区域。' },
   { id: 'concourse', label: '1F', name: '中央改札与站厅', y: 0, description: '中央改札口在地上 1F。公共中央通路与闸内区域分别显示。' },
-  { id: 'mezzanine', label: 'M2F', name: '夹层通道', y: 4, description: '1F 与 2F 之间的夹层，包含中央口与樱桥口内通道；不是地下层。' },
-  { id: 'platform', label: '2F', name: '1–11 番线', y: 8, description: '六组地面站台：1/2、3/4、5/6、7/8、9/10 与 11 番线。' },
-  { id: 'bridge', label: '3F', name: '南北连络桥', y: 16, description: '公共南北连络桥与桥上改札内区域并行，北接 LUCUA，南接南门大楼。' },
+  { id: 'mezzanine', label: 'M2F', name: '夹层通道', y: 4, description: '1F 与 2F 之间的夹层，包含中央口与樱桥口内通道；不是地下层。此标高另显示南门大楼 2F 入口。' },
+  { id: 'platform', label: '2F', name: '1–11 番线', y: 8, description: '六组地面站台：1/2、3/4、5/6、7/8、9/10 与 11 番线。南门大楼 3F 入口在此标高单独标注。' },
+  { id: 'bridge', label: '3F', name: '南北连络桥', y: 16, description: '公共南北连络桥与桥上改札内区域并行，北接开放中庭，南经 15/16/I 连接南门大楼 3F，另有同标高通道往大楼 4F。' },
 ];
 const rectangle = (x: number, z: number, w: number, d: number) => [
   { x: x - w / 2, z: z - d / 2 }, { x: x + w / 2, z: z - d / 2 },
@@ -35,7 +36,7 @@ export const areas: FloorArea[] = [
   { id: 'north-public', level: 'concourse', name: '北侧公共通路', kind: 'public', outline: rectangle(0, -41, 116, 10), evidence: p1 },
   { id: 'south-public', level: 'concourse', name: '南侧公共通路', kind: 'public', outline: rectangle(0, 41, 116, 10), evidence: p1 },
   { id: 'midosuji-public', level: 'concourse', name: '御堂筋通路 · 闸外', kind: 'public', outline: rectangle(53, 0, 10, 72), label: true, evidence: p1 },
-  { id: 'midosuji-paid', level: 'concourse', name: '御堂筋改札内', kind: 'paid', outline: rectangle(38, 0, 18, 68), evidence: p1 },
+  { id: 'midosuji-paid', level: 'concourse', name: '御堂筋改札内', kind: 'paid', outline: rectangle(36.75, 0, 20.5, 68), evidence: p1 },
   { id: 'eki-marche', level: 'concourse', name: 'Eki Marché Osaka', kind: 'commercial', outline: rectangle(-47, -2, 17, 57), height: 1.8, label: true, evidence: p1 },
   { id: 'ticket-office', level: 'concourse', name: '售票处', kind: 'service', outline: rectangle(18, -7, 17, 12), height: 2.2, evidence: p1 },
   { id: 'central-court-shop', level: 'concourse', name: '中央通路东侧 · 土产与便利店', kind: 'commercial', outline: rectangle(18, 18, 17, 15), height: 1.6, label: true, evidence: p1 },
@@ -55,6 +56,7 @@ export const areas: FloorArea[] = [
   { id: 'midosuji-mezz-south', level: 'mezzanine', name: '1/2 番线连接段', kind: 'paid', outline: rectangle(42, 30, 23, 6), evidence: pm },
   { id: 'bridge-public', level: 'bridge', name: '南北连络桥 · 闸外', kind: 'public', outline: rectangle(-8, 0, 8, 76), label: true, evidence: pb },
   { id: 'bridge-paid', level: 'bridge', name: '桥上改札内', kind: 'paid', outline: rectangle(2.5, 0, 13, 70), label: true, evidence: pb },
+  { id: 'bridge-ticket-wall', level: 'bridge', name: '售票机背墙', kind: 'service', outline: rectangle(-4.2, -11, 0.3, 7.5), height: 3.6, evidence: source([2], 'Ticket machines backed against the public passage wall; wall dimensions schematic') },
   { id: 'bridge-north', level: 'bridge', name: '北门大楼 3F', kind: 'public', outline: rectangle(0, -43.5, 61, 11), evidence: pb },
   { id: 'bridge-south', level: 'bridge', name: '南门大楼 3F', kind: 'public', outline: rectangle(-3, 44, 25, 12), evidence: pb },
 ];
@@ -84,7 +86,7 @@ export const facilities: Facility[] = [
   { id: 'machines-sakura', name: '樱桥口 · 自动售票机', kind: 'ticket-machine', level: 'concourse', x: -46, z: 39, rotationRad: 0, note: '樱桥改札附近的闸外售票机组，依据 1F 图整理。', evidence: p1 },
   { id: 'machines-west', name: '西口 · 自动售票机', kind: 'ticket-machine', level: 'concourse', x: -83, z: 29, rotationRad: -Math.PI/2, note: '西口闸外通路内的售票机组，位置关系据西口平面图整理。', evidence: source([7], 'West Gate outside-ticket-gate ticket machines') },
   { id: 'machines-midosuji', name: '御堂筋口 · 自动售票机', kind: 'ticket-machine', level: 'concourse', x: 51, z: -20, rotationRad: -Math.PI/2, note: '御堂筋公共通路侧的售票机位置，位于闸外。', evidence: p1 },
-  { id: 'machines-bridge', name: '桥上口 · 自动售票机', kind: 'ticket-machine', level: 'bridge', x: -9, z: -11, rotationRad: Math.PI/2, note: '3F 公共南北连络桥、桥上改札外侧的售票机组。', evidence: pb },
+  { id: 'machines-bridge', name: '桥上口 · 自动售票机', kind: 'ticket-machine', level: 'bridge', x: -4.8, z: -11, rotationRad: Math.PI/2, note: '3F 公共南北连络桥、桥上改札外侧的靠墙售票机组，操作面朝公共通道。', evidence: pb },
   { id: 'machines-umekita', name: '梅北地下口 · 自动售票机', kind: 'ticket-machine', level: 'underground-hall', x: -79, z: -114, rotationRad: 0, note: 'B1F 梅北地下改札闸外，售票机随地下区域朝向布置。', evidence: source([8], 'Umekita B1F outside-ticket-gate ticket machines') },
   {id:'daimaru-steps',name:'中央口—大丸 · 小半层台阶',kind:'stairs',level:'concourse',x:0,z:44,note:'南端往大丸／南中央口的小段台阶，与 1F 公共通路之间有局部高差；不作为独立完整楼层。高差与步数为示意。',evidence:source([5],'User-marked Central Court / South Central Gate transition')},
   {id:'daimaru-entry',name:'南中央口 · 大丸入口方向',kind:'entrance',level:'concourse',x:0,z:55,elevationOffset:1.3,note:'经小半层台阶衔接的 1F 南侧公共通道，两侧为大丸与 Hotel Granvia 一带。',evidence:p1},
@@ -101,7 +103,7 @@ const landing = (id: string, level: RouteNode['level'], x: number, z: number): R
 export const connections: VerticalConnection[] = [
   { id: 'central-34', kind: 'escalator', from: landing('lower', 'concourse', -20, 6), to: landing('upper', 'platform', -10, 6), evidence: facilities.find(f => f.id === 'escalator')!.evidence },
   { id: 'lift-m', kind: 'elevator', from: landing('lift-m-1', 'concourse', 43, -6), to: landing('lift-m-2', 'platform', 43, -6), evidence: facilities.find(f => f.id === 'lift')!.evidence },
-  { id: 'central-53', kind: 'stairs', from: landing('stair53-1', 'concourse', -20, 0), to: landing('stair53-m', 'mezzanine', -25, 0), evidence: source([4, 5], 'Staircase 53, selected mezzanine access') },
+  { id: 'central-53', kind: 'stairs', from: landing('stair53-1', 'concourse', -34, 0), to: landing('stair53-m', 'mezzanine', -29, 0), evidence: source([4, 5], 'Staircase 53: user-corrected plan axis, parallel to platform length') },
   ...platforms.filter(platform => platform.level === 'platform').map((platform, index): VerticalConnection => ({
     id: `bridge-${platform.id}`, kind: 'escalator',
     from: landing(`bridge-${index}`, 'bridge', 6, platform.z),
@@ -109,23 +111,21 @@ export const connections: VerticalConnection[] = [
     evidence: source([2, 3], `Selected eastern 3F–2F escalator: diagram ${[4, 6, 8, 10, 12, 14][index]}`),
   })),
   ...platforms.filter(platform => platform.level === 'platform').map((platform, index): VerticalConnection => ({
-    id: `mezz-${platform.id}`, kind: 'stairs',
-    from: landing(`mezz-${index}`, 'mezzanine', -25, platform.z),
-    to: landing(`mezz-platform-${index}`, 'platform', -33, platform.z),
-    evidence: source([3, 4], 'Selected Central Gate mezzanine/platform stair bank; simplified endpoints'),
-  })),
-  ...platforms.filter(platform => platform.level === 'platform').map((platform, index): VerticalConnection => ({
     id: `west-${platform.id}`, kind: 'escalator',
-    from: landing(`west-floor-${index}`, 'concourse', -67, platform.z),
-    to: landing(`west-platform-${index}`, 'platform', -52, platform.z),
+    from: landing(`west-floor-${index}`, 'concourse', -65, platform.z),
+    to: landing(`west-platform-${index}`, 'platform', -56, platform.z),
     evidence: source([3, 7], `Selected West Gate/platform access, diagram ${[91, 90, 88, 86, 84, 82][index]}`),
   })),
   { id: 'west-92', kind: 'escalator', from: landing('west-lower', 'concourse', -67, -31), to: landing('walkway-start', 'underground-platform', -76, -39), evidence: source([7, 8], 'Diagram escalator 92, West Gate / B2F walkway') },
   { id: 'umekita-93', kind: 'escalator', from: landing('walkway-end', 'underground-platform', -76, -71), to: landing('umekita-arrival', 'underground-hall', -81, -80), evidence: source([7, 8], 'Diagram escalator 93, B2F walkway / B1F concourse') },
-  { id: 'umekita-95', kind: 'escalator', from: landing('underground-lower', 'underground-hall', -88, -86), to: landing('underground-upper', 'underground-platform', -88, -96), evidence: source([8], 'Diagram escalator 95, B1F / 21–22 platform') },
-  { id: 'umekita-97', kind: 'escalator', from: landing('b1-97', 'underground-hall', -104, -86), to: landing('b2-97', 'underground-platform', -104, -96), evidence: source([8], 'Diagram escalator 97, B1F / 23–24 platform') },
-  { id: 'umekita-ad', kind: 'elevator', from: landing('ad-1', 'underground-hall', -88, -101), to: landing('ad-2', 'underground-platform', -88, -101), evidence: source([8], 'Diagram elevator AD') },
-  { id: 'umekita-ae', kind: 'elevator', from: landing('ae-1', 'underground-hall', -104, -101), to: landing('ae-2', 'underground-platform', -104, -101), evidence: source([8], 'Diagram elevator AE') },
+  { id: 'umekita-95', kind: 'escalator', from: landing('underground-lower', 'underground-hall', -88, -86), to: landing('underground-upper', 'underground-platform', -88, -76), evidence: source([8], 'Southern bank 95 descends away from central elevator AD toward the connecting-walkway end') },
+  { id: 'umekita-97', kind: 'escalator', from: landing('b1-97', 'underground-hall', -104, -86), to: landing('b2-97', 'underground-platform', -104, -76), evidence: source([8], 'Southern bank 97 descends away from central elevator AE toward the connecting-walkway end') },
+  { id: 'umekita-ad', kind: 'elevator', from: landing('ad-1', 'underground-hall', -88, -94), to: landing('ad-2', 'underground-platform', -88, -94), evidence: source([8], 'Diagram elevator AD, between the northern 94 and southern 95 banks') },
+  { id: 'umekita-ae', kind: 'elevator', from: landing('ae-1', 'underground-hall', -104, -94), to: landing('ae-2', 'underground-platform', -104, -94), evidence: source([8], 'Diagram elevator AE, between the northern 96 and southern 97 banks') },
+  { id: 'umekita-94', kind: 'escalator', from: landing('b1-94', 'underground-hall', -88, -102), to: landing('b2-94', 'underground-platform', -88, -112), evidence: source([8], 'Northern bank 94 descends away from central elevator AD toward the gate end') },
+  { id: 'umekita-96', kind: 'escalator', from: landing('b1-96', 'underground-hall', -104, -102), to: landing('b2-96', 'underground-platform', -104, -112), evidence: source([8], 'Northern bank 96 descends away from central elevator AE toward the gate end') },
+  { id: 'walkway-ab', kind: 'elevator', doorFacingRad: -Math.PI/2, from: landing('ab-1', 'concourse', -72, -29), to: landing('ab-b2', 'underground-platform', -72, -29), evidence: source([7,8], 'Elevator AB links West Gate 1F and the B2F connecting walkway; bay positions schematic') },
+  { id: 'walkway-ac', kind: 'elevator', doorFacingRad: Math.PI/2+undergroundSketchCorrectionRad, from: landing('ac-b1', 'underground-hall', -84, -72), to: landing('ac-b2', 'underground-platform', -84, -72), evidence: source([7,8], 'Elevator AC links B1F Umekita paid hall and the B2F connecting walkway; bay positions schematic') },
 ];
 export const layout: StationLayout = { areas, platforms, connections };
 export const nodes: RouteNode[] = [
@@ -137,14 +137,19 @@ export const nodes: RouteNode[] = [
   landing('public-join', 'underground-hall', -42, -112), landing('umekita-gate-out', 'underground-hall', -88, -110), landing('umekita-gate-in', 'underground-hall', -88, -101),
   landing('west-entry', 'concourse', -81, 20), landing('west-inside', 'concourse', -67, 20),
   ...connections.filter(connection => ['west-92', 'umekita-93', 'umekita-95'].includes(connection.id)).flatMap(connection => [connection.from, connection.to]),
-  landing('underground-destination', 'underground-platform', -88, -112),
+  landing('umekita-hall-north','underground-hall',-94,-100),landing('umekita-hall-south','underground-hall',-94,-87),
+  landing('umekita-arrival-bypass','underground-hall',-94,-80),
+  landing('underground-side-south','underground-platform',-91.3,-79),landing('underground-side-north','underground-platform',-91.3,-120),
+  landing('underground-destination', 'underground-platform', -88, -120),
 ];
 export const edges: RouteEdge[] = [
   { from: 'public-b1-entry', to: 'public-b1-turn', cost: 31, kind: 'walk' },
   { from: 'public-b1-turn', to: 'public-join', cost: 30, kind: 'walk' },
   { from: 'public-join', to: 'umekita-gate-out', cost: 46, kind: 'walk' },
   { from: 'umekita-gate-out', to: 'umekita-gate-in', cost: 9, kind: 'gate' },
-  { from: 'umekita-gate-in', to: 'underground-lower', cost: 15, kind: 'walk' },
+  { from: 'umekita-gate-in', to: 'umekita-hall-north', cost: 6, kind: 'walk' },
+  { from: 'umekita-hall-north', to: 'umekita-hall-south', cost: 13, kind: 'walk' },
+  { from: 'umekita-hall-south', to: 'underground-lower', cost: 6, kind: 'walk' },
   {from:'entry',to:'hall-bypass',cost:15,kind:'walk'},
   {from:'hall-bypass',to:'hall-turn',cost:6,kind:'walk'},
   {from:'hall-turn',to:'hall-rejoin',cost:9,kind:'walk'},
@@ -160,9 +165,12 @@ export const edges: RouteEdge[] = [
   { from: 'west-lower', to: 'walkway-start', cost: 20, kind: 'escalator', directed: true },
   { from: 'walkway-start', to: 'walkway-end', cost: 32, kind: 'walk' },
   { from: 'walkway-end', to: 'umekita-arrival', cost: 14, kind: 'escalator', directed: true },
-  { from: 'umekita-arrival', to: 'underground-lower', cost: 13, kind: 'walk' },
+  { from: 'umekita-arrival', to: 'umekita-arrival-bypass', cost: 13, kind: 'walk' },
+  { from: 'umekita-arrival-bypass', to: 'umekita-hall-south', cost: 7, kind: 'walk' },
   { from: 'underground-lower', to: 'underground-upper', cost: 14, kind: 'escalator', directed: true },
-  { from: 'underground-upper', to: 'underground-destination', cost: 16, kind: 'walk' },
+  { from: 'underground-upper', to: 'underground-side-south', cost: 5, kind: 'walk' },
+  { from: 'underground-side-south', to: 'underground-side-north', cost: 41, kind: 'walk' },
+  { from: 'underground-side-north', to: 'underground-destination', cost: 4, kind: 'walk' },
 ];
 
 
@@ -172,9 +180,26 @@ export const edges: RouteEdge[] = [
 const undergroundSketchOrigin = { x: -96, z: -102 };
 // Keep the West Gate–Umekita spine roughly perpendicular to the surface tracks.
 // Location/scale follow the supplied layout sketch; they are not surveyed coordinates.
-const undergroundAnchor = { x: -60, z: -110 };
+// Extend surface platforms westward while retaining the east-end gate alignment.
+for (const platform of platforms) {
+  if (platform.level === 'platform') { platform.x -= 20; platform.length += 40; }
+  else platform.width = 9;
+}
+const shiftedWest = new Set<object>();
+function shiftWest(point:{x:number}):void {
+  if(shiftedWest.has(point))return;
+  point.x-=30;shiftedWest.add(point);
+}
+for(const area of areas.filter(a=>['west-public','west-paid'].includes(a.id)))for(const p of area.outline)shiftWest(p);
+areas.find(a=>a.id==='west-south-link')!.outline=rectangle(-83,41,66,9);
+for(const facility of facilities.filter(f=>['west-gate','machines-west'].includes(f.id)))shiftWest(facility);
+for(const connection of connections.filter(c=>c.id.startsWith('west-')||c.id==='walkway-ab')){
+  shiftWest(connection.from);shiftWest(connection.to);
+}
+for(const node of nodes.filter(n=>['west-entry','west-inside','west-lower','walkway-start'].includes(n.id)))shiftWest(node);
+const undergroundAnchor = { x: -90, z: -110 };
 const corrected = new Set<object>();
-const keepPosition = new Set(['walkway-start', 'public-b1-entry', 'public-b1-turn']);
+const keepPosition = new Set(['walkway-start', 'ab-b2', 'public-b1-entry', 'public-b1-turn']);
 function correctPosition(point: { x: number; z: number }, level: RouteNode['level'], id = ''): void {
   if (!['underground-hall','underground-platform'].includes(level) || keepPosition.has(id) || corrected.has(point)) return;
   const rotated = rotatePoint(point, undergroundSketchOrigin, undergroundSketchCorrectionRad);
@@ -198,6 +223,26 @@ for (const connection of connections) {
 for (const node of nodes) correctPosition(node, node.level, node.id);
 const passageStart = nodes.find(node => node.id === 'walkway-start')!;
 const passageEnd = nodes.find(node => node.id === 'walkway-end')!;
+for(const id of ['walkway-ab','walkway-ac']){
+  const connection=connections.find(c=>c.id===id)!;
+  const b2=connection.to;
+  const end=id==='walkway-ab'?passageStart:passageEnd;
+  // Separate access bays support each shaft and connect it to the paid walkway.
+  areas.push({id:`${id}-b2-bay`,level:'underground-platform',name:'连接通道直梯候梯区',kind:'paid',outline:passageOutline(b2,end,7),evidence:connection.evidence});
+  for(const point of [connection.from,connection.to])areas.push({id:`${point.id}-landing`,level:point.level,name:'无障碍直梯候梯区',kind:'paid',outline:rectangle(point.x,point.z,7,7),evidence:connection.evidence});
+  facilities.push({id:`${id}-poi`,name:`连接通道无障碍直梯 ${id==='walkway-ab'?'AB':'AC'}`,kind:'elevator',level:connection.from.level,x:connection.from.x,z:connection.from.z,note:'参考图中的连接通道无障碍直梯；井道、轿厢与候梯区为示意，尚未提供完整无障碍路线规划。',evidence:connection.evidence});
+}
+const ac=connections.find(c=>c.id==='walkway-ac')!;
+const arrival=connections.find(c=>c.id==='umekita-93')!.to;
+areas.push({id:'ac-b1-access',level:'underground-hall',name:'梅北连接通道直梯通路',kind:'paid',outline:passageOutline(ac.from,arrival,7),evidence:ac.evidence});
+const southBypass=nodes.find(n=>n.id==='umekita-arrival-bypass')!;
+const southHall=nodes.find(n=>n.id==='umekita-hall-south')!;
+for(const [i,a,b]of [[0,arrival,southBypass],[1,southBypass,southHall]] as const)
+  areas.push({id:`umekita-south-circulation-${i}`,level:'underground-hall',name:'梅北闸内南端绕行通路',kind:'paid',outline:passageOutline(a,b,5),evidence:source([8],'Schematic circulation around the southern escalator banks')});
+for(const id of ['umekita-94','umekita-96']){
+  const connection=connections.find(c=>c.id===id)!;
+  facilities.push({id:`${id}-poi`,name:`梅北地下站台扶梯 ${id.slice(-2)}`,kind:'escalator',level:connection.from.level,x:connection.from.x,z:connection.from.z,note:'补充梅北闸内北端站台扶梯，编号用于对照参考图，位置与宽度为示意。',evidence:connection.evidence});
+}
 areas.push({ id: 'underground-walkway', level: 'underground-platform', name: '西口—梅北连接通道', kind: 'paid',
   outline: passageOutline(passageStart, passageEnd, 7), label: true,
   evidence: source([7, 8], 'B2F connecting walkway; rebuilt from the West Gate landing to the rotated Umekita landing, geometry remains schematic') });
@@ -222,35 +267,34 @@ for(const [diagram,platformId] of [[32,'p9-10'],[33,'p7-8'],[35,'p3-4']] as cons
 for(const [i,platformId] of ['p9-10','p7-8','p5-6','p3-4'].entries()){
   const platform=platforms.find(p=>p.id===platformId)!;
   for(let side=0;side<2;side++){
-    const diagram=36+i*2+side,x=31+side*8;
-    addEscalator(`midosuji-${diagram}`,landing(`midosuji-${diagram}-1`,'concourse',x,platform.z),landing(`midosuji-${diagram}-2`,'platform',x+6,platform.z),[3,5],`Midosuji Gate paired bank, diagram ${diagram}`);
+    const diagram=36+i*2+side,x=28+side*8;
+    addEscalator(`midosuji-${diagram}`,landing(`midosuji-${diagram}-1`,'concourse',x,platform.z),landing(`midosuji-${diagram}-2`,'platform',x-6,platform.z),[3,5],`Midosuji Gate bank, diagram ${diagram}`);
+    if(side===0)connections.at(-1)!.lanes=2;
   }
 }
 for(const [i,platformId] of ['p9-10','p7-8','p5-6','p3-4','p1-2'].entries()){
   const platform=platforms.find(p=>p.id===platformId)!;
   addEscalator(`bridge-west-${5+i*2}`,landing(`bridge-west-${i}-3`,'bridge',1.5,platform.z),landing(`bridge-west-${i}-2`,'platform',-8.5,platform.z),[2,3],`Western Bridge Gate bank, diagram ${5+i*2}`);
 }
-areas.push({id:'mezz-south-finger',level:'mezzanine',name:'夹层南端支路',kind:'paid',outline:rectangle(-35,26,5,10),evidence:source([4],'Selected southern mezzanine branch')});
-for(const [id,fromX,toX,z] of [[18,-40,-32,-30],[19,-25,-17,-30],[30,-35,-27,30],[31,-25,-17,30]]){
-  addEscalator(`mezz-escalator-${id}`,landing(`mezz-${id}-m`,'mezzanine',fromX!,z!),landing(`mezz-${id}-2`,'platform',toX!,z!),[3,4],`Mezzanine/platform escalator, diagram ${id}`);
-}
 areas.push({id:'north-2f-public',level:'platform',name:'2F 北门大楼 · 中庭与连廊',kind:'public',outline:rectangle(0,-44,122,12),label:true,evidence:source([3],'North Gate building 2F public concourse and Carillon Plaza approach')});
 for(const [id,x] of [[47,-3],[48,3]])addEscalator(`north-${id}`,landing(`north-${id}-1`,'concourse',x!,-41),landing(`north-${id}-2`,'platform',x!,-46),[3,5],`North public bank, diagram ${id}`);
-for(const [id,x] of [[2,-3],[3,3]])addEscalator(`north-${id}`,landing(`north-${id}-2`,'platform',x!,-46),landing(`north-${id}-3`,'bridge',x!,-42),[2,3],`North Gate 2F/3F bank, diagram ${id}`);
 addEscalator('carillon-49',landing('carillon-49-1','concourse',53,-40),landing('carillon-49-2','platform',53,-45),[3,5],'Carillon Plaza public escalator, diagram 49');
 
 connections.push({id:'central-daimaru-steps',kind:'stairs',width:10,
   from:landing('daimaru-step-lower','concourse',0,44),to:{...landing('daimaru-step-upper','concourse',0,49),elevationOffset:1.3},
   evidence:source([5],'Small Central Court / South Central Gate stair transition; user-provided crop')});
-for(const [id,z]of [[52,-15],[54,15]])connections.push({id:`central-stairs-${id}`,kind:'stairs',
-  from:landing(`central-stairs-${id}-1`,'concourse',-33,z!),to:landing(`central-stairs-${id}-m`,'mezzanine',-25,z!),evidence:source([4,5],`Central Gate mezzanine staircase ${id}`)});
-connections.push({id:'sakura-stairs-51',kind:'stairs',from:landing('sakura51-1','concourse',-43,28),to:landing('sakura51-m','mezzanine',-40,22),evidence:source([4,5],'Sakurabashi mezzanine staircase 51')});
-addEscalator('central-55',landing('central55-1','concourse',-31,25),landing('central55-m','mezzanine',-25,22),[4,5],'Central Gate mezzanine escalator 55');
+for(const [id,z]of [[52,-14],[54,14]])connections.push({id:`central-stairs-${id}`,kind:'stairs',
+  from:landing(`central-stairs-${id}-1`,'concourse',-34,z!),to:landing(`central-stairs-${id}-m`,'mezzanine',-29,z!),evidence:source([4,5],`Central Gate staircase ${id}: user-corrected plan axis parallel to platforms`)});
+for(const [id,z]of [[52,-14],[53,0],[54,14]])areas.push({id:`central-mezz-landing-${id}`,level:'mezzanine',name:'中央口楼梯夹层落台',kind:'paid',outline:rectangle(-29,z!,14,4),evidence:pm});
+addEscalator('central-55',landing('central55-1','concourse',-34,26),landing('central55-m','mezzanine',-34,21),[4,5],'Central Gate north/south mezzanine escalator 55');
 addEscalator('crost-67',landing('crost67-1','concourse',0,35),landing('crost67-b1','underground-hall',0,25),[5,6],'Central Court / Crost B1F escalator 67');
 for(const [id,x]of [[68,-8],[69,8]])connections.push({id:`crost-stairs-${id}`,kind:'stairs',from:landing(`crost${id}-1`,'concourse',x!,32),to:landing(`crost${id}-b1`,'underground-hall',x!,25),evidence:source([5,6],`Crost B1F staircase ${id}`)});
 
+refineUpperLevelLinks(areas,connections,facilities);
+
 // Ownership supplies one shared frame for equipment, landing doors and shaft cuts.
 for (const connection of connections) {
+  if(connection.doorFacingRad!==undefined)continue;
   const landing = [connection.from,connection.to].find(point=>point.level==='platform'||point.level==='underground-platform');
   if(!landing)continue;
   connection.platformId=platforms.find(platform=>{

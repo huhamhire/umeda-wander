@@ -13,6 +13,7 @@ import { layerRole } from '../application/layer-focus.ts';
 import { LayerAppearance } from './layer-appearance.ts';
 import { cameraOffset, viewBasis } from './view-orientation.ts';
 import { roofHeightAt } from './roof-profile.ts';
+import { advanceExplode } from './explode-transition.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -33,6 +34,7 @@ export class MapScene {
   private route = new T.Group();
   private state: MapViewState;
   private displayedExplode: number;
+  private immediateExplode = false;
   private zoomValue = 1;
   private pan = new T.Vector3();
   private frame = 0;
@@ -112,6 +114,7 @@ export class MapScene {
     for (let z = -60; z <= 60; z += 8) this.box(base, 4, -1.05, z, 124, 0.02, 0.06, 0xd9dece);
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
     const areaColors = { public: colors.slab, paid: colors.mint, commercial: 0xe4d4c3, service: 0xd7dfc4 };
+    const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
       const cuts = this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline);
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
@@ -150,17 +153,34 @@ export class MapScene {
         const label = position(length / 2 - 2, across);
         this.label(`${number} 番线`, label.x, 1, label.z, level);
         if (level === 'underground-platform') {
-          // Repeated screen-door modules give the underground platforms their own identity.
+          // Full-height underground screen doors: overhead frame, glazing and sliding leaves.
+          block(0, 3.55, side * (width / 2 - 0.2), length-1, 0.25, 0.3, 0x648e9b);
           for (let px = -length / 2 + 2; px < length / 2 - 2; px += 3) {
-            block(px, 1.45, side * (width / 2 - 0.2), 0.16, 1.8, 0.2, 0x648e9b);
-            block(px + 1.3, 1.2, side * (width / 2 - 0.2), 2.4, 1.2, 0.12, 0xbad3d1);
+            const edge=side*(width/2-0.2);
+            block(px, 2, edge, 0.16, 3.1, 0.25, 0x648e9b);
+            for(const offset of [0.75,2.15]){
+              const panel=block(px+offset,2,edge,1.32,2.9,0.1,0x9dc5cc);
+              panel.material=screenGlass;panel.castShadow=false;panel.renderOrder=1;
+              block(px+offset,1.1,edge,1.32,0.08,0.18,0x648e9b);
+            }
+            block(px+1.45,2,edge,0.055,2.9,0.15,0x648e9b);
+            block(px+1.45,3.3,edge,0.55,0.12,0.2,0x8cbba7);
           }
         }
       }
       if (level === 'platform') {
+        const canopyCuts=planFloorOpenings(this.layout.connections,this.levels,this.layout.platforms,
+          [{id:level,y:this.levels.find(l=>l.id===level)!.y+3.2}]).map(o=>o.outline);
         for (const canopy of [{ x: -48, length: 18 }, { x: 31, length: 15 }]) {
-          block(canopy.x, 3.2, 0, canopy.length, 0.3, width - 1.4, 0xe7e9dc);
-          for (const dx of [-5, 5]) block(canopy.x + dx, 1.8, 0, 0.3, 2.7, 0.3, colors.steel);
+          const half=(width-1.4)/2;
+          const footprint=[position(canopy.x-canopy.length/2,-half),position(canopy.x+canopy.length/2,-half),
+            position(canopy.x+canopy.length/2,half),position(canopy.x-canopy.length/2,half)];
+          const geometry=buildFloorGeometry(footprint,canopyCuts,0.3,3.05);
+          if(geometry.getAttribute('position')){
+            const mesh=new T.Mesh(geometry,this.material(0xe7e9dc));mesh.castShadow=true;mesh.receiveShadow=true;platformGroup.add(mesh);
+          }
+          for (const dx of [-5, 5]) if(!canopyCuts.some(cut=>pointInPolygon(position(canopy.x+dx,0),cut)))
+            block(canopy.x + dx, 1.8, 0, 0.3, 2.7, 0.3, colors.steel);
         }
       }
       block(length / 5, 0.9, 0, 3, 0.65, 0.85, 0x789887);
@@ -171,9 +191,15 @@ export class MapScene {
     // Handrails frame the narrow elevated passages, not imaginary full floor plates.
     for (const id of ['mezzanine', 'bridge'] as const) {
       const group = this.groups.get(id)!;
-      const sides = id === 'bridge' ? [-12, 9] : [-43, -22];
+      const sides = id === 'bridge' ? [-12, 9] : [-50.5, -22];
       for (const x of sides) {
-        const inOpening = (z: number) => this.openings.some(opening => opening.level === id && pointInPolygon({x,z},opening.outline));
+        const inOpening = (z: number) => {
+          if(this.openings.some(opening => opening.level === id && pointInPolygon({x,z},opening.outline)))return true;
+          const floorAt=(px:number)=>this.layout.areas.some(a=>a.level===id&&pointInPolygon({x:px,z},a.outline));
+          // A passage branch is not an outer railing edge.
+          if(!floorAt(x)||(floorAt(x-0.2)&&floorAt(x+0.2)))return true;
+          return this.layout.connections.some(c=>[c.from,c.to].some(p=>p.level===id&&Math.abs(p.x-x)<3.5&&Math.abs(p.z-z)<2.4));
+        };
         const half = id === 'bridge' ? 37 : 31;
         for (let z = -half; z < half; z += 1) if (!inOpening(z + 0.5)) this.box(group, x, 1.45, z+0.5, 0.14, 0.12, 1, 0x78968a);
         for (let z = -30; z <= 30; z += 6) if(!inOpening(z)) this.box(group, x, 0.95, z, 0.12, 0.9, 0.12, 0x9fb3a0);
@@ -298,9 +324,10 @@ export class MapScene {
     this.label('OSAKA STATION / 大屋顶', -25, 13, 0, undefined, true, true);
   }
 
-  update(state: MapViewState): void {
+  update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
     const routeChanged = this.state.route !== state.route;
     this.state = { ...state };
+    this.immediateExplode ||= options.immediateExplode === true;
     if (routeChanged) this.buildRoute();
     this.requestRender();
   }
@@ -341,10 +368,10 @@ export class MapScene {
   private requestRender(): void { if (!this.frame) this.frame = requestAnimationFrame(() => this.render()); }
   private render(): void {
     this.frame = 0;
-    const delta = this.state.explode - this.displayedExplode;
-    const animate = Math.abs(delta) > 0.002 && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const {value,animate}=advanceExplode(this.displayedExplode,this.state.explode,this.immediateExplode,matchMedia('(prefers-reduced-motion: reduce)').matches);
     const previousExplode = this.displayedExplode;
-    this.displayedExplode = animate ? this.displayedExplode + delta * 0.18 : this.state.explode;
+    this.displayedExplode = value;
+    this.immediateExplode = false;
     for (const [id, group] of this.groups) {
       group.position.y = this.levelY(id);
       const role=layerRole(this.levels,this.state.level,id);
@@ -381,6 +408,14 @@ export class MapScene {
         envelope.push(new T.Vector3(point.x, this.levelY(platform.level) + 4, point.z));
       }
     }
+    // Entire escalators remain visible from their lower floor, including the upper landing.
+    for(const connector of this.connectors){
+      if(!connector.group.visible||connector.connection.kind==='elevator')continue;
+      for(const point of [connector.connection.from,connector.connection.to]){
+        const y=this.levelY(point.level)+(point.elevationOffset??0);
+        for(const dx of [-3,3])for(const dz of [-3,3])envelope.push(new T.Vector3(point.x+dx,y+2.5,point.z+dz));
+      }
+    }
     if (this.roof.visible) for (const x of [-64, 64]) for (const z of [-37, 37]) envelope.push(new T.Vector3(x, this.roof.position.y + 14, z));
     const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
     const {right,up} = viewBasis();
@@ -400,7 +435,7 @@ export class MapScene {
     const occupied: { x: number; y: number; w: number; h: number }[] = [];
     const priority=(label:MapLabel)=>Number(label.level===this.state.level)*4+Number(label.element.classList.contains('emphasis'));
     const orderedLabels = [...this.labels].sort((a,b)=>priority(b)-priority(a));
-    for (const label of orderedLabels) {
+    const placements = orderedLabels.map(label => {
       const role=label.level?layerRole(this.levels,this.state.level,label.level):'normal';
       let visible = label.roof ? this.roof.visible : role!=='hidden';
       label.element.classList.toggle('context',role==='context');
@@ -412,14 +447,18 @@ export class MapScene {
       visible = visible && Math.abs(point.x) < 0.96 && Math.abs(point.y) < 0.94;
       label.element.hidden = !visible;
       const x = rect.left + (point.x + 1) * this.width / 2, y = rect.top + (1 - point.y) * this.height / 2;
+      label.element.style.left = `${x}px`;
+      label.element.style.top = `${y}px`;
+      return {label,visible,x,y};
+    });
+    // Batch DOM writes and measurements, avoiding a forced layout for every label.
+    const measured = placements.map(p => ({...p,w:p.visible?p.label.element.offsetWidth:0,h:p.visible?p.label.element.offsetHeight:0}));
+    for(const {label,visible,x,y,w,h} of measured){
       if (visible) {
-        const w = label.element.offsetWidth, h = label.element.offsetHeight;
         const collides = occupied.some(other => Math.abs(x - other.x) < (w + other.w) / 2 + 5 && Math.abs(y - other.y) < (h + other.h) / 2 + 4);
         label.element.hidden = collides;
         if (!collides) occupied.push({ x, y, w, h });
       }
-      label.element.style.left = `${rect.left + (point.x + 1) * this.width / 2}px`;
-      label.element.style.top = `${rect.top + (1 - point.y) * this.height / 2}px`;
     }
     if (animate) this.requestRender();
   }

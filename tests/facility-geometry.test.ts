@@ -37,12 +37,14 @@ test('all source areas and rotated platforms produce finite geometry after clipp
 });
 test('a modeled elevator and upper escalator landing have unobstructed floor openings',()=>{
   const platform=platforms.find(p=>p.id==='p7-8')!;
-  const outline=[platformPoint(platform,-60,-3.5),platformPoint(platform,60,-3.5),platformPoint(platform,60,3.5),platformPoint(platform,-60,3.5)];
+  const outline=[platformPoint(platform,-platform.length/2,-platform.width/2),platformPoint(platform,platform.length/2,-platform.width/2),
+    platformPoint(platform,platform.length/2,platform.width/2),platformPoint(platform,-platform.length/2,platform.width/2)];
   const geometry=buildFloorGeometry(outline,openings.filter(o=>o.level==='platform').map(o=>o.outline),0.95,-0.475);
   assert(!hit(geometry,43,-6),'elevator shaft must not be filled by a platform slab');
-  assert(hit(geometry,25,-6),'walking floor remains beside the well');geometry.dispose();
+  assert(hit(geometry,48,-6),'walking floor remains beside the well');geometry.dispose();
   const central=platforms.find(p=>p.id==='p5-6')!;
-  const escalatorFloor=buildFloorGeometry([platformPoint(central,-60,-3.5),platformPoint(central,60,-3.5),platformPoint(central,60,3.5),platformPoint(central,-60,3.5)],
+  const escalatorFloor=buildFloorGeometry([platformPoint(central,-central.length/2,-central.width/2),platformPoint(central,central.length/2,-central.width/2),
+    platformPoint(central,central.length/2,central.width/2),platformPoint(central,-central.length/2,central.width/2)],
     openings.filter(o=>o.level==='platform').map(o=>o.outline),0.95,-0.475);
   assert(!hit(escalatorFloor,-12,6));escalatorFloor.dispose();
 });
@@ -87,7 +89,7 @@ test('gate boundaries have fences on both sides and leave the gate bank open',()
   }
 });
 test('elevator doors, shaft and floor cut share the platform frame',()=>{
-  for(const connection of connections.filter(c=>c.kind==='elevator')){
+  for(const connection of connections.filter(c=>c.kind==='elevator'&&c.platformId)){
     const model=new VerticalConnectionModel(connection,levels,platforms);
     model.update(id=>displayElevation(levels,id,0),'all');
     const platform=platforms.find(p=>p.id===connection.platformId)!;

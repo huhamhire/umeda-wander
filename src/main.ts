@@ -78,7 +78,11 @@ floorButtons.forEach(button => button.addEventListener('click', () => {
   if (session.state.level !== 'all') session.state.route = null;
   sync();
 }));
-slider.addEventListener('input', () => { session.state.explode = Number(slider.value) / 100; sync(); });
+slider.addEventListener('input', () => {
+  session.state.explode = Number(slider.value) / 100;
+  element('#explode-value').textContent = `${slider.value}%`;
+  scene?.update(session.state, { immediateExplode: true });
+});
 roof.addEventListener('change', () => { session.state.roof = roof.checked; sync(); });
 routeButton.addEventListener('click', () => {
   if (session.state.route) session.state.route = null;

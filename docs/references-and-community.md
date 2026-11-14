@@ -17,6 +17,10 @@
 
 官网同名参考：[JR Osaka Station Map](https://www.westjr.co.jp/global/en/timetable/pdf/station_osaka.pdf)。官网文件可能更新；当前项目以本地版本为本轮输入，不能默认二者长期一致。
 
+### Osaka Metro：新增 M16 梅田站资料
+
+用户新增 `references/M16_梅田_構内図_1.pdf`，1 页，已提取文本并渲染检查。可用于御堂筋线站台、四组改札、站内中间层与无障碍路线关系的整理；尚未将 Metro 模型接入运行页面。具体可确认事项、标高待核对项与分区改造方案见 [M16 接入评估](./midosuji-umeda-layout.md)。
+
 ### 阪急：`references/umeda.svg`
 
 - 文件约 2.53 MB，`viewBox="0 0 1389.41 1385.41"`，为 Illustrator 导出的矢量图。

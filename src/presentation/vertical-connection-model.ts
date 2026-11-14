@@ -2,9 +2,11 @@ import * as T from 'three';
 import type { Level, LevelId, Platform, VerticalConnection } from '../domain/map/model.ts';
 import { elevatorShaftWidth } from '../application/connection-openings.ts';
 import { connectionHeading } from '../application/connection-orientation.ts';
+import {connectionLanes,escalatorTreadWidth} from '../application/connection-lanes.ts';
 
 const unitBox = new T.BoxGeometry(1,1,1);
 const materials = new Map<number,T.MeshStandardMaterial>();
+const instanceTransform = new T.Matrix4();
 function material(color:number):T.MeshStandardMaterial {
   let result=materials.get(color);
   if(!result){result=new T.MeshStandardMaterial({color,roughness:0.65,metalness:0.15});materials.set(color,result);}
@@ -19,7 +21,7 @@ function instances(group:T.Group,name:string,count:number,color:number):T.Instan
   mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);mesh.frustumCulled=false;group.add(mesh);return mesh;
 }
 function place(mesh:T.InstancedMesh,index:number,x:number,y:number,z:number,w:number,h:number,d:number):void {
-  const matrix=new T.Matrix4().makeScale(w,h,d);matrix.setPosition(x,y,z);mesh.setMatrixAt(index,matrix);
+  instanceTransform.makeScale(w,h,d);instanceTransform.setPosition(x,y,z);mesh.setMatrixAt(index,instanceTransform);
 }
 
 /** Procedural facility model. Coordinates are local to the lower landing. */
@@ -47,18 +49,26 @@ export class VerticalConnectionModel {
   private cabin=new T.Group();
   private readonly count:number;
   private readonly treadWidth:number;
+  private lanes:VerticalConnectionModel[]=[];
+  private previousLowY?:number;
+  private previousHighY?:number;
+  private previousFocus?:LevelId|'all';
 
   constructor(connection:VerticalConnection,levels:Level[],platforms:Platform[]) {
     this.connection=connection;
     const fromY=levels.find(l=>l.id===connection.from.level)!.y+(connection.from.elevationOffset??0),toY=levels.find(l=>l.id===connection.to.level)!.y+(connection.to.elevationOffset??0);
     this.count=connection.kind==='stairs'?Math.max(4,Math.ceil(Math.abs(toY-fromY)/0.24)):28;
-    this.treadWidth=connection.width?connection.width-0.6:2.15;
+    this.treadWidth=connection.width?connection.width-0.6:connection.kind==='escalator'?escalatorTreadWidth:2.15;
     [this.low,this.high]=fromY<toY?[connection.from,connection.to]:[connection.to,connection.from];
     this.run=Math.hypot(this.high.x-this.low.x,this.high.z-this.low.z);
     this.heading=connectionHeading(connection,platforms,fromY,toY);
     this.group.name=`${connection.kind}-${connection.id}`;
     this.body.name='connection-body';this.lowLanding.name='lower-landing';this.highLanding.name='upper-landing';
     this.group.add(this.body,this.lowLanding,this.highLanding);
+    if(connection.lanes===2){
+      this.lanes=connectionLanes(connection).map(lane=>new VerticalConnectionModel(lane,levels,platforms));
+      this.group.clear();for(const lane of this.lanes)this.group.add(lane.group);return;
+    }
     if(connection.kind==='elevator')this.buildElevator();else this.buildStairway();
   }
 
@@ -72,7 +82,7 @@ export class VerticalConnectionModel {
       box(group,'landing-direction-light',0,2.78,w/2+0.05,0.8,0.23,0.15,0x6ca594);
     }else{
       box(group,'comb-plate',0,0,0,1.65,0.16,this.treadWidth+0.4,0xc0cbc1);
-      if(this.connection.kind==='escalator')for(let z=-1;z<=1;z+=0.25)box(group,'comb-teeth',0,0.1,z,1.35,0.035,0.06,0xd5bd71);
+      if(this.connection.kind==='escalator')for(let i=0;i<7;i++)box(group,'comb-teeth',0,0.1,(i/6-0.5)*this.treadWidth,1.35,0.035,0.06,0xd5bd71);
     }
   }
   private buildStairway():void {
@@ -125,7 +135,13 @@ export class VerticalConnectionModel {
   }
 
   update(elevation:(id:LevelId)=>number,focus:LevelId|'all'):void {
+    if(this.lanes.length){
+      for(const lane of this.lanes)lane.update(elevation,focus);
+      this.group.visible=this.lanes.some(lane=>lane.group.visible);return;
+    }
     const lowY=elevation(this.low.level)+(this.low.elevationOffset??0)+0.65,highY=elevation(this.high.level)+(this.high.elevationOffset??0)+0.65,rise=highY-lowY;
+    if(lowY===this.previousLowY&&highY===this.previousHighY&&focus===this.previousFocus)return;
+    this.previousLowY=lowY;this.previousHighY=highY;this.previousFocus=focus;
     this.group.position.set(this.low.x,lowY,this.low.z);this.group.rotation.y=-this.heading;
     const showAll=focus==='all';
     const focusedY=focus==='all'?undefined:elevation(focus)+0.65;
@@ -145,15 +161,18 @@ export class VerticalConnectionModel {
       this.cabin.position.y=Math.min(rise*0.45,Math.max(0,top-2.8));
     }else{
       const first=0;
-      const last=showAll?1:Math.max(0,Math.min(1,((focusedY??lowY)-lowY+3)/rise));
+      const last=1;
+      this.highLanding.visible=this.body.visible;
+      this.lowLanding.visible=this.body.visible;
       const pitch=this.run/this.count,stepRise=rise/this.count;
+      this.steps!.count=this.count;this.risers!.count=this.count;this.stripes!.count=this.count;
+      if(this.grooves)this.grooves.count=this.count*6;
       for(let i=0;i<this.count;i++){
         const x=(i+0.5)*pitch,y=(i+0.5)*stepRise;
-        const visible=(i+0.5)/this.count>=first&&(i+0.5)/this.count<=last?1:0;
-        place(this.steps!,i,x,y,0,pitch*1.01*visible,0.16,this.treadWidth);
-        place(this.risers!,i,x-pitch/2,y-stepRise/2,0,0.08*visible,stepRise+0.04,this.treadWidth);
-        place(this.stripes!,i,x-pitch*0.42,y+0.095,0,0.065*visible,0.025,this.treadWidth-0.02);
-        if(this.grooves)for(let j=0;j<6;j++)place(this.grooves,i*6+j,x,y+0.095,-0.88+j*0.35,pitch*0.7*visible,0.02,0.035);
+        place(this.steps!,i,x,y,0,pitch*1.01,0.16,this.treadWidth);
+        place(this.risers!,i,x-pitch/2,y-stepRise/2,0,0.08,stepRise+0.04,this.treadWidth);
+        place(this.stripes!,i,x-pitch*0.42,y+0.095,0,0.065,0.025,this.treadWidth-0.02);
+        if(this.grooves)for(let j=0;j<6;j++)place(this.grooves,i*6+j,x,y+0.095,-this.treadWidth*0.4+j*this.treadWidth*0.16,pitch*0.7,0.02,0.035);
       }
       for(const mesh of [this.steps,this.risers,this.stripes,this.grooves])if(mesh)mesh.instanceMatrix.needsUpdate=true;
       const beam=(mesh:T.Mesh,offset:number,side:number,width:number,height:number)=>{
@@ -166,12 +185,12 @@ export class VerticalConnectionModel {
       this.underframe.forEach(mesh=>beam(mesh,-0.28,mesh.userData.side,0.18,0.3));
       this.endCaps.forEach(mesh=>{
         mesh.visible=mesh.userData.end?last>=1:first<=0;
-        mesh.position.set(mesh.userData.end?this.run:0,(mesh.userData.end?rise:0)+0.88,mesh.userData.side*1.43);
+        mesh.position.set(mesh.userData.end?this.run:0,(mesh.userData.end?rise:0)+0.88,mesh.userData.side*(this.treadWidth/2+0.35));
       });
       if(this.sidePanels){
         const points:number[]=[];
         for(const side of [-1,1]){
-          const z=side*1.4;
+          const z=side*(this.treadWidth/2+0.32);
           const x0=this.run*first,x1=this.run*last,y0=rise*first,y1=rise*last;
           points.push(x0,y0+0.35,z,x1,y1+0.35,z,x1,y1+1.2,z,x0,y0+0.35,z,x1,y1+1.2,z,x0,y0+1.2,z);
         }
