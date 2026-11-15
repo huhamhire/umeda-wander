@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import type {CommercialBuilding,CommercialBuildingId,PublicPassage} from '../domain/map/model.ts';
+import type {CommercialBuilding,CommercialBuildingId,PublicPassage,FloorOpening} from '../domain/map/model.ts';
 import {buildFloorGeometry} from './floor-geometry.ts';
 import {touchesPublicConnection,type PublicContactContext} from '../application/passage-clearance.ts';
 
@@ -15,7 +15,7 @@ const palettes:Record<CommercialBuildingId,{floor:number;wall:number;trim:number
 };
 const unit=new T.BoxGeometry(1,1,1);
 /** Footprint shell only: no shop partitions, internal circulation or full-height tower. */
-export function buildCommercialFloor(building:CommercialBuilding,floor:CommercialBuilding['floors'][number],passages:PublicPassage[],context?:PublicContactContext):T.Group {
+export function buildCommercialFloor(building:CommercialBuilding,floor:CommercialBuilding['floors'][number],passages:PublicPassage[],context?:PublicContactContext,openings:FloorOpening[]=[]):T.Group {
   const group=new T.Group();group.name=`commercial-${building.id}-${floor.name}`;
   const palette=palettes[building.id],parts:T.BufferGeometry[]=[],trim:T.BufferGeometry[]=[];
   const gallery=building.perimeterGallery?.level===floor.level?building.perimeterGallery:undefined;
@@ -41,9 +41,10 @@ export function buildCommercialFloor(building:CommercialBuilding,floor:Commercia
     mesh.userData.labelOccluder=true;
     mesh.name=name;mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
   };
-  add(buildFloorGeometry(building.outline,[],0.4,0.05),palette.floor,'building-footprint');
+  const cuts=openings.filter(o=>o.level===floor.level).map(o=>o.outline);
+  add(buildFloorGeometry(building.outline,cuts,0.4,0.05),palette.floor,'building-footprint');
   if(gallery){
-    add(buildFloorGeometry(building.outline,[gallery.innerOutline],0.06,0.46),0xe7e5d8,'perimeter-gallery-floor');
+    add(buildFloorGeometry(building.outline,[gallery.innerOutline,...cuts],0.06,0.46),0xe7e5d8,'perimeter-gallery-floor');
     const guards:T.BufferGeometry[]=[];
     for(let i=0;i<building.outline.length;i++){
       const a=building.outline[i]!,b=building.outline[(i+1)%building.outline.length]!,dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz),count=Math.ceil(length/0.8);

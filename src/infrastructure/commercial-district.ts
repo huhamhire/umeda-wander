@@ -1,6 +1,6 @@
 import type {CommercialBuilding,CommercialBuildingId,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
 import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
-import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMultimediaPodium} from './commercial-footprints.ts';
+import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMultimediaPodium,northGateOfficeTower} from './commercial-footprints.ts';
 import polygonClipping from 'polygon-clipping';
 import {districtFrame,districtPlacements,districtAnchors} from './district-placement.ts';
 import {insetPolygon} from '../utils/polygon-inset.ts';
@@ -51,6 +51,15 @@ export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name
 });
 const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
 for(const id of ['grand-front-south','grand-front-north'] as const)building(id).podiumHeight=6;
+building('lucua').podiumHeight=10.5;
+building('lucua-1100').podiumHeight=8;
+const officeShape=polygonClipping.intersection([building('lucua-1100').outline.map(p=>[p.x,p.z] as [number,number])],
+  [northGateOfficeTower.outline.map(p=>{const q=fit('lucua-1100',p);return [q.x,q.z] as [number,number];})]);
+building('lucua-1100').volumes=[{name:'北门大楼 · 办公塔楼',height:20,
+  outline:officeShape[0]![0]!.slice(0,-1).map(([x,z])=>({x,z})),
+  evidence:{source:'district',pages:[],urls:[`https://www.openstreetmap.org/way/${northGateOfficeTower.way}`,
+    'https://osakastationcity.com/about/office/ngb_office.php'],
+    detail:'North Gate office tower reference 494976863 v9; upper footprint clipped to the fitted LUCUA 1100 host outline, height compressed. Retail and office floors not modeled individually.'}}];
 building('yodobashi').podiumHeight=7;
 building('yodobashi').perimeterGallery={level:'platform',innerOutline:insetPolygon(building('yodobashi').outline,2.4)};
 const yodobashiInner=building('yodobashi').perimeterGallery!.innerOutline;
@@ -179,3 +188,22 @@ commercialAreas.push({id:'grand-front-south-public-axis',level:'platform',name:'
   kind:'public',label:true,outline:passageOutline(grandSouthEntry,grandSouthNorth,5),
   evidence:{source:'district',pages:[],urls:['https://www.gfo-ad.jp/access.html','https://www.gfo-ad.jp/media_case01.html'],
     detail:'Documented JR-to-south-to-north 2F through connection; schematic public axis only, interior bends and retail partitions not modeled'}});
+
+// OSM bridge 1347368421 v1, with the same Z=-24 fit as LUCUA 1100.
+// Only the destination landing is represented; its building is intentionally omitted.
+const umekitaUpperLanding:PassageEndpoint={level:'platform',x:-77.02,z:-52.5,station:'jr-osaka',boundaryName:'往梅北 · 2F 公共通道'};
+link('lucua-1100-umekita-deck','LUCUA 1100—梅北 · 2F 连廊','deck',[
+  portal('lucua-1100','2F',{x:-55.8,z:-52.43}),publicPoint('platform',-61.35,-52.43),umekitaUpperLanding],4.5);
+const umekitaDeckProof={source:'district' as const,pages:[],urls:[
+  'https://www.openstreetmap.org/way/1347368421','https://umekita-greenplace.com/special/'],
+  detail:'Official Umekita Green Place page confirms 2F direct connection from LUCUA 1100; user satellite image identifies west-side bridge. OSM v1 supplies bridge axis, short approach and landing fitted to LUCUA schematic. Public 2F destination only, no destination building or paid-platform shortcut.'};
+commercialPassages.at(-1)!.evidence=umekitaDeckProof;
+commercialAreas.push({id:'umekita-upper-deck-landing',level:'platform',name:'梅北侧 · 2F 公共落台',kind:'public',
+  outline:[{x:-83,z:-57},{x:-73,z:-57},{x:-73,z:-48},{x:-83,z:-48}],evidence:umekitaDeckProof});
+
+const southPlazaProof={source:'jr' as const,pages:[4,5],detail:'South Gate Plaza lateral 1F–2F escalator group, paired with bank 61 per user front-view photo; geometric positions and local 1F rise are schematic, diagram bank number 74 is an internal reference'};
+commercialAreas.push({id:'daimaru-south-right-ground-landing',level:'concourse',name:'大丸南侧 · 右侧扶梯地面落台',kind:'public',
+  elevationOffset:1.3,outline:[{x:12,z:72},{x:24,z:72},{x:24,z:82},{x:12,z:82}],evidence:southPlazaProof});
+commercialConnections.push({id:'south-building-74',kind:'escalator',lanes:2,
+  from:{id:'south-74-ground',level:'concourse',x:18,z:77,elevationOffset:1.3},
+  to:{id:'south-74-deck',level:'south-deck',x:18,z:69},evidence:southPlazaProof});

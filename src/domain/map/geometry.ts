@@ -1,5 +1,25 @@
 import type { Platform, Point2 } from './model.ts';
 
+/** Adjacent corridor slabs share the same mitered section at every turn. */
+export function joinedPassageOutlines(points:Point2[],width:number):Point2[][] {
+  if(points.length<2||!Number.isFinite(width)||width<=0||points.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.z)))throw new Error('A passage needs finite points and a positive width');
+  const normals=points.slice(1).map((b,i)=>{
+    const a=points[i]!,length=Math.hypot(b.x-a.x,b.z-a.z);
+    if(length<1e-6)throw new Error('Repeated passage point');
+    return {x:-(b.z-a.z)/length,z:(b.x-a.x)/length};
+  });
+  const sections=points.map((p,i)=>{
+    const before=normals[Math.max(0,i-1)]!,after=normals[Math.min(i,normals.length-1)]!;
+    const length=Math.hypot(before.x+after.x,before.z+after.z);
+    if(length<1e-6)throw new Error('A passage cannot reverse at a joint');
+    const miter={x:(before.x+after.x)/length,z:(before.z+after.z)/length};
+    const reach=width/2/(miter.x*after.x+miter.z*after.z);
+    if(reach>width*2)throw new Error('Passage joint is too acute');
+    return [{x:p.x+miter.x*reach,z:p.z+miter.z*reach},{x:p.x-miter.x*reach,z:p.z-miter.z*reach}];
+  });
+  return sections.slice(1).map((end,i)=>[sections[i]![0]!,end[0]!,end[1]!,sections[i]![1]!]);
+}
+
 export function rotatePoint(point: Point2, origin: Point2, radians: number): Point2 {
   const x = point.x - origin.x, z = point.z - origin.z;
   const c = Math.cos(radians), s = Math.sin(radians);

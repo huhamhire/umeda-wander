@@ -33,7 +33,7 @@ test('lower-floor facilities remain visible when focusing a higher layer',()=>{
 });
 
 test('Daimaru 1F raised landings retain the 2F escalator and lift across cuts and expansion',()=>{
-  for(const id of ['south-building-61','south-lift-u']){
+  for(const id of ['south-building-61','south-building-74','south-lift-u']){
     const connection=districtLayout.connections.find(c=>c.id===id)!;
     assert.equal(connection.from.level,'concourse');assert.equal(connection.from.elevationOffset,1.3);
     assert.equal(connection.to.level,'south-deck');

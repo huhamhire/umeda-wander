@@ -19,27 +19,23 @@
     <div id="labels" aria-hidden="true"></div>
     <div id="fallback" class="fallback" hidden><h2>当前设备无法显示立体地图</h2><p>请使用支持 WebGL 2 的浏览器。仍可通过设施列表查看样板信息。</p></div>
     <aside class="sidebar panel" aria-label="车站导览">
-      <div class="sidebar-tabs" role="tablist" aria-label="导览页面"><button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">楼层</button><button id="tab-facilities" role="tab" aria-selected="false" aria-controls="panel-facilities" tabindex="-1">设施</button><button id="tab-stations" role="tab" aria-selected="false" aria-controls="panel-stations" tabindex="-1">车站</button></div>
+      <div class="sidebar-tabs" role="tablist" aria-label="导览页面"><button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">楼层</button><button id="tab-facilities" role="tab" aria-selected="false" aria-controls="panel-facilities" tabindex="-1">设施</button></div>
       <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
-      <div class="section-heading"><span>探索楼层</span><span class="micro">LAYERS</span></div>
+      <div class="section-heading floor-heading"><span>探索楼层</span><label class="roof-option"><span>显示屋顶</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
       <div id="floor-list"></div>
-      <div class="layer-options"><label for="explode">分层展开 <output id="explode-value">48%</output></label><input id="explode" type="range" min="0" max="100" value="48" aria-label="分层展开程度" /><label class="roof-option"><span>显示屋顶</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
+      <div class="layer-options"><label for="explode">分层展开 <output id="explode-value">48%</output></label><input id="explode" type="range" min="0" max="100" value="48" aria-label="分层展开程度" /></div>
     </section>
     <section class="inspector" id="panel-facilities" role="tabpanel" aria-labelledby="tab-facilities" hidden>
       <div class="section-heading"><span>站内设施</span><span class="micro">POINTS OF INTEREST</span></div>
+      <div class="facility-filters"><label>车站<select id="facility-station" aria-label="筛选车站"></select></label><label>楼层<select id="facility-floor" aria-label="筛选楼层"></select></label></div>
       <div class="poi-list" id="poi-list"></div>
-      <label class="picker-label" for="facility-picker">按名称定位</label><select id="facility-picker"><option value="">选择闸口、设施或站台…</option></select>
-      <div class="detail" aria-live="polite"><span class="detail-tag" id="detail-tag">JR OSAKA / STUDY</span><h2 id="detail-title">中央改札，在地上 1F</h2><p id="detail-note">中央改札与梅北地下口分属不同楼层。选择楼层或设施，查看布局与参考图依据。</p></div>
+      <select id="facility-picker" aria-label="选择设施"><option value="">选择设施…</option></select>
       <div class="legend"><span><i class="public"></i>公共区域</span><span><i class="paid"></i>付费区域</span><span><i class="rail"></i>站台</span></div>
-    </section>
-    <section class="station-focus-panel" id="panel-stations" role="tabpanel" aria-labelledby="tab-stations" hidden>
-      <div class="focus-summary"><h2 id="focus-title">总览</h2></div>
-      <nav class="station-focus-buttons" aria-label="聚焦车站位置"><button type="button" data-focus="all" aria-pressed="true">总览</button><button type="button" data-focus="jr-osaka" aria-pressed="false">JR 大阪站</button><button type="button" data-focus="hankyu-umeda" aria-pressed="false">阪急大阪梅田</button><button type="button" data-focus="metro-umeda" aria-pressed="false">御堂筋线 M16</button></nav>
     </section>
     </aside>
     <nav class="map-tools panel" aria-label="地图视图"><button id="zoom-in" aria-label="放大">＋</button><button id="zoom-out" aria-label="缩小">−</button><span></span><button id="reset" aria-label="复位地图">⌖</button></nav>
     <div class="orientation" aria-label="方位示意，北箭头按统一地理坐标投影"><span class="compass"><svg viewBox="0 0 60 60" aria-hidden="true"><g id="compass-needle"><path d="M30 13V47" stroke="#91a78b" stroke-width="1"/><path d="M27 19L30 11L33 19" fill="none" stroke="#537c66" stroke-width="1.4"/></g><text id="compass-north" x="30" y="5" text-anchor="middle" dominant-baseline="central" fill="#386857" font-size="8">北 N</text><text id="compass-south" x="30" y="55" text-anchor="middle" dominant-baseline="central" fill="#8e9e8c" font-size="8">南 S</text></svg></span></div>
-    <footer><span><i></i> 按参考图整理层级与名称 · 几何及路径为示意，不能用于现场导航</span><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">地图数据 © OpenStreetMap contributors</a></footer>
+    <footer><span><i></i> 示意地图，不能用于现场导航</span><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">地图数据 © OpenStreetMap contributors</a></footer>
   </main>
   <!-- APP -->
 </body>

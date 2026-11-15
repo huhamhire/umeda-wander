@@ -25,6 +25,8 @@ import {PublicPassageModel} from './public-passage-model.ts';
 import {planAtriumOpenings} from '../application/atrium-openings.ts';
 import {buildAtriumRailing} from './atrium-model.ts';
 import {LabelOcclusion,visibleLabelOccluders} from './label-occlusion.ts';
+import {facilityFocusRect,facilityCameraCenter,minimumMapZoom} from './facility-focus.ts';
+import {SelectionMarker} from './selection-marker.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -51,7 +53,10 @@ export class MapScene {
   private immediateExplode = false;
   private framing?:{center:T.Vector3;span:number};
   private focusTransition=false;
+  private locatingFacility=false;
+  private targetCenter?:T.Vector3;
   private zoomValue = 1;
+  private minimumZoom=1;
   private pan = new T.Vector3();
   private frame = 0;
   private pointers = new Map<number, { x: number; y: number }>();
@@ -60,7 +65,8 @@ export class MapScene {
   private width = 1;
   private height = 1;
   private materials = new Map<number, T.MeshStandardMaterial>();
-  private selected: T.Group = new T.Group();
+  private selectionMarker=new SelectionMarker();
+  private selected=this.selectionMarker.group;
   private activeFacility?: Facility;
   private nodeById: Map<string, RouteNode>;
   private connectors: VerticalConnectionModel[] = [];
@@ -133,11 +139,11 @@ export class MapScene {
     }
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
     const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
-    for(const building of this.layout.buildings??[])if(building.volumes?.length){
+    for(const building of this.layout.buildings??[])if(building.podiumHeight||building.volumes?.length){
       const model=buildCommercialMassing(building,publicContext);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);
     }
     for(const building of this.layout.buildings??[])for(const floor of building.floors){
-      this.groups.get(floor.level)!.add(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext));
+      this.groups.get(floor.level)!.add(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext,this.openings));
       const x=building.outline.reduce((s,p)=>s+p.x,0)/building.outline.length;
       const z=building.outline.reduce((s,p)=>s+p.z,0)/building.outline.length;
       this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true);
@@ -262,7 +268,7 @@ export class MapScene {
     }
     const boundaries=new Map(this.gateBoundaries.map(boundary=>[boundary.boundaryId,boundary]));
     for (const boundary of boundaries.values()) this.buildGateFences(boundary);
-    for (const facility of this.facilities) this.buildFacility(facility);
+    for (const facility of this.facilities) if(!facility.id.startsWith('connection-'))this.buildFacility(facility);
     for (const connection of this.layout.connections) {
       const model = new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
       this.connectors.push(model); this.scene.add(model.group);
@@ -385,6 +391,7 @@ export class MapScene {
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
     const routeChanged = this.state.route !== state.route;
+    if(this.state.level!==state.level)this.locatingFacility=false;
     if(this.state.focusStation!==state.focusStation)this.focusTransition=true;
     if(options.immediateExplode)this.focusTransition=false;
     this.state = { ...state };
@@ -394,12 +401,12 @@ export class MapScene {
   }
   select(facility: Facility): void {
     this.activeFacility = facility;
-    this.selected.clear();
-    const ring = new T.Mesh(new T.RingGeometry(2.5, 3.1, 40), new T.MeshBasicMaterial({ color: colors.route, side: T.DoubleSide }));
-    ring.rotation.x = -Math.PI / 2; this.selected.add(ring); this.requestRender();
+    this.locatingFacility=true;this.focusTransition=true;
+    this.selectionMarker.restart(performance.now());this.requestRender();
   }
-  zoom(factor: number): void { this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, 0.55, 2.8); this.requestRender(); }
-  reset(): void { this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.clear(); this.requestRender(); }
+  zoom(factor: number): void { this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(2.8,this.minimumZoom*3)); this.requestRender(); }
+  reset(): void { this.locatingFacility=false;this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.visible=false; this.requestRender(); }
+  refreshViewport():void {this.requestRender();}
   private levelY(id: LevelId): number {
     return displayElevation(this.levels, id, this.displayedExplode);
   }
@@ -473,14 +480,27 @@ export class MapScene {
     const boundsY = envelope.map(point => point.clone().sub(center).dot(up));
     const minX = Math.min(...boundsX), maxX = Math.max(...boundsX), minY = Math.min(...boundsY), maxY = Math.max(...boundsY);
     center.addScaledVector(right, (minX + maxX) / 2).addScaledVector(up, (minY + maxY) / 2).add(this.pan);
-    let span = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * this.height / usableWidth * 1.12) / this.zoomValue;
+    const viewport=this.host.getBoundingClientRect();
+    const sidebar=this.host.parentElement?.querySelector('.sidebar')?.getBoundingClientRect();
+    const usable=facilityFocusRect(viewport,sidebar,mobile);
+    const baseSpan=Math.max(55,(maxY-minY)*1.18,(maxX-minX)*this.height/usableWidth*1.12);
+    this.minimumZoom=minimumMapZoom(baseSpan,maxY-minY,this.height,usable.height);
+    this.zoomValue=T.MathUtils.clamp(this.zoomValue,this.minimumZoom,Math.max(2.8,this.minimumZoom*3));
+    let span = baseSpan / this.zoomValue;
     if(!mobile)center.addScaledVector(right,-Math.min(150,this.width*0.13)*span/this.height);
+    else center.copy(facilityCameraCenter(center,span,this.width,this.height,usable));
+    if(this.locatingFacility&&this.activeFacility){
+      const target=facilityCameraCenter(this.selected.position,span,this.width,this.height,usable);
+      this.pan.add(target.clone().sub(center));center.copy(target);
+    }
+    this.targetCenter=center.clone();
     if(this.framing&&this.focusTransition&&!reducedMotion){
       this.framing.center.lerp(center,0.24);this.framing.span+=(span-this.framing.span)*0.24;
       this.focusTransition=this.framing.center.distanceTo(center)>0.02||Math.abs(this.framing.span-span)>0.02;
       if(this.focusTransition){center.copy(this.framing.center);span=this.framing.span;}
     }else this.focusTransition=false;
     this.framing={center:center.clone(),span};
+    this.selectionMarker.update(performance.now(),reducedMotion,span/this.height);
     this.camera.left=-span*aspect/2;this.camera.right=span*aspect/2;
     this.camera.top=span/2;this.camera.bottom=-span/2;
     this.camera.position.copy(center).add(cameraOffset);
@@ -519,7 +539,7 @@ export class MapScene {
         if (!collides) occupied.push({ x, y, w, h });
       }
     }
-    if (animate||this.focusTransition) this.requestRender();
+    if (animate||this.focusTransition||(this.selected.visible&&!reducedMotion)) this.requestRender();
   }
   private bindGestures(): void {
     const canvas = this.renderer.domElement;
@@ -531,6 +551,9 @@ export class MapScene {
     });
     canvas.addEventListener('pointermove', e => {
       const old = this.pointers.get(e.pointerId); if (!old) return;
+      if(this.locatingFacility&&this.framing&&this.targetCenter)
+        this.pan.add(this.framing.center.clone().sub(this.targetCenter));
+      this.locatingFacility=false;
       this.focusTransition=false;
       if (this.down && Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y) > 5) this.dragged = true;
       const other = [...this.pointers].find(([id]) => id !== e.pointerId)?.[1];

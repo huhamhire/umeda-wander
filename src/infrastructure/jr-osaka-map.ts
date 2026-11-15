@@ -1,4 +1,4 @@
-import { passageOutline, platformLocalPoint, rotatePoint } from '../domain/map/geometry.ts';
+import { passageOutline,joinedPassageOutlines, platformLocalPoint, rotatePoint } from '../domain/map/geometry.ts';
 import { undergroundRotationRad, undergroundSketchCorrectionRad } from './station-orientation.ts';
 import { refineUpperLevelLinks } from './jr-osaka-upper-links.ts';
 import type { Evidence, Facility, FloorArea, Level, Platform, RouteNode, RouteEdge, StationLayout, VerticalConnection } from '../domain/map/model.ts';
@@ -258,12 +258,14 @@ const join = nodes.find(node => node.id === 'public-join')!;
 const publicEntry=nodes.find(node=>node.id==='public-b1-entry')!;
 const publicTurn=nodes.find(node=>node.id==='public-b1-turn')!;
 Object.assign(publicTurn,{x:-4,z:-75});Object.assign(join,{x:-60,z:-75});
-areas.find(area=>area.id==='north-b1-public')!.outline=passageOutline(publicEntry,publicTurn,7);
+const publicGate=nodes.find(node=>node.id==='umekita-gate-out')!;
+const northPublicSlabs=joinedPassageOutlines([publicEntry,publicTurn,join,publicGate],7);
+areas.find(area=>area.id==='north-b1-public')!.outline=northPublicSlabs[0]!;
 areas.push({id:'north-b1-east-public',level:'underground-hall',kind:'public',name:'北门 B1F · 中庭—LUCUA 东侧公共通路',
   outline:passageOutline(publicEntry,{x:61,z:-52},7),evidence:source([6],'North Gate B1F public east-west passage through the LUCUA side, ending at the diagram boundary toward Metro/Hankyu/Yodobashi')});
-areas.find(area=>area.id==='umekita-east-link')!.outline=passageOutline(join,nodes.find(node=>node.id==='umekita-gate-out')!,7);
+areas.find(area=>area.id==='umekita-east-link')!.outline=northPublicSlabs[2]!;
 areas.push({ id: 'public-b1-connector', level: 'underground-hall', name: '梅北—北侧 B1F 闸外联络通路', kind: 'public',
-  outline:passageOutline(publicTurn,join,7),
+  outline:northPublicSlabs[1]!,
   evidence: source([6, 8], 'B1F public connection around the north edge of LUCUA 1100 and the atrium-side turn; schematic widths and positions') });
 for(const edge of edges.filter(e=>['public-b1-entry','public-b1-turn','public-join'].includes(e.from))){
   const a=nodes.find(n=>n.id===edge.from)!,b=nodes.find(n=>n.id===edge.to)!;

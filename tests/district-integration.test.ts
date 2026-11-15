@@ -17,10 +17,12 @@ import {metroStation} from '../src/infrastructure/metro-umeda-map.ts';
 import {platformPoint} from '../src/domain/map/geometry.ts';
 import {platformRail} from '../src/domain/map/rail-geometry.ts';
 
-test('district navigation offers location focus without the station-switch dropdown',()=>{
+test('two navigation tabs share station focusing through the facility station dropdown',()=>{
   const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
   assert(!html.includes('station-picker'));assert(!html.includes('data-route='));
-  assert.deepEqual([...html.matchAll(/data-focus="([^"]+)"/g)].map(m=>m[1]),['all','jr-osaka','hankyu-umeda','metro-umeda']);
+  assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m=>m[1]),['tab-layers','tab-facilities']);
+  assert.equal([...html.matchAll(/id="facility-station"/g)].length,1);
+  assert(!html.includes('panel-stations'));assert(!html.includes('data-focus='));
 });
 
 test('geographic anchors place Metro near JR east and Hankyu farther north',()=>{

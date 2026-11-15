@@ -6,11 +6,12 @@ import {districtAreas,districtConnections,districtGuides} from './district-links
 import {createRailApproaches} from './rail-approaches.ts';
 import {commercialBuildings,commercialPassages,commercialAreas,commercialConnections} from './commercial-district.ts';
 import {northAtrium} from './jr-osaka-upper-links.ts';
+import {completeFacilityDirectory} from './facility-directory.ts';
 
 export const stations=[{id:'jr-osaka' as const,name:'JR 大阪站'}, {id:hankyuStation.id,name:hankyuStation.name},{id:metroStation.id,name:metroStation.name}];
 export const levels:Level[]=[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as StationId,stackIndex:i-2})),...hankyuStation.levels,...metroStation.levels,
   {id:'south-deck',label:'2F',name:'大丸前侧公共通道与南侧步道桥',y:4,stackIndex:1,station:'jr-osaka',description:'南侧站外二层步行层，按较低的相邻标高对齐；不改变 JR 内部夹层。'}];
-export const facilities=[...jr.facilities,...hankyuStation.facilities,...metroStation.facilities];
+const sourceFacilities=[...jr.facilities,...hankyuStation.facilities,...metroStation.facilities];
 export const nodes=[...jr.nodes,...hankyuStation.nodes,...metroStation.nodes];
 export const edges=[...jr.edges,...hankyuStation.edges,...metroStation.edges];
 const platforms=[...jr.platforms,...hankyuStation.layout.platforms,...metroStation.layout.platforms];
@@ -22,6 +23,8 @@ const jrAreas=jr.areas.filter(a=>!replacedPlaceholders.has(a.id)).map(a=>({...a,
   ...(commercialLabels.has(a.id)?{label:false}:{}),...(a.id==='south-building-2f'?{level:'south-deck' as const,outline:southFrontPublic}:{} )}));
 const southDeckBanks=new Set(['south-building-50','south-lift-t','south-building-61','south-lift-u']);
 const jrConnections=jr.connections.map(c=>southDeckBanks.has(c.id)?{...c,
+  ...(c.id==='south-building-61'?{lanes:2 as const}:{}),
   from:c.from.level==='mezzanine'?{...c.from,level:'south-deck' as const}:c.from,
   to:c.to.level==='mezzanine'?{...c.to,level:'south-deck' as const}:c.to}:c);
 export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...districtAreas,...commercialAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:commercialPassages,atria:[northAtrium]};
+export const facilities=completeFacilityDirectory(sourceFacilities,layout.connections,platforms,levels);

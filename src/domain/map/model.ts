@@ -1,7 +1,7 @@
 export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda';
 export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
   |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck';
-export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store';
+export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store'|'platform';
 export interface Point2 { x: number; z: number }
 export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'district';urls?:string[] }
 export interface Facility {
@@ -9,6 +9,7 @@ export interface Facility {
   x: number; z: number; note: string; evidence: Evidence;
   axis?: 'x' | 'z'; rotationRad?: number;
   elevationOffset?:number;
+  connectionId?:string;platformId?:string;
 }
 export interface Level { id: LevelId; label: string; name: string; y: number; description: string; station?:StationId; stackIndex?:number }
 export interface RouteNode { id: string; level: LevelId; x: number; z: number; elevationOffset?:number }
