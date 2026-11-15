@@ -52,6 +52,11 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
 }
 
 .compass svg{width:100%;height:100%;overflow:visible}
+.brand-mark{flex-shrink:0;line-height:0;letter-spacing:normal}
+.brand-mark svg{display:block;width:72%;height:72%}
+.brand-copy{display:flex;flex-direction:column;justify-content:center;gap:5px;line-height:1.15}
+.brand-copy small{margin-top:0}
+@media(max-width:760px){.brand-mark{width:34px;height:34px}.brand-copy{gap:3px}}
 .facility-filters{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:8px;margin:0 0 12px}
 .facility-filters label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:#718174}
 .facility-filters select{width:100%;min-width:0;min-height:38px;padding:7px 5px;border:1px solid #dce3d3;border-radius:7px;background:#f5f7ed;color:#496b58;font:inherit}
@@ -62,3 +67,8 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
 .sidebar .layer-options{padding:12px 3px 0;margin:10px 0 0}
 .sidebar .layer-options input[type=range]{display:block;margin:10px 0 0}
 @media(max-width:760px){.facility-filters label{font-size:13px}.facility-filters select{font-size:16px;min-height:44px}.sidebar .floor-heading{padding:0 2px 6px;font-size:13px}.floor-heading .roof-option{min-height:36px}}
+@media(max-width:760px){
+  .sidebar .poi-list{display:flex;flex-wrap:nowrap;gap:8px;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:3px 0 6px}
+  .sidebar .poi-list button{display:flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:76px;min-height:44px;padding:9px 12px;white-space:nowrap;scroll-snap-align:start}
+  .sidebar .poi-list button span{display:inline;font-size:18px;margin:0}
+}

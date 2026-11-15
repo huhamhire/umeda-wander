@@ -61,7 +61,8 @@ function refreshFacilities():void {
     option.dataset.code=facilityCodes[f.id];facilityPicker.append(option);
   }
   facilityPicker.value=visible.some(f=>f.id===previous)?previous:'';
-  element('#poi-list').replaceChildren();
+  const categoryList=element('#poi-list'),categoryScroll=categoryList.scrollLeft;
+  categoryList.replaceChildren();
   const icons={all:'▦',entrance:'↪',platform:'▰',gate:'▥',ticket:'▤','ticket-machine':'▣',escalator:'↗',elevator:'↕',stairs:'▱',information:'ⓘ','convenience-store':'▧'};
   const labels={all:'全部',entrance:'出入口',platform:'站台',gate:'改札口',ticket:'售票',escalator:'扶梯',elevator:'直梯',stairs:'楼梯',information:'咨询','convenience-store':'便利店'};
   for(const kind of ['all','entrance','platform','gate','ticket','escalator','elevator','stairs','information','convenience-store'] as const){
@@ -69,8 +70,12 @@ function refreshFacilities():void {
     const button=document.createElement('button');button.type='button';button.dataset.kind=kind;
     button.classList.toggle('selected',facilityKind===kind);button.setAttribute('aria-pressed',String(facilityKind===kind));
     button.innerHTML=`<span aria-hidden="true">${icons[kind]}</span>${labels[kind]}`;
-    button.addEventListener('click',()=>{facilityFilter.kind=kind;refreshFacilities();});element('#poi-list').append(button);
+    button.addEventListener('click',()=>{
+      facilityFilter.kind=kind;refreshFacilities();
+      categoryList.querySelector<HTMLButtonElement>(`[data-kind="${kind}"]`)?.focus({preventScroll:true});
+    });categoryList.append(button);
   }
+  categoryList.scrollLeft=categoryScroll;
 }
 function sync():void {
   scene?.update(session.state);
