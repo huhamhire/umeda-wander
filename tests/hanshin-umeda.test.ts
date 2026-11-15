@@ -18,7 +18,7 @@ import {sampleRailSegment} from '../src/domain/map/rail-geometry.ts';
 import {connectionLanes} from '../src/application/connection-lanes.ts';
 
 test('Hanshin has separate B1 west/department gates, B2 east gate and four tracks with independent alighting strips',()=>{
-  assert.equal(stations.length,4);
+  assert(stations.some(s=>s.id==='hanshin-umeda'));
   const ps=hanshinStation.layout.platforms;
   assert.equal(ps.length,4);assert.deepEqual(ps.flatMap(p=>p.tracks),[1,2,3,4]);
   assert.equal(ps.filter(p=>!p.tracks.length).length,2);assert(ps.every(p=>p.terminal&&p.screenDoors==='half-height'));

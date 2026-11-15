@@ -12,6 +12,6 @@ export class MapSession {
     this.state.route = findRoute(this.edges, start, end, true);
     this.state.explode = 0.78; this.state.level = 'all'; this.state.roof = false;
   }
-  focusStation(station:StationId|null):void {this.state.focusStation=station;this.state.level=station==='metro-umeda'?'metro-hall':station==='hanshin-umeda'?'hanshin-hall':'all';this.state.route=null;}
+  focusStation(station:StationId|null):void {this.state.focusStation=station;this.state.level=station==='metro-umeda'?'metro-hall':station==='hanshin-umeda'?'hanshin-hall':station==='higashi-umeda'?'t20-hall':'all';this.state.route=null;}
   reset(): void { this.state = { explode: 0.48, roof: true, level: 'all', route: null,focusStation:null }; }
 }

@@ -25,4 +25,6 @@ export const districtPlacements={
   // HS01 OSM node 3632936957 and westbound rail bearing; south fit clears the
   // expanded Daimaru/JR illustration and keeps the B2 terminal west of M16.
   hanshin:{...locate(34.7014097,135.4971469,-121,{along:12,east:12,south:53}),planScale:{along:0.74,across:0.82}},
+  // OSM station 5411378288; nearby Tanimachi track tangents are -16.5/-16.9°.
+  higashi:locate(34.7005946,135.4998176,-16.7,{east:30}),
 };

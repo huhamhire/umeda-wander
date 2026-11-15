@@ -1,10 +1,10 @@
-export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda';
+export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda'|'higashi-umeda';
 export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
   |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck'
-  |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck';
+  |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck'|'t20-hall'|'t20-platform'|'t20-ground';
 export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store'|'platform';
 export interface Point2 { x: number; z: number }
-export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'district';urls?:string[] }
+export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'tanimachi'|'district';urls?:string[] }
 export interface Facility {
   id: string; name: string; kind: FacilityKind; level: LevelId;
   x: number; z: number; note: string; evidence: Evidence;
