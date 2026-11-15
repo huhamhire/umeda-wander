@@ -68,8 +68,8 @@ export const platforms: Platform[] = [
   { id: 'p5-6', level: 'platform', tracks: [5, 6], x: 0, z: 6, length: 120, width: 7, rotationRad: 0, evidence: pp },
   { id: 'p3-4', level: 'platform', tracks: [3, 4], x: 0, z: 18, length: 120, width: 7, rotationRad: 0, evidence: pp },
   { id: 'p1-2', level: 'platform', tracks: [1, 2], x: 0, z: 30, length: 120, width: 7, rotationRad: 0, evidence: pp },
-  { id: 'p21-22', level: 'underground-platform', tracks: [21, 22], x: -88, z: -109, length: 70, width: 7, rotationRad: undergroundRotationRad, evidence: source([8], 'B2F platform for tracks 21 and 22') },
-  { id: 'p23-24', level: 'underground-platform', tracks: [23, 24], x: -104, z: -109, length: 70, width: 7, rotationRad: undergroundRotationRad, evidence: source([8], 'B2F platform for tracks 23 and 24') },
+  { id: 'p21-22', level: 'underground-platform', tracks: [21, 22], x: -88, z: -109, length: 86, width: 7, rotationRad: undergroundRotationRad, evidence: {...source([8], 'B2F platform for tracks 21 and 22; schematic length fitted to OSM outline ~218m at 2.5m per display unit'),urls:['https://www.openstreetmap.org/way/695972639']} },
+  { id: 'p23-24', level: 'underground-platform', tracks: [23, 24], x: -104, z: -109, length: 86, width: 7, rotationRad: undergroundRotationRad, evidence: {...source([8], 'B2F platform for tracks 23 and 24; schematic length fitted to OSM outline ~212m at 2.5m per display unit'),urls:['https://www.openstreetmap.org/way/695972638']} },
 ];
 export const facilities: Facility[] = [
   { id: 'west-gate', name: '西改札口 · West Gate', kind: 'gate', level: 'concourse', x: -75, z: 20, axis: 'z', note: '地上 1F 西口。图示通过 92 号扶梯及 B2F 连接通道通往梅北地下口；连接通道不是直达所有地面站台的捷径。', evidence: source([7, 8], 'West Gate and connecting walkway') },
@@ -186,7 +186,7 @@ const undergroundSketchOrigin = { x: -96, z: -102 };
 // Extend surface platforms westward while retaining the east-end gate alignment.
 for (const platform of platforms) {
   if (platform.level === 'platform') { platform.x -= 20; platform.length += 40; }
-  else platform.width = 9;
+
 }
 const shiftedWest = new Set<object>();
 function shiftWest(point:{x:number}):void {

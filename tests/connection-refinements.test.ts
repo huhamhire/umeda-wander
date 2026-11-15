@@ -9,6 +9,17 @@ import {platformLocalPoint,platformPoint,pointInPolygon} from '../src/domain/map
 import {buildFloorGeometry} from '../src/presentation/floor-geometry.ts';
 import {VerticalConnectionModel} from '../src/presentation/vertical-connection-model.ts';
 import {advanceExplode} from '../src/presentation/explode-transition.ts';
+import {layout as districtLayout} from '../src/infrastructure/umeda-map.ts';
+
+test('narrowed underground platforms retain full-width stairs and elevator landing clearance',()=>{
+  for(const platform of districtLayout.platforms.filter(p=>['underground-platform','metro-platform'].includes(p.level))){
+    for(const c of districtLayout.connections.filter(c=>c.platformId===platform.id))for(const end of [c.from,c.to]){
+      if(end.level!==platform.level)continue;
+      const local=platformLocalPoint(platform,end),halfWidth=c.kind==='elevator'?1.75:1.7;
+      assert(Math.abs(local.z)+halfWidth<=platform.width/2-0.2,`${c.id}: equipment reaches the platform edge`);
+    }
+  }
+});
 
 test('slider input reaches each latest target in one frame without trailing animation',()=>{
   let current=0.48;

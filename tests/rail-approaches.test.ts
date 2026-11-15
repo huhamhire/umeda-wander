@@ -26,7 +26,7 @@ test('all eleven JR and nine Hankyu track ends continue into their own rail bund
 test('JR forms two directions and each Hankyu three-road group reaches a separate running pair',()=>{
   for(const a of approaches){
     const outgoing=a.nodes.filter(n=>n.kind==='outlet');
-    assert.equal(outgoing.length,a.id==='jr-east-main'||a.id==='jr-west-main'||a.level==='underground-platform'?4:2);
+    assert.equal(outgoing.length,a.id==='jr-east-main'||a.id==='jr-west-main'?4:2);
     for(const start of a.nodes.filter(n=>n.kind==='platform-end')){
       const seen=new Set<string>(),queue=[start.id];
       while(queue.length){const id=queue.shift()!;if(seen.has(id))continue;seen.add(id);queue.push(...a.segments.filter(s=>s.from===id).map(s=>s.to));}
@@ -39,7 +39,8 @@ test('JR forms two directions and each Hankyu three-road group reaches a separat
     }
   }
   const main=approaches.find(a=>a.id==='jr-east-main')!,loop=approaches.find(a=>a.id==='jr-east-loop')!;
-  assert(main.nodes.filter(n=>n.kind==='end').every(n=>n.point.z<0));
+  const mainEnds=main.nodes.filter(n=>n.kind==='end'),loopEnds=loop.nodes.filter(n=>n.kind==='end');
+  assert(Math.max(...mainEnds.map(n=>n.point.z))+15<Math.min(...loopEnds.map(n=>n.point.z)),'main and loop tails retain distinct directions after southward fitting');
   assert(loop.nodes.filter(n=>n.kind==='end').every(n=>n.point.z>20));
   assert([...main.nodes,...loop.nodes].filter(n=>n.kind==='end').every(n=>n.point.x===185));
 });
@@ -78,13 +79,36 @@ test('Umekita tracks continue from both platform ends along the underground axis
       assert.equal(a.level,'underground-platform');
       const lead=a.segments.find(s=>s.platformId===p.id&&s.track===track)!;
       assert.deepEqual(a.nodes.find(n=>n.id===lead.from)!.point,expected);
-      const end=a.nodes.find(n=>n.id===`${a.id}-end-${track}`)!.point;
+      const end=a.nodes.find(n=>n.id===`${a.id}-end-${track<=22?'a':'b'}`)!.point;
       const dx=end.x-expected.x,dz=end.z-expected.z;
-      assert(Math.abs(Math.hypot(dx,dz)-32)<1e-6);
-      assert(Math.abs(dx*Math.sin(p.rotationRad)-dz*Math.cos(p.rotationRad))<1e-6);
+      if(side===-1){
+        assert(Math.abs(dx*Math.cos(p.rotationRad)+dz*Math.sin(p.rotationRad)+44)<1e-6);
+        assert(Math.abs(dx*Math.sin(p.rotationRad)-dz*Math.cos(p.rotationRad))<14);
+      }else{
+        assert(Math.hypot(dx,dz)>45&&Math.hypot(dx,dz)<100);
+        const tail=a.segments.find(s=>s.id===`${a.id}-tail-${track<=22?'a':'b'}`)!;
+        const tangent={x:end.x-tail.control2.x,z:end.z-tail.control2.z};
+        assert(Math.atan2(tangent.z,tangent.x)<p.rotationRad-0.4,'north tail turns along Grand Front west-side road');
+      }
       assert((dx*Math.cos(p.rotationRad)+dz*Math.sin(p.rotationRad))*side>0);
     }
   }
+});
+
+test('Umekita north bend keeps track spacing and aligns both exit cross-sections',()=>{
+  const approach=approaches.find(a=>a.id==='jr-umekita-north')!;
+  const bends=approach.segments.filter(s=>s.id.includes('-bend-'));
+  assert.equal(bends.length,2);
+  const samples=bends.map(s=>sampleRailSegment(approach,s,100));
+  for(let i=0;i<samples.length;i++)for(let j=i+1;j<samples.length;j++){
+    const spacing=samples[i]!.map((v,k)=>Math.hypot(v.point.x-samples[j]![k]!.point.x,v.point.z-samples[j]![k]!.point.z));
+    assert(Math.min(...spacing)>3,'adjacent ballast beds must stay apart');
+    assert(Math.max(...spacing)-Math.min(...spacing)<0.02,'concentric curves retain lateral spacing');
+  }
+  const ends=approach.nodes.filter(n=>n.kind==='end'),angle=(-7.3-58.35)*Math.PI/180;
+  const along=(p:Point2)=>p.x*Math.cos(angle)+p.z*Math.sin(angle);
+  const positions=ends.map(n=>along(n.point));
+  assert(Math.max(...positions)-Math.min(...positions)<1e-6,'exits form a common section instead of staggered elbows');
 });
 
 test('JR east rail beds retain clearance from every Hankyu station floor',()=>{

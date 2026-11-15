@@ -12,8 +12,8 @@ import {cameraEnvelope} from '../src/presentation/camera-framing.ts';
 import {explorationElevation} from '../src/application/exploration-level.ts';
 
 const height=(id:typeof levels[number]['id'])=>levels.find(l=>l.id===id)!.y;
-test('five commercial envelopes have their own footprint evidence and continuous 2F walking band',()=>{
-  assert.deepEqual(layout.buildings.map(b=>b.id),['hankyu-dept','daimaru','lucua','lucua-1100','yodobashi']);
+test('commercial envelopes have their own footprint evidence and continuous 2F walking band',()=>{
+  assert.deepEqual(layout.buildings.map(b=>b.id),['hankyu-dept','daimaru','lucua','lucua-1100','yodobashi','grand-front-south','grand-front-north']);
   for(const b of layout.buildings){
     assert(b.outline.length>=4);assert(b.outline.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.z)));
     assert.equal(b.evidence.source,'district');assert.deepEqual(b.evidence.pages,[]);

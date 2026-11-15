@@ -3,6 +3,7 @@ import type { Level, LevelId, Platform, VerticalConnection } from '../domain/map
 import { elevatorShaftWidth } from '../application/connection-openings.ts';
 import { connectionHeading } from '../application/connection-orientation.ts';
 import {connectionLanes,escalatorTreadWidth} from '../application/connection-lanes.ts';
+import {viewLayerRole} from '../application/view-layer.ts';
 
 const unitBox = new T.BoxGeometry(1,1,1);
 const materials = new Map<number,T.MeshStandardMaterial>();
@@ -53,9 +54,11 @@ export class VerticalConnectionModel {
   private previousLowY?:number;
   private previousHighY?:number;
   private previousFocus?:LevelId|'all';
+  private readonly levels:Level[];
 
   constructor(connection:VerticalConnection,levels:Level[],platforms:Platform[]) {
     this.connection=connection;
+    this.levels=levels;
     const fromY=levels.find(l=>l.id===connection.from.level)!.y+(connection.from.elevationOffset??0),toY=levels.find(l=>l.id===connection.to.level)!.y+(connection.to.elevationOffset??0);
     this.count=connection.kind==='stairs'?Math.max(4,Math.ceil(Math.abs(toY-fromY)/0.24)):28;
     this.treadWidth=connection.width?connection.width-0.6:connection.kind==='escalator'?escalatorTreadWidth:2.15;
@@ -147,15 +150,19 @@ export class VerticalConnectionModel {
     this.group.position.set(this.low.x,lowY,this.low.z);this.group.rotation.y=-this.heading;
     const showAll=focus==='all';
     const focusedY=focus==='all'?undefined:elevation(focus)+0.65;
-    this.lowLanding.visible=showAll||lowY<=(focusedY??-Infinity);
-    this.highLanding.visible=showAll||focus===this.high.level||highY<=(focusedY??-Infinity);
+    // Local steps belong to their exploration floor, even above its base elevation.
+    const lowVisible=viewLayerRole(this.levels,{level:focus},this.low.level)!=='hidden';
+    const highVisible=viewLayerRole(this.levels,{level:focus},this.high.level)!=='hidden';
+    this.lowLanding.visible=lowVisible;
+    this.highLanding.visible=highVisible;
     this.lowLanding.position.set(this.connection.kind==='elevator'?0:-0.75,0,0);
     this.highLanding.position.set(this.connection.kind==='elevator'?0:this.run+0.75,rise,0);
-    this.body.visible=showAll||lowY<=(focusedY??-Infinity);
+    this.body.visible=lowVisible;
     this.group.visible=showAll||this.lowLanding.visible||this.highLanding.visible;
     if(this.connection.kind==='elevator'){
       const bottom=-0.4;
-      const top=showAll?rise+3.1:Math.max(bottom+0.1,Math.min(rise+3.1,(focusedY??lowY)-lowY+3.1));
+      const cutY=Math.max(focusedY??lowY,lowVisible?lowY:-Infinity);
+      const top=showAll||highVisible?rise+3.1:Math.max(bottom+0.1,Math.min(rise+3.1,cutY-lowY+3.1));
       this.shaft!.position.set(0,(bottom+top)/2,0);this.shaft!.scale.set(elevatorShaftWidth,top-bottom,elevatorShaftWidth);
       this.shaftPosts.forEach(post=>{post.position.y=(bottom+top)/2;post.scale.y=top-bottom;});
       this.shaftCaps[0]!.position.y=bottom;this.shaftCaps[1]!.position.y=top;

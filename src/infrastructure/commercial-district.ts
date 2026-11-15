@@ -1,6 +1,6 @@
 import type {CommercialBuilding,CommercialBuildingId,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
 import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
-import {commercialFootprints} from './commercial-footprints.ts';
+import {commercialFootprints,grandFrontTowers} from './commercial-footprints.ts';
 import {districtFrame,districtPlacements} from './district-placement.ts';
 
 const cityMap='https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf';
@@ -10,6 +10,8 @@ const access={
   lucua:'https://www.lucua.jp/access/',
   'lucua-1100':'https://www.lucua.jp/access/',
   yodobashi:'https://global.yodobashi/stores/yodobashi_shopping_mall/001670/',
+  'grand-front-south':'https://www.gfo-ad.jp/access.html',
+  'grand-front-north':'https://www.gfo-ad.jp/access.html',
 };
 const east=districtFrame.bearingDeg*Math.PI/180;
 // Raw OSM geometry is retained separately; fit it to the existing oversized station sketch.
@@ -17,7 +19,8 @@ const fit=(id:CommercialBuildingId,p:Point2):Point2=>{
   if(id==='lucua-1100')return {x:p.x,z:p.z-24};
   if(id==='lucua')return {x:p.x+11,z:p.z-25};
   if(id==='daimaru')return {x:-25+(p.x+30.59)*58/50.01,z:p.z+25};
-  if(id==='yodobashi')return {x:p.x,z:p.z-28};
+  if(id==='yodobashi')return {x:p.x-2,z:p.z-29.5};
+  if(id.startsWith('grand-front-'))return {x:p.x-1,z:p.z-29.6};
   return {x:p.x+30*Math.sin(east),z:p.z+30*Math.cos(east)};
 };
 const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=[
@@ -26,6 +29,8 @@ const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=
   ['lucua','LUCUA',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
   ['lucua-1100','LUCUA 1100',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
   ['yodobashi','Yodobashi / LINKS UMEDA',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
+  ['grand-front-south','Grand Front · 南馆',[{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
+  ['grand-front-north','Grand Front · 北馆',[{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
 ];
 export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name,floors])=>{
   const raw=commercialFootprints[id];
@@ -34,6 +39,13 @@ export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name
     detail:`OSM way ${raw.way} v${raw.version}, simplified outline and explicit display fitting; building envelope includes the host complex, not a surveyed retail lease boundary; no interior plan`}};
 });
 const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
+for(const id of ['grand-front-south','grand-front-north'] as const)building(id).podiumHeight=6;
+for(const tower of grandFrontTowers){
+  const id=tower.name==='Tower A'?'grand-front-south':'grand-front-north';
+  (building(id).volumes??=[]).push({name:tower.name,outline:tower.outline.map(p=>fit(id,p)),height:tower.height,
+    evidence:{source:'district',pages:[],urls:[`https://www.openstreetmap.org/way/${tower.way}`,access[id]],
+      detail:`OSM building part ${tower.way} v${tower.version}; simplified tower footprint, compressed display height, not a surveyed building elevation`}});
+}
 const portal=(id:CommercialBuildingId,name:string,near:Point2):PassageEndpoint=>{
   const b=building(id),floor=b.floors.find(f=>f.name===name)!;
   return {...closestPolygonPoint(near,b.outline),level:floor.level,elevationOffset:floor.elevationOffset,buildingId:id};
@@ -59,9 +71,15 @@ for(const [id,x]of [['lucua',30],['lucua-1100',-33]] as const){
 link('yodobashi-east-deck','Yodobashi · 2F 东侧联络桥','deck',[
   publicPoint('platform',73,-60),portal('yodobashi','2F',{x:91,z:-82})]);
 link('yodobashi-west-deck','Yodobashi · 2F 西侧联络桥','deck',[
-  jr('platform',-1,-67),publicPoint('platform',-1,-74),portal('yodobashi','2F',{x:12,z:-82})]);
+  jr('platform',-1,-67),publicPoint('platform',-1,-84),portal('yodobashi','2F',{x:12,z:-82})]);
 link('yodobashi-metro-b1','M16 北改札外 → Yodobashi B1','underground',[
   metro(67,-18),publicPoint('metro-hall',96,-76),portal('yodobashi','B1',{x:91,z:-89})]);
+link('jr-north-metro-b1','JR 北侧地下通路 → M16 北改札外','underground',[
+  jr('underground-hall',61,-52),metro(67,-18)],7);
+commercialPassages.at(-1)!.evidence={source:'district',pages:[],urls:[cityMap,
+  'https://osaka-info.jp/special/universal/tourism/lucua-osaka/',
+  'https://subway.osakametro.co.jp/station_guide/M/m16/map.php/1000'],
+  detail:'LUCUA north/east B1 corridor joins Metro north-gate public approach and Yodobashi branch; source confirms connection, coordinates fitted; stays outside gates, no cross-operator route edge'};
 link('hankyu-dept-metro-b1','M16 闸外 → 阪急百货 B1','underground',[metro(7,23),portal('hankyu-dept','B1',{x:122,z:15})]);
 link('daimaru-crost-b1','Crost → 大丸 B1','underground',[jr('underground-hall',0,31),portal('daimaru','B1',{x:0,z:38})]);
 // JR PDF 1F pedestrian bridge + city map + user satellite reference:
@@ -82,7 +100,7 @@ link('daimaru-deck-south-arm','大丸前侧公共通道 · 南连接臂','deck',
 link('hankyu-dept-deck-north-arm','步道桥北支线 → 阪急百货 2F','deck',[northJunction,northEast],5);
 link('hankyu-dept-deck-south-arm','步道桥南支线 → 阪急百货 2F','deck',[southJunction,southEast],5);
 link('hanshin-dept-deck-reserve','步道桥 → 阪神百货方向','deck',[southJunction,
-  {...publicPoint('south-deck',southJunction.x-roadDirection.x*30,southJunction.z-roadDirection.z*30),boundaryName:'阪神百货 · 2F 连接预留'}],5);
+  {...publicPoint('south-deck',southJunction.x-roadDirection.x*30,southJunction.z-roadDirection.z*30),boundaryName:'往阪神百货 · 2F 连接'}],5);
 
 const deckProof={source:'jr' as const,pages:[5],urls:[cityMap,'https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf'],
   detail:'Pedestrian bridge in JR 1F south/east plan; bus-loop perimeter, north/south branches and Hanshin-facing outlet cross-checked with the user satellite reference. Coordinates and grouping at 2F are schematic, not surveyed deck elevations.'};
@@ -90,6 +108,10 @@ for(const p of commercialPassages.filter(p=>p.id.includes('deck-')||p.id==='umed
 export const commercialAreas:FloorArea[]=[{
   id:'umeda-deck-north-landing',level:'south-deck',name:'新步道桥 · 北侧上桥平台',kind:'public',
   outline:passageOutline(northWest,northJunction,5),evidence:deckProof,
+},{
+  id:'jr-north-atrium-b1',level:'underground-hall',name:'JR 北侧中庭 · B1 公共区域',kind:'public',label:true,
+  outline:[{x:-13.5,z:-71},{x:12.5,z:-71},{x:12.5,z:-47},{x:-13.5,z:-47}],
+  evidence:{source:'jr',pages:[6],detail:'North Gate B1 public corridor at the atrium side, expanded per user identification; footprint schematic, not a passage beneath JR to south-side Crost'},
 }];
 const northLength=Math.hypot(northJunction.x-northWest.x,northJunction.z-northWest.z);
 const stairTop={x:northWest.x+(northJunction.z-northWest.z)/northLength*2.5,z:northWest.z-(northJunction.x-northWest.x)/northLength*2.5};
@@ -100,4 +122,14 @@ export const commercialConnections:VerticalConnection[]=[{
   evidence:deckProof,
 }];
 
-link('grand-front-deck-reserve','北侧 2F 连廊 → Grand Front','deck',[publicPoint('platform',-1,-74),publicPoint('platform',-22,-84),{...publicPoint('platform',-40,-88),boundaryName:'Grand Front · 2F 连接接口'}]);
+const grandSouthEntry=portal('grand-front-south','2F',{x:-2,z:-90});
+const grandSouthNorth=portal('grand-front-south','2F',{x:-3,z:-155});
+const grandNorthSouth=portal('grand-front-north','2F',{x:8,z:-151});
+link('grand-front-jr-deck','JR 北侧 2F 连廊 → Grand Front 南馆','deck',[
+  publicPoint('platform',-1,-84),grandSouthEntry],5);
+link('grand-front-north-south-deck','Grand Front · 南北馆 2F 连桥','deck',[grandSouthNorth,grandNorthSouth],5);
+// Only the documented through-connection is shown; no shop aisles or indoor routing graph.
+commercialAreas.push({id:'grand-front-south-public-axis',level:'platform',name:'Grand Front 南馆 · 往北馆公共通道',
+  kind:'public',label:true,outline:passageOutline(grandSouthEntry,grandSouthNorth,5),
+  evidence:{source:'district',pages:[],urls:['https://www.gfo-ad.jp/access.html','https://www.gfo-ad.jp/media_case01.html'],
+    detail:'Documented JR-to-south-to-north 2F through connection; schematic public axis only, interior bends and retail partitions not modeled'}});

@@ -10,6 +10,8 @@ const palettes:Record<CommercialBuildingId,{floor:number;wall:number;trim:number
   lucua:{floor:0xe7dece,wall:0xd7c7af,trim:0x9c8d78},
   'lucua-1100':{floor:0xe4dcd0,wall:0xcbbdae,trim:0x9b8b80},
   yodobashi:{floor:0xdce7e4,wall:0xbacfcf,trim:0x7f9b9c},
+  'grand-front-south':{floor:0xe1e5df,wall:0xbfcfca,trim:0x9aafa9},
+  'grand-front-north':{floor:0xe1e5df,wall:0xbfcfca,trim:0x9aafa9},
 };
 const unit=new T.BoxGeometry(1,1,1);
 /** Footprint shell only: no shop partitions, internal circulation or full-height tower. */

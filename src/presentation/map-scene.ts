@@ -20,6 +20,7 @@ import {stationPlinthParts} from './station-plinth.ts';
 import {buildRailApproachModel} from './rail-approach-model.ts';
 import {platformRail} from '../domain/map/rail-geometry.ts';
 import {buildCommercialFloor} from './commercial-building-model.ts';
+import {buildCommercialMassing} from './commercial-massing-model.ts';
 import {PublicPassageModel} from './public-passage-model.ts';
 import {planAtriumOpenings} from '../application/atrium-openings.ts';
 import {buildAtriumRailing} from './atrium-model.ts';
@@ -35,6 +36,7 @@ export class MapScene {
   private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 1200);
   private groups = new Map<LevelId, T.Group>();
   private roof = new T.Group();
+  private commercialMassing:T.Group[]=[];
   private base = new T.Group();
   private ground?: T.Mesh;
   private appearance = new LayerAppearance();
@@ -131,6 +133,9 @@ export class MapScene {
     }
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
     const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
+    for(const building of this.layout.buildings??[])if(building.volumes?.length){
+      const model=buildCommercialMassing(building,publicContext);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);
+    }
     for(const building of this.layout.buildings??[])for(const floor of building.floors){
       this.groups.get(floor.level)!.add(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext));
       const x=building.outline.reduce((s,p)=>s+p.x,0)/building.outline.length;
@@ -375,7 +380,7 @@ export class MapScene {
         this.beam(this.roof, new T.Vector3(x + 4.5, slope(z) - 0.5, z), new T.Vector3(x + 9, slope(z) - 3, z), 0.13, colors.steel);
       }
     }
-    this.label('OSAKA STATION / 大屋顶', -25, 13, 0, undefined, true, true);
+    this.label('大阪站', -25, 13, 0, undefined, true, true);
   }
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
@@ -449,6 +454,7 @@ export class MapScene {
       this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'));
     }
     this.roof.position.y = 26 + this.displayedExplode * 56;
+    for(const model of this.commercialMassing)model.visible=this.state.level==='all';
     this.roof.visible = this.state.roof && this.state.level === 'all';
     this.route.visible = !!this.state.route;
     if (previousExplode !== this.displayedExplode && this.state.route) this.buildRoute();

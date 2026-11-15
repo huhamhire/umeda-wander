@@ -28,8 +28,8 @@ test('geographic anchors place Metro near JR east and Hankyu farther north',()=>
   const h=districtPlacements.hankyu,m=districtPlacements.metro;
   assert.deepEqual(h.referenceOrigin,projectDistrictPoint(h.geo,districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor));
   const eastOffset={x:30*Math.sin(districtFrame.bearingDeg*Math.PI/180),z:30*Math.cos(districtFrame.bearingDeg*Math.PI/180)};
-  assert(Math.abs(h.displayOffset.x-eastOffset.x-35*Math.cos(h.angle))<1e-6);
-  assert(Math.abs(h.displayOffset.z-eastOffset.z-35*Math.sin(h.angle))<1e-6);
+  assert(Math.abs(h.displayOffset.x-eastOffset.x-28*Math.cos(h.angle))<1e-6);
+  assert(Math.abs(h.displayOffset.z-eastOffset.z-28*Math.sin(h.angle))<1e-6);
   assert.deepEqual(h.origin,{x:h.referenceOrigin.x+h.displayOffset.x,z:h.referenceOrigin.z+h.displayOffset.z});
   assert.deepEqual(m.referenceOrigin,projectDistrictPoint(m.geo,districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor));
   const bearing=districtFrame.bearingDeg*Math.PI/180;

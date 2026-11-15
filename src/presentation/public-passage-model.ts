@@ -11,19 +11,19 @@ export class PublicPassageModel {
   readonly group=new T.Group();
   private previousHeights='';
   private appearance=new LayerAppearance();
-  private parts:{group:T.Group;slab:T.Mesh;rails:T.Mesh[];posts:T.Mesh[];index:number}[]=[];
+  private parts:{group:T.Group;slab:T.Mesh;rails:T.Mesh[];posts:T.InstancedMesh;postPositions:{progress:number;side:number}[];index:number}[]=[];
   constructor(passage:PublicPassage,context?:PublicContactContext){
     this.passage=passage;this.group.name=passage.id;
     const underground=passage.kind==='underground';
     const floor=new T.MeshStandardMaterial({color:underground?0xc3d7dc:0xe6dfcb,roughness:0.9});
-    const edge=new T.MeshStandardMaterial({color:underground?0x9fb8bd:0x96aca1,roughness:0.75});
+    const edge=new T.MeshStandardMaterial({color:0xc9d3c9,roughness:0.85});
     for(let i=1;i<passage.points.length;i++){
       const a=passage.points[i-1]!,b=passage.points[i]!,group=new T.Group(),slab=new T.Mesh(unit,floor);
       slab.name='passage-floor';
       slab.userData.labelOccluder=true;
       const length=Math.hypot(b.x-a.x,b.z-a.z);
       if(length<0.05)throw new Error(`Degenerate public passage: ${passage.id}`);
-      const nx=-(b.z-a.z)/length,nz=(b.x-a.x)/length,rails:T.Mesh[]=[],posts:T.Mesh[]=[];
+      const nx=-(b.z-a.z)/length,nz=(b.x-a.x)/length,rails:T.Mesh[]=[],postPositions:{progress:number;side:number}[]=[];
       const joins=(t:number,side:number,margin:number)=>{
         if(!context)return false;
         const ay=context.levels.find(l=>l.id===a.level)!.y,by=context.levels.find(l=>l.id===b.level)!.y;
@@ -37,14 +37,17 @@ export class PublicPassageModel {
           const t=(j+0.5)/count;if([j/count,t,(j+1)/count].some(progress=>joins(progress,side,0.25)))continue;
           const mesh=new T.Mesh(unit,edge);mesh.name='passage-railing';mesh.userData={progress:t,side,fraction:1/count};rails.push(mesh);
         }
-        const postCount=Math.ceil(length/5);
+        const postCount=Math.ceil(length/0.9);
         for(let j=0;j<=postCount;j++){
           const t=j/postCount;if(joins(t,side,0.2))continue;
-          const mesh=new T.Mesh(unit,edge);mesh.name='passage-post';mesh.userData={progress:t,side};posts.push(mesh);
+          postPositions.push({progress:t,side});
         }
       }
-      for(const mesh of [slab,...rails,...posts]){mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);}
-      group.name=`${passage.id}-${i}`;this.group.add(group);this.parts.push({group,slab,rails,posts,index:i-1});
+      const posts=new T.InstancedMesh(unit,edge,postPositions.length);posts.name='passage-post';posts.frustumCulled=false;
+      posts.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      slab.castShadow=true;slab.receiveShadow=true;group.add(slab,...rails);
+      if(!underground)group.add(posts);
+      group.name=`${passage.id}-${i}`;this.group.add(group);this.parts.push({group,slab,rails,posts,postPositions,index:i-1});
     }
   }
   update(elevation:(id:LevelId)=>number,role:(id:LevelId)=>LayerRole):void {
@@ -63,12 +66,15 @@ export class PublicPassageModel {
       part.slab.position.copy(from).lerp(to,0.5);part.slab.quaternion.copy(rotation);part.slab.scale.set(length+0.15,0.45,width);
       part.rails.forEach(rail=>{
         rail.position.copy(from).lerp(to,rail.userData.progress).addScaledVector(normal,rail.userData.side*width/2);rail.position.y+=1.35;
-        rail.quaternion.copy(rotation);rail.scale.set(length*rail.userData.fraction+0.1,0.14,0.18);
+        rail.quaternion.copy(rotation);rail.scale.set(length*rail.userData.fraction+0.1,0.065,0.065);
       });
-      part.posts.forEach(post=>{
-        post.position.copy(from).lerp(to,post.userData.progress).addScaledVector(normal,post.userData.side*width/2);post.position.y+=0.8;
-        post.scale.set(0.14,1.6,0.14);
+      const matrix=new T.Matrix4(),position=new T.Vector3();
+      part.postPositions.forEach((post,index)=>{
+        position.copy(from).lerp(to,post.progress).addScaledVector(normal,post.side*width/2);position.y+=0.8;
+        matrix.makeScale(0.045,1.6,0.045);matrix.setPosition(position);part.posts.setMatrixAt(index,matrix);
       });
+      part.posts.instanceMatrix.needsUpdate=true;
+      part.posts.computeBoundingSphere();
     }
     this.group.visible=this.parts.some(p=>p.group.visible);this.group.updateMatrixWorld(true);
   }

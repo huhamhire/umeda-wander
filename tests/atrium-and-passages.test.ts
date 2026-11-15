@@ -57,7 +57,7 @@ test('South exterior bridge arms are straight and collinear through their common
     assert(spine.points.some(p=>p.x===j.x&&p.z===j.z));
   }
   assert(get('hanshin-dept-deck-reserve').points.at(-1)!.boundaryName?.includes('阪神百货'));
-  assert(get('grand-front-deck-reserve').points.at(-1)!.boundaryName?.includes('Grand Front'));
+  assert.equal(get('grand-front-jr-deck').points.at(-1)!.buildingId,'grand-front-south');
 });
 
 test('both convenience stores use compact labels and retain separate source floors and paid status',()=>{
