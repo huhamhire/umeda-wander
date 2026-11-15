@@ -5,10 +5,11 @@ export interface StationDraft {
   id:StationId; name:string; levels:Level[]; facilities:Facility[]; nodes:RouteNode[]; edges:RouteEdge[]; layout:StationLayout;
 }
 /** Local plan coordinates are separate from the schematic district placement. */
-export function stationDraft(id:StationId,name:string,source:Evidence['source'],origin:{x:number;z:number},angle:number,acrossSign:1|-1=1,planScale=1){
+export function stationDraft(id:StationId,name:string,source:Evidence['source'],origin:{x:number;z:number},angle:number,acrossSign:1|-1=1,planScale:number|{along:number;across:number}=1){
+  const scale=typeof planScale==='number'?{along:planScale,across:planScale}:planScale;
   const draft:StationDraft={id,name,levels:[],facilities:[],nodes:[],edges:[],layout:{areas:[],platforms:[],connections:[]}};
   const proof=(detail:string):Evidence=>({source,pages:[1],detail});
-  const point=(x:number,z:number)=>{const p=rotatePoint({x:x*planScale,z:z*acrossSign*planScale},{x:0,z:0},angle);return {x:p.x+origin.x,z:p.z+origin.z};};
+  const point=(x:number,z:number)=>{const p=rotatePoint({x:x*scale.along,z:z*acrossSign*scale.across},{x:0,z:0},angle);return {x:p.x+origin.x,z:p.z+origin.z};};
   const area=(key:string,level:LevelId,label:string,kind:FloorArea['kind'],x:number,z:number,w:number,d:number,height?:number)=>{
     draft.layout.areas.push({id:`${id}-${key}`,level,name:label,kind,outline:[point(x-w/2,z-d/2),point(x+w/2,z-d/2),point(x+w/2,z+d/2),point(x-w/2,z+d/2)],label:true,height,evidence:proof(label)});
   };
@@ -25,7 +26,7 @@ export function stationDraft(id:StationId,name:string,source:Evidence['source'],
     draft.layout.connections.push(result);return result;
   };
   const platform=(key:string,level:LevelId,tracks:number[],x:number,z:number,length:number,width:number,extra:Partial<Platform>={})=>{
-    const p:Platform={id:`${id}-${key}`,level,tracks,...point(x,z),length:length*planScale,width:width*planScale,rotationRad:angle,evidence:proof(`Platform ${tracks.join('/')}`),...extra};
+    const p:Platform={id:`${id}-${key}`,level,tracks,...point(x,z),length:length*scale.along,width:width*scale.across,rotationRad:angle,evidence:proof(`Platform ${tracks.join('/')}`),...extra};
     if(acrossSign===-1&&p.trackSides)p.trackSides=p.trackSides.map(side=>side===1?-1:1);
     draft.layout.platforms.push(p);return p;
   };

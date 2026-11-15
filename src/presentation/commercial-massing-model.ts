@@ -4,11 +4,13 @@ import type {CommercialBuilding,FloorArea,PublicPassage} from '../domain/map/mod
 import {passageOutline} from '../domain/map/geometry.ts';
 import {buildFloorGeometry} from './floor-geometry.ts';
 import {addYodobashiMassingDetails} from './yodobashi-massing-details.ts';
+import {addDepartmentMassingDetails} from './department-massing-details.ts';
 
 /** Compressed skyline silhouettes; hidden in floor exploration to expose walking connections. */
 export function buildCommercialMassing(building:CommercialBuilding,context?:{areas:FloorArea[];passages:PublicPassage[]}):T.Group {
   const group=new T.Group();group.name=`massing-${building.id}`;
-  const glass=new T.MeshStandardMaterial({color:0xc7d8d4,roughness:0.7,metalness:0.12});
+  const department=building.id==='hankyu-dept'||building.id==='hankyu-grand'||building.id==='daimaru';
+  const glass=new T.MeshStandardMaterial({color:department?0xc5ceca:0xc7d8d4,roughness:0.7,metalness:0.12});
   const trim=new T.MeshStandardMaterial({color:0xe4e9df,roughness:0.85});
   const podiumHeight=building.podiumHeight??0,base=podiumHeight?podiumHeight+0.35:2;
   const podiumOutline=building.perimeterGallery?.innerOutline??building.outline;
@@ -25,7 +27,7 @@ export function buildCommercialMassing(building:CommercialBuilding,context?:{are
           b.buildingId===building.id?{x:b.x+dx*3,z:b.z+dz*3}:b,p.width+1));
       }
     }
-    const wall=new T.MeshStandardMaterial({color:0xb6c9c1,roughness:0.87});
+    const wall=new T.MeshStandardMaterial({color:department?building.id==='daimaru'?0xd4d1c4:0xdccdc7:0xb6c9c1,roughness:0.87});
     for(const part of building.podiumParts??[{name:'podium-envelope',outline:podiumOutline,height:podiumHeight}]){
       const section=new T.Group();section.name=part.name;podium.add(section);
       for(const [geometry,material,name]of [
@@ -40,16 +42,17 @@ export function buildCommercialMassing(building:CommercialBuilding,context?:{are
   }
   for(const volume of building.volumes??[]){
     const tower=new T.Group();tower.name=volume.name;group.add(tower);
-    const body=new T.Mesh(buildFloorGeometry(volume.outline,[],volume.height,base),glass);
+    const body=new T.Mesh(buildFloorGeometry(volume.outline,volume.courtyards??[],volume.height,base),glass);
     body.name='tower-envelope';body.userData.labelOccluder=true;body.castShadow=true;body.receiveShadow=true;tower.add(body);
     const bands:T.BufferGeometry[]=[];
     const center=volume.outline.reduce((s,p)=>({x:s.x+p.x/volume.outline.length,z:s.z+p.z/volume.outline.length}),{x:0,z:0});
     const rim=volume.outline.map(p=>({x:center.x+(p.x-center.x)*1.012,z:center.z+(p.z-center.z)*1.012}));
-    if(building.id!=='yodobashi')for(let y=base+2;y<volume.height+base;y+=2)bands.push(buildFloorGeometry(rim,[],0.12,y));
-    bands.push(buildFloorGeometry(rim,[],0.35,volume.height+base));
+    if(building.id!=='yodobashi')for(let y=base+2;y<volume.height+base;y+=2)bands.push(buildFloorGeometry(rim,volume.courtyards??[],0.12,y));
+    bands.push(buildFloorGeometry(rim,volume.courtyards??[],0.35,volume.height+base));
     const geometry=mergeGeometries(bands)!;bands.forEach(g=>g.dispose());
     const mesh=new T.Mesh(geometry,trim);mesh.name='tower-horizontal-bands';mesh.userData.labelOccluder=true;tower.add(mesh);
   }
   if(building.id==='yodobashi')addYodobashiMassingDetails(group,building);
+  if(department)addDepartmentMassingDetails(group,building);
   return group;
 }

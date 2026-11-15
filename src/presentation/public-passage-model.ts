@@ -2,6 +2,7 @@ import * as T from 'three';
 import type {LevelId,PublicPassage} from '../domain/map/model.ts';
 import type {LayerRole} from '../application/layer-focus.ts';
 import {LayerAppearance} from './layer-appearance.ts';
+import {publicAreaColor} from './station-palette.ts';
 import {touchesPublicConnection,type PublicContactContext} from '../application/passage-clearance.ts';
 
 const unit=new T.BoxGeometry(1,1,1);
@@ -15,7 +16,7 @@ export class PublicPassageModel {
   constructor(passage:PublicPassage,context?:PublicContactContext){
     this.passage=passage;this.group.name=passage.id;
     const underground=passage.kind==='underground';
-    const floor=new T.MeshStandardMaterial({color:underground?0xc3d7dc:0xe6dfcb,roughness:0.9});
+    const floor=new T.MeshStandardMaterial({color:publicAreaColor,roughness:0.9});
     const edge=new T.MeshStandardMaterial({color:0xc9d3c9,roughness:0.85});
     for(let i=1;i<passage.points.length;i++){
       const a=passage.points[i-1]!,b=passage.points[i]!,group=new T.Group(),slab=new T.Mesh(unit,floor);

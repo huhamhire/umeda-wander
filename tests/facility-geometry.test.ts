@@ -136,10 +136,20 @@ test('central gate banks both stay open along a shared fenced boundary',()=>{
   const south=boundaries.find(b=>b.gateId==='gate')!,north=boundaries.find(b=>b.gateId==='gate-central-north')!;
   assert.equal(south.boundaryId,north.boundaryId);assert.equal(south.fences.length,3);
 });
-test('the Daimaru transition is a short wide stair within 1F, not another exploded floor',()=>{
+test('Daimaru half-level joins Central Court on both sides while the middle bank descends south to B1',()=>{
   const connection=connections.find(c=>c.id==='central-daimaru-steps')!;
   assert.equal(connection.kind,'stairs');assert.equal(connection.from.level,'concourse');assert.equal(connection.to.level,'concourse');
-  assert((connection.to.elevationOffset??0)>0);assert((connection.width??0)>=8);
+  assert.equal(connection.to.elevationOffset,1.3);assert.equal(connection.width,4);
+  const east=connections.find(c=>c.id==='central-daimaru-east-steps')!;
+  assert.equal(east.to.elevationOffset,1.3);
+  assert(connection.from.x<0&&east.from.x>0);
+  for(const side of [connection,east])assert(side.to.z>side.from.z);
+  for(const id of ['crost-67','crost-stairs-68','crost-stairs-69']){
+    const c=connections.find(c=>c.id===id)!;
+    assert.equal(c.from.level,'concourse');assert.equal(c.to.level,'underground-hall');
+    assert(c.to.z>c.from.z,'B1 descent must head south');
+    assert(areas.some(a=>a.id==='crost-public'&&pointInPolygon(c.to,a.outline)));
+  }
   const model=new VerticalConnectionModel(connection,levels,platforms);
   for(const explode of [0,1]){
     model.update(id=>displayElevation(levels,id,explode),'concourse');

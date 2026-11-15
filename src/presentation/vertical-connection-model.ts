@@ -54,6 +54,7 @@ export class VerticalConnectionModel {
   private previousLowY?:number;
   private previousHighY?:number;
   private previousFocus?:LevelId|'all';
+  private previousForceVisible?:boolean;
   private readonly levels:Level[];
 
   constructor(connection:VerticalConnection,levels:Level[],platforms:Platform[]) {
@@ -139,17 +140,17 @@ export class VerticalConnectionModel {
     this.landing(this.lowLanding,true);this.landing(this.highLanding,true);
   }
 
-  update(elevation:(id:LevelId)=>number,focus:LevelId|'all'):void {
+  update(elevation:(id:LevelId)=>number,focus:LevelId|'all',forceVisible=false):void {
     if(this.lanes.length){
       for(const lane of this.lanes)lane.update(elevation,focus);
       this.group.visible=this.lanes.some(lane=>lane.group.visible);return;
     }
     const lowY=elevation(this.low.level)+(this.low.elevationOffset??0)+0.65,highY=elevation(this.high.level)+(this.high.elevationOffset??0)+0.65,rise=highY-lowY;
-    if(lowY===this.previousLowY&&highY===this.previousHighY&&focus===this.previousFocus)return;
+    if(lowY===this.previousLowY&&highY===this.previousHighY&&focus===this.previousFocus&&forceVisible===this.previousForceVisible)return;
+    this.previousForceVisible=forceVisible;
     this.previousLowY=lowY;this.previousHighY=highY;this.previousFocus=focus;
     this.group.position.set(this.low.x,lowY,this.low.z);this.group.rotation.y=-this.heading;
     const showAll=focus==='all';
-    const focusedY=focus==='all'?undefined:elevation(focus)+0.65;
     // Local steps belong to their exploration floor, even above its base elevation.
     const lowVisible=viewLayerRole(this.levels,{level:focus},this.low.level)!=='hidden';
     const highVisible=viewLayerRole(this.levels,{level:focus},this.high.level)!=='hidden';
@@ -160,9 +161,11 @@ export class VerticalConnectionModel {
     this.body.visible=lowVisible;
     this.group.visible=showAll||this.lowLanding.visible||this.highLanding.visible;
     if(this.connection.kind==='elevator'){
+      const visible=forceVisible||lowVisible||highVisible;
+      this.group.visible=visible;this.body.visible=visible;
+      this.lowLanding.visible=visible;this.highLanding.visible=visible;
       const bottom=-0.4;
-      const cutY=Math.max(focusedY??lowY,lowVisible?lowY:-Infinity);
-      const top=showAll||highVisible?rise+3.1:Math.max(bottom+0.1,Math.min(rise+3.1,cutY-lowY+3.1));
+      const top=rise+3.1;
       this.shaft!.position.set(0,(bottom+top)/2,0);this.shaft!.scale.set(elevatorShaftWidth,top-bottom,elevatorShaftWidth);
       this.shaftPosts.forEach(post=>{post.position.y=(bottom+top)/2;post.scale.y=top-bottom;});
       this.shaftCaps[0]!.position.y=bottom;this.shaftCaps[1]!.position.y=top;

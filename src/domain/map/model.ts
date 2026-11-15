@@ -1,9 +1,10 @@
-export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda';
+export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda';
 export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
-  |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck';
+  |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck'
+  |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck';
 export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store'|'platform';
 export interface Point2 { x: number; z: number }
-export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'district';urls?:string[] }
+export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'district';urls?:string[] }
 export interface Facility {
   id: string; name: string; kind: FacilityKind; level: LevelId;
   x: number; z: number; note: string; evidence: Evidence;
@@ -22,6 +23,7 @@ export interface FloorArea {
 export interface Platform {
   id: string; level: LevelId; tracks: number[]; x: number; z: number; length: number; width: number; rotationRad: number; evidence: Evidence;
   name?:string; lineName?:string; lineColor?:number; trackSides?:Array<-1|1>; screenDoors?:'full-height'|'half-height'; terminal?:boolean;
+  screenDoorSides?:Array<-1|1>;
 }
 export interface VerticalConnection {
   id: string; kind: 'stairs' | 'escalator' | 'elevator'; from: RouteNode; to: RouteNode; evidence: Evidence;
@@ -48,7 +50,7 @@ export interface CommercialConcourse {
 export interface CommercialBuilding {
   id:CommercialBuildingId;name:string;outline:Point2[];
   floors:{level:LevelId;name:string;elevationOffset?:number}[];evidence:Evidence;
-  volumes?:{name:string;outline:Point2[];height:number;evidence:Evidence}[];
+  volumes?:{name:string;outline:Point2[];courtyards?:Point2[][];height:number;evidence:Evidence}[];
   podiumHeight?:number;
   podiumParts?:{name:string;outline:Point2[];height:number;evidence:Evidence}[];
   perimeterGallery?:{level:LevelId;innerOutline:Point2[]};

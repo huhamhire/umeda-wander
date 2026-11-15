@@ -52,6 +52,27 @@ export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name
     detail:`OSM way ${raw.way} v${raw.version}, simplified outline and explicit display fitting; building envelope includes the host complex, not a surveyed retail lease boundary; no interior plan`}};
 });
 const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
+// Upper silhouettes follow the supplied oblique photos; heights and setbacks are
+// compressed display choices. They do not define additional walkable floors.
+building('hankyu-dept').podiumHeight=13;
+building('hankyu-dept').volumes=[{name:'阪急百货 · 完整切角主塔楼',height:22,
+  // Southern convex lobe shares the podium's outer corners; the long northern
+  // retail wing stays low. A narrow setback preserves the roof edge/terrace.
+  outline:insetPolygon(building('hankyu-dept').outline.slice(1,9),0.9),
+  evidence:{...building('hankyu-dept').evidence,
+    detail:'User aerial facade photo: one complete convex chamfered main tower on the southern retail lobe, following the podium outer corners with a narrow roof terrace. Northern retail wing remains low. Neighbouring Grand Building stays separate. Setback and height schematic.'}}];
+building('hankyu-grand').podiumHeight=8;
+building('hankyu-grand').volumes=[{name:'阪急 Grand Building · 独立南侧塔楼',height:20,
+  outline:insetPolygon(building('hankyu-grand').outline,1.4),evidence:{...building('hankyu-grand').evidence,
+    detail:'Separate Grand Building host footprint retained; inset upper silhouette inferred from the user reference, not a notch cut into the department store main tower. Compressed height.'}}];
+building('daimaru').podiumHeight=10;
+const southHotel=polygonClipping.intersection([building('daimaru').outline.map(p=>[p.x,p.z] as [number,number])],
+  [[[-24,49],[31,49],[31,63],[-24,63]]]);
+building('daimaru').volumes=southHotel.map(p=>({name:'南门大楼 · Hotel Granvia Osaka',height:18,
+  outline:p[0]!.slice(0,-1).map(([x,z])=>({x,z})),
+  courtyards:[[{x:-15,z:52},{x:-4,z:52},{x:-4,z:59},{x:-15,z:59}],
+    [{x:5,z:52},{x:17,z:52},{x:17,z:59},{x:5,z:59}]],
+  evidence:{...building('daimaru').evidence,detail:'User aerial photo of South Gate building: long upper hotel block behind lower department podium with two roof courts. Footprint clipped to host OSM outline; heights, court sizes and setbacks are schematic.'}}));
 for(const id of ['grand-front-south','grand-front-north'] as const)building(id).podiumHeight=6;
 building('lucua').podiumHeight=10.5;
 building('lucua-1100').podiumHeight=8;
@@ -135,7 +156,7 @@ commercialPassages.at(-1)!.evidence={source:'district',pages:[],urls:[cityMap,
   'https://subway.osakametro.co.jp/station_guide/M/m16/map.php/1000'],
   detail:'LUCUA north/east B1 corridor joins Metro north-gate public approach and Yodobashi branch; source confirms connection, coordinates fitted; stays outside gates, no cross-operator route edge'};
 link('hankyu-dept-metro-b1','M16 闸外 → 阪急百货 B1','underground',[metro(7,23),portal('hankyu-dept','B1',{x:122,z:15})]);
-link('daimaru-crost-b1','Crost → 大丸 B1','underground',[jr('underground-hall',0,31),portal('daimaru','B1',{x:0,z:38})]);
+link('daimaru-crost-b1','Crost → 大丸 B1','underground',[jr('underground-hall',0,46),portal('daimaru','B1',{x:0,z:48})]);
 // JR PDF 1F pedestrian bridge + city map + user satellite reference:
 // the north/south arms skirt the bus loop and share an east-side spine.
 const northWest={...publicPoint('south-deck',53,43),station:'jr-osaka' as const};

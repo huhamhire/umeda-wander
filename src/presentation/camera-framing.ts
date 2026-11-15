@@ -20,7 +20,7 @@ export function cameraEnvelope(layout:StationLayout,levels:Level[],state:{level:
   for(const c of layout.connections){
     if(!matches(c.from.level)&&!matches(c.to.level))continue;
     for(const p of [c.from,c.to])for(const dx of [-3,3])for(const dz of [-3,3])
-      points.push(new T.Vector3(p.x+dx,elevation(p.level)+(p.elevationOffset??0)+3,p.z+dz));
+      points.push(new T.Vector3(p.x+dx,elevation(p.level)+(p.elevationOffset??0)+(c.kind==='elevator'?4:3),p.z+dz));
   }
   for(const approach of layout.railApproaches??[]){
     if(!matches(approach.level))continue;

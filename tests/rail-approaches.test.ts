@@ -12,14 +12,14 @@ import {displayElevation} from '../src/application/display-elevation.ts';
 import type {Point2} from '../src/domain/map/model.ts';
 
 const approaches=layout.railApproaches;
-test('all eleven JR and nine Hankyu track ends continue into their own rail bundles',()=>{
-  assert.equal(approaches.length,9);
+test('all four stations continue their track ends into their own rail bundles',()=>{
+  assert.equal(approaches.length,11);
   const leads=approaches.flatMap(a=>a.segments.filter(s=>s.platformId));
-  assert.equal(leads.length,39);
-  for(const p of layout.platforms.filter(p=>p.level==='platform'||p.level==='hankyu-platform'))for(const [index,track]of p.tracks.entries()){
+  assert.equal(leads.length,45);
+  for(const p of layout.platforms.filter(p=>['platform','hankyu-platform','hanshin-platform','metro-platform'].includes(p.level)))for(const [index,track]of p.tracks.entries()){
     const a=approaches.find(a=>a.segments.some(s=>s.platformId===p.id&&s.track===track))!;
     const segment=a.segments.find(s=>s.platformId===p.id&&s.track===track)!;
-    assert.deepEqual(a.nodes.find(n=>n.id===segment.from)!.point,platformRail(p,index).end);
+    assert.deepEqual(a.nodes.find(n=>n.id===segment.from)!.point,p.level==='metro-platform'?platformRail(p,index).start:platformRail(p,index).end);
   }
 });
 
@@ -146,6 +146,28 @@ test('paired rails meet exactly at merge nodes with matching endpoint tangents',
       const p=offsetRailSample(sampleRailSegment(a,input).at(-1)!,side),q=offsetRailSample(sampleRailSegment(a,output)[0]!,side);
       assert(Math.hypot(p.x-q.x,p.z-q.z)<1e-6,`${input.id} to ${output.id}`);
     }
+  }
+});
+
+test('Midosuji island exits narrow into a running pair and turn outward along the southern road',()=>{
+  const a=approaches.find(a=>a.id==='metro-south')!;
+  const leads=a.segments.filter(s=>s.platformId),ends=a.nodes.filter(n=>n.kind==='outlet');
+  const starts=leads.map(s=>a.nodes.find(n=>n.id===s.from)!.point);
+  const gap=(points:Point2[])=>Math.hypot(points[0]!.x-points[1]!.x,points[0]!.z-points[1]!.z);
+  assert(gap(starts)>10);assert(Math.abs(gap(ends.map(n=>n.point))-4.4)<1e-6);
+  const samples=leads.map(s=>sampleRailSegment(a,s,100));
+  let previous=Infinity;
+  for(let i=0;i<=100;i++){
+    const spacing=gap(samples.map(ps=>ps[i]!.point));assert(spacing<=previous+1e-6);assert(spacing>4);previous=spacing;
+  }
+  const curves=a.segments.filter(s=>s.id.includes('-bend-')).map(s=>sampleRailSegment(a,s,100));
+  const east=districtFrame.bearingDeg*Math.PI/180;
+  for(let i=0;i<=100;i++)assert(Math.abs(gap(curves.map(ps=>ps[i]!.point))-4.4)<0.01);
+  for(const curve of curves){
+    const first=curve[0]!,last=curve.at(-1)!;
+    assert((last.point.x-first.point.x)*Math.sin(east)+(last.point.z-first.point.z)*Math.cos(east)>0,'bend toward the outside/east');
+    const angle=Math.acos(first.normal.x*last.normal.x+first.normal.z*last.normal.z);
+    assert(Math.abs(angle-32*Math.PI/180)<1e-6);
   }
 });
 

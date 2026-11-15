@@ -12,9 +12,10 @@ import { VerticalConnectionModel } from './vertical-connection-model.ts';
 import { viewLayerRole } from '../application/view-layer.ts';
 import { LayerAppearance } from './layer-appearance.ts';
 import { cameraOffset, viewBasis } from './view-orientation.ts';
-import { roofHeightAt } from './roof-profile.ts';
+import { roofHeightAt,roofPlan } from './roof-profile.ts';
+import {visibleElevatorConnections} from '../application/elevator-visibility.ts';
 import { advanceExplode } from './explode-transition.ts';
-import {stationPalettes} from './station-palette.ts';
+import {stationPalettes,publicAreaColor} from './station-palette.ts';
 import {cameraEnvelope} from './camera-framing.ts';
 import {stationPlinthParts} from './station-plinth.ts';
 import {buildRailApproachModel} from './rail-approach-model.ts';
@@ -29,7 +30,7 @@ import {facilityFocusRect,facilityCameraCenter,minimumMapZoom} from './facility-
 import {SelectionMarker} from './selection-marker.ts';
 import {buildCommercialConcourse} from './commercial-concourse-model.ts';
 
-const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
+const colors = { slab: publicAreaColor, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
 interface MapLabel { element: HTMLDivElement; position: T.Vector3; level?: LevelId; roof?: boolean }
 
@@ -221,6 +222,16 @@ export class MapScene {
           block(px+1.4,1.8,edge,2.6,0.12,0.18,0x779a9d);
         }
       }
+      // Shared alighting strips use the adjacent track edges without drawing
+      // another copy of those rails.
+      if(!tracks.length&&platform.screenDoors==='half-height')for(const side of platform.screenDoorSides??[]){
+        const edge=side*(width/2-0.2);
+        for(let px=-length/2+2;px<length/2-2;px+=3){
+          block(px,1.2,edge,0.15,1.4,0.23,0x779a9d);
+          const panel=block(px+1.4,1.15,edge,2.6,1.2,0.1,0x9dc5cc);panel.material=screenGlass;panel.castShadow=false;
+          block(px+1.4,1.8,edge,2.6,0.12,0.18,0x779a9d);
+        }
+      }
       if (level === 'platform') {
         const canopyCuts=planFloorOpenings(this.layout.connections,this.levels,this.layout.platforms,
           [{id:level,y:this.levels.find(l=>l.id===level)!.y+3.2}]).map(o=>o.outline);
@@ -362,6 +373,7 @@ export class MapScene {
   }
 
   private buildRoof(): void {
+    this.roof.scale.x=roofPlan.width/126;this.roof.position.x=roofPlan.centerX;
     const slope = roofHeightAt;
     // Low-poly roof profile: shallow curved slope, separate strips for the skylights.
     for (let x = -63; x < 63; x += 6) {
@@ -388,7 +400,7 @@ export class MapScene {
         this.beam(this.roof, new T.Vector3(x + 4.5, slope(z) - 0.5, z), new T.Vector3(x + 9, slope(z) - 3, z), 0.13, colors.steel);
       }
     }
-    this.label('大阪站', -25, 13, 0, undefined, true, true);
+    this.label('大阪站', roofPlan.centerX, 13, 0, undefined, true, true);
   }
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
@@ -452,12 +464,14 @@ export class MapScene {
     for(const passage of this.publicPassages)passage.update(id=>this.levelY(id),id=>viewLayerRole(this.levels,this.state,id));
     this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context');
     if(this.ground)this.ground.visible=this.base.visible;
+    const fullShafts=visibleElevatorConnections(this.layout.connections,this.levels,this.state.level);
     for (const connector of this.connectors) {
-      if(viewLayerRole(this.levels,this.state,connector.connection.from.level)==='hidden'&&viewLayerRole(this.levels,this.state,connector.connection.to.level)==='hidden'){
+      const fullShaft=fullShafts.has(connector.connection.id);
+      if(!fullShaft&&viewLayerRole(this.levels,this.state,connector.connection.from.level)==='hidden'&&viewLayerRole(this.levels,this.state,connector.connection.to.level)==='hidden'){
         connector.group.visible=false;continue;
       }
       connector.group.visible=true;
-      connector.update(id => this.levelY(id), this.state.level);
+      connector.update(id => this.levelY(id), this.state.level,fullShaft);
       const {from,to}=connector.connection;
       const roles=[from,to].map(p=>viewLayerRole(this.levels,this.state,p.level));
       this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'));
@@ -475,7 +489,7 @@ export class MapScene {
     const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
     const envelope=cameraEnvelope(this.layout,this.levels,this.state,id=>this.levelY(id));
     if(!this.state.focusStation||this.state.focusStation==='jr-osaka')
-      for(const x of [-64,64])for(const z of [-37,37])envelope.push(new T.Vector3(x,this.roof.position.y+14,z));
+      for(const x of [roofPlan.centerX-roofPlan.width/2-1,roofPlan.centerX+roofPlan.width/2+1])for(const z of [-37,37])envelope.push(new T.Vector3(x,this.roof.position.y+14,z));
     const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
     const {right,up} = viewBasis();
     const boundsX = envelope.map(point => point.clone().sub(center).dot(right));

@@ -14,6 +14,7 @@ test('maximum zoom-out fills 80 percent of usable height regardless of horizonta
 
 test('facility anchors project to the unobscured center across mobile menus, rotation and desktop sidebar',()=>{
   for(const [viewport,sidebar,mobile]of [
+    [{left:0,top:0,width:390,height:844},{left:12,top:650,width:366,height:160},true],
     [{left:0,top:64,width:390,height:780},{left:12,top:650,width:366,height:160},true],
     [{left:0,top:64,width:390,height:780},{left:12,top:470,width:366,height:340},true],
     [{left:0,top:64,width:740,height:326},{left:12,top:220,width:716,height:136},true],

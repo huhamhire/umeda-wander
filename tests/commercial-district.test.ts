@@ -99,6 +99,8 @@ test('passage geometry follows explosion and B1/2F cuts while district framing i
   for(const passage of layout.passages){
     const model=new PublicPassageModel(passage);
     if(passage.kind==='underground'){
+      const floor=model.group.getObjectByName('passage-floor') as T.Mesh<T.BoxGeometry,T.MeshStandardMaterial>;
+      assert.equal(floor.material.color.getHex(),0xe9ddc3,'public passages share public floor semantics rather than platform blue');
       assert(!model.group.getObjectByName('passage-railing'));
       assert(!model.group.getObjectByName('passage-post'));
     }else assert(model.group.getObjectByName('passage-railing'));

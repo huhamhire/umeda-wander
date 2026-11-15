@@ -45,9 +45,9 @@ export const areas: FloorArea[] = [
   { id: 'north-lucua', level: 'concourse', name: 'LUCUA', kind: 'commercial', outline: rectangle(32, -52, 38, 13), height: 2.8, label: true, evidence: p1 },
   { id: 'south-daimaru', level: 'concourse', name: '大丸梅田店', kind: 'commercial', outline: rectangle(20,55,22,16), elevationOffset:1.3, height:2.2, label:true, evidence:p1 },
   { id:'south-granvia',level:'concourse',name:'Hotel Granvia / 大丸西侧',kind:'commercial',outline:rectangle(-16,55,14,16),elevationOffset:1.3,height:2.2,label:true,evidence:p1 },
-  { id:'south-central-raised',level:'concourse',name:'南中央口 · 往大丸',kind:'public',outline:rectangle(0,55,12,12),elevationOffset:1.3,label:true,evidence:source([5],'Small stair transition toward South Central Gate / Daimaru, user-identified detail; height schematic') },
-  { id:'south-raised-plinth',level:'concourse',name:'南侧入口局部抬高基座',kind:'service',outline:rectangle(4,55,54,16),height:1.3,evidence:source([5],'Support volume for schematic local raised entrance, not an extra floor') },
-  { id:'crost-public',level:'underground-hall',name:'Crost · 南侧地下通路',kind:'public',outline:rectangle(0,27,28,12),label:true,evidence:source([5,6],'Crost B1F access from Central Court') },
+  { id:'south-central-raised',level:'concourse',name:'南中央口 · 往大丸',kind:'public',outline:rectangle(0,53,28,16),elevationOffset:1.3,label:true,evidence:source([5],'Daimaru-side raised landing connects north to Central Court on both sides; user photo, height schematic') },
+  { id:'south-raised-plinth',level:'concourse',name:'南侧入口局部抬高基座',kind:'service',outline:rectangle(4,54,54,18),height:1.3,evidence:source([5],'Support volume for schematic local raised entrance, not an extra floor') },
+  { id:'crost-public',level:'underground-hall',name:'Crost · 南侧地下通路',kind:'public',outline:rectangle(0,46,28,14),label:true,evidence:source([5,6],'Crost B1F landing south of Central Court; user photo confirms southward descent') },
   // Separate fingers show the mezzanine is a passage, not another full floor slab.
   { id: 'central-mezz', level: 'mezzanine', name: '中央口内夹层通道', kind: 'paid', outline: rectangle(-25, 0, 6, 68), label: true, evidence: pm },
   { id: 'sakurabashi-mezz', level: 'mezzanine', name: '樱桥口内夹层通道', kind: 'paid', outline: rectangle(-40, -3, 5, 56), label: true, evidence: pm },
@@ -89,7 +89,7 @@ export const facilities: Facility[] = [
   { id: 'machines-midosuji', name: '御堂筋口 · 自动售票机', kind: 'ticket-machine', level: 'concourse', x: 51, z: -20, rotationRad: -Math.PI/2, note: '御堂筋公共通路侧的售票机位置，位于闸外。', evidence: p1 },
   { id: 'machines-bridge', name: '桥上口 · 自动售票机', kind: 'ticket-machine', level: 'bridge', x: -4.8, z: -11, rotationRad: Math.PI/2, note: '3F 公共南北连络桥、桥上改札外侧的靠墙售票机组，操作面朝公共通道。', evidence: pb },
   { id: 'machines-umekita', name: '梅北地下口 · 自动售票机', kind: 'ticket-machine', level: 'underground-hall', x: -79, z: -114, rotationRad: 0, note: 'B1F 梅北地下改札闸外，售票机随地下区域朝向布置。', evidence: source([8], 'Umekita B1F outside-ticket-gate ticket machines') },
-  {id:'daimaru-steps',name:'中央口—大丸 · 小半层台阶',kind:'stairs',level:'concourse',x:0,z:44,note:'南端往大丸／南中央口的小段台阶，与 1F 公共通路之间有局部高差；不作为独立完整楼层。高差与步数为示意。',evidence:source([5],'User-marked Central Court / South Central Gate transition')},
+  {id:'daimaru-steps',name:'中央口—大丸 · 西侧半层台阶',kind:'stairs',level:'concourse',x:-10,z:39,note:'南端往大丸／南中央口的小段台阶，与 1F 公共通路之间有局部高差；不作为独立完整楼层。高差与步数为示意。',evidence:source([5],'User-marked Central Court / South Central Gate transition')},
   {id:'daimaru-entry',name:'南中央口 · 大丸入口方向',kind:'entrance',level:'concourse',x:0,z:55,elevationOffset:1.3,note:'经小半层台阶衔接的 1F 南侧公共通道，两侧为大丸与 Hotel Granvia 一带。',evidence:p1},
   { id: 'ticket', name: 'JR 售票处', kind: 'ticket', level: 'concourse', x: 18, z: -7, note: '位于中央公共通路东侧；服务区位置关系据 1F 图整理，柜台尺寸与机柜数量为图形简化。', evidence: p1 },
   { id: 'information', name: '列车与旅游咨询', kind: 'information', level: 'concourse', x: 17, z: -21, note: '中央通路东侧的 Train and Tourist Information，位于售票处北侧。', evidence: p1 },
@@ -297,15 +297,15 @@ areas.push({id:'north-2f-public',level:'platform',name:'2F 北门大楼 · 中�
 for(const [id,x] of [[47,-3],[48,3]])addEscalator(`north-${id}`,landing(`north-${id}-1`,'concourse',x!,-41),landing(`north-${id}-2`,'platform',x!,-46),[3,5],`North public bank, diagram ${id}`);
 addEscalator('carillon-49',landing('carillon-49-1','concourse',53,-40),landing('carillon-49-2','platform',53,-45),[3,5],'Carillon Plaza public escalator, diagram 49');
 
-connections.push({id:'central-daimaru-steps',kind:'stairs',width:10,
-  from:landing('daimaru-step-lower','concourse',0,44),to:{...landing('daimaru-step-upper','concourse',0,49),elevationOffset:1.3},
-  evidence:source([5],'Small Central Court / South Central Gate stair transition; user-provided crop')});
+for(const [id,x]of [['central-daimaru-steps',-10],['central-daimaru-east-steps',10]] as const)connections.push({id,kind:'stairs',width:4,
+  from:landing(`${id}-lower`,'concourse',x,39),to:{...landing(`${id}-upper`,'concourse',x,47),elevationOffset:1.3},
+  evidence:source([5],'User photo facing north from Daimaru: raised public landing joins Central Court by side stairs; central bank descends south to B1')});
 for(const [id,z]of [[52,-14],[54,14]])connections.push({id:`central-stairs-${id}`,kind:'stairs',
   from:landing(`central-stairs-${id}-1`,'concourse',-34,z!),to:landing(`central-stairs-${id}-m`,'mezzanine',-29,z!),evidence:source([4,5],`Central Gate staircase ${id}: user-corrected plan axis parallel to platforms`)});
 for(const [id,z]of [[52,-14],[53,0],[54,14]])areas.push({id:`central-mezz-landing-${id}`,level:'mezzanine',name:'中央口楼梯夹层落台',kind:'paid',outline:rectangle(-29,z!,14,4),evidence:pm});
 addEscalator('central-55',landing('central55-1','concourse',-34,26),landing('central55-m','mezzanine',-34,21),[4,5],'Central Gate north/south mezzanine escalator 55');
-addEscalator('crost-67',landing('crost67-1','concourse',0,35),landing('crost67-b1','underground-hall',0,25),[5,6],'Central Court / Crost B1F escalator 67');
-for(const [id,x]of [[68,-8],[69,8]])connections.push({id:`crost-stairs-${id}`,kind:'stairs',from:landing(`crost${id}-1`,'concourse',x!,32),to:landing(`crost${id}-b1`,'underground-hall',x!,25),evidence:source([5,6],`Crost B1F staircase ${id}`)});
+addEscalator('crost-67',landing('crost67-1','concourse',0,31),landing('crost67-b1','underground-hall',0,43),[5,6],'Central Court / Crost B1F escalator 67; descends south, confirmed by user photo');
+for(const [id,x]of [[68,-8],[69,8]])connections.push({id:`crost-stairs-${id}`,kind:'stairs',from:landing(`crost${id}-1`,'concourse',x!,31),to:landing(`crost${id}-b1`,'underground-hall',x!,43),evidence:source([5,6],`Crost B1F staircase ${id}; descends south alongside bank 67`)});
 
 refineUpperLevelLinks(areas,connections,facilities);
 
