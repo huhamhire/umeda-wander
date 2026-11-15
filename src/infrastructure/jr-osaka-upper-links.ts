@@ -1,9 +1,12 @@
-import type {Evidence,Facility,FloorArea,LevelId,RouteNode,VerticalConnection} from '../domain/map/model.ts';
+import type {AtriumVoid,Evidence,Facility,FloorArea,LevelId,RouteNode,VerticalConnection} from '../domain/map/model.ts';
 import {passageOutline} from '../domain/map/geometry.ts';
 
 const evidence=(pages:number[],detail:string):Evidence=>({pages,detail});
 const rect=(x:number,z:number,w:number,d:number)=>[
   {x:x-w/2,z:z-d/2},{x:x+w/2,z:z-d/2},{x:x+w/2,z:z+d/2},{x:x-w/2,z:z+d/2}];
+export const northAtrium:AtriumVoid={id:'north-atrium-void',name:'北中庭 · 开放天井',
+  openings:[{level:'platform',outline:rect(-0.5,-48.5,26,21)},{level:'bridge',outline:rect(-0.5,-58.5,26,19)}],
+  evidence:evidence([2,3,5],'Shared open atrium between LUCUA wings, banks 2/3 and 47/48 on exterior floor edges; clear dimensions schematic')};
 
 /** Matched diagram IDs on PDF pages 2–5; dimensions remain schematic. */
 export function refineUpperLevelLinks(areas:FloorArea[],connections:VerticalConnection[],facilities:Facility[]):void {
@@ -35,10 +38,17 @@ export function refineUpperLevelLinks(areas:FloorArea[],connections:VerticalConn
   Object.assign(sakura,{x:-48,z:0,note:'51 号楼梯先到 M2F 夹层，再沿通道选择各站台的独立短楼梯。与中央口夹层通过南端横向联络段连接，坐标为示意。'});
 
   // A free-standing atrium bank arrives at the outside edge of the upper slab.
-  const northPad:FloorArea={id:'north-atrium-lower-landing',level:'platform',name:'北中庭 · 外侧候梯平台',kind:'public',outline:rect(-3,-55,20,12),evidence:evidence([2,3],'2/3: outside-edge atrium access between North Gate building 2F and 3F')};
+  const northPad:FloorArea={id:'north-atrium-lower-landing',level:'platform',name:'北中庭 · 北侧开放平台',kind:'public',label:true,outline:rect(-1,-63.5,42,9),evidence:evidence([2,3],'Atrium north platform beyond the shared void; outside-edge access between North Gate building 2F and 3F')};
   areas.push(northPad);
+  areas.find(a=>a.id==='north-2f-public')!.label=false;
+  for(const [id,x]of [['west',-17],['east',16]] as const)areas.push({id:`north-atrium-${id}-gallery`,level:'platform',name:'北中庭 · 侧廊',kind:'public',outline:rect(x,-53.5,7,11),evidence:northAtrium.evidence});
+  for(const [id,x]of [['north-47',-0.5],['north-48',9]] as const){
+    const c=connections.find(c=>c.id===id)!;
+    Object.assign(c.from,{x,z:-41});Object.assign(c.to,{x,z:-59});c.placement='exterior';
+    c.evidence=evidence([3,5],'47/48: open atrium ascent to north-side 2F platform edge, no individual enclosed floor well');
+  }
   for(const [id,kind,x]of [['north-2','escalator',-5],['north-2-stairs','stairs',-10],['north-3','escalator',3]] as const){
-    const connection=link(id,kind,{level:'platform',x,z:-59},{level:'bridge',x,z:-49},[2,3],'North atrium outside-edge 2F/3F connection; no interior slab well');
+    const connection=link(id,kind,{level:'platform',x,z:-63},{level:'bridge',x,z:-49},[2,3],'North atrium outside-edge 2F/3F connection; no interior slab well');
     connection.placement='exterior';
   }
 
@@ -53,8 +63,8 @@ export function refineUpperLevelLinks(areas:FloorArea[],connections:VerticalConn
   southArea('south-building-3f-lift-bay','platform','南门大楼 3F · I 直梯候梯区',rect(-21,47,7,14));
   southArea('south-building-4f','bridge','南门大楼 4F · 连接边界',rect(24,60,20,12));
   southArea('south-bridge-4f-link','bridge','联络桥—南门大楼 4F',passageOutline({x:3,z:44},{x:20,z:56},5));
-  link('south-15','escalator',{level:'platform',x:-8,z:54},{level:'bridge',x:-8,z:43},[2,3],'15: public bridge to South Gate building 3F');
-  link('south-stairs-16','stairs',{level:'platform',x:-14,z:54},{level:'bridge',x:-14,z:43},[2,3],'16: stairs parallel to 15, South Gate building 3F to bridge');
+  link('south-15','escalator',{level:'platform',x:-2,z:56},{level:'bridge',x:-8,z:48},[2,3],'15: diagonal exterior flight from South Gate public entrance to the bridge edge').placement='exterior';
+  link('south-stairs-16','stairs',{level:'platform',x:-9,z:56},{level:'bridge',x:-15,z:48},[2,3],'16: diagonal exterior stairs parallel to 15, open to the public entrance').placement='exterior';
   const lift=link('south-lift-i','elevator',{level:'platform',x:-21,z:44},{level:'bridge',x:-21,z:44},[2,3],'I: South Gate building 3F to bridge public approach');
   lift.doorFacingRad=Math.PI/2;
   link('south-building-50','escalator',{level:'mezzanine',x:16,z:63},{level:'platform',x:16,z:56},[3,4],'50: South Gate building 2F to 3F');

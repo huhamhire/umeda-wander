@@ -30,5 +30,11 @@ export function cameraEnvelope(layout:StationLayout,levels:Level[],state:{level:
   for(const guide of layout.guides??[])for(const p of guide.points){
     if(matches(p.level))points.push(new T.Vector3(p.x,elevation(p.level)+3,p.z));
   }
+  if(!state.focusStation)for(const building of layout.buildings??[])for(const floor of building.floors)
+    for(const p of building.outline)points.push(new T.Vector3(p.x,elevation(floor.level)+(floor.elevationOffset??0)+3,p.z));
+  for(const passage of layout.passages??[]){
+    if(state.focusStation&&!passage.points.some(p=>p.station===state.focusStation))continue;
+    for(const p of passage.points)points.push(new T.Vector3(p.x,elevation(p.level)+(p.elevationOffset??0)+3,p.z));
+  }
   return !points.length&&state.focusStation?cameraEnvelope(layout,levels,{...state,focusStation:null},elevation):points;
 }

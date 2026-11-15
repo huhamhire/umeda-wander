@@ -17,6 +17,6 @@ const locate=(lat:number,lon:number,bearingDeg:number,offset:{along?:number;east
 };
 export const districtPlacements={
   // OSM station nodes 3544516031 and 7811929025. +X points toward the northern end.
-  hankyu:locate(34.7054194,135.4983721,-10.64,{along:80,east:30}),
+  hankyu:{...locate(34.7054194,135.4983721,-10.64,{along:35,east:30}),planScale:0.65},
   metro:locate(34.7034131,135.4975879,-15.64,{east:30}),
 };

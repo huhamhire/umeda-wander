@@ -2,7 +2,7 @@ import {stationDraft} from './station-draft.ts';
 import {districtPlacements} from './district-placement.ts';
 
 // Local +X heads north; placement is a district sketch, not a surveyed footprint.
-const b=stationDraft('hankyu-umeda','阪急大阪梅田站','hankyu',districtPlacements.hankyu.origin,districtPlacements.hankyu.angle,-1);
+const b=stationDraft('hankyu-umeda','阪急大阪梅田站','hankyu',districtPlacements.hankyu.origin,districtPlacements.hankyu.angle,-1,districtPlacements.hankyu.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
   {id:'hankyu-ground',station:draft.id,label:'1F',name:'地面入口与公共通道',y:0,stackIndex:0,description:'阪急地面入口、BIGMAN 方向及公共通路；周边商场仅保留接口。'},

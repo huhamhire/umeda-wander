@@ -4,7 +4,7 @@ import {districtPlacements} from './district-placement.ts';
 import {metroStation} from './metro-umeda-map.ts';
 
 const p=districtPlacements.hankyu;
-const target=rotatePoint({x:-26,z:-52},{x:0,z:0},p.angle);
+const target=rotatePoint({x:-26*p.planScale,z:-52*p.planScale},{x:0,z:0},p.angle);
 target.x+=p.origin.x;target.z+=p.origin.z;
 const metroInterface=metroStation.layout.areas.find(a=>a.id==='metro-umeda-jr-interface')!;
 // Derive the landing from the actual station footprint, including display offsets.
@@ -12,8 +12,12 @@ const metroLanding=metroInterface.outline.reduce((sum,p)=>({x:sum.x+p.x/metroInt
 // These are public connection sketches, not surveyed transfer paths or routing edges.
 export const districtAreas:FloorArea[]=[{
   id:'district-jr-hankyu-deck',level:'platform',kind:'public',name:'2F 站外连廊 · 阪急方向',label:true,
-  outline:passageOutline({x:59,z:-44},target,5),
+  outline:passageOutline({x:73,z:-60},target,5),
   evidence:{source:'jr',pages:[3,5],detail:'JR North Gate 2F / Carillon Plaza toward Hankyu; city district map confirms upper-deck connection, bend and dimensions simplified'},
+},{
+  id:'district-jr-yodobashi-junction',level:'platform',kind:'public',name:'2F 北口 · 连廊分支',label:false,
+  outline:passageOutline({x:59,z:-44},{x:73,z:-60},5),
+  evidence:{source:'jr',pages:[3],detail:'Carillon Plaza to the Yodobashi east-side junction; user satellite reference separates the northbound Yodobashi branch from the eastbound Hankyu bridge, schematic dimensions'},
 }];
 export const districtConnections:VerticalConnection[]=[{
   id:'district-jr-metro-stairs',kind:'stairs',

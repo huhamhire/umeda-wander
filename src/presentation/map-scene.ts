@@ -19,6 +19,11 @@ import {cameraEnvelope} from './camera-framing.ts';
 import {stationPlinthParts} from './station-plinth.ts';
 import {buildRailApproachModel} from './rail-approach-model.ts';
 import {platformRail} from '../domain/map/rail-geometry.ts';
+import {buildCommercialFloor} from './commercial-building-model.ts';
+import {PublicPassageModel} from './public-passage-model.ts';
+import {planAtriumOpenings} from '../application/atrium-openings.ts';
+import {buildAtriumRailing} from './atrium-model.ts';
+import {LabelOcclusion,visibleLabelOccluders} from './label-occlusion.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -34,6 +39,8 @@ export class MapScene {
   private ground?: T.Mesh;
   private appearance = new LayerAppearance();
   private labels: MapLabel[] = [];
+  private labelOccluders:T.Object3D[]=[];
+  private labelOcclusion=new LabelOcclusion();
   private pickables: T.Object3D[] = [];
   private raycaster = new T.Raycaster();
   private route = new T.Group();
@@ -55,6 +62,7 @@ export class MapScene {
   private activeFacility?: Facility;
   private nodeById: Map<string, RouteNode>;
   private connectors: VerticalConnectionModel[] = [];
+  private publicPassages:PublicPassageModel[]=[];
   private openings: FloorOpening[] = [];
   private gateBoundaries: GateBoundary[] = [];
 
@@ -81,10 +89,12 @@ export class MapScene {
     this.scene.add(sun);
     const ground = new T.Mesh(new T.PlaneGeometry(142, 130), new T.ShadowMaterial({ opacity: 0.075, depthWrite: false }));
     ground.rotation.x = -Math.PI / 2; ground.position.y = -4; ground.receiveShadow = true; this.scene.add(ground); this.ground=ground;
-    this.openings = planFloorOpenings(this.layout.connections, this.levels, this.layout.platforms);
+    this.openings = [...planFloorOpenings(this.layout.connections, this.levels, this.layout.platforms),...planAtriumOpenings(this.layout.atria??[])];
     this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
     this.buildStation();
     this.scene.add(this.roof, this.route, this.selected);
+    this.scene.traverse(object=>{if(object.userData.labelOccluder)this.labelOccluders.push(object);});
+    this.roof.traverse(object=>{if(object instanceof T.Mesh)this.labelOccluders.push(object);});
     this.bindGestures();
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
@@ -117,8 +127,22 @@ export class MapScene {
     for(const {geometry,color}of stationPlinthParts(this.openings)){
       if(!geometry.getAttribute('position'))continue;
       const mesh=new T.Mesh(geometry,this.material(color));mesh.castShadow=true;mesh.receiveShadow=true;base.add(mesh);
+      mesh.userData.labelOccluder=true;
     }
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
+    const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
+    for(const building of this.layout.buildings??[])for(const floor of building.floors){
+      this.groups.get(floor.level)!.add(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext));
+      const x=building.outline.reduce((s,p)=>s+p.x,0)/building.outline.length;
+      const z=building.outline.reduce((s,p)=>s+p.z,0)/building.outline.length;
+      this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true);
+    }
+    for(const passage of this.layout.passages??[]){
+      const model=new PublicPassageModel(passage,publicContext);this.publicPassages.push(model);this.scene.add(model.group);
+      const boundary=passage.points.find(p=>p.boundaryName);
+      const point=boundary??passage.points[Math.floor(passage.points.length/2)]!;
+      this.label(boundary?.boundaryName??passage.name,point.x,3+(point.elevationOffset??0),point.z,point.level,false,!!boundary);
+    }
     const areaColors = { public: colors.slab, paid: colors.mint, commercial: 0xe4d4c3, service: 0xd7dfc4 };
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
@@ -127,6 +151,7 @@ export class MapScene {
       if (!geometry.getAttribute('position')) continue;
       const palette=stationPalettes[this.levels.find(l=>l.id===area.level)?.station??'jr-osaka'];
       const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColors[area.kind]));
+      mesh.userData.labelOccluder=true;
       mesh.castShadow = true; mesh.receiveShadow = true;
       this.groups.get(area.level)!.add(mesh);
       if (area.label) {
@@ -150,6 +175,7 @@ export class MapScene {
       const slab = new T.Mesh(buildFloorGeometry(outline, this.openings.filter(opening => opening.level === level).map(opening => opening.outline), 0.95, -0.475),
         this.material(level==='underground-platform'?0x90b6c5:stationPalettes[this.levels.find(l=>l.id===level)?.station??'jr-osaka'].platform));
       slab.name = `platform-slab-${platform.id}`; slab.castShadow = true; slab.receiveShadow = true; platformGroup.add(slab);
+      slab.userData.labelOccluder=true;
       for (const [index, number] of tracks.entries()) {
         const {side,across,length:railLength,center:railCenter}=platformRail(platform,index);
         block(railCenter, -0.62, across, railLength, 0.3, 2.5, 0xb9bcae);
@@ -192,6 +218,7 @@ export class MapScene {
           const geometry=buildFloorGeometry(footprint,canopyCuts,0.3,3.05);
           if(geometry.getAttribute('position')){
             const mesh=new T.Mesh(geometry,this.material(0xe7e9dc));mesh.castShadow=true;mesh.receiveShadow=true;platformGroup.add(mesh);
+            mesh.userData.labelOccluder=true;
           }
           for (const dx of [-5, 5]) if(!canopyCuts.some(cut=>pointInPolygon(position(canopy.x+dx,0),cut)))
             block(canopy.x + dx, 1.8, 0, 0.3, 2.7, 0.3, colors.steel);
@@ -209,6 +236,8 @@ export class MapScene {
     for(const guide of this.layout.guides??[]){
       for(const p of guide.points)if(p.caption)this.label(p.caption,p.x,3,p.z,p.level,false,true);
     }
+    for(const atrium of this.layout.atria??[])for(const opening of atrium.openings)
+      this.groups.get(opening.level)!.add(buildAtriumRailing(atrium,opening.level,this.layout.areas,this.layout.connections));
     // Handrails frame the narrow elevated passages, not imaginary full floor plates.
     for (const id of ['mezzanine', 'bridge'] as const) {
       const group = this.groups.get(id)!;
@@ -278,6 +307,8 @@ export class MapScene {
     } else if (facility.kind === 'information') {
       this.box(group, facility.x, 2.1, facility.z, 7, 0.4, 3, colors.white);
       this.label('咨询 i', facility.x, 3.5, facility.z, facility.level);
+    } else if(facility.kind==='convenience-store'){
+      this.label(facility.name,facility.x,3.3,facility.z,facility.level,false,true);
     } else if (['stairs', 'escalator', 'elevator'].includes(facility.kind)) {
       this.label(facility.kind === 'elevator' ? '直梯 ↕' : facility.kind === 'stairs' ? '夹层楼梯' : '扶梯 ↗', facility.x, 2.2, facility.z, facility.level);
     }
@@ -303,7 +334,7 @@ export class MapScene {
   private batchStaticMeshes(group: T.Group): void {
     const batches = new Map<T.Material, T.Mesh[]>();
     for (const child of group.children) {
-      if (!(child instanceof T.Mesh) || child.userData.dynamic || Array.isArray(child.material)) continue;
+      if (!(child instanceof T.Mesh) || child.userData.dynamic || child.userData.labelOccluder || Array.isArray(child.material)) continue;
       const batch = batches.get(child.material) ?? []; batch.push(child); batches.set(child.material, batch);
     }
     for (const [material, meshes] of batches) {
@@ -404,6 +435,7 @@ export class MapScene {
       group.visible=role!=='hidden';this.appearance.apply(group,role==='context');
     }
     const baseRole=viewLayerRole(this.levels,this.state,'concourse');
+    for(const passage of this.publicPassages)passage.update(id=>this.levelY(id),id=>viewLayerRole(this.levels,this.state,id));
     this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context');
     if(this.ground)this.ground.visible=this.base.visible;
     for (const connector of this.connectors) {
@@ -452,6 +484,7 @@ export class MapScene {
     this.renderer.render(this.scene, this.camera);
     const rect = this.host.getBoundingClientRect();
     const occupied: { x: number; y: number; w: number; h: number }[] = [];
+    const occluders=visibleLabelOccluders(this.labelOccluders);
     const priority=(label:MapLabel)=>Number(label.level&&viewLayerRole(this.levels,this.state,label.level)==='current')*4+Number(label.element.classList.contains('emphasis'));
     const orderedLabels = [...this.labels].sort((a,b)=>priority(b)-priority(a));
     const placements = orderedLabels.map(label => {
@@ -460,10 +493,11 @@ export class MapScene {
       label.element.classList.toggle('context',role==='context');
       if(role==='context'&&!label.element.classList.contains('emphasis'))visible=false;
       if ((mobile || this.state.level === 'all') && this.zoomValue < 1.2 && !label.element.classList.contains('emphasis')) visible = false;
-      const point = label.position.clone();
-      point.y += label.roof ? this.roof.position.y : label.level ? this.levelY(label.level) : 0;
-      point.project(this.camera);
+      const anchor = label.position.clone();
+      anchor.y += label.roof ? this.roof.position.y : label.level ? this.levelY(label.level) : 0;
+      const point=anchor.clone().project(this.camera);
       visible = visible && Math.abs(point.x) < 0.96 && Math.abs(point.y) < 0.94;
+      if(visible&&this.labelOcclusion.isOccluded(anchor,this.camera,occluders))visible=false;
       label.element.hidden = !visible;
       const x = rect.left + (point.x + 1) * this.width / 2, y = rect.top + (1 - point.y) * this.height / 2;
       label.element.style.left = `${x}px`;

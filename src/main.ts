@@ -34,11 +34,14 @@ const showSidebarTab=bindSidebarTabs([element<HTMLButtonElement>('#tab-layers'),
 function refreshFacilities():void {
   const visible=facilities.filter(f=>!session.state.focusStation||levels.find(l=>l.id===f.level)!.station===session.state.focusStation);
   facilityPicker.replaceChildren(new Option('选择闸口、设施或站台…',''));
-  for(const f of visible)facilityPicker.append(new Option(`${levels.find(l=>l.id===f.level)!.label} · ${f.name}`,f.id));
+  for(const f of visible){
+    const location=f.kind==='convenience-store'?(f.level==='bridge'?'桥上改札内':'中央口外'):'';
+    facilityPicker.append(new Option(`${levels.find(l=>l.id===f.level)!.label} · ${f.name}${location?' · '+location:''}`,f.id));
+  }
   element('#poi-list').replaceChildren();
-  const icons={gate:'▥',ticket:'▤','ticket-machine':'▣',escalator:'↗',elevator:'↕'};
-  const labels={gate:'改札口',ticket:'售票处','ticket-machine':'售票机',escalator:'扶梯',elevator:'直梯'};
-  for(const kind of ['gate','ticket','ticket-machine','escalator','elevator'] as const){
+  const icons={gate:'▥',ticket:'▤','ticket-machine':'▣',escalator:'↗',elevator:'↕','convenience-store':'▧'};
+  const labels={gate:'改札口',ticket:'售票处','ticket-machine':'售票机',escalator:'扶梯',elevator:'直梯','convenience-store':'便利店'};
+  for(const kind of ['gate','ticket','ticket-machine','escalator','elevator','convenience-store'] as const){
     const f=visible.find(f=>f.kind===kind);if(!f)continue;
     const button=document.createElement('button');button.type='button';button.dataset.poi=f.id;
     button.innerHTML=`<span aria-hidden="true">${icons[kind]}</span>${labels[kind]}`;
@@ -75,7 +78,7 @@ function select(f:Facility):void {
   if(session.state.focusStation!==owner)scene?.reset();
   session.state.focusStation=owner;session.state.level=f.level;session.state.route=null;refreshFacilities();
   element('#detail-title').textContent=f.name;element('#detail-note').textContent=f.note;
-  const source={jr:'JR 参考图',hankyu:'阪急 SVG',metro:'Metro 参考图'}[f.evidence.source??'jr'];
+  const source={jr:'JR 参考图',hankyu:'阪急 SVG',metro:'Metro 参考图',district:'周边连接资料'}[f.evidence.source??'jr'];
   element('#detail-tag').textContent=`${levels.find(l=>l.id===f.level)!.label} / ${source} ${f.evidence.source==='hankyu'?'':'P'+f.evidence.pages.join('、')}`;
   facilityPicker.value=f.id;element('.inspector').classList.add('has-selection');
   for(const b of document.querySelectorAll<HTMLButtonElement>('[data-poi]'))b.classList.toggle('selected',b.dataset.poi===f.id);

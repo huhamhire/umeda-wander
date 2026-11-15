@@ -1,0 +1,103 @@
+import type {CommercialBuilding,CommercialBuildingId,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
+import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
+import {commercialFootprints} from './commercial-footprints.ts';
+import {districtFrame,districtPlacements} from './district-placement.ts';
+
+const cityMap='https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf';
+const access={
+  'hankyu-dept':'https://www.hankyu-dept.co.jp/honten/map/index.html',
+  daimaru:'https://www.daimaru.co.jp/umedamise/access.html',
+  lucua:'https://www.lucua.jp/access/',
+  'lucua-1100':'https://www.lucua.jp/access/',
+  yodobashi:'https://global.yodobashi/stores/yodobashi_shopping_mall/001670/',
+};
+const east=districtFrame.bearingDeg*Math.PI/180;
+// Raw OSM geometry is retained separately; fit it to the existing oversized station sketch.
+const fit=(id:CommercialBuildingId,p:Point2):Point2=>{
+  if(id==='lucua-1100')return {x:p.x,z:p.z-24};
+  if(id==='lucua')return {x:p.x+11,z:p.z-25};
+  if(id==='daimaru')return {x:-25+(p.x+30.59)*58/50.01,z:p.z+25};
+  if(id==='yodobashi')return {x:p.x,z:p.z-28};
+  return {x:p.x+30*Math.sin(east),z:p.z+30*Math.cos(east)};
+};
+const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=[
+  ['hankyu-dept','阪急百货 · 梅田本店',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'south-deck',name:'2F'}]],
+  ['daimaru','大丸梅田店 / 南门大楼',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F',elevationOffset:1.3},{level:'south-deck',name:'2F'}]],
+  ['lucua','LUCUA',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
+  ['lucua-1100','LUCUA 1100',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
+  ['yodobashi','Yodobashi / LINKS UMEDA',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
+];
+export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name,floors])=>{
+  const raw=commercialFootprints[id];
+  return {id,name,floors,outline:raw.outline.map(p=>fit(id,p)),evidence:{source:'district',pages:[],
+    urls:[`https://www.openstreetmap.org/way/${raw.way}`,access[id],cityMap],
+    detail:`OSM way ${raw.way} v${raw.version}, simplified outline and explicit display fitting; building envelope includes the host complex, not a surveyed retail lease boundary; no interior plan`}};
+});
+const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
+const portal=(id:CommercialBuildingId,name:string,near:Point2):PassageEndpoint=>{
+  const b=building(id),floor=b.floors.find(f=>f.name===name)!;
+  return {...closestPolygonPoint(near,b.outline),level:floor.level,elevationOffset:floor.elevationOffset,buildingId:id};
+};
+const jr=(level:LevelId,x:number,z:number):PassageEndpoint=>({level,x,z,station:'jr-osaka'});
+const metro=(along:number,across:number):PassageEndpoint=>{
+  const m=districtPlacements.metro,p=rotatePoint({x:along,z:across},{x:0,z:0},m.angle);
+  return {level:'metro-hall',x:p.x+m.origin.x,z:p.z+m.origin.z,station:'metro-umeda'};
+};
+const publicPoint=(level:LevelId,x:number,z:number):PassageEndpoint=>({level,x,z});
+export const commercialPassages:PublicPassage[]=[];
+const link=(id:string,name:string,kind:PublicPassage['kind'],points:PassageEndpoint[],width=4)=>{
+  const sites=points.flatMap(p=>p.buildingId?[access[p.buildingId]]:[]);
+  commercialPassages.push({id,name,kind,points,width,evidence:{source:'district',pages:[],urls:[cityMap,...new Set(sites)],
+    detail:'Public approach to exterior portals only; topology based on city/official access maps, bends and heights fitted to schematic station geometry, not verified entrance-by-entrance. No retail interior or navigation edge.'}});
+};
+
+for(const [id,x]of [['lucua',30],['lucua-1100',-33]] as const){
+  link(`${id}-1f-entry`,`${building(id).name} · 1F 入口`,'entrance',[jr('concourse',x,-41),portal(id,'1F',{x,z:-41})]);
+  link(`${id}-2f-deck`,`${building(id).name} · 2F 连廊`,'deck',[jr('platform',x,-43),portal(id,'2F',{x,z:-43})]);
+  if(id==='lucua')link(`${id}-b1-entry`,`${building(id).name} · 地下入口`,'underground',[jr('underground-hall',0,-52),portal(id,'B1',{x:0,z:-52})]);
+}
+link('yodobashi-east-deck','Yodobashi · 2F 东侧联络桥','deck',[
+  publicPoint('platform',73,-60),portal('yodobashi','2F',{x:91,z:-82})]);
+link('yodobashi-west-deck','Yodobashi · 2F 西侧联络桥','deck',[
+  jr('platform',-1,-67),publicPoint('platform',-1,-74),portal('yodobashi','2F',{x:12,z:-82})]);
+link('yodobashi-metro-b1','M16 北改札外 → Yodobashi B1','underground',[
+  metro(67,-18),publicPoint('metro-hall',96,-76),portal('yodobashi','B1',{x:91,z:-89})]);
+link('hankyu-dept-metro-b1','M16 闸外 → 阪急百货 B1','underground',[metro(7,23),portal('hankyu-dept','B1',{x:122,z:15})]);
+link('daimaru-crost-b1','Crost → 大丸 B1','underground',[jr('underground-hall',0,31),portal('daimaru','B1',{x:0,z:38})]);
+// JR PDF 1F pedestrian bridge + city map + user satellite reference:
+// the north/south arms skirt the bus loop and share an east-side spine.
+const northWest={...publicPoint('south-deck',53,43),station:'jr-osaka' as const};
+const northEast=portal('hankyu-dept','2F',{x:94,z:43});
+const southWest=portal('daimaru','2F',{x:30,z:80}),southEast=portal('hankyu-dept','2F',{x:97,z:84});
+const roadDirection={x:Math.cos(districtPlacements.metro.angle),z:Math.sin(districtPlacements.metro.angle)};
+const roadOrigin={x:64,z:64};
+const streetJunction=(a:Point2,b:Point2):PassageEndpoint=>{
+  const dx=b.x-a.x,dz=b.z-a.z,t=((roadOrigin.x-a.x)*roadDirection.z-(roadOrigin.z-a.z)*roadDirection.x)/(dx*roadDirection.z-dz*roadDirection.x);
+  return publicPoint('south-deck',a.x+dx*t,a.z+dz*t);
+};
+const northJunction=streetJunction(northWest,northEast),southJunction=streetJunction(southWest,southEast);
+link('umeda-deck-spine','梅田新步道桥 · 东侧主干','deck',[northJunction,southJunction],5);
+link('daimaru-deck-north-arm','JR 南口外 · 步道桥北连接臂','deck',[northWest,northJunction],5);
+link('daimaru-deck-south-arm','大丸前侧公共通道 · 南连接臂','deck',[southWest,southJunction],5);
+link('hankyu-dept-deck-north-arm','步道桥北支线 → 阪急百货 2F','deck',[northJunction,northEast],5);
+link('hankyu-dept-deck-south-arm','步道桥南支线 → 阪急百货 2F','deck',[southJunction,southEast],5);
+link('hanshin-dept-deck-reserve','步道桥 → 阪神百货方向','deck',[southJunction,
+  {...publicPoint('south-deck',southJunction.x-roadDirection.x*30,southJunction.z-roadDirection.z*30),boundaryName:'阪神百货 · 2F 连接预留'}],5);
+
+const deckProof={source:'jr' as const,pages:[5],urls:[cityMap,'https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf'],
+  detail:'Pedestrian bridge in JR 1F south/east plan; bus-loop perimeter, north/south branches and Hanshin-facing outlet cross-checked with the user satellite reference. Coordinates and grouping at 2F are schematic, not surveyed deck elevations.'};
+for(const p of commercialPassages.filter(p=>p.id.includes('deck-')||p.id==='umeda-deck-spine'))if(p.id.startsWith('daimaru-')||p.id.startsWith('hankyu-dept-')||p.id.startsWith('hanshin-')||p.id==='umeda-deck-spine')p.evidence=deckProof;
+export const commercialAreas:FloorArea[]=[{
+  id:'umeda-deck-north-landing',level:'south-deck',name:'新步道桥 · 北侧上桥平台',kind:'public',
+  outline:passageOutline(northWest,northJunction,5),evidence:deckProof,
+}];
+const northLength=Math.hypot(northJunction.x-northWest.x,northJunction.z-northWest.z);
+const stairTop={x:northWest.x+(northJunction.z-northWest.z)/northLength*2.5,z:northWest.z-(northJunction.x-northWest.x)/northLength*2.5};
+export const commercialConnections:VerticalConnection[]=[{
+  id:'umeda-deck-north-stairs',kind:'stairs',placement:'exterior',width:2.6,
+  from:{id:'umeda-deck-north-ground',level:'concourse',x:stairTop.x,z:stairTop.z-6.5},
+  to:{id:'umeda-deck-north-upper',level:'south-deck',...stairTop},
+  evidence:deckProof,
+}];
+
+link('grand-front-deck-reserve','北侧 2F 连廊 → Grand Front','deck',[publicPoint('platform',-1,-74),publicPoint('platform',-22,-84),{...publicPoint('platform',-40,-88),boundaryName:'Grand Front · 2F 连接接口'}]);

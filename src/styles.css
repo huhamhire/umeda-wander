@@ -42,7 +42,7 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
   .sidebar .floor{font-size:8px;padding:6px 2px}.sidebar .floor-number{font-size:10px;flex:none;width:auto}
   .sidebar .level-description{font-size:8px;min-height:0}.sidebar .layer-options{margin:5px 0 0;gap:8px}
   .sidebar .inspector.has-selection{width:auto}.sidebar .inspector .detail{display:block;font-size:10px;padding-top:7px;margin-top:8px}
-  .sidebar .inspector .detail p{font-size:9px;min-height:0}.sidebar .poi-list{grid-template-columns:repeat(5,1fr);gap:5px}
+  .sidebar .inspector .detail p{font-size:9px;min-height:0}.sidebar .poi-list{grid-template-columns:repeat(3,1fr);gap:5px}
   .sidebar .poi-list button{font-size:9px;padding:7px 2px}.sidebar .poi-list button span{font-size:15px}
   .sidebar .legend{display:flex;margin-top:9px}.sidebar .picker-label{margin-top:9px}
   .route-card{width:auto;right:16px;left:16px;transform:none}.route-switch button{font-size:8px;padding:4px 6px}

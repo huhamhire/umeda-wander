@@ -5,7 +5,7 @@ export interface FloorOption {id:LevelId;y:number;label:string;name:string;membe
 // Shared scene heights are presentation groups, not shared station identities.
 const captions:Record<number,{label:string;name:string}>={
   16:{label:'3F',name:'JR 联络桥 / 阪急站台'},
-  8:{label:'2F',name:'JR 站台 / 阪急站厅'},
+  8:{label:'2F',name:'站台 / 站厅 / 站外连廊'},
   0:{label:'1F',name:'底面站厅 / 中央口'},
   [-8]:{label:'B1',name:'地下站厅 / 御堂筋线通路'},
   [-16]:{label:'B2',name:'梅北 / 御堂筋线站台'},

@@ -56,6 +56,7 @@ export const areas: FloorArea[] = [
   { id: 'midosuji-mezz-south', level: 'mezzanine', name: '1/2 番线连接段', kind: 'paid', outline: rectangle(42, 30, 23, 6), evidence: pm },
   { id: 'bridge-public', level: 'bridge', name: '南北连络桥 · 闸外', kind: 'public', outline: rectangle(-8, 0, 8, 76), label: true, evidence: pb },
   { id: 'bridge-paid', level: 'bridge', name: '桥上改札内', kind: 'paid', outline: rectangle(2.5, 0, 13, 70), label: true, evidence: pb },
+  {id:'bridge-convenience-store',level:'bridge',name:'桥上改札内 · 便利店店面',kind:'commercial',outline:rectangle(-1,25,3.5,4.5),height:1.4,evidence:source([2],'Seven-Eleven Heart-in symbol near the south end of the Bridge Gate paid concourse, adjacent to banks 11/13; frontage schematic')},
   { id: 'bridge-ticket-wall', level: 'bridge', name: '售票机背墙', kind: 'service', outline: rectangle(-4.2, -11, 0.3, 7.5), height: 3.6, evidence: source([2], 'Ticket machines backed against the public passage wall; wall dimensions schematic') },
   { id: 'bridge-north', level: 'bridge', name: '北门大楼 3F', kind: 'public', outline: rectangle(0, -43.5, 61, 11), evidence: pb },
   { id: 'bridge-south', level: 'bridge', name: '南门大楼 3F', kind: 'public', outline: rectangle(-3, 44, 25, 12), evidence: pb },
@@ -98,6 +99,8 @@ export const facilities: Facility[] = [
   { id: 'mezz-sakura', name: '樱桥口内夹层通道', kind: 'stairs', level: 'mezzanine', x: -40, z: 0, note: '西侧窄通道，与中央口内通道在局部联络。这里只表现选取的楼梯与联络段。', evidence: pm },
   { id: 'platform', name: '5/6 番线站台', kind: 'entrance', level: 'platform', x: 22, z: 6, note: '地上 2F，5 与 6 番线共享一组岛式站台；纠正首版将 6/7 配成一组的示意编号。', evidence: pp },
   { id: 'bridge', name: '桥上改札口', kind: 'gate', level: 'bridge', x: -3, z: 4, axis: 'z', note: '位于 3F。西侧是公共南北连络桥，东侧是通往各站台的闸内区域；与 1F 中央改札不同。', evidence: pb },
+  {id:'store-central',name:'7-Eleven',kind:'convenience-store',level:'concourse',x:18,z:18,note:'JR 参考图 1F 的 Souvenir and Convenience store 区域，位于中央通路东侧、改札外。只标店面位置，不展开内部布局。',evidence:source([5],'Seven-Eleven Heart-in symbol in the souvenir/convenience-store area east of Central concourse')},
+  {id:'store-bridge',name:'7-Eleven',kind:'convenience-store',level:'bridge',x:-1,z:25,note:'JR 参考图 3F 桥上改札内南段、11/13 号设施附近的便利店。与 1F 中央口店区分，位置与店面尺寸为示意。',evidence:source([2],'Seven-Eleven Heart-in symbol south of Bridge Gate within the paid concourse, near banks 11/13')},
 ];
 const landing = (id: string, level: RouteNode['level'], x: number, z: number): RouteNode => ({ id, level, x, z });
 export const connections: VerticalConnection[] = [
@@ -250,10 +253,22 @@ const passageFacility = facilities.find(facility => facility.id === 'umekita-lin
 passageFacility.x = (passageStart.x + passageEnd.x) / 2;
 passageFacility.z = (passageStart.z + passageEnd.z) / 2;
 const join = nodes.find(node => node.id === 'public-join')!;
-// Join the North Gate B1F public corridor to the rotated station's public approach.
+// PDF B1F: the public Umekita approach skirts north of LUCUA 1100,
+// then turns south along the atrium side, rather than cutting through the store.
+const publicEntry=nodes.find(node=>node.id==='public-b1-entry')!;
+const publicTurn=nodes.find(node=>node.id==='public-b1-turn')!;
+Object.assign(publicTurn,{x:-4,z:-75});Object.assign(join,{x:-60,z:-75});
+areas.find(area=>area.id==='north-b1-public')!.outline=passageOutline(publicEntry,publicTurn,7);
+areas.push({id:'north-b1-east-public',level:'underground-hall',kind:'public',name:'北门 B1F · 中庭—LUCUA 东侧公共通路',
+  outline:passageOutline(publicEntry,{x:61,z:-52},7),evidence:source([6],'North Gate B1F public east-west passage through the LUCUA side, ending at the diagram boundary toward Metro/Hankyu/Yodobashi')});
+areas.find(area=>area.id==='umekita-east-link')!.outline=passageOutline(join,nodes.find(node=>node.id==='umekita-gate-out')!,7);
 areas.push({ id: 'public-b1-connector', level: 'underground-hall', name: '梅北—北侧 B1F 闸外联络通路', kind: 'public',
-  outline: [{ x: -35, z: -56 }, { x: -31, z: -48 }, { x: join.x + 3, z: join.z + 4 }, { x: join.x - 3, z: join.z - 4 }],
-  evidence: source([6, 8], 'B1F outside-ticket-gate underground connection; geometry simplified') });
+  outline:passageOutline(publicTurn,join,7),
+  evidence: source([6, 8], 'B1F public connection around the north edge of LUCUA 1100 and the atrium-side turn; schematic widths and positions') });
+for(const edge of edges.filter(e=>['public-b1-entry','public-b1-turn','public-join'].includes(e.from))){
+  const a=nodes.find(n=>n.id===edge.from)!,b=nodes.find(n=>n.id===edge.to)!;
+  edge.cost=Math.hypot(b.x-a.x,b.z-a.z);
+}
 
 // Additional banks read from the floor plans. Directions are geometric only;
 // operational up/down direction is not inferred or inserted into the route graph.

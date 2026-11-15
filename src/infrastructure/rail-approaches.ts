@@ -15,7 +15,7 @@ export function createRailApproaches(platforms:Platform[]):RailApproach[]{
   const segment=(a:RailApproach,key:string,from:RailNode,to:RailNode,c1:Point2,c2:Point2,platformId?:string,track?:number)=>{
     const s:RailSegment={id:`${a.id}-${key}`,from:from.id,to:to.id,control1:c1,control2:c2,platformId,track};a.segments.push(s);
   };
-  const main=make('jr-east-main','jr-osaka','JR 本线 · 新大阪 / 京都方向',0x8c9faf,{x:180,z:-37});
+  const main=make('jr-east-main','jr-osaka','JR 本线 · 新大阪 / 京都方向',0x8c9faf,{x:180,z:-20});
   const loop=make('jr-east-loop','jr-osaka','JR 环状线 · 京桥方向',0xb89b87,{x:180,z:31});
   const mainOut=[0,1,2,3].map(i=>node(main,`out-${i}`,{x:96,z:2-i*4},'outlet'));
   const loopOut=[0,1].map(i=>node(loop,`out-${i}`,{x:96,z:21-i*4},'outlet'));
@@ -26,8 +26,9 @@ export function createRailApproaches(platforms:Platform[]):RailApproach[]{
     segment(a,`lead-${track}`,start,out,{x:start.point.x+11,z:start.point.z},{x:out.point.x-11,z:out.point.z},p.id,track);
   }
   for(const a of [main,loop])for(const [i,start]of a.nodes.filter(n=>n.kind==='outlet').entries()){
-    const end=node(a,`end-${i}`,{x:185,z:start.point.z+(a===main?-27:7)},'end');
-    segment(a,`tail-${i}`,start,end,{x:130,z:start.point.z},{x:162,z:start.point.z+(a===main?-10:2)});
+    // OSM 891061374 stays nearly parallel until X≈150, then turns gradually north.
+    const end=node(a,`end-${i}`,{x:185,z:start.point.z+(a===main?-5:7)},'end');
+    segment(a,`tail-${i}`,start,end,{x:130,z:start.point.z},{x:162,z:start.point.z+(a===main?-2:2)});
   }
 
   const westMain=make('jr-west-main','jr-osaka','JR 本线 · 尼崎 / 神户方向',0x8c9faf,{x:-210,z:-6});
@@ -65,9 +66,9 @@ export function createRailApproaches(platforms:Platform[]):RailApproach[]{
   }
 
   const h=districtPlacements.hankyu;
-  const point=(x:number,z:number)=>{const p=rotatePoint({x,z},{x:0,z:0},h.angle);return {x:p.x+h.origin.x,z:p.z+h.origin.z};};
+  const point=(x:number,z:number)=>{const p=rotatePoint({x:x*h.planScale,z:z*h.planScale},{x:0,z:0},h.angle);return {x:p.x+h.origin.x,z:p.z+h.origin.z};};
   for(const [line,first,last,center,color]of [['京都线',1,3,22,0x7ba989],['宝冢线',4,6,0,0xc7a573],['神户线',7,9,-22,0x83a5bf]] as const){
-    const a=make(`hankyu-${first}-${last}`,'hankyu-umeda',`${line} · 十三方向`,color,point(133,center-3));
+    const a=make(`hankyu-${first}-${last}`,'hankyu-umeda',line,color,point(133,center-3));
     const outlets=[node(a,'out-a',point(96,center+1.8),'outlet'),node(a,'out-b',point(96,center-1.8),'outlet')];
     for(const p of platforms.filter(p=>p.level==='hankyu-platform'))for(const [index,track]of p.tracks.entries()){
       if(track<first||track>last)continue;

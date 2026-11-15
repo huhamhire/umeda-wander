@@ -35,3 +35,16 @@ export function pointInPolygon(point: Point2, polygon: Point2[]): boolean {
   }
   return inside;
 }
+
+/** Snap an exterior approach to a building boundary rather than its centre. */
+export function closestPolygonPoint(point:Point2,outline:Point2[]):Point2 {
+  if(outline.length<3)throw new Error('A building outline needs at least three vertices');
+  let result=outline[0]!,distance=Infinity;
+  for(let i=0;i<outline.length;i++){
+    const a=outline[i]!,b=outline[(i+1)%outline.length]!,dx=b.x-a.x,dz=b.z-a.z;
+    const t=Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.z-a.z)*dz)/(dx*dx+dz*dz||1)));
+    const candidate={x:a.x+dx*t,z:a.z+dz*t},d=Math.hypot(candidate.x-point.x,candidate.z-point.z);
+    if(d<distance){result=candidate;distance=d;}
+  }
+  return result;
+}

@@ -4,11 +4,24 @@ import {metroStation} from './metro-umeda-map.ts';
 import type {Level,StationId} from '../domain/map/model.ts';
 import {districtAreas,districtConnections,districtGuides} from './district-links.ts';
 import {createRailApproaches} from './rail-approaches.ts';
+import {commercialBuildings,commercialPassages,commercialAreas,commercialConnections} from './commercial-district.ts';
+import {northAtrium} from './jr-osaka-upper-links.ts';
 
 export const stations=[{id:'jr-osaka' as const,name:'JR 大阪站'}, {id:hankyuStation.id,name:hankyuStation.name},{id:metroStation.id,name:metroStation.name}];
-export const levels:Level[]=[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as StationId,stackIndex:i-2})),...hankyuStation.levels,...metroStation.levels];
+export const levels:Level[]=[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as StationId,stackIndex:i-2})),...hankyuStation.levels,...metroStation.levels,
+  {id:'south-deck',label:'2F',name:'大丸前侧公共通道与南侧步道桥',y:4,stackIndex:1,station:'jr-osaka',description:'南侧站外二层步行层，按较低的相邻标高对齐；不改变 JR 内部夹层。'}];
 export const facilities=[...jr.facilities,...hankyuStation.facilities,...metroStation.facilities];
 export const nodes=[...jr.nodes,...hankyuStation.nodes,...metroStation.nodes];
 export const edges=[...jr.edges,...hankyuStation.edges,...metroStation.edges];
 const platforms=[...jr.platforms,...hankyuStation.layout.platforms,...metroStation.layout.platforms];
-export const layout={areas:[...jr.areas,...hankyuStation.layout.areas,...metroStation.layout.areas,...districtAreas],platforms,connections:[...jr.connections,...hankyuStation.layout.connections,...metroStation.layout.connections,...districtConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])]};
+const replacedPlaceholders=new Set(['north-lucua','north-lucua1100','south-daimaru']);
+const commercialLabels=new Set(['south-building-2f','south-building-3f','south-building-4f']);
+const southFrontPublic=[{x:-9,z:53},{x:-1,z:53},{x:-1,z:61},{x:12,z:61},{x:12,z:58},{x:29,z:58},
+  {x:29,z:68},{x:33,z:68},{x:33,z:80},{x:16,z:80},{x:16,z:76},{x:-25,z:76},{x:-25,z:68},{x:-9,z:68}];
+const jrAreas=jr.areas.filter(a=>!replacedPlaceholders.has(a.id)).map(a=>({...a,
+  ...(commercialLabels.has(a.id)?{label:false}:{}),...(a.id==='south-building-2f'?{level:'south-deck' as const,outline:southFrontPublic}:{} )}));
+const southDeckBanks=new Set(['south-building-50','south-lift-t','south-building-61','south-lift-u']);
+const jrConnections=jr.connections.map(c=>southDeckBanks.has(c.id)?{...c,
+  from:c.from.level==='mezzanine'?{...c.from,level:'south-deck' as const}:c.from,
+  to:c.to.level==='mezzanine'?{...c.to,level:'south-deck' as const}:c.to}:c);
+export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...districtAreas,...commercialAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:commercialPassages,atria:[northAtrium]};

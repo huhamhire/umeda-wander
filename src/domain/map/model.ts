@@ -1,9 +1,9 @@
 export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda';
 export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
-  |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform';
-export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information';
+  |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck';
+export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store';
 export interface Point2 { x: number; z: number }
-export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro' }
+export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'district';urls?:string[] }
 export interface Facility {
   id: string; name: string; kind: FacilityKind; level: LevelId;
   x: number; z: number; note: string; evidence: Evidence;
@@ -34,6 +34,24 @@ export interface StationLayout {
   areas: FloorArea[]; platforms: Platform[]; connections: VerticalConnection[];
   railApproaches?:RailApproach[];
   guides?:PassageGuide[];
+  buildings?:CommercialBuilding[];
+  passages?:PublicPassage[];
+  atria?:AtriumVoid[];
+}
+export interface AtriumVoid {id:string;name:string;openings:{level:LevelId;outline:Point2[]}[];evidence:Evidence}
+export type CommercialBuildingId='hankyu-dept'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi';
+export interface CommercialBuilding {
+  id:CommercialBuildingId;name:string;outline:Point2[];
+  floors:{level:LevelId;name:string;elevationOffset?:number}[];evidence:Evidence;
+}
+export interface PassageEndpoint extends Point2 {
+  level:LevelId;buildingId?:CommercialBuildingId;station?:StationId;
+  elevationOffset?:number;
+  boundaryName?:string;
+}
+export interface PublicPassage {
+  id:string;name:string;kind:'deck'|'underground'|'entrance';width:number;
+  points:PassageEndpoint[];evidence:Evidence;
 }
 export interface GuidePoint extends RouteNode {caption?:string}
 export interface PassageGuide {
@@ -49,5 +67,5 @@ export interface RailApproach {
   nodes:RailNode[];segments:RailSegment[];labelPoint:Point2;evidence:Evidence;
 }
 export interface FloorOpening {
-  connectionId: string; level: LevelId; kind: VerticalConnection['kind']; outline: Point2[];
+  connectionId: string; level: LevelId; kind: VerticalConnection['kind']|'atrium'; outline: Point2[];
 }
