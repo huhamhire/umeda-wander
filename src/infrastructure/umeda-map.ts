@@ -1,3 +1,7 @@
+import {nishiStation} from './nishi-umeda-map.ts';
+import {nishiDistrictPassages} from './nishi-district-links.ts';
+import {kitashinchiStation} from './kitashinchi-map.ts';
+import {westDistrictPassages,southDistrictAreas} from './west-district-links.ts';
 import {higashiStation} from './higashi-umeda-map.ts';
 import {higashiDistrictPassages} from './higashi-district-links.ts';
 import * as jr from './jr-osaka-map.ts';
@@ -12,13 +16,13 @@ import {completeFacilityDirectory} from './facility-directory.ts';
 import {hanshinStation} from './hanshin-umeda-map.ts';
 import {hanshinDistrictPassages} from './hanshin-district-links.ts';
 
-export const stations=[{id:'jr-osaka' as const,name:'JR 大阪站'}, {id:hankyuStation.id,name:hankyuStation.name},{id:metroStation.id,name:metroStation.name},{id:hanshinStation.id,name:hanshinStation.name},{id:higashiStation.id,name:higashiStation.name}];
-export const levels:Level[]=[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as StationId,stackIndex:i-2})),...hankyuStation.levels,...metroStation.levels,...hanshinStation.levels,...higashiStation.levels,
+export const stations=[{id:'jr-osaka' as const,name:'JR 大阪站'}, {id:hankyuStation.id,name:hankyuStation.name},{id:metroStation.id,name:metroStation.name},{id:hanshinStation.id,name:hanshinStation.name},{id:higashiStation.id,name:higashiStation.name},{id:nishiStation.id,name:nishiStation.name},{id:kitashinchiStation.id,name:kitashinchiStation.name}];
+export const levels:Level[]=[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as StationId,stackIndex:i-2})),...hankyuStation.levels,...metroStation.levels,...hanshinStation.levels,...higashiStation.levels,...nishiStation.levels,...kitashinchiStation.levels,
   {id:'south-deck',label:'2F',name:'大丸前侧公共通道与南侧步道桥',y:4,stackIndex:1,station:'jr-osaka',description:'南侧站外二层步行层，按较低的相邻标高对齐；不改变 JR 内部夹层。'}];
-const sourceFacilities=[...jr.facilities,...hankyuStation.facilities,...metroStation.facilities,...hanshinStation.facilities,...higashiStation.facilities];
-export const nodes=[...jr.nodes,...hankyuStation.nodes,...metroStation.nodes,...hanshinStation.nodes,...higashiStation.nodes];
-export const edges=[...jr.edges,...hankyuStation.edges,...metroStation.edges,...hanshinStation.edges,...higashiStation.edges];
-const platforms=[...jr.platforms,...hankyuStation.layout.platforms,...metroStation.layout.platforms,...hanshinStation.layout.platforms,...higashiStation.layout.platforms];
+const sourceFacilities=[...jr.facilities,...hankyuStation.facilities,...metroStation.facilities,...hanshinStation.facilities,...higashiStation.facilities,...nishiStation.facilities,...kitashinchiStation.facilities];
+export const nodes=[...jr.nodes,...hankyuStation.nodes,...metroStation.nodes,...hanshinStation.nodes,...higashiStation.nodes,...nishiStation.nodes,...kitashinchiStation.nodes];
+export const edges=[...jr.edges,...hankyuStation.edges,...metroStation.edges,...hanshinStation.edges,...higashiStation.edges,...nishiStation.edges,...kitashinchiStation.edges];
+const platforms=[...jr.platforms,...hankyuStation.layout.platforms,...metroStation.layout.platforms,...hanshinStation.layout.platforms,...higashiStation.layout.platforms,...nishiStation.layout.platforms,...kitashinchiStation.layout.platforms];
 const replacedPlaceholders=new Set(['north-lucua','north-lucua1100','south-daimaru']);
 const commercialLabels=new Set(['south-building-2f','south-building-3f','south-building-4f']);
 const southFrontPublic=[{x:-9,z:53},{x:-1,z:53},{x:-1,z:61},{x:12,z:61},{x:12,z:58},{x:29,z:58},
@@ -30,5 +34,5 @@ const jrConnections=jr.connections.map(c=>southDeckBanks.has(c.id)?{...c,
   ...(c.id==='south-building-61'?{lanes:2 as const}:{}),
   from:c.from.level==='mezzanine'?{...c.from,level:'south-deck' as const}:c.from,
   to:c.to.level==='mezzanine'?{...c.to,level:'south-deck' as const}:c.to}:c);
-export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...hanshinStation.layout.areas,...higashiStation.layout.areas,...districtAreas,...commercialAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...hanshinStation.layout.connections,...higashiStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:[...commercialPassages,...(hanshinStation.layout.passages??[]),...hanshinDistrictPassages,...higashiDistrictPassages],atria:[northAtrium,...commercialAtria,...(hanshinStation.layout.atria??[])],concourses:commercialConcourses};
+export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...hanshinStation.layout.areas,...higashiStation.layout.areas,...nishiStation.layout.areas,...kitashinchiStation.layout.areas,...districtAreas,...commercialAreas,...southDistrictAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...hanshinStation.layout.connections,...higashiStation.layout.connections,...nishiStation.layout.connections,...kitashinchiStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:[...commercialPassages,...(hanshinStation.layout.passages??[]),...hanshinDistrictPassages,...higashiDistrictPassages,...nishiDistrictPassages,...westDistrictPassages],atria:[northAtrium,...commercialAtria,...(hanshinStation.layout.atria??[])],concourses:commercialConcourses};
 export const facilities=completeFacilityDirectory(sourceFacilities,layout.connections,platforms,levels);

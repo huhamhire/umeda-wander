@@ -2,8 +2,8 @@
 
 ## 当前状态
 
-- 仓库名称为 `umeda-h5`，已实现 JR 大阪站、阪急大阪梅田、御堂筋线梅田、阪神大阪梅田及谷町线东梅田站的局部样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
-- `references/` 存放参考素材，当前包括 `station_osaka.pdf`、`umeda.svg`、`M16_梅田_構内図_1.pdf`、`hanshin-umeda.pdf`、`T20_東梅田_構内図.pdf` 与 `Umeda-Area-Map.webp`。
+- 仓库名称为 `umeda-h5`，已实现 JR 大阪站、阪急大阪梅田、御堂筋线梅田、阪神大阪梅田、谷町线东梅田、四桥线西梅田及 JR 北新地站的局部样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
+- `references/` 存放参考素材，当前包括 `station_osaka.pdf`、`umeda.svg`、`M16_梅田_構内図_1.pdf`、`hanshin-umeda.pdf`、`T20_東梅田_構内図.pdf`、`Y11_西梅田_構内図.pdf`、`北新地.pdf`、`梅田周边地区通道.pdf` 与 `Umeda-Area-Map.webp`。
 - Node.js 版本要求为 24 或以上。使用 `npm install` 安装锁定依赖，`npm run dev` 启动本地服务，`npm run typecheck` 检查类型，`npm test` 运行测试，`npm run build` 构建网页。Windows PowerShell 如阻止 npm 脚本，使用 `npm.cmd`。
 - 应用代码采用 TypeScript，源码放在 `src/`；构建产物输出到 `dist/`，最终入口为 `dist/index.html`。
 - HTML 保持单入口，JS、CSS、模型与图片等资源可独立加载，无需全部内嵌；部署和复制时保留整个 `dist/`。
@@ -32,7 +32,7 @@
 - `umeda-map.ts` 组装各站数据；各站使用独立 `LevelId`、`station` 和 `stackIndex`，展开偏移不能依赖组合数组下标。JR 原有层名保留兼容；Metro 中间层不能归入 JR M2F。开口按所属站点过滤。
 - 新站设施和区域的 `Evidence.source` 必须指向自己的资料；阪急 SVG 不伪装成 JR PDF 页码。各站以 `district-placement.ts` 的地理锚点和主轴放在同一图中；站间连接为闸外空间示意，未核验前不添加导航边，各站相邻不代表闸内互通。
 - 阪急仅使用浅灰粉、淡栗红作为主题提示，付费区、闸机与边界均保持浅色，不使用深色栗红；三条线路的绿/橙/蓝标识独立保留。调色定义在 `presentation/station-palette.ts`，属于呈现规则。
-- 导览统一位于左侧：楼层、设施为两个 Tab；桌面面板宽 290px，移动端自适应。已移除独立“车站”页和底部导航卡，设施页车站下拉框兼顾筛选与 `focusStation` 聚焦，“全部车站”回到地区总览；未选具体探索层时，M16、阪神与 T20 默认聚焦 B1，其余车站聚焦全部层级，手动楼层筛选优先；默认五站总览，模型是否隐藏只由楼层剖切决定。楼层选项为 3F / 2F / 1F / B1 / B2，JR 樱桥及中央口夹层并入 1F 探索，M16 中间层并入 B1；`application/exploration-level.ts` 定义分组，`presentation/floor-options.ts` 定义文案。组内跨站同时高亮且可点选，下层灰化、上层隐藏，物理标高、站点身份和 LevelId 仍独立。同物理标高须共用展开位置，导览分组不表示 M16 真实楼层编号已核验或付费区互通。
+- 导览统一位于左侧：楼层、设施为两个 Tab；桌面面板宽 290px，移动端自适应。已移除独立“车站”页和底部导航卡，设施页车站下拉框兼顾筛选与 `focusStation` 聚焦，“全部车站”回到地区总览；未选具体探索层时，M16、阪神、T20、Y11、北新地默认聚焦 B1，其余车站聚焦全部层级，手动楼层筛选优先；默认七站总览，模型是否隐藏只由楼层剖切决定。楼层选项为 3F / 2F / 1F / B1 / B2，JR 樱桥及中央口夹层并入 1F 探索，M16 中间层并入 B1；`application/exploration-level.ts` 定义分组，`presentation/floor-options.ts` 定义文案。组内跨站同时高亮且可点选，下层灰化、上层隐藏，物理标高、站点身份和 LevelId 仍独立。同物理标高须共用展开位置，导览分组不表示 M16 真实楼层编号已核验或付费区互通。
 - 站间连廊、JR–Metro 下行连接位于 `district-links.ts`。内部下行除了上层楼板，基座和铺装线也必须裁出开口。地理投影在领域层，取景范围与镜头缓动在呈现层；完整车站包络独立于楼层剖切与屋顶显隐，切层保留镜头定位、缩放和平移；拖动展开滑块时取消镜头缓动以保持跟手。
 - `PassageGuide` 只保留普通通路去向标注及关系检查数据，不加入步行寻路图。默认不显示常驻路线箭头、路线虚线或专用图例；正式实现路线导航后再按所选路线显示引导。M16 中间层去向需落到已有直梯/扶梯及具体改札内侧；含扶梯的示意不能描述为完整无障碍路线。
 - 地区扩展以反映步行连接为主，坡道和小半层可并入同一探索层；车站南北外侧的连接优先选较低相邻层。商业外廊按连续的 2F 步行层展示，不机械按各建筑实际标高拆层；JR 内部既有跨层设施仍保留。
@@ -82,6 +82,8 @@
 - 阪急百货与大丸的外观同样只在总览显示，`department-massing-details.ts` 绘制层带、窗格及大丸南侧“大阪駅”立面标识；大丸上方长条酒店体量的两处屋顶内庭用 `volumes.courtyards` 真正裁空。上部轮廓与压缩高度参考用户照片示意，不新增可通行楼层。
 - 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部 UMEDA 品牌与底部版权。
 - 梅北北端延伸向 Grand Front 西侧道路地下收转，不能穿入南北馆轮廓。修改站台长度时同步检查延伸线和商业体相对位置。
+- 南侧阪神／西梅田／东梅田／北新地的相对布局使用 `projectSouthReference` 共用步行图校准，以阪神为展示锚点；保留各站原始地理锚点，不恢复彼此独立的南移补丁。南侧建筑占位只画 B1 区域轮廓，`FloorArea.labelStyle: floor` 将文字平贴楼板，不生成悬浮标签。
+- 西梅田北端是尽头，仅南端延伸；北新地东西两端延伸，JR 东西线在四桥线下方通过。北新地站台物理 y=-24、stackIndex=-2，仍归 B2 探索；8 单位高差是展示值，不是实测净空。公共地下网络不加入跨站 `RouteEdge`。
 - JR 北侧中庭 B1 公区与 LUCUA、梅北北侧公共通路及 M16 北改札外分别衔接，不把它延伸成到南侧 Crost 的未核验捷径。站台比例及待确认数据见 `docs/platform-proportions.md`。
 
 - Yodobashi 与阪急 RESPIRE 酒店作为同一商业综合体建模；酒店塔楼使用独立 OSM 部件，不能与新阪急酒店混淆。二层 `perimeterGallery` 外圈是公共回廊，内层轮廓才是裙楼墙体，原有连桥接外环，墙体与竖向立面不得封住回廊。
@@ -92,3 +94,8 @@
 - 阪急百货以西北端/西侧立面为拟合基准向东南扩展，整体横向宽度接近阪急站；两条二层连廊分别落在西侧直墙，不能改回按最近点吸附到南侧弯角。直线连接臂、围墙留口和原始轮廓来源同时检查。
 
 - 谷町线东梅田数据在 `higashi-umeda-map.ts`，独立站点 `higashi-umeda`、楼层 `t20-platform/hall/ground`、来源 `tanimachi` 和编号 T20。两座侧式站台的轨道朝内，1 番线电梯接南改札、2 番线接中西改札；公共站厅不得画成两侧站台闸内直通。Whity 接驳在 `higashi-district-links.ts`，不添加跨站导航边；临时施工关闭按用户约定忽略。
+
+- 西梅田使用 `nishi-umeda-map.ts`、Y11 编号和来源 yotsubashi；北新地使用 `kitashinchi-map.ts`、KS 编号和独立来源 kitashinchi。Y11 北端车挡用 `terminalEnd: end`，北改札只出、中改札只进；北新地是通行岛式站台。`west-district-links.ts` 按用户地区通道 PDF 连接 DIAMOR／阪神／西梅田／北新地，全部闸外，不加入跨站寻路边。
+
+- “显示建筑轮廓”沿用内部 `roof` 状态，统一控制 JR 大屋顶与商业外观/上部体量；仅在总览显示。地下通路和入口不显示浮动标签，二层联络桥只有未画目标的延伸段显式启用 `PublicPassage.label`。
+- 阪神 B1 付费区在西半侧，闸机位于东西端，中部保留朝南公共通路；站台内部楼梯/扶梯向西上行。B2 东口主出口朝东，宽两段式阶梯居中、扶梯分列两侧；`stairLandingLength`、`laneSpacing`、`gateCount` 分别统一落台造型、扶梯模型/孔洞及闸机/围栏留口。

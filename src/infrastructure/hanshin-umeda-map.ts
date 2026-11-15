@@ -24,11 +24,14 @@ const p4=platform('alighting-4','hanshin-platform',[],0,-19,92,6,
 
 area('east-paid','hanshin-platform','阪神 · B2 东口闸内终端通道','paid',-54,-2,16,50);
 area('east-public','hanshin-platform','阪神 · B2 东口闸外','public',-75,-12,26,26);
-area('east-upper-public','hanshin-hall','阪神 · 东口上方 B1 公共通路','public',-74,16,28,24);
-area('east-upper-link','hanshin-hall','阪神 · 东口上方通路接驳','public',-54,28,24,10);
+area('east-upper-public','hanshin-hall','阪神 · 东口上方 B1 公共通路','public',-100,-10,28,28);
+area('east-upper-side-public','hanshin-hall','阪神 · 东口侧方公共通路','public',-101,14,10,38);
+area('east-upper-link','hanshin-hall','阪神 · 东口上方通路接驳','public',-74,32,68,10);
 area('south-east-public','hanshin-platform','阪神 · B2 南出口公共落台','public',-70,-29,18,16);
-area('hall-paid','hanshin-hall','阪神 · B1 闸内站厅','paid',0,0,92,46);
-area('west-public','hanshin-hall','阪神 · B1 西口闸外 / JR 方向','public',14,32,120,18);
+area('hall-paid','hanshin-hall','阪神 · B1 西半侧闸内站厅','paid',26,0,40,46);
+area('west-public','hanshin-hall','阪神 · B1 西口闸外 / JR 方向','public',58,0,24,62);
+area('north-public','hanshin-hall','阪神 · B1 北侧公共通路','public',14,32,120,18);
+area('central-public','hanshin-hall','阪神 · B1 中央南北公共通路','public',-6,0,24,64);
 area('department-public','hanshin-hall','阪神 · 百货店口外 / 南出口通路','public',-19,-32,130,18);
 area('south-b1-landing','hanshin-hall','阪神 · 南出口直梯与斜行通路落台','public',-79,-35,16,16);
 area('south-ground','hanshin-ground','阪神 · 南出口地面落台','public',-76,-35,13,14);
@@ -37,15 +40,15 @@ area('ticket-office','hanshin-platform','阪神 · 东口定期券售票处','se
 area('station-office','hanshin-hall','阪神 · 站务室','service',-34,-13,10,8);
 area('department-interface','hanshin-hall','阪神百货 · 地下入口','commercial',-10,-46,38,10);
 
-facility('west-gate','hanshin-hall','阪神 · 西口改札','gate',34,23,'B1 西口；外侧往 JR 樱桥口、西梅田、北新地及 Herbis。');
-facility('department-gate','hanshin-hall','阪神 · 百货店口改札','gate',-31,-23,'B1 百货店口；不与 B2 东口合并。');
-facility('east-gate','hanshin-platform','阪神 · 东口改札','gate',-62,-10,'与 B2 站台同层，终端通道连续接各站台。',Math.PI/2);
-facility('west-machines','hanshin-hall','阪神 · 西口售票机','ticket-machine',20,32,'西口闸外售票机，机柜数量示意。');
+facility('west-gate','hanshin-hall','阪神 · 西口改札','gate',46,0,'B1 西半侧付费区西端，闸外通往 JR 与西梅田方向。',Math.PI/2);
+facility('department-gate','hanshin-hall','阪神 · 百货店口改札','gate',6,0,'B1 西半侧付费区东端；外接中央朝南的公共通路。',Math.PI/2);
+facility('east-gate','hanshin-platform','阪神 · 东口改札','gate',-62,-10,'主出口：与 B2 站台同层，多通道闸机组，数量示意；终端通道连续接各站台。',Math.PI/2).gateCount=12;
+facility('west-machines','hanshin-hall','阪神 · 西口售票机','ticket-machine',58,20,'西口闸外售票机，机柜数量示意。');
 facility('department-machines','hanshin-hall','阪神 · 百货店口售票机','ticket-machine',-20,-32,'百货店口闸外售票机。',Math.PI);
 facility('east-machines','hanshin-platform','阪神 · 东口售票机','ticket-machine',-66,-16,'东口闸外售票机，避让前方地下通路扶梯落台。');
 facility('ticket','hanshin-platform','阪神 · 东口售票处','ticket',-77,-21,'PDF 标出的定期券售票处，保留独立柜台设施。');
 facility('office','hanshin-hall','阪神 · 站务咨询','information',-34,-13,'B1 站务室及咨询位置示意。');
-facility('west-entry','hanshin-hall','阪神 · 西口公共入口','entrance',34,36,'往 JR 与西梅田方向的闸外入口。');
+facility('west-entry','hanshin-hall','阪神 · 西口公共入口','entrance',58,0,'往 JR 与西梅田方向的闸外入口。');
 facility('south-entry','hanshin-platform','阪神 · 南出口方向','entrance',-80,-18,'东口公共空间往南出口；连接走向、高差和坡度为示意。');
 
 for(const p of [p12,p34]){
@@ -53,22 +56,23 @@ for(const p of [p12,p34]){
   const high=node(`${p.id}-escalator-high`,'hanshin-hall',39,p.id===p12.id?14.15:-6.85);
   connection(`${p.id}-escalator`,'escalator',low,high,p.id);
   const stairLow=node(`${p.id}-stair-low`,'hanshin-platform',10,p.id===p12.id?11.15:-9.85);
-  const stairHigh=node(`${p.id}-stair-high`,'hanshin-hall',-4,p.id===p12.id?11.15:-9.85);
+  const stairHigh=node(`${p.id}-stair-high`,'hanshin-hall',26,p.id===p12.id?11.15:-9.85);
   connection(`${p.id}-stairs`,'stairs',stairLow,stairHigh,p.id);
-  const liftLow=node(`${p.id}-lift-low`,'hanshin-platform',-24,p===p12?12.65:-8.35);
-  const liftHigh=node(`${p.id}-lift-high`,'hanshin-hall',-24,p===p12?12.65:-8.35);
+  const liftLow=node(`${p.id}-lift-low`,'hanshin-platform',33,p===p12?12.65:-8.35);
+  const liftHigh=node(`${p.id}-lift-high`,'hanshin-hall',33,p===p12?12.65:-8.35);
   connection(`${p.id}-lift`,'elevator',liftLow,liftHigh,p.id);
 }
 for(const p of [p23,p4]){
   const z=p===p23?2.15:-19;
-  connection(`${p.id}-stairs`,'stairs',node(`${p.id}-stairs-low`,'hanshin-platform',25,z),node(`${p.id}-stairs-high`,'hanshin-hall',11,z),p.id);
+  connection(`${p.id}-stairs`,'stairs',node(`${p.id}-stairs-low`,'hanshin-platform',11,z),node(`${p.id}-stairs-high`,'hanshin-hall',25,z),p.id);
 }
 // Two distinct public banks outside the B2 gate. Do not confuse the south
 // exit B2-to-B1 bank with its separate B1-to-ground flights below.
 const eastBank=connection('east-public-escalators','escalator',
-  node('east-public-escalators-low','hanshin-platform',-71,-6),node('east-public-escalators-high','hanshin-hall',-71,12));
-eastBank.lanes=2;
-connection('east-public-stairs','stairs',node('east-public-stairs-low','hanshin-platform',-82,-6),node('east-public-stairs-high','hanshin-hall',-82,12));
+  node('east-public-escalators-low','hanshin-platform',-78,-10),node('east-public-escalators-high','hanshin-hall',-100,-10));
+eastBank.lanes=2;eastBank.laneSpacing=9;
+const eastStairs=connection('east-public-stairs','stairs',node('east-public-stairs-low','hanshin-platform',-78,-10),node('east-public-stairs-high','hanshin-hall',-100,-10));
+eastStairs.width=6;eastStairs.stairLandingLength=2.2;
 connection('south-public-escalator','escalator',node('south-public-escalator-low','hanshin-platform',-66,-23),node('south-public-escalator-high','hanshin-hall',-66,-40));
 connection('south-public-stairs','stairs',node('south-public-stairs-low','hanshin-platform',-70,-23),node('south-public-stairs-high','hanshin-hall',-70,-40));
 for(const c of draft.layout.connections.filter(c=>c.id.includes('east-public-')||c.id.includes('south-public-'))){
@@ -91,7 +95,7 @@ draft.layout.atria=[{id:'hanshin-south-ramp-opening',name:'阪神 · 南出口�
   openings:[{level:'hanshin-hall',outline:passageOutline(point(-82,-27),point(-82,-35),5)}],evidence:proof('Upper B1 opening for the public East Gate–South Exit slope')}];
 
 // One preview entirely inside Hanshin; no invented inter-operator routing edge.
-const entry=node('route-entry','hanshin-hall',34,36),out=node('route-gate-out','hanshin-hall',34,26),inside=node('route-gate-in','hanshin-hall',34,20);
+const entry=node('route-entry','hanshin-hall',58,0),out=node('route-gate-out','hanshin-hall',49,0),inside=node('route-gate-in','hanshin-hall',42,0);
 const high=draft.nodes.find(n=>n.id===`hanshin-umeda-${p12.id}-escalator-high`)!,low=draft.nodes.find(n=>n.id===`hanshin-umeda-${p12.id}-escalator-low`)!;
 const dest=node('destination','hanshin-platform',-12,12.65);
 edge(entry,out);edge(out,inside,'gate');edge(inside,high);edge(high,low,'escalator');edge(low,dest);

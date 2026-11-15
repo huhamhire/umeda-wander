@@ -6,7 +6,7 @@ export function platformRail(platform:Platform,index:number){
   const side=platform.trackSides?.[index]??(platform.tracks.length===1||index===0?1:-1);
   const across=side*(platform.width/2+1.65);
   const length=platform.terminal?platform.length-3:platform.length+7;
-  const center=platform.terminal?1.5:0;
+  const center=platform.terminal?(platform.terminalEnd==='end'?-1.5:1.5):0;
   return {side,across,length,center,start:platformPoint(platform,center-length/2,across),end:platformPoint(platform,center+length/2,across)};
 }
 

@@ -12,10 +12,10 @@ import {displayElevation} from '../src/application/display-elevation.ts';
 import type {Point2} from '../src/domain/map/model.ts';
 
 const approaches=layout.railApproaches;
-test('all four stations continue their track ends into their own rail bundles',()=>{
-  assert.equal(approaches.length,11);
+test('station approaches retain each source track and independent running bundles',()=>{
+  assert.equal(approaches.length,14);
   const leads=approaches.flatMap(a=>a.segments.filter(s=>s.platformId));
-  assert.equal(leads.length,45);
+  assert.equal(leads.length,51);
   for(const p of layout.platforms.filter(p=>['platform','hankyu-platform','hanshin-platform','metro-platform'].includes(p.level)))for(const [index,track]of p.tracks.entries()){
     const a=approaches.find(a=>a.segments.some(s=>s.platformId===p.id&&s.track===track))!;
     const segment=a.segments.find(s=>s.platformId===p.id&&s.track===track)!;

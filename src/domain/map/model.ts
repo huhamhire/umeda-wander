@@ -1,16 +1,18 @@
-export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda'|'higashi-umeda';
+export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda'|'higashi-umeda'|'nishi-umeda'|'kitashinchi';
 export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
   |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck'
-  |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck'|'t20-hall'|'t20-platform'|'t20-ground';
+  |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck'|'t20-hall'|'t20-platform'|'t20-ground'
+  |'y11-hall'|'y11-platform'|'y11-ground'|'kitashinchi-hall'|'kitashinchi-platform'|'kitashinchi-ground';
 export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store'|'platform';
 export interface Point2 { x: number; z: number }
-export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'tanimachi'|'district';urls?:string[] }
+export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'tanimachi'|'yotsubashi'|'kitashinchi'|'district';urls?:string[] }
 export interface Facility {
   id: string; name: string; kind: FacilityKind; level: LevelId;
   x: number; z: number; note: string; evidence: Evidence;
   axis?: 'x' | 'z'; rotationRad?: number;
   elevationOffset?:number;
   connectionId?:string;platformId?:string;
+  gateCount?:number;
 }
 export interface Level { id: LevelId; label: string; name: string; y: number; description: string; station?:StationId; stackIndex?:number }
 export interface RouteNode { id: string; level: LevelId; x: number; z: number; elevationOffset?:number }
@@ -19,17 +21,21 @@ export interface FloorArea {
   id: string; level: LevelId; name: string; kind: 'public' | 'paid' | 'commercial' | 'service';
   outline: Point2[]; height?: number; label?: boolean; evidence: Evidence;
   elevationOffset?:number;
+  labelStyle?:'floating'|'floor';
 }
 export interface Platform {
   id: string; level: LevelId; tracks: number[]; x: number; z: number; length: number; width: number; rotationRad: number; evidence: Evidence;
   name?:string; lineName?:string; lineColor?:number; trackSides?:Array<-1|1>; screenDoors?:'full-height'|'half-height'; terminal?:boolean;
   screenDoorSides?:Array<-1|1>;
+  terminalEnd?:'start'|'end';
 }
 export interface VerticalConnection {
   id: string; kind: 'stairs' | 'escalator' | 'elevator'; from: RouteNode; to: RouteNode; evidence: Evidence;
   platformId?: string;
   width?:number;
   lanes?:1|2;
+  laneSpacing?:number;
+  stairLandingLength?:number;
   doorFacingRad?:number;
   placement?:'exterior';
 }
@@ -62,6 +68,7 @@ export interface PassageEndpoint extends Point2 {
 }
 export interface PublicPassage {
   id:string;name:string;kind:'deck'|'underground'|'entrance';width:number;
+  label?:boolean;
   points:PassageEndpoint[];evidence:Evidence;
 }
 export interface GuidePoint extends RouteNode {caption?:string}

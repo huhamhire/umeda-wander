@@ -16,6 +16,18 @@ const locate=(lat:number,lon:number,bearingDeg:number,offset:{along?:number;east
   return {geo:{lat,lon},bearingDeg,referenceOrigin,displayOffset,
     origin:{x:referenceOrigin.x+displayOffset.x,z:referenceOrigin.z+displayOffset.z},angle};
 };
+const hanshinPlacement={...locate(34.7014097,135.4971469,-121,{along:12,east:12,south:53}),planScale:{along:0.74,across:0.82}};
+/** User's southern walking-map crop: east/right, south/down. Display calibration,
+ * anchored to Hanshin, not georeferenced survey coordinates. */
+export function projectSouthReference(x:number,z:number){
+  const a=districtFrame.bearingDeg*Math.PI/180,dx=(x-450)*0.22,dz=(z-150)*0.22;
+  return {x:hanshinPlacement.origin.x+dx*Math.sin(a)-dz*Math.cos(a),
+    z:hanshinPlacement.origin.z+dx*Math.cos(a)+dz*Math.sin(a)};
+}
+const fitSouth=(placement:ReturnType<typeof locate>,x:number,z:number)=>{
+  const origin=projectSouthReference(x,z);
+  return {...placement,origin,displayOffset:{x:origin.x-placement.referenceOrigin.x,z:origin.z-placement.referenceOrigin.z}};
+};
 export const districtPlacements={
   // OSM station nodes 3544516031 and 7811929025. +X points toward the northern end.
   hankyu:{...locate(34.7054194,135.4983721,-10.64,{along:8,east:30}),planScale:0.65},
@@ -24,7 +36,12 @@ export const districtPlacements={
   metro:locate(34.7034131,135.4975879,-15.64,{along:-34,east:30}),
   // HS01 OSM node 3632936957 and westbound rail bearing; south fit clears the
   // expanded Daimaru/JR illustration and keeps the B2 terminal west of M16.
-  hanshin:{...locate(34.7014097,135.4971469,-121,{along:12,east:12,south:53}),planScale:{along:0.74,across:0.82}},
+  hanshin:hanshinPlacement,
   // OSM station 5411378288; nearby Tanimachi track tangents are -16.5/-16.9°.
-  higashi:locate(34.7005946,135.4998176,-16.7,{east:30}),
+  higashi:fitSouth(locate(34.7005946,135.4998176,-16.7),1000,265),
+  // Y11 node 7893338340; local rail tangents 3.2–3.6 degrees northward.
+  // South fitting clears the already expanded Hanshin western throat at B2.
+  nishi:fitSouth(locate(34.6994819,135.4956500,3.4),202,580),
+  // Approximate station-centre anchor, east–west axis from the supplied district map.
+  kitashinchi:fitSouth(locate(34.6983222,135.4970361,88),550,883),
 };

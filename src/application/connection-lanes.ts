@@ -9,7 +9,7 @@ export function connectionLanes(connection:VerticalConnection):VerticalConnectio
   const dx=connection.to.x-connection.from.x,dz=connection.to.z-connection.from.z,length=Math.hypot(dx,dz);
   if(length<1e-6)throw new Error('Parallel escalators need a horizontal run');
   return [-0.5,0.5].map((side,index)=>{
-    const offset=side*escalatorLaneSpacing,ox=-dz/length*offset,oz=dx/length*offset;
+    const offset=side*(connection.laneSpacing??escalatorLaneSpacing),ox=-dz/length*offset,oz=dx/length*offset;
     return {...connection,id:`${connection.id}:lane-${index+1}`,lanes:1,
       from:{...connection.from,x:connection.from.x+ox,z:connection.from.z+oz},
       to:{...connection.to,x:connection.to.x+ox,z:connection.to.z+oz}};

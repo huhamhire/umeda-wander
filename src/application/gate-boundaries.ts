@@ -21,7 +21,7 @@ export function planGateBoundaries(facilities: Facility[], areas: FloorArea[]): 
       }
     }
     if(!nearest) throw new Error(`No paid boundary for gate ${gate.id}`);
-    const {a,b,t}=nearest, length=Math.hypot(b.x-a.x,b.z-a.z), halfGap=5.5/length;
+    const {a,b,t}=nearest, length=Math.hypot(b.x-a.x,b.z-a.z), halfGap=(gate.gateCount?((gate.gateCount-1)*1.7/2+1.3):5.5)/length;
     const at=(u:number):Point2=>({x:a.x+(b.x-a.x)*u,z:a.z+(b.z-a.z)*u});
     return {gateId:gate.id,boundaryId:nearest.boundaryId,level:gate.level,center:at(t),rotationRad:Math.atan2(b.z-a.z,b.x-a.x),a,b,t,halfGap};
   });

@@ -11,6 +11,8 @@ export function completeFacilityDirectory(existing:Facility[],connections:Vertic
     if(id.startsWith('hankyu'))return '阪急';if(id.startsWith('metro'))return '御堂筋线';
     if(id.startsWith('hanshin'))return '阪神';
     if(id.startsWith('higashi'))return 'T20 东梅田';
+    if(id.startsWith('nishi'))return 'Y11 西梅田';
+    if(id.startsWith('kitashinchi'))return '北新地';
     if(id.startsWith('walkway')||id.startsWith('umekita')||id==='west-92')return '西口—梅北通路';
     if(id.startsWith('north'))return '北中庭';if(id.startsWith('carillon'))return '钟楼广场';
     if(id.startsWith('central'))return '中央口';if(id.startsWith('sakura'))return '樱桥口';

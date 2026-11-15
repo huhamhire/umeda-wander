@@ -29,6 +29,8 @@ import {LabelOcclusion,visibleLabelOccluders} from './label-occlusion.ts';
 import {facilityFocusRect,facilityCameraCenter,minimumMapZoom} from './facility-focus.ts';
 import {SelectionMarker} from './selection-marker.ts';
 import {buildCommercialConcourse} from './commercial-concourse-model.ts';
+import {buildFloorLabel} from './floor-label.ts';
+import {areaColor} from './area-palette.ts';
 
 const colors = { slab: publicAreaColor, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -153,22 +155,26 @@ export class MapScene {
     }
     for(const passage of this.layout.passages??[]){
       const model=new PublicPassageModel(passage,publicContext);this.publicPassages.push(model);this.scene.add(model.group);
+      if(passage.kind==='underground'||(passage.kind==='deck'&&!passage.label))continue;
       const boundary=passage.points.find(p=>p.boundaryName);
       const point=boundary??passage.points[Math.floor(passage.points.length/2)]!;
       this.label(boundary?.boundaryName??passage.name,point.x,3+(point.elevationOffset??0),point.z,point.level,false,!!boundary);
     }
-    const areaColors = { public: colors.slab, paid: colors.mint, commercial: 0xe4d4c3, service: 0xd7dfc4 };
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
       const cuts = this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline);
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
       if (!geometry.getAttribute('position')) continue;
       const palette=stationPalettes[this.levels.find(l=>l.id===area.level)?.station??'jr-osaka'];
-      const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColors[area.kind]));
+      const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColor(area)));
       mesh.userData.labelOccluder=true;
       mesh.castShadow = true; mesh.receiveShadow = true;
       this.groups.get(area.level)!.add(mesh);
-      if (area.label) {
+      if (area.label && !(area.kind==='public'&&(this.levels.find(l=>l.id===area.level)!.y<0||/通路|通道|连廊|联络桥|连络桥/.test(area.name)))) {
+        if(area.labelStyle==='floor'){
+          this.groups.get(area.level)!.add(buildFloorLabel(area,Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()));
+          continue;
+        }
         const x = area.outline.reduce((sum, point) => sum + point.x, 0) / area.outline.length;
         const z = area.outline.reduce((sum, point) => sum + point.z, 0) / area.outline.length;
         this.label(area.name, x, (area.height ?? 0.55) + (area.elevationOffset??0) + 1, z, area.level, false,
@@ -195,7 +201,7 @@ export class MapScene {
         block(railCenter, -0.62, across, railLength, 0.3, 2.5, 0xb9bcae);
         for (const offset of [-0.7, 0.7]) block(railCenter, -0.36, across + offset, railLength, 0.12, 0.12, 0x6d7c77);
         for (let railX = railCenter-railLength/2; railX <= railCenter+railLength/2; railX += 2.2) block(railX, -0.45, across, 0.45, 0.13, 2.2, 0x939c8e);
-        if(platform.terminal)block(-length/2+3,0.3,across,0.45,1.4,2,0x855c57);
+        if(platform.terminal)block((platform.terminalEnd==='end'?1:-1)*(length/2-3),0.3,across,0.45,1.4,2,0x855c57);
         if(platform.lineColor)block(0,0.58,side*(width/2-0.75),length-2,0.06,0.16,platform.lineColor);
         block(0, 0.53, side * (width / 2 - 0.4), length - 1, 0.08, 0.3, 0xe9d694);
         const label = position(length / 2 - 2, across);
@@ -303,7 +309,8 @@ export class MapScene {
       const palette=stationPalettes[this.levels.find(l=>l.id===facility.level)?.station??'jr-osaka'];
       const boundary = this.gateBoundaries.find(item => item.gateId === facility.id)!;
       const rotation = boundary.rotationRad;
-      for (let offset = -4.2; offset <= 4.3; offset += 1.7) {
+      for (let i=0;i<(facility.gateCount??6);i++) {
+        const offset=(i-((facility.gateCount??6)-1)/2)*1.7;
         const x = boundary.center.x + Math.cos(rotation) * offset, z = boundary.center.z + Math.sin(rotation) * offset;
         this.box(group, x, 1.3, z, 0.7, 1.5, 2.7, palette.gate).rotation.y = -rotation;
         this.box(group, x, 2.09, z, 0.6, 0.1, 2, palette.gateTop).rotation.y = -rotation;
@@ -477,7 +484,7 @@ export class MapScene {
       this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'));
     }
     this.roof.position.y = 26 + this.displayedExplode * 56;
-    for(const model of this.commercialMassing)model.visible=this.state.level==='all';
+    for(const model of this.commercialMassing)model.visible=this.state.roof&&this.state.level==='all';
     this.roof.visible = this.state.roof && this.state.level === 'all';
     this.route.visible = !!this.state.route;
     if (previousExplode !== this.displayedExplode && this.state.route) this.buildRoute();

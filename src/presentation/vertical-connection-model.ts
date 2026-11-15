@@ -40,6 +40,7 @@ export class VerticalConnectionModel {
   private risers?:T.InstancedMesh;
   private stripes?:T.InstancedMesh;
   private grooves?:T.InstancedMesh;
+  private middleLanding?:T.Mesh;
   private belts:T.Mesh[]=[];
   private endCaps:T.Mesh[]=[];
   private sidePanels?:T.Mesh;
@@ -96,12 +97,14 @@ export class VerticalConnectionModel {
     this.stripes=instances(this.body,'tread-edge-stripes',this.count,escalator?0xddc579:0xd5dcc9);
     if(escalator)this.grooves=instances(this.body,'tread-grooves',this.count*6,0x98a99d);
     for(const side of [-1,1]){
-      for(const offset of escalator?[0.48,1.28]:[1.1]){
+      for(const offset of escalator?[0.48,1.28]:[1.1])for(const section of !escalator&&this.connection.stairLandingLength?[0,1,2]:[-1]){
         const belt=new T.Mesh(unitBox,material(escalator?0x344d48:0x63816b));belt.name='continuous-handrail';
-        belt.userData.side=side;belt.userData.height=offset;this.body.add(belt);this.belts.push(belt);
+        belt.userData.side=side;belt.userData.height=offset;belt.userData.section=section;this.body.add(belt);this.belts.push(belt);
       }
-      const support=new T.Mesh(unitBox,material(0x889a90));support.userData.side=side;support.name='escalator-underframe';
-      this.body.add(support);this.underframe.push(support);
+      for(const section of !escalator&&this.connection.stairLandingLength?[0,1,2]:[-1]){
+        const support=new T.Mesh(unitBox,material(0x889a90));support.userData.side=side;support.userData.section=section;support.name='escalator-underframe';
+        this.body.add(support);this.underframe.push(support);
+      }
       if(escalator)for(const end of [0,1]){
         const cap=new T.Mesh(new T.TorusGeometry(0.4,0.09,6,12,Math.PI),material(0x344d48));
         cap.rotation.z=end? -Math.PI/2:Math.PI/2;cap.userData.end=end;cap.userData.side=side;
@@ -114,6 +117,7 @@ export class VerticalConnectionModel {
       this.sidePanels=new T.Mesh(geometry,glass);this.sidePanels.name='escalator-glass-balustrades';this.sidePanels.renderOrder=1;this.body.add(this.sidePanels);
     }
     this.landing(this.lowLanding);this.landing(this.highLanding);
+    if(!escalator&&this.connection.stairLandingLength)this.middleLanding=box(this.body,'intermediate-stair-landing',0,0,0,1,0.18,this.treadWidth+0.2,0xb8c1af);
   }
   private buildElevator():void {
     const glass=new T.MeshStandardMaterial({color:0x93bdb8,transparent:true,opacity:0.16,depthWrite:false,roughness:0.3,side:T.DoubleSide});
@@ -176,11 +180,13 @@ export class VerticalConnectionModel {
       const last=1;
       this.highLanding.visible=this.body.visible;
       this.lowLanding.visible=this.body.visible;
-      const pitch=this.run/this.count,stepRise=rise/this.count;
+      const gap=this.connection.kind==='stairs'?Math.min(this.connection.stairLandingLength??0,this.run*0.3):0;
+      const split=Math.floor(this.count/2),pitch=(this.run-gap)/this.count,stepRise=rise/this.count;
+      if(this.middleLanding){this.middleLanding.position.set(split*pitch+gap/2,split*stepRise,0);this.middleLanding.scale.x=gap;}
       this.steps!.count=this.count;this.risers!.count=this.count;this.stripes!.count=this.count;
       if(this.grooves)this.grooves.count=this.count*6;
       for(let i=0;i<this.count;i++){
-        const x=(i+0.5)*pitch,y=(i+0.5)*stepRise;
+        const x=(i+0.5)*pitch+(i>=split?gap:0),y=(i+0.5)*stepRise;
         place(this.steps!,i,x,y,0,pitch*1.01,0.16,this.treadWidth);
         place(this.risers!,i,x-pitch/2,y-stepRise/2,0,0.08,stepRise+0.04,this.treadWidth);
         place(this.stripes!,i,x-pitch*0.42,y+0.095,0,0.065,0.025,this.treadWidth-0.02);
@@ -189,9 +195,12 @@ export class VerticalConnectionModel {
       for(const mesh of [this.steps,this.risers,this.stripes,this.grooves])if(mesh)mesh.instanceMatrix.needsUpdate=true;
       const beam=(mesh:T.Mesh,offset:number,side:number,width:number,height:number)=>{
         const across=this.treadWidth/2+0.35;
-        const a=new T.Vector3(this.run*first,rise*first+offset,side*across),b=new T.Vector3(this.run*last,rise*last+offset,side*across);
+        const section=mesh.userData.section??-1;
+        const xs=[0,split*pitch,split*pitch+gap,this.run],ys=[0,split*stepRise,split*stepRise,rise];
+        const a=new T.Vector3(section<0?this.run*first:xs[section]!,(section<0?rise*first:ys[section]!)+offset,side*across),
+          b=new T.Vector3(section<0?this.run*last:xs[section+1]!,(section<0?rise*last:ys[section+1]!)+offset,side*across);
         mesh.position.copy(a).lerp(b,0.5);mesh.scale.set(a.distanceTo(b),height,width);
-        mesh.rotation.z=Math.atan2(rise,this.run);
+        mesh.rotation.z=Math.atan2(b.y-a.y,b.x-a.x);
       };
       this.belts.forEach(mesh=>beam(mesh,mesh.userData.height,mesh.userData.side,0.16,0.15));
       this.underframe.forEach(mesh=>beam(mesh,-0.28,mesh.userData.side,0.18,0.3));

@@ -9,4 +9,6 @@ export const stationPalettes={
   'metro-umeda':{paid:0xd3d9c5,gate:0x8c5d5b,gateTop:0xc78c83,platform:0xb0c6ce,fence:0x8c5d5b},
   'hanshin-umeda':{paid:0xcbdfe8,gate:0x7999a7,gateTop:0xa9c7d6,platform:0xbad0dc,fence:0x7696a4},
   'higashi-umeda':{paid:0xe1d7e8,gate:0x9b87a7,gateTop:0xc4afd1,platform:0xc5bdce,fence:0x9b87a7},
+  'nishi-umeda':{paid:0xd2e1e8,gate:0x7f9ead,gateTop:0xb2cbd8,platform:0xb6cbd8,fence:0x7e9caa},
+  kitashinchi:{paid:0xcbded5,gate:0x7f9d91,gateTop:0xb0cabb,platform:0xb9ccd2,fence:0x7e9a8d},
 } satisfies Record<StationId,{paid:number;gate:number;gateTop:number;platform:number;fence:number}>;

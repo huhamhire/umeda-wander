@@ -201,8 +201,21 @@ export const commercialConnections:VerticalConnection[]=[{
 }];
 
 const grandSouthEntry=portal('grand-front-south','2F',{x:-2,z:-90});
-const grandSouthNorth=portal('grand-front-south','2F',{x:-3,z:-155});
-const grandNorthSouth=portal('grand-front-north','2F',{x:8,z:-151});
+const grandSouthFace=building('grand-front-south').outline;
+const ga=grandSouthFace[0]!,gb=grandSouthFace[1]!,gx=gb.x-ga.x,gz=gb.z-ga.z,gLength=Math.hypot(gx,gz);
+const grandSouthNorth:PassageEndpoint={level:'platform',buildingId:'grand-front-south',x:(ga.x+gb.x)/2,z:(ga.z+gb.z)/2};
+const acrossRoad={x:gz/gLength,z:-gx/gLength};
+const northOutline=building('grand-front-north').outline;
+const intersections=northOutline.flatMap((a,i)=>{
+  const b=northOutline[(i+1)%northOutline.length]!,ex=b.x-a.x,ez=b.z-a.z;
+  const den=acrossRoad.x*ez-acrossRoad.z*ex;if(Math.abs(den)<1e-8)return [];
+  const qx=a.x-grandSouthNorth.x,qz=a.z-grandSouthNorth.z;
+  const t=(qx*ez-qz*ex)/den,u=(qx*acrossRoad.z-qz*acrossRoad.x)/den;
+  return t>0&&u>=0&&u<=1?[t]:[];
+});
+const crossDistance=Math.min(...intersections);
+const grandNorthSouth:PassageEndpoint={level:'platform',buildingId:'grand-front-north',
+  x:grandSouthNorth.x+acrossRoad.x*crossDistance,z:grandSouthNorth.z+acrossRoad.z*crossDistance};
 link('grand-front-jr-deck','JR 北侧 2F 连廊 → Grand Front 南馆','deck',[
   publicPoint('platform',-1,-84),grandSouthEntry],5);
 link('grand-front-north-south-deck','Grand Front · 南北馆 2F 连桥','deck',[grandSouthNorth,grandNorthSouth],5);
@@ -221,6 +234,7 @@ const umekitaDeckProof={source:'district' as const,pages:[],urls:[
   'https://www.openstreetmap.org/way/1347368421','https://umekita-greenplace.com/special/'],
   detail:'Official Umekita Green Place page confirms 2F direct connection from LUCUA 1100; user satellite image identifies west-side bridge. OSM v1 supplies bridge axis, short approach and landing fitted to LUCUA schematic. Public 2F destination only, no destination building or paid-platform shortcut.'};
 commercialPassages.at(-1)!.evidence=umekitaDeckProof;
+commercialPassages.at(-1)!.label=true;
 commercialAreas.push({id:'umekita-upper-deck-landing',level:'platform',name:'梅北侧 · 2F 公共落台',kind:'public',
   outline:[{x:-83,z:-57},{x:-73,z:-57},{x:-73,z:-48},{x:-83,z:-48}],evidence:umekitaDeckProof});
 
