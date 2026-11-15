@@ -1,16 +1,16 @@
 import {stationDraft} from './station-draft.ts';
-import {surfaceBearingDeg} from './station-orientation.ts';
+import {districtPlacements} from './district-placement.ts';
 
-const b=stationDraft('metro-umeda','御堂筋线梅田站 M16','metro',{x:91,z:0},-surfaceBearingDeg*Math.PI/180);
-const {draft,area,facility,node,edge,connection,platform}=b;
+const b=stationDraft('metro-umeda','御堂筋线梅田站 M16','metro',districtPlacements.metro.origin,districtPlacements.metro.angle);
+const {draft,area,facility,node,edge,connection,platform,point}=b;
 draft.levels=[
   {id:'metro-platform',station:draft.id,label:'站台',name:'M16 · 1/2 番线',y:-16,stackIndex:-2,description:'御堂筋线 1 番线往难波、天王寺、中百舌鸟；2 番线往新大阪、箕面萱野。相对高度为示意。'},
-  {id:'metro-intermediate',station:draft.id,label:'中间层',name:'直梯换乘与站内通路',y:-12,stackIndex:-1.5,description:'参考图所示“中階”与站内通路，独立于 JR 的 M2F。标高尚未测绘，不能直接当作 JR B1F/B2F。'},
+  {id:'metro-intermediate',station:draft.id,label:'中间层',name:'站内转换通路 · 通往各改札',y:-12,stackIndex:-1.5,description:'参考图所示“中階”与站内通路，独立于 JR 的 M2F；随 B1 组一起探索，保留自身高度。站内连接为示意，不能据此推断已核验无障碍路线。'},
   {id:'metro-hall',station:draft.id,label:'站厅',name:'北、中北东西、南改札',y:-8,stackIndex:-1,description:'四组改札与闸外公共通路；地下商场、JR 与阪急去向保留接口，尚无跨站完整路线。'},
 ];
 const p=platform('island','metro-platform',[1,2],0,0,122,12,{name:'御堂筋线 · 1/2 番线连接站台',lineName:'御堂筋线 M16',lineColor:0xc6504f,trackSides:[1,-1],screenDoors:'half-height'});
 // Shared physical platform, with the E-area connection retained instead of isolated islands.
-area('middle','metro-intermediate','M16 · 中间层站内通路','paid',0,0,110,10);
+area('middle','metro-intermediate','M16 中间层 · 通往各改札','paid',0,0,110,10);
 area('north-paid','metro-hall','北改札 · 闸内','paid',51,0,18,27);
 area('north-public','metro-hall','北改札 · 闸外 / 阪急三番街方向','public',67,0,14,44);
 area('east-paid','metro-hall','中北东改札 · 闸内','paid',7,10,18,12);
@@ -49,11 +49,31 @@ for(const [key,x,z]of [['north',25,0],['south',-18,0]] as const){
 area('north-middle-arm','metro-intermediate','北侧直梯换乘通路','paid',39,0,28,7);
 const ml=node('hall-lift-middle','metro-intermediate',52,0),mh=node('hall-lift-hall','metro-hall',52,0);
 connection('hall-lift','elevator',ml,mh);
-facility('lift','metro-intermediate','M16 · 中间层直梯换乘','elevator',52,0,'先到站内中间层，再经通路及相应直梯到改札层；此首版未提供完整无障碍寻路。');
+facility('lift','metro-intermediate','M16 · 直梯至北改札内侧','elevator',52,0,'中间层北端直梯上接北改札闸内。经北改札出闸后，才前往阪急三番街、Yodobashi 方向；此连接为示意，未提供完整无障碍寻路。');
 const start=node('route-entry','metro-hall',71,0),out=node('route-gate-out','metro-hall',63,0),inside=node('route-gate-in','metro-hall',57,0);
 const hall=draft.nodes.find(n=>n.id==='metro-umeda-A-hall')!,transfer=draft.nodes.find(n=>n.id==='metro-umeda-A-transfer')!,middle=draft.nodes.find(n=>n.id==='metro-umeda-A-middle')!,low=draft.nodes.find(n=>n.id==='metro-umeda-A-platform')!;
 const dest=node('destination','metro-platform',16,3);
 edge(start,out);edge(out,inside,'gate');edge(inside,hall);edge(hall,transfer,'escalator');edge(middle,low,'stairs');edge(low,dest);
 facility('stairs','metro-platform','M16 · A 楼梯至中间层','stairs',35,3,'站台先经短楼梯到中间层，再沿落台与扶梯到站厅；各层不混用 JR 楼层编号。');
 facility('escalator','metro-intermediate','M16 · 北侧站厅扶梯','escalator',44,3,'从中间层到北改札站厅的首版连接示意。');
+const end=(id:string)=>draft.nodes.find(n=>n.id===`metro-umeda-${id}`)!;
+draft.layout.guides=[{
+  id:'metro-north-circulation',name:'M16 站台 → 中间层 → 北改札内侧（示意）',access:'paid',
+  points:[{...end('north-lift-platform')},{...end('north-lift-middle'),caption:'站台直梯到达 · 转往北改札'},
+    {...end('hall-lift-middle'),caption:'北端直梯 ↑ 北改札内侧'},end('hall-lift-hall'),
+    {id:'guide-north-arrival',level:'metro-hall',...point(56,0),caption:'到北改札 · 闸内'}],
+  evidence:{source:'metro',pages:[1],detail:'North elevator transfer represented using the draft middle passage and hall lift; schematic geometry, not a certified accessible route'},
+},{
+  id:'metro-central-circulation',name:'M16 中间层 → 中北西改札内侧（示意）',access:'paid',
+  points:[{id:'guide-mid-central',level:'metro-intermediate',...point(0,-3)},
+    {...end('H-transfer'),caption:'上行 → 中北西改札内侧'},end('H-hall'),
+    {id:'guide-west-arrival',level:'metro-hall',...point(7,-10),caption:'中北西改札 · 出闸后往 JR'}],
+  evidence:{source:'metro',pages:[1],detail:'Middle passage to central-west paid hall via modeled H bank; illustrative circulation, escalator involved'},
+},{
+  id:'metro-south-circulation',name:'M16 站台 → 中间层 → 南改札内侧（示意）',access:'paid',
+  points:[end('south-lift-platform'),{...end('south-lift-middle'),caption:'站台直梯到达 · 转往南改札'},
+    {...end('E-transfer'),caption:'上行 → 南改札内侧'},end('E-hall'),
+    {id:'guide-south-arrival',level:'metro-hall',...point(-49,0),caption:'到南改札 · 闸内'}],
+  evidence:{source:'metro',pages:[1],detail:'South circulation via the draft platform lift, middle passage and E escalator bank; not the verified step-free route to the south gate'},
+}];
 export const metroStation=draft;

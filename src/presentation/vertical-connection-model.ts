@@ -75,11 +75,11 @@ export class VerticalConnectionModel {
   private landing(group:T.Group,elevator=false):void {
     if(elevator){
       const w=elevatorShaftWidth;
-      box(group,'landing-sill',0,0,w/2+0.4,w-0.2,0.14,1,0xbcc8bb);
-      for(const x of [-1.55,1.55])box(group,'landing-door-frame',x,1.25,w/2+0.05,0.16,2.5,0.2,0x557f7a);
-      box(group,'landing-door-lintel',0,2.5,w/2+0.05,3.25,0.18,0.2,0x557f7a);
-      for(const x of [-0.7,0.7])box(group,'landing-split-door',x,1.2,w/2+0.05,1.36,2.3,0.08,0xb8c7bd);
-      box(group,'landing-direction-light',0,2.78,w/2+0.05,0.8,0.23,0.15,0x6ca594);
+      box(group,'landing-sill',0,0,w*0.6,w-0.2,0.14,w*0.25,0xbcc8bb);
+      for(const x of [-w*0.3875,w*0.3875])box(group,'landing-door-frame',x,1.25,w/2+0.05,0.16,2.5,0.2,0x557f7a);
+      box(group,'landing-door-lintel',0,2.5,w/2+0.05,w*0.8125,0.18,0.2,0x557f7a);
+      for(const x of [-w*0.175,w*0.175])box(group,'landing-split-door',x,1.2,w/2+0.05,w*0.34,2.3,0.08,0xb8c7bd);
+      box(group,'landing-direction-light',0,2.78,w/2+0.05,w*0.2,0.23,0.15,0x6ca594);
     }else{
       box(group,'comb-plate',0,0,0,1.65,0.16,this.treadWidth+0.4,0xc0cbc1);
       if(this.connection.kind==='escalator')for(let i=0;i<7;i++)box(group,'comb-teeth',0,0.1,(i/6-0.5)*this.treadWidth,1.35,0.035,0.06,0xd5bd71);
@@ -125,6 +125,8 @@ export class VerticalConnectionModel {
       this.body.add(ring);this.shaftCaps.push(ring);
     }
     this.cabin.name='elevator-cabin';this.body.add(this.cabin);
+    // Cabin details use a four-unit reference plan; shrink X/Z, retain door height.
+    this.cabin.scale.set(elevatorShaftWidth/4,1,elevatorShaftWidth/4);
     box(this.cabin,'cabin-floor',0,0,0,2.9,0.18,2.9,0x476b63);
     box(this.cabin,'cabin-ceiling',0,2.45,0,2.9,0.14,2.9,0xe2e4ce);
     for(const x of [-1.38,1.38])box(this.cabin,'cabin-side',x,1.2,0,0.09,2.35,2.7,0xa2b9a8);

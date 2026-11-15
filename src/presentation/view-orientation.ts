@@ -6,3 +6,8 @@ export function viewBasis():{right:T.Vector3;up:T.Vector3} {
   const right=new T.Vector3(0,1,0).cross(back).normalize();
   return {right,up:back.clone().cross(right).normalize()};
 }
+export function screenDirection(angleRad:number):T.Vector2 {
+  const direction=new T.Vector3(Math.cos(angleRad),0,Math.sin(angleRad));
+  const {right,up}=viewBasis();
+  return new T.Vector2(direction.dot(right),-direction.dot(up)).normalize();
+}

@@ -76,6 +76,25 @@ test('elevator has a transparent shaft, visible cabin and floor doors in explode
   assert(model.group.getObjectByName('landing-split-door'));
   model.update(id=>displayElevation(levels,id,1),'platform');assert(model.group.visible);
 });
+
+test('compact elevator cabin and landing doors fit the shaft and its clipped floor opening',()=>{
+  const connection=connections.find(c=>c.id==='lift-m')!;
+  const model=new VerticalConnectionModel(connection,levels,platforms);
+  model.update(id=>displayElevation(levels,id,0),'all');
+  const shaft=model.group.getObjectByName('transparent-elevator-shaft') as T.Mesh;
+  const cabin=model.group.getObjectByName('elevator-cabin')!;
+  const floor=cabin.getObjectByName('cabin-floor') as T.Mesh;
+  assert(shaft.scale.x<=3.2,'shaft should not dominate the platform');
+  assert(floor.scale.x*cabin.scale.x<shaft.scale.x);
+  assert.equal(cabin.scale.y,1,'horizontal refinement must retain cabin height');
+  const frames:T.Mesh[]=[];model.group.traverse(o=>{if(o instanceof T.Mesh&&o.name==='landing-door-frame')frames.push(o);});
+  for(const frame of frames)assert(Math.abs(frame.position.x)+frame.scale.x/2<shaft.scale.x/2);
+  const opening=openings.find(o=>o.connectionId===connection.id&&o.level===connection.to.level)!;
+  for(const x of [-shaft.scale.x/2-0.08,shaft.scale.x/2+0.08])for(const z of [-shaft.scale.z/2-0.08,shaft.scale.z/2+0.08]){
+    const p=model.group.localToWorld(new T.Vector3(x,0,z));
+    assert(pointInPolygon({x:p.x,z:p.z},opening.outline),'structural corners must fit inside the opening');
+  }
+});
 test('gate boundaries have fences on both sides and leave the gate bank open',()=>{
   const boundaries=planGateBoundaries(facilities,areas);
   assert.equal(boundaries.length,facilities.filter(f=>f.kind==='gate').length);

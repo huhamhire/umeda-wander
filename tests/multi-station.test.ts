@@ -28,11 +28,11 @@ test('station entities and source identities stay separate and unique',()=>{
 test('adding stations preserves JR expansion and each station retains its own lower floors',()=>{
   for(const explode of [0,0.48,1])for(const l of jr.levels)
     assert.equal(displayElevation(levels,l.id,explode),displayElevation(jr.levels,l.id,explode));
-  assert.equal(viewLayerRole(levels,{station:'metro-umeda',level:'all'},'underground-platform'),'hidden');
-  assert.equal(viewLayerRole(levels,{station:'all',level:'metro-hall'},'mezzanine'),'hidden');
-  assert.equal(viewLayerRole(levels,{station:'metro-umeda',level:'metro-hall'},'metro-platform'),'context');
-  assert.equal(viewLayerRole(levels,{station:'hankyu-umeda',level:'hankyu-hall'},'hankyu-platform'),'hidden');
-  assert.equal(viewLayerRole(levels,{station:'all',level:'all'},'hankyu-platform'),'normal');
+  assert.equal(viewLayerRole(levels,{focusStation:'metro-umeda',level:'all'},'underground-platform'),'normal');
+  assert.equal(viewLayerRole(levels,{level:'metro-hall'},'mezzanine'),'hidden');
+  assert.equal(viewLayerRole(levels,{focusStation:'metro-umeda',level:'metro-hall'},'metro-platform'),'context');
+  assert.equal(viewLayerRole(levels,{focusStation:'hankyu-umeda',level:'hankyu-hall'},'hankyu-platform'),'hidden');
+  assert.equal(viewLayerRole(levels,{level:'all'},'hankyu-platform'),'normal');
 });
 
 test('Hankyu has nine numbered terminal tracks and a separate outer platform strip',()=>{

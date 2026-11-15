@@ -32,6 +32,21 @@ export interface VerticalConnection {
 }
 export interface StationLayout {
   areas: FloorArea[]; platforms: Platform[]; connections: VerticalConnection[];
+  railApproaches?:RailApproach[];
+  guides?:PassageGuide[];
+}
+export interface GuidePoint extends RouteNode {caption?:string}
+export interface PassageGuide {
+  id:string;name:string;access:'public'|'paid';points:GuidePoint[];evidence:Evidence;
+}
+export interface RailNode {id:string;point:Point2;kind:'platform-end'|'junction'|'outlet'|'end'}
+export interface RailSegment {
+  id:string;from:string;to:string;control1:Point2;control2:Point2;
+  platformId?:string;track?:number;
+}
+export interface RailApproach {
+  id:string;station:StationId;level:LevelId;name:string;color:number;
+  nodes:RailNode[];segments:RailSegment[];labelPoint:Point2;evidence:Evidence;
 }
 export interface FloorOpening {
   connectionId: string; level: LevelId; kind: VerticalConnection['kind']; outline: Point2[];

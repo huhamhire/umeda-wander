@@ -14,9 +14,9 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
 .map-label.context{color:#939d90;background:#eef0e5d9;border-color:#dce1d5;box-shadow:none;font-weight:400;opacity:.65}
 
 /* One sidebar: station selection, then floors and facilities on separate pages. */
-.sidebar{position:absolute;z-index:3;left:36px;top:235px;width:250px;max-height:calc(100% - 300px);padding:15px;overflow-y:auto;scrollbar-width:thin}
-.station-label{display:block;font-size:10px;color:#7c8c7b;margin:0 2px 7px}
-#station-picker{width:100%;font:inherit;font-size:11px;color:#315d51;background:#f4f6ed;border:1px solid #dce3d3;border-radius:8px;padding:9px 7px}
+.sidebar{position:absolute;z-index:3;left:36px;top:235px;width:290px;max-height:calc(100% - 300px);padding:15px;overflow-y:auto;scrollbar-width:thin}
+
+
 .sidebar-tabs{display:flex;gap:5px;padding:12px 0;border-bottom:1px solid #e6e9dd;margin-bottom:12px}
 .sidebar-tabs button{flex:1;border:0;background:transparent;border-radius:7px;padding:9px;font-size:11px;color:#87927f}
 .sidebar-tabs button[aria-selected=true]{background:#e8eee2;color:#245e50;font-weight:600}
@@ -25,13 +25,18 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
 .sidebar .detail{padding-left:3px;padding-right:3px}.sidebar .detail p{font-size:11px}.sidebar .poi-list button{font-size:11px}
 .sidebar .legend{justify-content:space-between}.sidebar .level-description{margin-left:3px;margin-right:3px}
 .sidebar .legend .paid{background:var(--paid-color,#bbd1bd)}
+.focus-summary h2{margin:7px 0 14px;font-size:15px;font-weight:550}
+.station-focus-buttons{display:grid;grid-template-columns:1fr;gap:7px}
+.station-focus-buttons button{padding:11px 5px;border:1px solid #dde3d4;border-radius:8px;background:#f5f6ed;color:#71816e;font-size:11px}
+.station-focus-buttons button[aria-pressed=true]{background:#e6eddf;border-color:#b8cbb1;color:#315f4d}
+@media(max-width:760px){.focus-summary h2{font-size:12px}.station-focus-buttons{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.station-focus-buttons button{font-size:10px;padding:9px 2px}}
 #floor-list{display:block}
 .sidebar .floor-number{flex:0 0 42px;font-size:12px}.sidebar .floor>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis}
 .route-card{width:min(650px,calc(100% - 360px));left:auto;right:30px;transform:none}
 .route-switch{flex-wrap:wrap}.route-switch button{padding:5px 7px}
 @media(max-width:760px){
-  .sidebar{left:16px;right:16px;top:auto;bottom:195px;width:auto;max-height:40dvh;padding:9px 11px;overflow-y:auto;border-radius:12px}
-  .sidebar .station-label{display:none}#station-picker{font-size:10px;padding:7px}
+  .sidebar{left:16px;right:16px;top:auto;bottom:64px;width:auto;max-height:40dvh;padding:9px 11px;overflow-y:auto;border-radius:12px}
+
   .sidebar-tabs{padding:6px 0;margin-bottom:5px;gap:8px}.sidebar-tabs button{font-size:10px;padding:6px}
   .sidebar .section-heading{display:none}#floor-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
   .sidebar .floor{font-size:8px;padding:6px 2px}.sidebar .floor-number{font-size:10px;flex:none;width:auto}
@@ -43,3 +48,5 @@ footer a{font-size:8px;color:#8c9b82;text-decoration:none}footer a:hover{text-de
   .route-card{width:auto;right:16px;left:16px;transform:none}.route-switch button{font-size:8px;padding:4px 6px}
   .atlas.routing .sidebar{bottom:265px}.inspector{position:static}
 }
+
+.compass svg{width:100%;height:100%;overflow:visible}

@@ -5,7 +5,7 @@ import {connectionLanes,escalatorOverallWidth} from './connection-lanes.ts';
 
 // Diagram units shared by the clearance plan and its rendered equipment.
 export const escalatorWidth = escalatorOverallWidth;
-export const elevatorShaftWidth = 4;
+export const elevatorShaftWidth = 3;
 
 export function planFloorOpenings(connections: VerticalConnection[], levels: Level[], platforms:Platform[], surfaces:Pick<Level,'id'|'y'>[]=levels): FloorOpening[] {
   const openings: FloorOpening[] = [];

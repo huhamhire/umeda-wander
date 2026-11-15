@@ -15,6 +15,10 @@ import { cameraOffset, viewBasis } from './view-orientation.ts';
 import { roofHeightAt } from './roof-profile.ts';
 import { advanceExplode } from './explode-transition.ts';
 import {stationPalettes} from './station-palette.ts';
+import {cameraEnvelope} from './camera-framing.ts';
+import {stationPlinthParts} from './station-plinth.ts';
+import {buildRailApproachModel} from './rail-approach-model.ts';
+import {platformRail} from '../domain/map/rail-geometry.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -36,6 +40,8 @@ export class MapScene {
   private state: MapViewState;
   private displayedExplode: number;
   private immediateExplode = false;
+  private framing?:{center:T.Vector3;span:number};
+  private focusTransition=false;
   private zoomValue = 1;
   private pan = new T.Vector3();
   private frame = 0;
@@ -108,11 +114,10 @@ export class MapScene {
 
   private buildStation(): void {
     const base = this.base; this.scene.add(base);
-    // Keep the west-side descent clear of the main station plinth.
-    this.box(base, 4, -2.5, 0, 130, 2, 130, 0xe0dfcf);
-    this.box(base, 4, -1.35, 0, 127, 0.5, 127, 0xefecdb);
-    for (let x = -58; x <= 66; x += 8) this.box(base, x, -1.06, 0, 0.06, 0.02, 122, 0xd9dece);
-    for (let z = -60; z <= 60; z += 8) this.box(base, 4, -1.05, z, 124, 0.02, 0.06, 0xd9dece);
+    for(const {geometry,color}of stationPlinthParts(this.openings)){
+      if(!geometry.getAttribute('position'))continue;
+      const mesh=new T.Mesh(geometry,this.material(color));mesh.castShadow=true;mesh.receiveShadow=true;base.add(mesh);
+    }
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
     const areaColors = { public: colors.slab, paid: colors.mint, commercial: 0xe4d4c3, service: 0xd7dfc4 };
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
@@ -146,9 +151,7 @@ export class MapScene {
         this.material(level==='underground-platform'?0x90b6c5:stationPalettes[this.levels.find(l=>l.id===level)?.station??'jr-osaka'].platform));
       slab.name = `platform-slab-${platform.id}`; slab.castShadow = true; slab.receiveShadow = true; platformGroup.add(slab);
       for (const [index, number] of tracks.entries()) {
-        const side = platform.trackSides?.[index]??(tracks.length === 1 || index === 0 ? 1 : -1);
-        const across = side * (width / 2 + 1.65);
-        const railLength=platform.terminal?length-3:length+7,railCenter=platform.terminal?1.5:0;
+        const {side,across,length:railLength,center:railCenter}=platformRail(platform,index);
         block(railCenter, -0.62, across, railLength, 0.3, 2.5, 0xb9bcae);
         for (const offset of [-0.7, 0.7]) block(railCenter, -0.36, across + offset, railLength, 0.12, 0.12, 0x6d7c77);
         for (let railX = railCenter-railLength/2; railX <= railCenter+railLength/2; railX += 2.2) block(railX, -0.45, across, 0.45, 0.13, 2.2, 0x939c8e);
@@ -198,6 +201,13 @@ export class MapScene {
       block(-6, 3, 0, 5, 0.75, 0.35, 0x416c67);
       const label = position(-length / 2 + 8, 0);
       this.label(platform.name??(tracks.join(' / ') + ' 番线'), label.x, 3.7, label.z, level, false, true);
+    }
+    for(const approach of this.layout.railApproaches??[]){
+      this.groups.get(approach.level)!.add(buildRailApproachModel(approach));
+      this.label(approach.name,approach.labelPoint.x,2.5,approach.labelPoint.z,approach.level,false,true);
+    }
+    for(const guide of this.layout.guides??[]){
+      for(const p of guide.points)if(p.caption)this.label(p.caption,p.x,3,p.z,p.level,false,true);
     }
     // Handrails frame the narrow elevated passages, not imaginary full floor plates.
     for (const id of ['mezzanine', 'bridge'] as const) {
@@ -339,6 +349,8 @@ export class MapScene {
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
     const routeChanged = this.state.route !== state.route;
+    if(this.state.focusStation!==state.focusStation)this.focusTransition=true;
+    if(options.immediateExplode)this.focusTransition=false;
     this.state = { ...state };
     this.immediateExplode ||= options.immediateExplode === true;
     if (routeChanged) this.buildRoute();
@@ -350,8 +362,8 @@ export class MapScene {
     const ring = new T.Mesh(new T.RingGeometry(2.5, 3.1, 40), new T.MeshBasicMaterial({ color: colors.route, side: T.DoubleSide }));
     ring.rotation.x = -Math.PI / 2; this.selected.add(ring); this.requestRender();
   }
-  zoom(factor: number): void { this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, 0.55, 2.8); this.requestRender(); }
-  reset(): void { this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.clear(); this.requestRender(); }
+  zoom(factor: number): void { this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, 0.55, 2.8); this.requestRender(); }
+  reset(): void { this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.clear(); this.requestRender(); }
   private levelY(id: LevelId): number {
     return displayElevation(this.levels, id, this.displayedExplode);
   }
@@ -381,7 +393,8 @@ export class MapScene {
   private requestRender(): void { if (!this.frame) this.frame = requestAnimationFrame(() => this.render()); }
   private render(): void {
     this.frame = 0;
-    const {value,animate}=advanceExplode(this.displayedExplode,this.state.explode,this.immediateExplode,matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const {value,animate}=advanceExplode(this.displayedExplode,this.state.explode,this.immediateExplode,reducedMotion);
     const previousExplode = this.displayedExplode;
     this.displayedExplode = value;
     this.immediateExplode = false;
@@ -400,50 +413,38 @@ export class MapScene {
       connector.group.visible=true;
       connector.update(id => this.levelY(id), this.state.level);
       const {from,to}=connector.connection;
-      const upper=this.levels.find(level=>level.id===from.level)!.y>this.levels.find(level=>level.id===to.level)!.y?from.level:to.level;
-      this.appearance.apply(connector.group,viewLayerRole(this.levels,this.state,upper)==='context');
+      const roles=[from,to].map(p=>viewLayerRole(this.levels,this.state,p.level));
+      this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'));
     }
     this.roof.position.y = 26 + this.displayedExplode * 56;
-    this.roof.visible = this.state.roof && this.state.level === 'all' && viewLayerRole(this.levels,this.state,'concourse')!=='hidden';
+    this.roof.visible = this.state.roof && this.state.level === 'all';
     this.route.visible = !!this.state.route;
     if (previousExplode !== this.displayedExplode && this.state.route) this.buildRoute();
-    this.selected.visible = !!this.activeFacility && (this.state.level === 'all' || this.state.level === this.activeFacility.level);
+    this.selected.visible = !!this.activeFacility && ['normal','current'].includes(viewLayerRole(this.levels,this.state,this.activeFacility.level));
     if (this.activeFacility) this.selected.position.set(this.activeFacility.x, this.levelY(this.activeFacility.level) + (this.activeFacility.elevationOffset??0) + 0.9, this.activeFacility.z);
     // Fit around the visible floor envelope; reserve side panels on desktop.
     const mobile = this.width < 761;
     const aspect = this.width / Math.max(1, this.height);
-    const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 340);
-    const envelope: T.Vector3[] = [];
-    for (const area of this.layout.areas) {
-      if (viewLayerRole(this.levels,this.state,area.level)==='hidden') continue;
-      for (const point of area.outline) envelope.push(new T.Vector3(point.x, this.levelY(area.level) + (area.elevationOffset??0) + (area.height ?? 0.55), point.z));
-    }
-    for (const platform of this.layout.platforms) {
-      if (viewLayerRole(this.levels,this.state,platform.level)==='hidden') continue;
-      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-        const point = platformPoint(platform, sx * (platform.length / 2 + 5), sz * (platform.width / 2 + 4));
-        envelope.push(new T.Vector3(point.x, this.levelY(platform.level) + 4, point.z));
-      }
-    }
-    // Entire escalators remain visible from their lower floor, including the upper landing.
-    for(const connector of this.connectors){
-      if(!connector.group.visible||connector.connection.kind==='elevator')continue;
-      for(const point of [connector.connection.from,connector.connection.to]){
-        const y=this.levelY(point.level)+(point.elevationOffset??0);
-        for(const dx of [-3,3])for(const dz of [-3,3])envelope.push(new T.Vector3(point.x+dx,y+2.5,point.z+dz));
-      }
-    }
-    if (this.roof.visible) for (const x of [-64, 64]) for (const z of [-37, 37]) envelope.push(new T.Vector3(x, this.roof.position.y + 14, z));
+    const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
+    const envelope=cameraEnvelope(this.layout,this.levels,this.state,id=>this.levelY(id));
+    if(!this.state.focusStation||this.state.focusStation==='jr-osaka')
+      for(const x of [-64,64])for(const z of [-37,37])envelope.push(new T.Vector3(x,this.roof.position.y+14,z));
     const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
     const {right,up} = viewBasis();
     const boundsX = envelope.map(point => point.clone().sub(center).dot(right));
     const boundsY = envelope.map(point => point.clone().sub(center).dot(up));
     const minX = Math.min(...boundsX), maxX = Math.max(...boundsX), minY = Math.min(...boundsY), maxY = Math.max(...boundsY);
     center.addScaledVector(right, (minX + maxX) / 2).addScaledVector(up, (minY + maxY) / 2).add(this.pan);
-    const span = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * this.height / usableWidth * 1.12) / this.zoomValue;
-    this.camera.left = -span * aspect / 2; this.camera.right = span * aspect / 2;
-    this.camera.top = span / 2; this.camera.bottom = -span / 2;
+    let span = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * this.height / usableWidth * 1.12) / this.zoomValue;
     if(!mobile)center.addScaledVector(right,-Math.min(150,this.width*0.13)*span/this.height);
+    if(this.framing&&this.focusTransition&&!reducedMotion){
+      this.framing.center.lerp(center,0.24);this.framing.span+=(span-this.framing.span)*0.24;
+      this.focusTransition=this.framing.center.distanceTo(center)>0.02||Math.abs(this.framing.span-span)>0.02;
+      if(this.focusTransition){center.copy(this.framing.center);span=this.framing.span;}
+    }else this.focusTransition=false;
+    this.framing={center:center.clone(),span};
+    this.camera.left=-span*aspect/2;this.camera.right=span*aspect/2;
+    this.camera.top=span/2;this.camera.bottom=-span/2;
     this.camera.position.copy(center).add(cameraOffset);
     this.camera.lookAt(center);
     this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
@@ -451,7 +452,7 @@ export class MapScene {
     this.renderer.render(this.scene, this.camera);
     const rect = this.host.getBoundingClientRect();
     const occupied: { x: number; y: number; w: number; h: number }[] = [];
-    const priority=(label:MapLabel)=>Number(label.level===this.state.level)*4+Number(label.element.classList.contains('emphasis'));
+    const priority=(label:MapLabel)=>Number(label.level&&viewLayerRole(this.levels,this.state,label.level)==='current')*4+Number(label.element.classList.contains('emphasis'));
     const orderedLabels = [...this.labels].sort((a,b)=>priority(b)-priority(a));
     const placements = orderedLabels.map(label => {
       const role=label.level?viewLayerRole(this.levels,this.state,label.level):'normal';
@@ -478,7 +479,7 @@ export class MapScene {
         if (!collides) occupied.push({ x, y, w, h });
       }
     }
-    if (animate) this.requestRender();
+    if (animate||this.focusTransition) this.requestRender();
   }
   private bindGestures(): void {
     const canvas = this.renderer.domElement;
@@ -490,6 +491,7 @@ export class MapScene {
     });
     canvas.addEventListener('pointermove', e => {
       const old = this.pointers.get(e.pointerId); if (!old) return;
+      this.focusTransition=false;
       if (this.down && Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y) > 5) this.dragged = true;
       const other = [...this.pointers].find(([id]) => id !== e.pointerId)?.[1];
       if (other) {
@@ -510,7 +512,7 @@ export class MapScene {
       if (!this.dragged && this.down) {
         const rect = canvas.getBoundingClientRect();
         this.raycaster.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), this.camera);
-        const candidates = this.pickables.filter(obj => obj.parent?.visible && (this.state.level==='all'||(obj.userData.facility as Facility).level===this.state.level));
+        const candidates = this.pickables.filter(obj => obj.parent?.visible && ['normal','current'].includes(viewLayerRole(this.levels,this.state,(obj.userData.facility as Facility).level)));
         const hit = this.raycaster.intersectObjects(candidates, false)[0];
         if (hit) this.onSelect(hit.object.userData.facility as Facility);
       }

@@ -1,13 +1,13 @@
 import {stationDraft} from './station-draft.ts';
-import {surfaceBearingDeg} from './station-orientation.ts';
+import {districtPlacements} from './district-placement.ts';
 
 // Local +X heads north; placement is a district sketch, not a surveyed footprint.
-const b=stationDraft('hankyu-umeda','阪急大阪梅田站','hankyu',{x:140,z:-85},-surfaceBearingDeg*Math.PI/180);
+const b=stationDraft('hankyu-umeda','阪急大阪梅田站','hankyu',districtPlacements.hankyu.origin,districtPlacements.hankyu.angle,-1);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
   {id:'hankyu-ground',station:draft.id,label:'1F',name:'地面入口与公共通道',y:0,stackIndex:0,description:'阪急地面入口、BIGMAN 方向及公共通路；周边商场仅保留接口。'},
-  {id:'hankyu-hall',station:draft.id,label:'2F',name:'中央口与茶屋町口',y:8,stackIndex:1,description:'中央改札与茶屋町口改札分别建模，闸内通过多组楼梯、扶梯及直梯上至站台。'},
-  {id:'hankyu-platform',station:draft.id,label:'3F',name:'终端站台与 3F 改札',y:16,stackIndex:2,description:'1–9 番线与梳状终端站台；1–3 京都线、4–6 宝冢线、7–9 神户线。机柜与设施数量为示意。'},
+  {id:'hankyu-hall',station:draft.id,label:'2F',name:'中央口与茶屋町口',y:8,stackIndex:2,description:'中央改札与茶屋町口改札分别建模，闸内通过多组楼梯、扶梯及直梯上至站台。'},
+  {id:'hankyu-platform',station:draft.id,label:'3F',name:'终端站台与 3F 改札',y:16,stackIndex:3,description:'1–9 番线与梳状终端站台；1–3 京都线、4–6 宝冢线、7–9 神户线。机柜与设施数量为示意。'},
 ];
 area('ground','hankyu-ground','阪急 1F · 公共通道','public',-7,0,132,82);
 area('bigman','hankyu-ground','BIGMAN · 入口方向','service',-60,-24,9,13,2.2);
@@ -15,7 +15,7 @@ area('central-public','hankyu-hall','2F 中央口 · 闸外','public',-24,0,24,8
 area('central-paid','hankyu-hall','2F 中央口 · 闸内','paid',-3,0,18,76);
 area('chaya-paid','hankyu-hall','2F 茶屋町口 · 闸内','paid',43,0,16,76);
 area('chaya-public','hankyu-hall','2F 茶屋町口 · 闸外','public',60,0,18,82);
-area('jr-interface','hankyu-hall','往 JR 大阪站 / Yodobashi · 接口','public',-26,-46,12,12);
+area('jr-interface','hankyu-hall','往 JR 大阪站 / Yodobashi · 接口','public',-26,46,12,12);
 area('upper-public','hankyu-platform','3F 改札 · 闸外','public',-64,0,18,82);
 area('terminal-head','hankyu-platform','3F 终端横向通道 · 闸内','paid',-49,0,12,76);
 facility('gate-3f','hankyu-platform','阪急 · 3F 改札口','gate',-55,0,'3F 终端侧改札。进入后沿横向通道选择番线，线路配色来自参考图。',Math.PI/2);
