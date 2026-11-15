@@ -1,4 +1,4 @@
-import type {CommercialBuilding,CommercialBuildingId,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
+import type {CommercialBuilding,CommercialBuildingId,CommercialConcourse,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection,AtriumVoid} from '../domain/map/model.ts';
 import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
 import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMultimediaPodium,northGateOfficeTower} from './commercial-footprints.ts';
 import polygonClipping from 'polygon-clipping';
@@ -8,6 +8,7 @@ import {insetPolygon} from '../utils/polygon-inset.ts';
 const cityMap='https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf';
 const access={
   'hankyu-dept':'https://www.hankyu-dept.co.jp/honten/map/index.html',
+  'hankyu-grand':'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf',
   daimaru:'https://www.daimaru.co.jp/umedamise/access.html',
   lucua:'https://www.lucua.jp/access/',
   'lucua-1100':'https://www.lucua.jp/access/',
@@ -36,6 +37,7 @@ const fit=(id:CommercialBuildingId,p:Point2):Point2=>{
 };
 const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=[
   ['hankyu-dept','阪急百货 · 梅田本店',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'south-deck',name:'2F'}]],
+  ['hankyu-grand','阪急 Grand Building',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'south-deck',name:'2F'}]],
   ['daimaru','大丸梅田店 / 南门大楼',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F',elevationOffset:1.3},{level:'south-deck',name:'2F'}]],
   ['lucua','LUCUA',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
   ['lucua-1100','LUCUA 1100',[{level:'underground-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'platform',name:'2F'}]],
@@ -207,3 +209,23 @@ commercialAreas.push({id:'daimaru-south-right-ground-landing',level:'concourse',
 commercialConnections.push({id:'south-building-74',kind:'escalator',lanes:2,
   from:{id:'south-74-ground',level:'concourse',x:18,z:77,elevationOffset:1.3},
   to:{id:'south-74-deck',level:'south-deck',x:18,z:69},evidence:southPlazaProof});
+
+const concourseProof={source:'district' as const,pages:[],urls:[
+  'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf',
+  'https://website.hankyu-dept.co.jp/honten/about/'],
+  detail:'Official 2012 concourse release pp2,5,6 confirms public north–south concourse between the department store and Grand Building and east–west concourse toward JR/HEP. User photo supplies cream arches and glazed entrances. Footprint fit and compressed heights schematic; no retail aisles or navigation edges.'};
+const nsNorth=fit('hankyu-dept',{x:110.76,z:12.98}),nsSouth=fit('hankyu-dept',{x:90.56,z:46.34});
+const ewWest=fit('hankyu-dept',{x:75.64,z:13.4}),ewEast=fit('hankyu-dept',{x:124,z:16.1});
+export const commercialConcourses:CommercialConcourse[]=[
+  {id:'hankyu-north-south-concourse',name:'阪急百货 · 1F 南北公共通廊',level:'concourse',axis:[nsNorth,nsSouth],width:8.2,height:6.2,
+    outline:passageOutline(nsNorth,nsSouth,8.2),evidence:concourseProof},
+  {id:'hankyu-east-west-concourse',name:'1F 东西公共通廊 · JR / HEP 方向',level:'concourse',axis:[ewWest,ewEast],width:7,height:3.3,
+    outline:passageOutline(ewWest,ewEast,7),evidence:concourseProof},
+];
+for(const hall of commercialConcourses)commercialAreas.push({id:hall.id,level:hall.level,name:hall.name,kind:'public',label:true,outline:hall.outline,evidence:hall.evidence});
+commercialAreas.push({id:'jr-hankyu-ground-approach',level:'concourse',name:'JR 御堂筋口外—阪急 1F 公共通廊',kind:'public',label:true,
+  outline:passageOutline({x:53,z:4},ewWest,6),evidence:concourseProof});
+// The tall north–south hall remains open through the 2F cutaway. The east–west
+// hall has its documented 2F passage above and must not be turned into a void.
+export const commercialAtria:AtriumVoid[]=[{id:'hankyu-concourse-void',name:'阪急南北通廊 · 挑高空间',
+  openings:[{level:'south-deck',outline:commercialConcourses[0]!.outline}],evidence:concourseProof}];

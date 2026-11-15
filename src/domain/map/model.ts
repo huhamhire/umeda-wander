@@ -38,9 +38,13 @@ export interface StationLayout {
   buildings?:CommercialBuilding[];
   passages?:PublicPassage[];
   atria?:AtriumVoid[];
+  concourses?:CommercialConcourse[];
 }
 export interface AtriumVoid {id:string;name:string;openings:{level:LevelId;outline:Point2[]}[];evidence:Evidence}
-export type CommercialBuildingId='hankyu-dept'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
+export type CommercialBuildingId='hankyu-dept'|'hankyu-grand'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
+export interface CommercialConcourse {
+  id:string;name:string;level:LevelId;outline:Point2[];axis:[Point2,Point2];width:number;height:number;evidence:Evidence;
+}
 export interface CommercialBuilding {
   id:CommercialBuildingId;name:string;outline:Point2[];
   floors:{level:LevelId;name:string;elevationOffset?:number}[];evidence:Evidence;

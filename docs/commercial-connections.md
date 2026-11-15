@@ -17,6 +17,7 @@ JR 内部既有 M2F、南端 15/16/I、50/T 等关系保留。南端 15/16 在 3
 | 体块 | OSM way / 版本 | 边界解释 |
 | --- | --- | --- |
 | 阪急百货梅田本店 | [588689735](https://www.openstreetmap.org/way/588689735) / 13 | 宿主大阪梅田双塔北楼轮廓，包含百货及大楼范围，不是百货租赁边界 |
+| 阪急 Grand Building | [162157689](https://www.openstreetmap.org/way/162157689) / 9 | 与百货分体，1F 南北公共通廊位于两者之间 |
 | 大丸梅田店 / 南门大楼 | [161450829](https://www.openstreetmap.org/way/161450829) / 29 | 南门大楼轮廓，亦包含酒店等其他功能，不将整栋声称为大丸商场 |
 | LUCUA 东馆 | [1313244351](https://www.openstreetmap.org/way/1313244351) / 1 | OSM 商业设施多边形 |
 | LUCUA 1100 西馆 | [1313244350](https://www.openstreetmap.org/way/1313244350) / 5 | OSM 商业设施多边形 |

@@ -4,7 +4,7 @@ import {metroStation} from './metro-umeda-map.ts';
 import type {Level,StationId} from '../domain/map/model.ts';
 import {districtAreas,districtConnections,districtGuides} from './district-links.ts';
 import {createRailApproaches} from './rail-approaches.ts';
-import {commercialBuildings,commercialPassages,commercialAreas,commercialConnections} from './commercial-district.ts';
+import {commercialBuildings,commercialPassages,commercialAreas,commercialConnections,commercialConcourses,commercialAtria} from './commercial-district.ts';
 import {northAtrium} from './jr-osaka-upper-links.ts';
 import {completeFacilityDirectory} from './facility-directory.ts';
 
@@ -26,5 +26,5 @@ const jrConnections=jr.connections.map(c=>southDeckBanks.has(c.id)?{...c,
   ...(c.id==='south-building-61'?{lanes:2 as const}:{}),
   from:c.from.level==='mezzanine'?{...c.from,level:'south-deck' as const}:c.from,
   to:c.to.level==='mezzanine'?{...c.to,level:'south-deck' as const}:c.to}:c);
-export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...districtAreas,...commercialAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:commercialPassages,atria:[northAtrium]};
+export const layout={areas:[...jrAreas,...hankyuStation.layout.areas,...metroStation.layout.areas,...districtAreas,...commercialAreas],platforms,connections:[...jrConnections,...hankyuStation.layout.connections,...metroStation.layout.connections,...districtConnections,...commercialConnections],railApproaches:createRailApproaches(platforms),guides:[...districtGuides,...(metroStation.layout.guides??[])],buildings:commercialBuildings,passages:commercialPassages,atria:[northAtrium,...commercialAtria],concourses:commercialConcourses};
 export const facilities=completeFacilityDirectory(sourceFacilities,layout.connections,platforms,levels);

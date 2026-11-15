@@ -8,7 +8,7 @@ import {planAtriumOpenings} from '../src/application/atrium-openings.ts';
 import {buildFloorGeometry} from '../src/presentation/floor-geometry.ts';
 
 test('North atrium is a shared void with all four bank groups arriving at exterior edges',()=>{
-  const wells=planFloorOpenings(layout.connections,levels,layout.platforms),voids=planAtriumOpenings(layout.atria);
+  const wells=planFloorOpenings(layout.connections,levels,layout.platforms),voids=planAtriumOpenings(layout.atria.filter(a=>a.id==='north-atrium-void'));
   assert.equal(voids.length,2);assert(!voids.some(o=>o.level==='concourse'));
   for(const id of ['north-2','north-2-stairs','north-3','north-47','north-48']){
     const c=layout.connections.find(c=>c.id===id)!;

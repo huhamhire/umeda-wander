@@ -35,19 +35,22 @@ test('geographic anchors place Metro near JR east and Hankyu farther north',()=>
   assert.deepEqual(h.origin,{x:h.referenceOrigin.x+h.displayOffset.x,z:h.referenceOrigin.z+h.displayOffset.z});
   assert.deepEqual(m.referenceOrigin,projectDistrictPoint(m.geo,districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor));
   const bearing=districtFrame.bearingDeg*Math.PI/180;
-  assert(Math.abs(m.displayOffset.x*Math.sin(bearing)+m.displayOffset.z*Math.cos(bearing)-30)<1e-6);
-  assert(Math.abs(m.displayOffset.x*Math.cos(bearing)-m.displayOffset.z*Math.sin(bearing))<1e-6,'east display offset must not drift north');
+  const roadOffset={x:m.displayOffset.x-30*Math.sin(bearing),z:m.displayOffset.z-30*Math.cos(bearing)};
+  assert(Math.abs(roadOffset.x*Math.sin(m.angle)-roadOffset.z*Math.cos(m.angle))<1e-6,'southern fit follows the road axis');
+  assert(roadOffset.x*Math.cos(m.angle)+roadOffset.z*Math.sin(m.angle)<-30,'area map places the platform farther south');
   const east=(p:{x:number;z:number})=>p.x*Math.sin(bearing)+p.z*Math.cos(bearing);
   assert(east(m.origin)<east(h.origin),'Metro remains west of Hankyu while sitting east of JR');
   assert(h.origin.x>m.origin.x&&h.origin.z<m.origin.z-40);
   assert(Math.abs((h.angle-m.angle)*180/Math.PI)>4,'distinct measured headings');
 });
 
-test('Metro platform sits outside the enlarged JR station east end',()=>{
+test('Metro stays east of JR platforms while its north end crosses below the external railway throat',()=>{
   const eastEnd=Math.max(...layout.platforms.filter(p=>p.level==='platform').flatMap(p=>p.tracks.map((_,i)=>platformRail(p,i).end.x)));
   const p=metroStation.layout.platforms[0]!;
   for(const along of [-p.length/2,p.length/2])for(const across of [-p.width/2,p.width/2])
-    assert(platformPoint(p,along,across).x>eastEnd+6,'Metro footprint intrudes into the main JR station body');
+    assert(platformPoint(p,along,across).x>eastEnd,'Metro footprint intrudes into the main JR station body');
+  const north=platformPoint(p,p.length/2,0),south=platformPoint(p,-p.length/2,0);
+  assert(north.z<0&&south.z>70,'road station spans the eastern throat and the southern commercial district');
 });
 
 test('JR east plaza connects directly to both Hankyu and Yodobashi without an intermediate dogleg',()=>{

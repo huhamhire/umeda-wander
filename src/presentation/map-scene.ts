@@ -27,6 +27,7 @@ import {buildAtriumRailing} from './atrium-model.ts';
 import {LabelOcclusion,visibleLabelOccluders} from './label-occlusion.ts';
 import {facilityFocusRect,facilityCameraCenter,minimumMapZoom} from './facility-focus.ts';
 import {SelectionMarker} from './selection-marker.ts';
+import {buildCommercialConcourse} from './commercial-concourse-model.ts';
 
 const colors = { slab: 0xe9ddc3, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
@@ -138,6 +139,7 @@ export class MapScene {
       mesh.userData.labelOccluder=true;
     }
     for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
+    for(const hall of this.layout.concourses??[])this.groups.get(hall.level)!.add(buildCommercialConcourse(hall));
     const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
     for(const building of this.layout.buildings??[])if(building.podiumHeight||building.volumes?.length){
       const model=buildCommercialMassing(building,publicContext);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);

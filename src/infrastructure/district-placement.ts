@@ -19,5 +19,7 @@ const locate=(lat:number,lon:number,bearingDeg:number,offset:{along?:number;east
 export const districtPlacements={
   // OSM station nodes 3544516031 and 7811929025. +X points toward the northern end.
   hankyu:{...locate(34.7054194,135.4983721,-10.64,{along:8,east:30}),planScale:0.65},
-  metro:locate(34.7034131,135.4975879,-15.64,{east:30}),
+  // Area overview places M16 south of the JR east throat, along the road west of Hankyu.
+  // Keep the measured heading/east clearance; move only the schematic north/south fit.
+  metro:locate(34.7034131,135.4975879,-15.64,{along:-34,east:30}),
 };
