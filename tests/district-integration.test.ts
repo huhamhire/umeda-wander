@@ -28,8 +28,8 @@ test('geographic anchors place Metro near JR east and Hankyu farther north',()=>
   const h=districtPlacements.hankyu,m=districtPlacements.metro;
   assert.deepEqual(h.referenceOrigin,projectDistrictPoint(h.geo,districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor));
   const eastOffset={x:30*Math.sin(districtFrame.bearingDeg*Math.PI/180),z:30*Math.cos(districtFrame.bearingDeg*Math.PI/180)};
-  assert(Math.abs(h.displayOffset.x-eastOffset.x-28*Math.cos(h.angle))<1e-6);
-  assert(Math.abs(h.displayOffset.z-eastOffset.z-28*Math.sin(h.angle))<1e-6);
+  assert(Math.abs(h.displayOffset.x-eastOffset.x-8*Math.cos(h.angle))<1e-6);
+  assert(Math.abs(h.displayOffset.z-eastOffset.z-8*Math.sin(h.angle))<1e-6);
   assert.deepEqual(h.origin,{x:h.referenceOrigin.x+h.displayOffset.x,z:h.referenceOrigin.z+h.displayOffset.z});
   assert.deepEqual(m.referenceOrigin,projectDistrictPoint(m.geo,districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor));
   const bearing=districtFrame.bearingDeg*Math.PI/180;
@@ -48,17 +48,18 @@ test('Metro platform sits outside the enlarged JR station east end',()=>{
     assert(platformPoint(p,along,across).x>eastEnd+6,'Metro footprint intrudes into the main JR station body');
 });
 
-test('Hankyu bridge branches east from the Yodobashi junction and meets its resized public interface',()=>{
+test('JR east plaza connects directly to both Hankyu and Yodobashi without an intermediate dogleg',()=>{
   const deck=layout.areas.find(a=>a.id==='district-jr-hankyu-deck')!;
   const start={x:(deck.outline[0]!.x+deck.outline[3]!.x)/2,z:(deck.outline[0]!.z+deck.outline[3]!.z)/2};
   const end={x:(deck.outline[1]!.x+deck.outline[2]!.x)/2,z:(deck.outline[1]!.z+deck.outline[2]!.z)/2};
-  assert.deepEqual(start,{x:73,z:-60});
+  assert.deepEqual(start,{x:59,z:-44});
   assert(end.x>start.x+40);
   assert(Math.abs(end.z-start.z)/(end.x-start.x)<0.35,'bridge must not become a long northbound diagonal');
   const yodobashi=layout.passages.find(p=>p.id==='yodobashi-east-deck')!;
   assert.equal(yodobashi.points[0]!.x,start.x);assert.equal(yodobashi.points[0]!.z,start.z);
-  const branch=layout.areas.find(a=>a.id==='district-jr-yodobashi-junction')!;
-  assert(pointInPolygon({x:66,z:-52},branch.outline),'JR public approach must reach the junction');
+  assert.equal(yodobashi.points.length,2);
+  assert(layout.areas.some(a=>a.id==='north-2f-public'&&pointInPolygon(start,a.outline)),'both bridges start on the JR public plaza');
+  assert(!layout.areas.some(a=>a.id==='district-jr-yodobashi-junction'),'obsolete kink must not remain as an extra floor plate');
 });
 
 test('station focus changes framing while all three station scenes remain visible',()=>{

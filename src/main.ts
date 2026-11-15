@@ -66,7 +66,7 @@ function sync():void {
   for(const button of document.querySelectorAll<HTMLButtonElement>('[data-focus]'))
     button.setAttribute('aria-pressed',String((button.dataset.focus==='all'?null:button.dataset.focus)===(focus??null)));
   const station=stations.find(s=>s.id===focus);
-  element('#focus-title').textContent=station?.name??'梅田三站 · 同图总览';
+  element('#focus-title').textContent=station?.name??'总览';
   slider.value=String(Math.round(session.state.explode*100));element('#explode-value').textContent=`${slider.value}%`;
   roof.checked=session.state.roof;
 }

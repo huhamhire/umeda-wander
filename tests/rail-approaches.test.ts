@@ -111,16 +111,30 @@ test('Umekita north bend keeps track spacing and aligns both exit cross-sections
   assert(Math.max(...positions)-Math.min(...positions)<1e-6,'exits form a common section instead of staggered elbows');
 });
 
-test('JR east rail beds retain clearance from every Hankyu station floor',()=>{
+test('JR east rail beds run close to Hankyu while retaining a narrow clear separation',()=>{
   const distance=(p:Point2,outline:Point2[])=>pointInPolygon(p,outline)?0:Math.min(...outline.map((a,i)=>{
     const b=outline[(i+1)%outline.length]!,dx=b.x-a.x,dz=b.z-a.z;
     const t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/(dx*dx+dz*dz)));
     return Math.hypot(p.x-a.x-t*dx,p.z-a.z-t*dz);
   }));
+  let closest=Infinity;
   for(const a of approaches.filter(a=>a.id.startsWith('jr-east')))for(const s of a.segments){
     for(const {point}of sampleRailSegment(a,s,160))for(const area of hankyuStation.layout.areas){
       // Include the 1.25-unit ballast half-width, not only rail centre lines.
-      assert(distance(point,area.outline)-1.25>=12,`${s.id} intersects or approaches ${area.id}`);
+      const gap=distance(point,area.outline)-1.25;closest=Math.min(closest,gap);
+      assert(gap>=4,`${s.id} intersects or approaches ${area.id}`);
+    }
+  }
+  assert(closest<7,'JR should remain adjacent to Hankyu instead of moving far south');
+});
+
+test('JR east station throat converges gradually without a sharp lateral S bend',()=>{
+  for(const approach of approaches.filter(a=>a.id.startsWith('jr-east')))for(const segment of approach.segments){
+    const samples=sampleRailSegment(approach,segment,120);
+    for(let i=1;i<samples.length;i++){
+      const a=samples[i-1]!.point,b=samples[i]!.point;
+      assert(b.x>a.x,'east approach cannot reverse along the station axis');
+      assert(Math.abs(Math.atan2(b.z-a.z,b.x-a.x))<40*Math.PI/180,'station-exit fan must remain a gentle convergence');
     }
   }
 });

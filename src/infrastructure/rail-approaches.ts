@@ -15,20 +15,22 @@ export function createRailApproaches(platforms:Platform[]):RailApproach[]{
   const segment=(a:RailApproach,key:string,from:RailNode,to:RailNode,c1:Point2,c2:Point2,platformId?:string,track?:number)=>{
     const s:RailSegment={id:`${a.id}-${key}`,from:from.id,to:to.id,control1:c1,control2:c2,platformId,track};a.segments.push(s);
   };
-  const main=make('jr-east-main','jr-osaka','JR 本线 · 新大阪 / 京都方向',0x8c9faf,{x:180,z:-14});
-  const loop=make('jr-east-loop','jr-osaka','JR 环状线 · 京桥方向',0xb89b87,{x:180,z:37});
-  const mainOut=[0,1,2,3].map(i=>node(main,`out-${i}`,{x:96,z:8-i*4},'outlet'));
-  const loopOut=[0,1].map(i=>node(loop,`out-${i}`,{x:96,z:27-i*4},'outlet'));
+  const main=make('jr-east-main','jr-osaka','JR 本线 · 新大阪 / 京都方向',0x8c9faf,{x:180,z:-6});
+  const loop=make('jr-east-loop','jr-osaka','JR 环状线 · 京桥方向',0xb89b87,{x:180,z:31});
+  const mainOut=[0,1,2,3].map(i=>node(main,`out-${i}`,{x:140,z:13-i*3},'outlet'));
+  const loopOut=[0,1].map(i=>node(loop,`out-${i}`,{x:116,z:21-i*4},'outlet'));
   for(const p of platforms.filter(p=>p.level==='platform'))for(const [index,track]of p.tracks.entries()){
     const a=track<=2?loop:main;
     const start=node(a,`track-${track}`,platformRail(p,index).end,'platform-end');
     const out=track<=2?loopOut[track-1]!:mainOut[Math.min(3,Math.floor((track-3)/2))]!;
-    segment(a,`lead-${track}`,start,out,{x:start.point.x+11,z:start.point.z},{x:out.point.x-11,z:out.point.z},p.id,track);
+    const handle=(out.point.x-start.point.x)/3;
+    segment(a,`lead-${track}`,start,out,{x:start.point.x+handle,z:start.point.z},{x:out.point.x-handle,z:out.point.z},p.id,track);
   }
   for(const a of [main,loop])for(const [i,start]of a.nodes.filter(n=>n.kind==='outlet').entries()){
     // OSM 891061374 stays nearly parallel until X≈150, then turns gradually north.
     const end=node(a,`end-${i}`,{x:185,z:start.point.z+(a===main?-5:7)},'end');
-    segment(a,`tail-${i}`,start,end,{x:130,z:start.point.z},{x:162,z:start.point.z+(a===main?-2:2)});
+    const handle=(end.point.x-start.point.x)/3;
+    segment(a,`tail-${i}`,start,end,{x:start.point.x+handle,z:start.point.z},{x:end.point.x-handle,z:start.point.z+(a===main?-2:2)});
   }
 
   const westMain=make('jr-west-main','jr-osaka','JR 本线 · 尼崎 / 神户方向',0x8c9faf,{x:-210,z:-6});

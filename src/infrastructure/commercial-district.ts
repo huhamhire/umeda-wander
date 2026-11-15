@@ -1,7 +1,9 @@
 import type {CommercialBuilding,CommercialBuildingId,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
 import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
-import {commercialFootprints,grandFrontTowers} from './commercial-footprints.ts';
-import {districtFrame,districtPlacements} from './district-placement.ts';
+import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMultimediaPodium} from './commercial-footprints.ts';
+import polygonClipping from 'polygon-clipping';
+import {districtFrame,districtPlacements,districtAnchors} from './district-placement.ts';
+import {insetPolygon} from '../utils/polygon-inset.ts';
 
 const cityMap='https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf';
 const access={
@@ -14,14 +16,23 @@ const access={
   'grand-front-north':'https://www.gfo-ad.jp/access.html',
 };
 const east=districtFrame.bearingDeg*Math.PI/180;
+const deptAnchor=commercialFootprints['hankyu-dept'].outline[0]!;
+const deptWestEnd=commercialFootprints['hankyu-dept'].outline[1]!;
+const deptWestLength=Math.hypot(deptWestEnd.x-deptAnchor.x,deptWestEnd.z-deptAnchor.z);
+const deptSouth={x:(deptWestEnd.x-deptAnchor.x)/deptWestLength,z:(deptWestEnd.z-deptAnchor.z)/deptWestLength};
+const deptEast={x:deptSouth.z,z:-deptSouth.x};
 // Raw OSM geometry is retained separately; fit it to the existing oversized station sketch.
 const fit=(id:CommercialBuildingId,p:Point2):Point2=>{
   if(id==='lucua-1100')return {x:p.x,z:p.z-24};
   if(id==='lucua')return {x:p.x+11,z:p.z-25};
   if(id==='daimaru')return {x:-25+(p.x+30.59)*58/50.01,z:p.z+25};
-  if(id==='yodobashi')return {x:p.x-2,z:p.z-29.5};
+  // Fit the map-sized retail complex to the enlarged JR schematic, keeping its west-side reference.
+  if(id==='yodobashi')return {x:22.65+(p.x-22.65)*1.15+3,z:-54.09+(p.z+54.09)*1.15-26.5};
   if(id.startsWith('grand-front-'))return {x:p.x-1,z:p.z-29.6};
-  return {x:p.x+30*Math.sin(east),z:p.z+30*Math.cos(east)};
+  const dx=p.x-deptAnchor.x,dz=p.z-deptAnchor.z;
+  const across=(dx*deptEast.x+dz*deptEast.z)*1.2,along=(dx*deptSouth.x+dz*deptSouth.z)*1.15;
+  return {x:deptAnchor.x+deptEast.x*across+deptSouth.x*along+30*Math.sin(east),
+    z:deptAnchor.z+deptEast.z*across+deptSouth.z*along+30*Math.cos(east)};
 };
 const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=[
   ['hankyu-dept','阪急百货 · 梅田本店',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'south-deck',name:'2F'}]],
@@ -40,6 +51,31 @@ export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name
 });
 const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
 for(const id of ['grand-front-south','grand-front-north'] as const)building(id).podiumHeight=6;
+building('yodobashi').podiumHeight=7;
+building('yodobashi').perimeterGallery={level:'platform',innerOutline:insetPolygon(building('yodobashi').outline,2.4)};
+const yodobashiInner=building('yodobashi').perimeterGallery!.innerOutline;
+const ring=(points:Point2[]):[number,number][]=>points.map(p=>[p.x,p.z]);
+const frontPodium=polygonClipping.intersection([ring(yodobashiInner)],[ring(yodobashiMultimediaPodium.outline.map(p=>fit('yodobashi',p)))]);
+const rearPodium=polygonClipping.difference([ring(yodobashiInner)],frontPodium);
+building('yodobashi').podiumParts=[
+  ...frontPodium.map(p=>({name:'Yodobashi · 前侧弧形商业楼',outline:p[0]!.slice(0,-1).map(([x,z])=>({x,z})),height:10.5,
+    evidence:{source:'district' as const,pages:[],urls:[`https://www.openstreetmap.org/way/${yodobashiMultimediaPodium.way}`],detail:'Southern existing multimedia building part 175942074 v24, clipped inside the outer 2F gallery; compressed display height, not measured storeys'}})),
+  ...rearPodium.map(p=>({name:'LINKS · 后侧酒店基座',outline:p[0]!.slice(0,-1).map(([x,z])=>({x,z})),height:7,
+    evidence:{source:'district' as const,pages:[],urls:['https://www.openstreetmap.org/way/776542350'],detail:'Northern LINKS retail base, fitted as the remainder of the combined inner footprint after the southern building; reference part 776542350 v5, not a surveyed lease boundary'}})),
+];
+const hotelReference=yodobashiHotelTower.outline.map(p=>fit('yodobashi',p));
+const hotelA=hotelReference[1]!,hotelB=hotelReference[2]!,hotelSpan=Math.hypot(hotelB.x-hotelA.x,hotelB.z-hotelA.z);
+const hotelAxis={x:(hotelB.x-hotelA.x)/hotelSpan,z:(hotelB.z-hotelA.z)/hotelSpan};
+const hotelCenter={x:(hotelA.x+hotelB.x)/2,z:(hotelA.z+hotelB.z)/2};
+const hotelOutline=hotelReference.map(p=>{
+  const along=(p.x-hotelCenter.x)*hotelAxis.x+(p.z-hotelCenter.z)*hotelAxis.z;
+  return {x:p.x+hotelAxis.x*(along*0.5+8)-hotelAxis.z*2,z:p.z+hotelAxis.z*(along*0.5+8)+hotelAxis.x*2};
+});
+building('yodobashi').volumes=[{name:'阪急 RESPIRE 大阪酒店',height:22,
+  outline:hotelOutline,
+  evidence:{source:'district',pages:[],urls:[`https://www.openstreetmap.org/way/${yodobashiHotelTower.way}`,
+    'https://www.hankyu-hotel.com/hotel/respire/osaka/info/','https://www.yodobashi.com/ec/support/news/190603326750/index.html'],
+    detail:'OSM hotel building part 776542349 v4 is the shape reference. Main-axis display span broadened 1.5x and centered over the podium per user visual reference; thickness retained. Height and rooftop details schematic, not a measured hotel footprint or indoor layout.'}}];
 for(const tower of grandFrontTowers){
   const id=tower.name==='Tower A'?'grand-front-south':'grand-front-north';
   (building(id).volumes??=[]).push({name:tower.name,outline:tower.outline.map(p=>fit(id,p)),height:tower.height,
@@ -68,8 +104,15 @@ for(const [id,x]of [['lucua',30],['lucua-1100',-33]] as const){
   link(`${id}-2f-deck`,`${building(id).name} · 2F 连廊`,'deck',[jr('platform',x,-43),portal(id,'2F',{x,z:-43})]);
   if(id==='lucua')link(`${id}-b1-entry`,`${building(id).name} · 地下入口`,'underground',[jr('underground-hall',0,-52),portal(id,'B1',{x:0,z:-52})]);
 }
+// JR-facing south gallery: land before the southeast curved corner, not on the east side wall.
+const yodobashiSouthFace=building('yodobashi').outline;
+const yodobashiEastDeckPortal:PassageEndpoint={level:'platform',buildingId:'yodobashi',
+  x:yodobashiSouthFace[6]!.x*0.18+yodobashiSouthFace[7]!.x*0.82,
+  z:yodobashiSouthFace[6]!.z*0.18+yodobashiSouthFace[7]!.z*0.82};
 link('yodobashi-east-deck','Yodobashi · 2F 东侧联络桥','deck',[
-  publicPoint('platform',73,-60),portal('yodobashi','2F',{x:91,z:-82})]);
+  {...jr('platform',districtAnchors.jrNorthEastDeck.x,districtAnchors.jrNorthEastDeck.z)},yodobashiEastDeckPortal]);
+commercialPassages.at(-1)!.evidence={source:'jr',pages:[3],urls:[access.yodobashi,cityMap],
+  detail:'East station bridge joins the JR-facing south gallery before the southeast corner; corrected from the user satellite reference. Boundary segment and landing fraction fitted to the schematic, not a measured portal coordinate.'};
 link('yodobashi-west-deck','Yodobashi · 2F 西侧联络桥','deck',[
   jr('platform',-1,-67),publicPoint('platform',-1,-84),portal('yodobashi','2F',{x:12,z:-82})]);
 link('yodobashi-metro-b1','M16 北改札外 → Yodobashi B1','underground',[
@@ -85,8 +128,11 @@ link('daimaru-crost-b1','Crost → 大丸 B1','underground',[jr('underground-hal
 // JR PDF 1F pedestrian bridge + city map + user satellite reference:
 // the north/south arms skirt the bus loop and share an east-side spine.
 const northWest={...publicPoint('south-deck',53,43),station:'jr-osaka' as const};
-const northEast=portal('hankyu-dept','2F',{x:94,z:43});
-const southWest=portal('daimaru','2F',{x:30,z:80}),southEast=portal('hankyu-dept','2F',{x:97,z:84});
+const deptWestFace=building('hankyu-dept').outline;
+const deptWestPortal=(t:number):PassageEndpoint=>({level:'south-deck',buildingId:'hankyu-dept',
+  x:deptWestFace[0]!.x*(1-t)+deptWestFace[1]!.x*t,z:deptWestFace[0]!.z*(1-t)+deptWestFace[1]!.z*t});
+const northEast=deptWestPortal(0.3);
+const southWest=portal('daimaru','2F',{x:30,z:80}),southEast=deptWestPortal(0.92);
 const roadDirection={x:Math.cos(districtPlacements.metro.angle),z:Math.sin(districtPlacements.metro.angle)};
 const roadOrigin={x:64,z:64};
 const streetJunction=(a:Point2,b:Point2):PassageEndpoint=>{

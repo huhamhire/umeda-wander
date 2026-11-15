@@ -45,6 +45,8 @@ export interface CommercialBuilding {
   floors:{level:LevelId;name:string;elevationOffset?:number}[];evidence:Evidence;
   volumes?:{name:string;outline:Point2[];height:number;evidence:Evidence}[];
   podiumHeight?:number;
+  podiumParts?:{name:string;outline:Point2[];height:number;evidence:Evidence}[];
+  perimeterGallery?:{level:LevelId;innerOutline:Point2[]};
 }
 export interface PassageEndpoint extends Point2 {
   level:LevelId;buildingId?:CommercialBuildingId;station?:StationId;

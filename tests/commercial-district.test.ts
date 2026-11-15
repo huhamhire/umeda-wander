@@ -10,8 +10,34 @@ import {displayElevation} from '../src/application/display-elevation.ts';
 import {viewLayerRole} from '../src/application/view-layer.ts';
 import {cameraEnvelope} from '../src/presentation/camera-framing.ts';
 import {explorationElevation} from '../src/application/exploration-level.ts';
+import {hankyuStation} from '../src/infrastructure/hankyu-umeda-map.ts';
+import {districtPlacements} from '../src/infrastructure/district-placement.ts';
+import {sampleRailSegment} from '../src/domain/map/rail-geometry.ts';
 
 const height=(id:typeof levels[number]['id'])=>levels.find(l=>l.id===id)!.y;
+
+test('Hankyu department store approaches station width and receives both bridges on its west face',()=>{
+  const store=layout.buildings.find(b=>b.id==='hankyu-dept')!;
+  const axis={x:-Math.sin(districtPlacements.hankyu.angle),z:Math.cos(districtPlacements.hankyu.angle)};
+  const span=(points:{x:number;z:number}[])=>{
+    const values=points.map(p=>p.x*axis.x+p.z*axis.z);return Math.max(...values)-Math.min(...values);
+  };
+  const station=hankyuStation.layout.areas.find(a=>a.id==='hankyu-umeda-ground')!;
+  assert(span(store.outline)>span(station.outline)*0.95&&span(store.outline)<span(station.outline)*1.1);
+  const a=store.outline[0]!,b=store.outline[1]!,dx=b.x-a.x,dz=b.z-a.z;
+  for(const id of ['hankyu-dept-deck-north-arm','hankyu-dept-deck-south-arm']){
+    const bridge=layout.passages.find(p=>p.id===id)!,door=bridge.points.at(-1)!;
+    assert.equal(door.buildingId,store.id);
+    assert(Math.abs((door.x-a.x)*dz-(door.z-a.z)*dx)<1e-6,'bridge must meet the west wall, not the south corner');
+    const t=((door.x-a.x)*dx+(door.z-a.z)*dz)/(dx*dx+dz*dz);assert(t>0.1&&t<0.98);
+  }
+  for(const approach of layout.railApproaches.filter(a=>a.id.startsWith('jr-east')))for(const segment of approach.segments)
+    for(const {point}of sampleRailSegment(approach,segment,120)){
+      assert(!pointInPolygon(point,store.outline),'railway cannot cross the enlarged department-store envelope');
+      const edge=closestPolygonPoint(point,store.outline);
+      assert(Math.hypot(edge.x-point.x,edge.z-point.z)>1.25,'include ballast in department-store clearance');
+    }
+});
 test('commercial envelopes have their own footprint evidence and continuous 2F walking band',()=>{
   assert.deepEqual(layout.buildings.map(b=>b.id),['hankyu-dept','daimaru','lucua','lucua-1100','yodobashi','grand-front-south','grand-front-north']);
   for(const b of layout.buildings){

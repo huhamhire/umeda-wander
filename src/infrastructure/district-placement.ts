@@ -4,6 +4,7 @@ import {surfaceBearingDeg} from './station-orientation.ts';
 // Public OSM snapshot 2026-11-14, cross-checked against Osaka City's district map.
 // Station interiors remain diagrammatic; this scale controls relative placement only.
 export const districtFrame={origin:{lat:34.7022133,lon:135.4955732},anchor:{x:-20,z:0},metersPerUnit:2.5,bearingDeg:surfaceBearingDeg};
+export const districtAnchors={jrNorthEastDeck:{x:59,z:-44}} as const;
 const locate=(lat:number,lon:number,bearingDeg:number,offset:{along?:number;east?:number}={})=>{
   const referenceOrigin=projectDistrictPoint({lat,lon},districtFrame.origin,districtFrame.bearingDeg,districtFrame.metersPerUnit,districtFrame.anchor);
   const angle=(bearingDeg-districtFrame.bearingDeg)*Math.PI/180;
@@ -17,6 +18,6 @@ const locate=(lat:number,lon:number,bearingDeg:number,offset:{along?:number;east
 };
 export const districtPlacements={
   // OSM station nodes 3544516031 and 7811929025. +X points toward the northern end.
-  hankyu:{...locate(34.7054194,135.4983721,-10.64,{along:28,east:30}),planScale:0.65},
+  hankyu:{...locate(34.7054194,135.4983721,-10.64,{along:8,east:30}),planScale:0.65},
   metro:locate(34.7034131,135.4975879,-15.64,{east:30}),
 };
