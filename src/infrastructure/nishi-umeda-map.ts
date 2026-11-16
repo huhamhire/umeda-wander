@@ -2,7 +2,7 @@ import {stationDraft} from './station-draft.ts';
 import {districtPlacements} from './district-placement.ts';
 
 const placement=districtPlacements.nishi;
-const b=stationDraft('nishi-umeda','四桥线西梅田站 Y11','yotsubashi',placement.origin,placement.angle);
+const b=stationDraft('nishi-umeda','四桥线西梅田站 Y11','yotsubashi',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
   {id:'y11-platform',station:draft.id,label:'B2',name:'Y11 · 1/2 番线',y:-16,stackIndex:-2,description:'北端尽头的岛式站台，1/2 番线往本町、难波、住之江公园。'},
@@ -10,7 +10,7 @@ draft.levels=[
   {id:'y11-ground',station:draft.id,label:'1F',name:'Y11 · 地面出入口',y:0,stackIndex:0,description:'只保留参考图明确的街面楼梯、电梯和小型落台。'},
 ];
 const p=platform('island','y11-platform',[1,2],0,0,86,7,
-  {name:'Y11 · 1/2 番线岛式站台',lineName:'四桥线',lineColor:0x328bb7,terminal:true,terminalEnd:'end',trackSides:[1,-1],screenDoors:'half-height'});
+  {width:7,name:'Y11 · 1/2 番线岛式站台',lineName:'四桥线',lineColor:0x328bb7,terminal:true,terminalEnd:'end',trackSides:[1,-1],screenDoors:'half-height'});
 area('paid-hall','y11-hall','西梅田 · 闸内站厅','paid',-2,0,90,12);
 area('public-hall','y11-hall','西梅田 · B1 公共通路','public',0,16,116,20);
 area('north-public','y11-hall','西梅田 · 阪神 / JR 方向公共通路','public',55,7,16,38);

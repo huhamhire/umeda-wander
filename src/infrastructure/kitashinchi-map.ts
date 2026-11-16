@@ -2,7 +2,7 @@ import {stationDraft} from './station-draft.ts';
 import {districtPlacements} from './district-placement.ts';
 
 const placement=districtPlacements.kitashinchi;
-const b=stationDraft('kitashinchi','JR 北新地站','kitashinchi',placement.origin,placement.angle);
+const b=stationDraft('kitashinchi','JR 北新地站','kitashinchi',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
   {id:'kitashinchi-platform',station:draft.id,label:'B2',name:'北新地 · 1/2 番线',y:-24,stackIndex:-2,description:'JR 东西线岛式站台；图示轨道低于四桥线，仍归 B2 探索组，高差为示意。'},
@@ -10,13 +10,13 @@ draft.levels=[
   {id:'kitashinchi-ground',station:draft.id,label:'1F',name:'北新地 · 地面出入口',y:0,stackIndex:0,description:'仅表达参考图街面楼梯、电梯与小型落台。'},
 ];
 const p=platform('island','kitashinchi-platform',[1,2],0,0,100,7,
-  {name:'北新地 · 1/2 番线岛式站台',lineName:'JR 东西线',lineColor:0xd28faf,trackSides:[1,-1],screenDoors:'half-height'});
-area('paid-hall','kitashinchi-hall','北新地 · 闸内站厅','paid',0,0,90,18);
+  {width:7,name:'北新地 · 1/2 番线岛式站台',lineName:'JR 东西线',lineColor:0xd28faf,trackSides:[1,-1],screenDoors:'half-height'});
+area('paid-hall','kitashinchi-hall','北新地 · 闸内站厅','paid',0,0,90,12);
 area('west-public','kitashinchi-hall','北新地 · 西梅田方面联络口','public',-57,0,24,52);
 area('east-public','kitashinchi-hall','北新地 · 御堂筋方面联络口','public',57,0,24,52);
-area('north-public','kitashinchi-hall','北新地 · 北侧公共通路','public',0,-22,114,8);
+area('north-public','kitashinchi-hall','北新地 · 北侧公共通路','public',0,-11,114,10);
 area('south-public','kitashinchi-hall','北新地 · 地面出入口通路','public',0,20,114,10);
-area('diamor-public','kitashinchi-hall','DIAMOR 大阪 · 北新地接入口','public',0,-30,12,16);
+area('diamor-public','kitashinchi-hall','DIAMOR 大阪 · 北新地接入口','public',0,-18,12,24);
 area('office','kitashinchi-hall','北新地 · 站务室','service',0,11,14,4);
 for(const [key,name,x]of [['west','西',-45],['east','东',45]] as const){
   facility(`${key}-gate`,'kitashinchi-hall',`北新地 · ${name}改札`,'gate',x,0,'参考图 B1 改札；闸内外保持独立。',Math.PI/2);
@@ -24,7 +24,7 @@ for(const [key,name,x]of [['west','西',-45],['east','东',45]] as const){
 }
 facility('ticket','kitashinchi-hall','北新地 · 绿色窗口','ticket',-55,12,'参考图“みどりの窓口”及相关受取柜台，具体柜台数量示意。');
 facility('office','kitashinchi-hall','北新地 · 站务咨询','information',0,11,'参考图站务室位置。');
-for(const [key,low,high]of [['west',-18,-44],['west-inner',14,-12],['east',18,44]] as const){
+for(const [key,low,high]of [['west',-32,-44],['west-inner',0,-12],['east',32,44]] as const){
   const c=connection(`${key}-escalators`,'escalator',node(`${key}-escalators-low`,'kitashinchi-platform',low,0),node(`${key}-escalators-high`,'kitashinchi-hall',high,0),p.id);
   if(key!=='west-inner')c.lanes=2;
 }

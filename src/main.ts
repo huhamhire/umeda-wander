@@ -10,6 +10,16 @@ import {screenDirection} from './presentation/view-orientation.ts';
 import {floorOptions} from './presentation/floor-options.ts';
 import {filterFacilities,facilityCategory} from './application/facility-filter.ts';
 import {facilityCodes} from './infrastructure/facility-codes.ts';
+import {sourceCredits} from './infrastructure/source-credits.ts';
+import {osmCreditData} from './infrastructure/osm-credit-download.ts';
+import {bindCreditsDialog,renderSourceCredits} from './presentation/source-credits-dialog.ts';
+
+renderSourceCredits(element('#credits-content'),sourceCredits,()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify(osmCreditData(),null,2)],{type:'application/json;charset=utf-8'}));
+  const a=document.createElement('a');a.href=url;a.download='umeda-osm-derived-data.json';document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+bindCreditsDialog(element<HTMLDialogElement>('#credits-dialog'),element('#credits-open'),element<HTMLButtonElement>('#credits-close'),element('#credits-title'));
 
 const session=new MapSession(edges);
 let scene:MapScene|undefined;

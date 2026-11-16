@@ -67,7 +67,7 @@ test('T20 sits east of M16 and its Whity connector stays public at B1',()=>{
   const east=districtFrame.bearingDeg*Math.PI/180,a=districtPlacements.higashi.origin,b=districtPlacements.metro.origin;
   assert((a.x-b.x)*Math.sin(east)+(a.z-b.z)*Math.cos(east)>35);
   const link=layout.passages.find(p=>p.id==='whity-metro-t20-public')!;
-  assert.deepEqual(link.points.map(p=>p.level),['metro-hall','t20-hall']);
+  assert.equal(link.points[0]!.level,'metro-hall');assert.equal(link.points.at(-1)!.level,'t20-hall');
   assert.equal(link.kind,'underground');assert.equal(link.evidence.source,'tanimachi');
-  for(const p of link.points)assert(layout.areas.some(a=>a.level===p.level&&a.kind==='public'&&pointInPolygon(p,a.outline)));
+  for(const p of link.points)assert(layout.areas.some(a=>levels.find(l=>l.id===a.level)!.y===-8&&a.kind==='public'&&pointInPolygon(p,a.outline)&&!a.holes?.some(h=>pointInPolygon(p,h))));
 });

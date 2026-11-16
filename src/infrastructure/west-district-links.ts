@@ -1,97 +1,51 @@
 import type {FloorArea,PassageEndpoint,PublicPassage} from '../domain/map/model.ts';
-import {closestPolygonPoint,passageOutline} from '../domain/map/geometry.ts';
-import polygonClipping from 'polygon-clipping';
-import {projectSouthReference} from './district-placement.ts';
+import {closestPolygonPoint} from '../domain/map/geometry.ts';
+import {projectWalkwayReference} from './district-placement.ts';
 import {higashiStation} from './higashi-umeda-map.ts';
 import {commercialBuildings} from './commercial-district.ts';
 import {kitashinchiStation} from './kitashinchi-map.ts';
 import {nishiStation} from './nishi-umeda-map.ts';
 import {hanshinStation} from './hanshin-umeda-map.ts';
 import {metroStation} from './metro-umeda-map.ts';
+import {southBlockPlans} from './south-walkway-plan.ts';
 
 const center=(points:{x:number;z:number}[])=>points.reduce((s,p)=>({x:s.x+p.x/points.length,z:s.z+p.z/points.length}),{x:0,z:0});
-const nishi=center(nishiStation.layout.areas.find(a=>a.id==='nishi-umeda-south-public')!.outline);
-const west=center(kitashinchiStation.layout.areas.find(a=>a.id==='kitashinchi-west-public')!.outline);
-const north=center(kitashinchiStation.layout.areas.find(a=>a.id==='kitashinchi-diamor-public')!.outline);
-const hanshin=center(hanshinStation.layout.areas.find(a=>a.id==='hanshin-umeda-department-public')!.outline);
-const metro=center(metroStation.layout.areas.find(a=>a.id==='metro-umeda-south-public')!.outline);
-const ref=(x:number,z:number):PassageEndpoint=>({...projectSouthReference(x,z),level:'kitashinchi-hall'});
-const junction=ref(550,380);
-const evidence={source:'district' as const,pages:[1],
-  detail:'User references/梅田周边地区通道.pdf (2024-02), Kitashinchi and Y11 diagrams: public underground topology via DIAMOR, Nishi-Umeda and Hanshin. Widths, junction and slopes fitted to the enlarged station map; no commercial interiors or inter-operator RouteEdges.'};
-export const westDistrictPassages:PublicPassage[]=[
-  {id:'y11-kitashinchi-public',name:'西梅田—北新地 · 地下公共通路',kind:'underground',width:5,
-    points:[{...nishi,level:'y11-hall',station:nishiStation.id},{...west,level:'kitashinchi-hall',station:kitashinchiStation.id}],evidence},
-  {id:'diamor-hanshin-kitashinchi-public',name:'DIAMOR 大阪 · 阪神—北新地公共通路',kind:'underground',width:6,
-    points:[{...hanshin,level:'hanshin-hall',station:hanshinStation.id},junction,
-      {...north,level:'kitashinchi-hall',station:kitashinchiStation.id}],evidence},
-  {id:'diamor-metro-public',name:'御堂筋线南口—DIAMOR 地下公共通路',kind:'underground',width:5,
-    points:[{...metro,level:'metro-hall',station:metroStation.id},{x:42,z:138,level:'hanshin-hall'},
-      {...hanshin,level:'hanshin-hall',station:hanshinStation.id}],evidence},
-];
-
-const roundOutline=Array.from({length:40},(_,i)=>({x:junction.x+3.6*Math.cos(i*Math.PI/20),z:junction.z+3.6*Math.sin(i*Math.PI/20)}));
-export const diamorRoundPlaza:FloorArea={id:'diamor-round-plaza',name:'DIAMOR · 圆形广场',level:'kitashinchi-hall',kind:'public',outline:roundOutline,
-  evidence:{source:'district',pages:[1],detail:'references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf p1, left underground panel point 3: circular plaza and curved branches beside Dai-ichi Life/Hilton Plaza East; radius and fit schematic'}};
-const y11North=center(nishiStation.layout.areas.find(a=>a.id==='nishi-umeda-north-public')!.outline);
-const c1={x:junction.x,z:145},c2={x:y11North.x,z:145};
-const curvedBranch=Array.from({length:17},(_,i)=>{
-  const t=i/16,u=1-t;return {x:u*u*u*junction.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*y11North.x,
-    z:u*u*u*junction.z+3*u*u*t*c1.z+3*u*t*t*c2.z+t*t*t*y11North.z,level:'kitashinchi-hall' as const};
-});
-westDistrictPassages.push({id:'diamor-daiichi-hilton-curve',name:'DIAMOR—第一生命／Hilton East · 地下互通',kind:'underground',width:4.5,
-  points:[...curvedBranch.slice(0,-1),{...y11North,level:'y11-hall',station:nishiStation.id}],evidence:diamorRoundPlaza.evidence});
-
-// Shared public junctions are geometry, not inter-operator navigation edges.
-const cross=ref(550,625),diagonalCross=ref(760,625),eastCross=ref(1030,625),eastTurn=ref(964,363);
-westDistrictPassages.find(p=>p.id==='diamor-hanshin-kitashinchi-public')!.points.splice(2,0,cross);
-const t20=center(higashiStation.layout.areas.find(a=>a.id==='higashi-umeda-exit-8-arm')!.outline);
-const whity=center(higashiStation.layout.areas.find(a=>a.id==='higashi-umeda-whity-public')!.outline);
-const whityPoint:PassageEndpoint={...whity,level:'t20-hall',station:higashiStation.id};
+const stationPoint=(s:typeof nishiStation,id:string):PassageEndpoint=>({...center(s.layout.areas.find(a=>a.id===id)!.outline),level:s.layout.areas.find(a=>a.id===id)!.level,station:s.id});
+const nishi=stationPoint(nishiStation,'nishi-umeda-south-public'),west=stationPoint(kitashinchiStation,'kitashinchi-west-public');
+const north=stationPoint(kitashinchiStation,'kitashinchi-diamor-public'),east=stationPoint(kitashinchiStation,'kitashinchi-east-public');
+const hanshin=stationPoint(hanshinStation,'hanshin-umeda-department-public'),metro=stationPoint(metroStation,'metro-umeda-south-public');
+const ref=(x:number,z:number):PassageEndpoint=>({...projectWalkwayReference(x,z),level:'kitashinchi-hall'});
+const junction=ref(390,468),cross=ref(389,682),diagonalCross=ref(565,680),eastCross=ref(789,680);
+const evidence={source:'district' as const,pages:[1],detail:'references/梅田周边地区通道.pdf (UMEDA CONNECT, 2024-02): simplified public-space outline and shared crop calibration; standalone faces, not buffers of these connectivity skeletons. No inter-operator navigation edges.'};
+export const westDistrictPassages:PublicPassage[]=[];
 const add=(id:string,name:string,points:PassageEndpoint[],width=5)=>westDistrictPassages.push({id,name,points,width,kind:'underground',evidence});
-add('diamor-east-west-public','DIAMOR 大阪 · 东西公共通路',[ref(280,625),cross,diagonalCross,eastCross]);
-add('diamor-diagonal-public','DIAMOR · 阪神—北新地东侧公共通路',[
-  junction,ref(710,490),diagonalCross,ref(845,858),
-  {...center(kitashinchiStation.layout.areas.find(a=>a.id==='kitashinchi-east-public')!.outline),level:'kitashinchi-hall',station:kitashinchiStation.id}],4.5);
-add('diamor-t20-public','DIAMOR—东梅田 · 地下公共通路',[
-  eastCross,ref(1020,365),eastTurn,{...t20,level:'t20-hall',station:higashiStation.id}]);
-add('diamor-sonechika-public','DIAMOR—曾根地下道—北新地东口',[
-  eastCross,ref(1100,858),{...center(kitashinchiStation.layout.areas.find(a=>a.id==='kitashinchi-east-public')!.outline),level:'kitashinchi-hall',station:kitashinchiStation.id}]);
+add('y11-kitashinchi-public','西梅田—北新地 · 地下公共通路',[nishi,ref(121,851),west]);
+add('diamor-hanshin-kitashinchi-public','DIAMOR 大阪 · 阪神—北新地公共通路',[hanshin,ref(290,357),junction,cross,ref(383,861),north],6);
+add('diamor-metro-public','御堂筋线南口—DIAMOR 地下公共通路',[metro,ref(540,156),ref(502,184),hanshin]);
+const curvedBranch=[[142,454],[187,426],[232,399],[264,379],[282,384],[303,402],[335,431],[365,454],[390,468]] as const;
+const y11North=stationPoint(nishiStation,'nishi-umeda-north-public');
+add('diamor-daiichi-hilton-curve','DIAMOR—第一生命／Hilton East · 地下互通',[
+  junction,...curvedBranch.slice(0,-1).reverse().map(([x,z])=>ref(x,z)),y11North],4.5);
+export const diamorRoundPlaza:FloorArea={id:'diamor-round-plaza',name:'DIAMOR · 圆形广场',level:'kitashinchi-hall',kind:'public',
+  outline:Array.from({length:40},(_,i)=>ref(390+12*Math.cos(i*Math.PI/20),468+12*Math.sin(i*Math.PI/20))),evidence};
+add('diamor-east-west-public','DIAMOR 大阪 · 东西公共通路',[cross,diagonalCross,ref(666,679)]);
+add('diamor-diagonal-public','DIAMOR · 阪神—北新地东侧公共通路',[junction,ref(506,545),diagonalCross,ref(638,866),east],4.5);
+const t20=stationPoint(higashiStation,'higashi-umeda-exit-8-arm'),whity=stationPoint(higashiStation,'higashi-umeda-whity-public');
+add('diamor-t20-public','DIAMOR—东梅田 · 地下公共通路',[ref(666,679),diagonalCross,ref(518,527),ref(738,450),t20]);
+add('diamor-sonechika-public','DIAMOR—曾根地下道—北新地东口',[ref(738,450),eastCross,ref(853,866),east]);
 const retailPortal=(id:'hankyu-dept'|'hankyu-grand',near:{x:number;z:number}):PassageEndpoint=>({
   ...closestPolygonPoint(near,commercialBuildings.find(b=>b.id===id)!.outline),level:'metro-hall',buildingId:id});
-add('whity-hankyu-dept-public','Whity 梅田—阪急百货 B1',[
-  whityPoint,{x:132,z:113,level:'metro-hall'},retailPortal('hankyu-dept',{x:124,z:100})]);
-add('whity-hankyu-grand-public','Whity 梅田—阪急 Grand Building B1',[
-  whityPoint,{x:151,z:113,level:'metro-hall'},retailPortal('hankyu-grand',{x:142,z:76})]);
+// Whity is approached through its northern public hall; no diagonal chord across the retail block.
+add('whity-hankyu-dept-public','Whity 梅田—阪急百货 B1',[whity,ref(735,280),ref(726,192),ref(660,141),retailPortal('hankyu-dept',ref(660,80))]);
+add('whity-hankyu-grand-public','Whity 梅田—阪急 Grand Building B1',[whity,ref(735,280),ref(725,240),ref(726,192),ref(738,160),ref(800,150),ref(800,-88),retailPortal('hankyu-grand',ref(800,-88))]);
 
-// Only the connected basement regions are shown: no upper massing or shop plan.
-// Polygon corners are simplified from the supplied district walking-map blocks,
-// then fitted to the deliberately enlarged station layout (not surveyed footprints).
-const blocks:[string,string,[number,number][]][]=[
-  ['osaka-ekimae-1','大阪站前第 1 大楼',[[230,644],[505,650],[502,825],[218,806]]],
-  ['osaka-ekimae-2','大阪站前第 2 大楼',[[557,650],[729,663],[800,838],[551,833]]],
-  ['osaka-ekimae-3','大阪站前第 3 大楼',[[790,665],[1007,653],[1080,830],[871,845]]],
-  ['osaka-ekimae-4','大阪站前第 4 大楼',[[680,425],[920,371],[972,543],[776,552],[731,464]]],
-  ['umeda-dt','梅田 DT Tower',[[557,424],[627,466],[686,548],[557,560]]],
-  ['osaka-maru','大阪第一生命大楼\nMARU／第一酒店',[[315,360],[440,290],[470,312],[515,350],[529,397],[524,562],[368,561],[295,540]]],
-  ['e-ma','E-ma',[[740,280],[905,238],[940,339],[780,379]]],
-];
-export const southDistrictAreas:FloorArea[]=blocks.map(([id,name,outline])=>({
+export const southDistrictAreas:FloorArea[]=southBlockPlans.map(([id,name,outline])=>({
   id:`district-${id}-b1`,name:`${name} · B1`,kind:'commercial',level:'kitashinchi-hall',height:0.45,label:true,labelStyle:'floor',
-  outline:outline.map(([x,z])=>ref(x,z)),evidence:{...evidence,detail:evidence.detail+'; simplified basement building-region placeholder traced from the walking map; display-fitted outline, no surveyed footprint or interior routes'},
+  outline:outline.map(([x,z])=>ref(x,z)),evidence:{...evidence,detail:evidence.detail+'; building infill stays inside the reference street grid, no shop plan'},
 }));
-// The curved public interchange is outside the occupied building region. Keep
-// the main Life/MARU block, trimming the old coarse northern wedge at the street.
-const life=southDistrictAreas.find(a=>a.id==='district-osaka-maru-b1')!;
-const ring=(points:{x:number;z:number}[])=>[points.map(p=>[p.x,p.z] as [number,number])];
-const cut=polygonClipping.difference(ring(life.outline),...curvedBranch.slice(1).map((p,i)=>ring(passageOutline(curvedBranch[i]!,p,5.8))),ring(roundOutline));
-const polygonArea=(p:[number,number][])=>Math.abs(p.reduce((sum,a,i)=>{const b=p[(i+1)%p.length]!;return sum+a[0]*b[1]-b[0]*a[1];},0));
-const mainBlock=cut.sort((a,b)=>polygonArea(b[0]!)-polygonArea(a[0]!))[0];
-if(mainBlock)life.outline=mainBlock[0]!.slice(0,-1).map(([x,z])=>({x,z}));
-life.evidence={...diamorRoundPlaza.evidence,detail:diamorRoundPlaza.evidence.detail+'; Life/MARU occupied-region boundary follows the curved public interchange, fitted from the combined district maps, not surveyed'};
-const entries=[[390,625,390,644],[650,625,650,650],[920,625,920,653],
-  [850,625,850,552],[550,625,600,560],[550,380,529,450],[964,363,860,380]];
-for(const [index,a]of southDistrictAreas.entries()){
-  const [x,z,dx,dz]=entries[index]!,anchor=ref(x!,z!),door=closestPolygonPoint(ref(dx!,dz!),a.outline);
-  add(`${a.id}-entry`,`${a.name.replace(' · B1','')} · 地下接入口`,[anchor,{...door,level:a.level}],3);
+const entries:[[number,number],[number,number]][]=[[[389,750],[363,750]],[[389,750],[408,750]],[[657,780],[700,780]],
+  [[592,626],[592,608]],[[389,580],[411,580]],[[389,580],[361,580]],[[673,465],[640,445]]];
+for(const [i,area]of southDistrictAreas.entries()){
+  const [anchor,near]=entries[i]!;
+  add(`${area.id}-entry`,`${area.name.replace(' · B1','')} · 地下接入口`,[ref(...anchor),{...closestPolygonPoint(ref(...near),area.outline),level:area.level}],3);
 }

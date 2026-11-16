@@ -5,7 +5,7 @@ export interface MapViewState {
   explode: number; roof: boolean; level: LevelId | 'all'; route: string[] | null; focusStation?:StationId|null;
 }
 export class MapSession {
-  state: MapViewState = { explode: 0.48, roof: true, level: 'all', route: null,focusStation:null };
+  state: MapViewState = { explode: 0, roof: true, level: 'all', route: null,focusStation:null };
   private readonly edges:RouteEdge[];
   constructor(edges: RouteEdge[]) {this.edges=edges;}
   showRoute(start = 'entry', end = 'destination'): void {
@@ -16,5 +16,5 @@ export class MapSession {
     const halls:Partial<Record<StationId,LevelId>>={'metro-umeda':'metro-hall','hanshin-umeda':'hanshin-hall','higashi-umeda':'t20-hall','nishi-umeda':'y11-hall',kitashinchi:'kitashinchi-hall'};
     this.state.focusStation=station;this.state.level=station?halls[station]??'all':'all';this.state.route=null;
   }
-  reset(): void { this.state = { explode: 0.48, roof: true, level: 'all', route: null,focusStation:null }; }
+  reset(): void { this.state = { explode: 0, roof: true, level: 'all', route: null,focusStation:null }; }
 }

@@ -36,8 +36,10 @@ const fit=(id:CommercialBuildingId,p:Point2):Point2=>{
   if(id.startsWith('grand-front-'))return {x:p.x-1,z:p.z-29.6};
   const dx=p.x-deptAnchor.x,dz=p.z-deptAnchor.z;
   const across=(dx*deptEast.x+dz*deptEast.z)*1.2,along=(dx*deptSouth.x+dz*deptSouth.z)*1.15;
-  return {x:deptAnchor.x+deptEast.x*across+deptSouth.x*along+30*Math.sin(east),
-    z:deptAnchor.z+deptEast.z*across+deptSouth.z*along+30*Math.cos(east)};
+  // Match the southern walking-map frame; the old northeast fit left a long
+  // forced basement chord between Whity and the department-store frontage.
+  return {x:deptAnchor.x+deptEast.x*across+deptSouth.x*along+(30-15.4)*Math.sin(east)-30.8*Math.cos(east),
+    z:deptAnchor.z+deptEast.z*across+deptSouth.z*along+(30-15.4)*Math.cos(east)+30.8*Math.sin(east)};
 };
 const descriptions:[CommercialBuildingId,string,CommercialBuilding['floors']][]=[
   ['hankyu-dept','阪急百货 · 梅田本店',[{level:'metro-hall',name:'B1'},{level:'concourse',name:'1F'},{level:'south-deck',name:'2F'}]],

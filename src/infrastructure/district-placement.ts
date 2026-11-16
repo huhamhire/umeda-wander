@@ -24,8 +24,12 @@ export function projectSouthReference(x:number,z:number){
   return {x:hanshinPlacement.origin.x+dx*Math.sin(a)-dz*Math.cos(a),
     z:hanshinPlacement.origin.z+dx*Math.cos(a)+dz*Math.sin(a)};
 }
+/** 1000px crop of the supplied UMEDA CONNECT underground map: full-page
+ * render crop (385,340,400,400), enlarged 2.5x. HS01 is the shared anchor. */
+export const walkwayReference={hanshin:{x:310,z:303},nishi:{x:116,z:640},kitashinchi:{x:480,z:885},higashi:{x:765,z:365}};
+export function projectWalkwayReference(x:number,z:number){return projectSouthReference(x+140,z-153);}
 const fitSouth=(placement:ReturnType<typeof locate>,x:number,z:number)=>{
-  const origin=projectSouthReference(x,z);
+  const origin=projectWalkwayReference(x,z);
   return {...placement,origin,displayOffset:{x:origin.x-placement.referenceOrigin.x,z:origin.z-placement.referenceOrigin.z}};
 };
 export const districtPlacements={
@@ -38,10 +42,10 @@ export const districtPlacements={
   // expanded Daimaru/JR illustration and keeps the B2 terminal west of M16.
   hanshin:hanshinPlacement,
   // OSM station 5411378288; nearby Tanimachi track tangents are -16.5/-16.9°.
-  higashi:fitSouth(locate(34.7005946,135.4998176,-16.7),1000,265),
+  higashi:{...fitSouth(locate(34.7005946,135.4998176,-16.7),765,365),planScale:{along:0.4,across:1}},
   // Y11 node 7893338340; local rail tangents 3.2–3.6 degrees northward.
   // South fitting clears the already expanded Hanshin western throat at B2.
-  nishi:fitSouth(locate(34.6994819,135.4956500,3.4),202,580),
+  nishi:{...fitSouth(locate(34.6994819,135.4956500,3.4),116,640),planScale:{along:0.65,across:0.8}},
   // Approximate station-centre anchor, east–west axis from the supplied district map.
-  kitashinchi:fitSouth(locate(34.6983222,135.4970361,88),550,883),
+  kitashinchi:{...fitSouth(locate(34.6983222,135.4970361,93.4),480,885),planScale:{along:1,across:0.55}},
 };

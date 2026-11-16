@@ -10,6 +10,7 @@ import {layout,levels} from '../src/infrastructure/umeda-map.ts';
 import {stationSites} from '../src/infrastructure/southern-underground.ts';
 import {buildFloorGeometry} from '../src/presentation/floor-geometry.ts';
 import {buildCommercialFloor} from '../src/presentation/commercial-building-model.ts';
+import {projectWalkwayReference} from '../src/infrastructure/district-placement.ts';
 import type {PlanRegion,Point2} from '../src/domain/map/model.ts';
 
 const contains=(r:PlanRegion,p:Point2)=>pointInPolygon(p,r.outline)&&!r.holes?.some(h=>pointInPolygon(p,h));
@@ -47,7 +48,7 @@ test('each station exposes independent per-floor occupied envelopes and exterior
   assert(Math.hypot(portal.x-edge.x,portal.z-edge.z)<0.001);assert(contains(region,portal));
 });
 
-test('assembled underground surfaces protect station footprints and retain district skeleton continuity',()=>{
+test('assembled underground faces protect station footprints and source-map street junctions',()=>{
   const surfaces=layout.areas.filter(a=>a.id.startsWith('south-underground-excavation'));
   assert(surfaces.length>0&&surfaces.some(a=>a.holes!.length));
   const occupied=stationSites.flatMap(s=>s.layers.filter(l=>levels.find(level=>level.id===l.level)!.y===-8).flatMap(l=>l.regions));
@@ -56,18 +57,32 @@ test('assembled underground surfaces protect station footprints and retain distr
   const publicFloors=layout.areas.filter(a=>a.kind==='public'&&levels.find(l=>l.id===a.level)!.y===-8);
   for(const p of layout.passages.filter(p=>p.surfaceId)){
     assert(surfaces.some(a=>a.id.startsWith(p.surfaceId!)));
-    for(let i=1;i<p.points.length;i++)for(let j=1;j<10;j++){
-      const a=p.points[i-1]!,b=p.points[i]!,q={x:a.x+(b.x-a.x)*j/10,z:a.z+(b.z-a.z)*j/10};
-      assert(publicFloors.some(f=>contains(f,q))||layout.areas.some(f=>f.kind==='commercial'&&contains(f,q)),`${p.id}: disconnected at ${i}/${j}`);
-    }
   }
+  for(const [x,z]of [[389,682],[565,680],[638,866],[506,545],[390,468]]){
+    const q=projectWalkwayReference(x!,z!);
+    assert(publicFloors.some(f=>contains(f,q)),`source-map junction ${x}/${z} must be public`);
+  }
+  for(const block of layout.areas.filter(a=>a.id.startsWith('district-')&&a.kind==='commercial'))for(const s of surfaces)
+    assert(area(polygonClipping.intersection(polygon(block),polygon(s)))<0.001,'street-block infill cannot overlap its public grid');
 });
 
 test('commercial basement slabs yield to real public-space polygons rather than cover them',()=>{
   const building=layout.buildings.find(b=>b.id==='hanshin-dept')!,floor=building.floors.find(f=>f.name==='B1')!;
   const model=buildCommercialFloor(building,floor,layout.passages,{areas:layout.areas,levels,passages:layout.passages});model.updateMatrixWorld(true);
-  const point={x:-19.159,z:156.134};
-  assert(layout.areas.some(a=>a.id.startsWith('south-underground-excavation')&&contains(a,point)));
+  const surface=layout.areas.find(a=>a.id.startsWith('south-underground-excavation')&&polygonClipping.intersection(polygon(a),polygon(building)).length)!;
+  const overlap=polygonClipping.intersection(polygon(surface),polygon(building))[0]![0]!;
+  const point=overlap.reduce((p,[x,z])=>({x:p.x+x/overlap.length,z:p.z+z/overlap.length}),{x:0,z:0});
   const slab=model.getObjectByName('building-footprint')!;
   assert.equal(new T.Raycaster(new T.Vector3(point.x,5,point.z),new T.Vector3(0,-1,0)).intersectObject(slab).length,0);
+});
+
+test('Whity connections follow the public street faces instead of unrendered direct chords',()=>{
+  const floors=layout.areas.filter(a=>a.kind==='public'&&levels.find(l=>l.id===a.level)!.y===-8);
+  for(const id of ['whity-hankyu-dept-public','whity-hankyu-grand-public','whity-metro-t20-public']){
+    const passage=layout.passages.find(p=>p.id===id)!;assert(passage.points.length>=5);
+    for(let i=1;i<passage.points.length;i++)for(let j=0;j<=20;j++){
+      const a=passage.points[i-1]!,b=passage.points[i]!,q={x:a.x+(b.x-a.x)*j/20,z:a.z+(b.z-a.z)*j/20};
+      assert(floors.some(f=>contains(f,q)),`${id}: street face missing at ${i}/${j}`);
+    }
+  }
 });

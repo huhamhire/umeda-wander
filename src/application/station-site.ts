@@ -1,6 +1,6 @@
 import polygonClipping from 'polygon-clipping';
 import type {PassageEndpoint,PlanRegion,Point2,StationMap,StationSite} from '../domain/map/model.ts';
-import {pointInPolygon,platformPoint} from '../domain/map/geometry.ts';
+import {pointInPolygon,platformPoint,closestPolygonPoint} from '../domain/map/geometry.ts';
 
 // Rotated station rectangles share edges with floating-point noise; snap below
 // any displayable precision before boolean operations.
@@ -30,7 +30,9 @@ export function describeStationSite(station:StationMap):StationSite {
 export function stationPublicPortal(station:StationMap,endpoint:PassageEndpoint,toward:Point2):PassageEndpoint {
   const candidates=station.layout.areas.filter(a=>a.level===endpoint.level&&a.kind==='public'&&pointInPolygon(endpoint,a.outline));
   if(!candidates.length)throw new Error(`Missing public landing for ${station.id}: ${endpoint.level}`);
-  const regions=merge(candidates),region=regions.find(r=>pointInPolygon(endpoint,r.outline))!;
+  const regions=merge(candidates),region=regions.find(r=>pointInPolygon(endpoint,r.outline))??
+    regions.find(r=>{const q=closestPolygonPoint(endpoint,r.outline);return Math.hypot(q.x-endpoint.x,q.z-endpoint.z)<0.0001;});
+  if(!region)throw new Error(`Public portal outside perimeter for ${station.id}`);
   const dx=toward.x-endpoint.x,dz=toward.z-endpoint.z;
   let exit=Infinity;
   for(let i=0;i<region.outline.length;i++){

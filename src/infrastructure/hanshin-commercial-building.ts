@@ -5,14 +5,14 @@ import {commercialFootprints} from './commercial-footprints.ts';
 const reference=commercialFootprints['hanshin-dept'];
 // Preserve the raw OSM L-shaped envelope. Fit its north face to the already
 // enlarged Hanshin south public concourse, rather than enlarging the station.
-const fit=(p:Point2)=>({x:p.x-24,z:p.z+72});
+const fit=(p:Point2)=>({x:p.x-20,z:p.z+36});
 const outline=reference.outline.map(fit);
 const evidence={source:'district' as const,pages:[],urls:[
   'https://www.openstreetmap.org/way/502411898',
   'https://www.nihonsekkei.co.jp/projects/18825/',
   'https://office.hankyu-hanshin.co.jp/twin-south/outline/',
   'https://office.hankyu-hanshin.co.jp/twin-south/access/',
-],detail:'OSM way 502411898 v19, 2026-11-16: simplified L-shaped combined retail/office footprint. Display translation (-24,+72) aligns the enlarged Hanshin south concourse. Architect photos show curved retail podium and rectilinear office tower on the eastern wing; heights and tower setback are schematic, no retail interior plan.'};
+],detail:'OSM way 502411898 v19, 2026-11-16: simplified L-shaped combined retail/office footprint. Display translation (-20,+36) aligns the shared UMEDA CONNECT street-grid frame. Architect photos show curved retail podium and rectilinear office tower on the eastern wing; heights and tower setback are schematic, no retail interior plan.'};
 const tower=polygonClipping.intersection([outline.map(p=>[p.x,p.z] as [number,number])],
   [[{x:44,z:94},{x:61,z:94},{x:61,z:130},{x:44,z:130}].map(p=>{const q=fit(p);return [q.x,q.z] as [number,number];})]);
 

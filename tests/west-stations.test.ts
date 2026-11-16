@@ -111,6 +111,16 @@ test('western station interiors do not intersect neighbouring stations at the sa
   }
 });
 
+test('Kitashinchi platform escalators remain local rather than spanning a quarter of the station',()=>{
+  const station=kitashinchiStation,p=station.layout.platforms[0]!;
+  for(const c of station.layout.connections.filter(c=>c.kind==='escalator'&&c.platformId===p.id)){
+    assert(Math.hypot(c.to.x-c.from.x,c.to.z-c.from.z)<=12.01);
+    assert(Math.hypot(c.to.x-c.from.x,c.to.z-c.from.z)<p.length*0.15);
+  }
+  const session=new MapSession([]);assert.equal(session.state.explode,0);
+  session.state.explode=0.8;session.reset();assert.equal(session.state.explode,0);
+});
+
 test('western railway continuations join the correct ends and cross at separate heights within B2',()=>{
   for(const [id,station,side]of [['y11-south',nishiStation,-1],['kitashinchi-west',kitashinchiStation,-1],['kitashinchi-east',kitashinchiStation,1]] as const){
     const a=layout.railApproaches.find(a=>a.id===id)!,p=station.layout.platforms[0]!;
@@ -164,7 +174,7 @@ test('southern stations preserve the walking-map ordering and proportions around
   const y=coordinates(districtPlacements.nishi.origin),k=coordinates(districtPlacements.kitashinchi.origin),t=coordinates(districtPlacements.higashi.origin);
   assert(y.east<0&&t.east>0&&k.east>y.east&&k.east<t.east);
   assert(k.south>y.south&&y.south>t.south&&t.south>0);
-  assert(Math.abs((t.east-y.east)/(k.south-t.south)-798/618)<1e-6,'shared reference scale must not drift independently between stations');
+  assert(Math.abs((t.east-y.east)/(k.south-t.south)-649/520)<1e-6,'shared source-map crop calibration must not drift independently between stations');
   for(const placement of [districtPlacements.nishi,districtPlacements.kitashinchi,districtPlacements.higashi]){
     assert(Math.abs(placement.origin.x-placement.referenceOrigin.x-placement.displayOffset.x)<1e-6);
     assert(Math.abs(placement.origin.z-placement.referenceOrigin.z-placement.displayOffset.z)<1e-6);

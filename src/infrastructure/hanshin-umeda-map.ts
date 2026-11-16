@@ -38,8 +38,8 @@ area('south-ground','hanshin-ground','阪神 · 南出口地面落台','public',
 area('south-deck','hanshin-deck','阪神 · 阪急阪神连接 Deck','public',-76,-35,13,14);
 area('ticket-office','hanshin-platform','阪神 · 东口定期券售票处','service',-77,-21,8,5);
 area('station-office','hanshin-hall','阪神 · 站务室','service',-34,-13,10,8);
-area('department-interface','hanshin-hall','阪神百货 · 地下入口','commercial',-10,-46,38,10);
-draft.layout.areas.at(-1)!.label=false;
+// The independent department-store basement replaces the old station-owned
+// rectangle, which otherwise covers the DIAMOR circular public junction.
 
 facility('west-gate','hanshin-hall','阪神 · 西口改札','gate',46,0,'B1 西半侧付费区西端，闸外通往 JR 与西梅田方向。',Math.PI/2);
 facility('department-gate','hanshin-hall','阪神 · 百货店口改札','gate',6,0,'B1 西半侧付费区东端；外接中央朝南的公共通路。',Math.PI/2);

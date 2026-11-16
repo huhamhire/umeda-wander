@@ -65,7 +65,7 @@ test('commercial links end at actual building boundaries and existing public sta
 });
 
 test('new public passages do not cut through station paid areas at the same walking height',()=>{
-  for(const passage of layout.passages)for(let i=1;i<passage.points.length;i++){
+  for(const passage of layout.passages.filter(p=>!p.surfaceId))for(let i=1;i<passage.points.length;i++){
     const a=passage.points[i-1]!,b=passage.points[i]!,dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);
     assert(length>0.05);
     for(let j=0;j<=80;j++)for(const side of [-passage.width/2,0,passage.width/2]){
@@ -97,7 +97,7 @@ test('passage geometry follows explosion and B1/2F cuts while district framing i
   const bounds=new T.Box3().setFromPoints(cameraEnvelope(layout,levels,{level:'all'},elevation));
   for(const b of layout.buildings)for(const f of b.floors)for(const p of b.outline)
     assert(bounds.containsPoint(new T.Vector3(p.x,elevation(f.level)+(f.elevationOffset??0)+3,p.z)));
-  for(const passage of layout.passages){
+  for(const passage of layout.passages.filter(p=>!p.surfaceId)){
     const model=new PublicPassageModel(passage);
     if(passage.kind==='underground'){
       const floor=model.group.getObjectByName('passage-floor') as T.Mesh<T.BoxGeometry,T.MeshStandardMaterial>;

@@ -64,6 +64,8 @@
 
 ## 验证与交付
 
+- 来源展示集中于 `src/infrastructure/source-credits.ts`。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。版权弹窗使用原生 dialog，入口与可见 OSM 署名合并为文本链接，焦点在打开／关闭时正确转移；详细核查见 `docs/source-credits-audit.md`。
+
 - 地下公共空间采用面状布局，与二层天桥区分：南侧示例在 `southern-underground.ts`，合并逻辑在 `application/underground-space.ts`。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/underground-space-plan.md`。
 
 - 按实际改动运行相关检查。尚无可用测试或构建命令时，明确说明已检查的内容和未验证的部分。

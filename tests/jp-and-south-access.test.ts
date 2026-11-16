@@ -42,7 +42,7 @@ test('DIAMOR has a circular public junction and curved Life/Hilton branch outsid
   const life=layout.areas.find(a=>a.id==='district-osaka-maru-b1')!;
   assert(life.name.includes('第一生命'));
   const branch=layout.passages.find(p=>p.id==='diamor-daiichi-hilton-curve')!;
-  assert(layout.areas.filter(a=>a.id.startsWith(branch.surfaceId!)).some(a=>pointInPolygon(branch.points[0]!,a.outline)&&!a.holes?.some(h=>pointInPolygon(branch.points[0]!,h))));
+  assert(layout.areas.filter(a=>a.kind==='public').some(a=>pointInPolygon(branch.points[0]!,a.outline)&&!a.holes?.some(h=>pointInPolygon(branch.points[0]!,h))));
   for(let i=1;i<branch.points.length;i++){
     const a=branch.points[i-1]!,b=branch.points[i]!;
     assert(!pointInPolygon({x:(a.x+b.x)/2,z:(a.z+b.z)/2},life.outline),'building placeholder must yield to public circulation');

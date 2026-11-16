@@ -1,8 +1,8 @@
 import {stationDraft} from './station-draft.ts';
-import {districtPlacements} from './district-placement.ts';
+import {districtPlacements,projectWalkwayReference} from './district-placement.ts';
 
 const placement=districtPlacements.higashi;
-const b=stationDraft('higashi-umeda','谷町线东梅田站 T20','tanimachi',placement.origin,placement.angle);
+const b=stationDraft('higashi-umeda','谷町线东梅田站 T20','tanimachi',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 const sourceUrl='https://subway.osakametro.co.jp/station_guide/station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf';
 draft.levels=[
@@ -17,6 +17,7 @@ const p2=platform('platform-2','t20-platform',[2],0,-6.75,86,6.4,
   {name:'T20 · 2 番线',lineName:'谷町线',lineColor:0x7d499b,trackSides:[1],screenDoors:'half-height'});
 area('public-spine','t20-hall','东梅田 · B1 公共通路','public',0,0,108,7);
 area('whity-public','t20-hall','Whity 梅田 · 东梅田接入口','public',55,-10,6,32);
+draft.layout.areas.at(-1)!.outline=[[700,265],[744,280],[760,350],[742,357],[724,305],[700,280]].map(([x,z])=>projectWalkwayReference(x!,z!));
 for(const [key,name,x,z,width]of [
   ['north-east','北东',35,10,24],['north-west','北西',35,-10,24],
   ['middle-west','中西',2,-10,30],['south','南',-34,10,28],
