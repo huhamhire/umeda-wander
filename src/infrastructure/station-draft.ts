@@ -1,9 +1,7 @@
-import type {Evidence,Facility,FloorArea,Level,LevelId,Platform,RouteEdge,RouteNode,StationId,StationLayout,VerticalConnection} from '../domain/map/model.ts';
+import type {Evidence,Facility,FloorArea,LevelId,Platform,RouteEdge,RouteNode,StationId,StationMap,VerticalConnection} from '../domain/map/model.ts';
 import {rotatePoint} from '../domain/map/geometry.ts';
 
-export interface StationDraft {
-  id:StationId; name:string; levels:Level[]; facilities:Facility[]; nodes:RouteNode[]; edges:RouteEdge[]; layout:StationLayout;
-}
+export type StationDraft=StationMap;
 /** Local plan coordinates are separate from the schematic district placement. */
 export function stationDraft(id:StationId,name:string,source:Evidence['source'],origin:{x:number;z:number},angle:number,acrossSign:1|-1=1,planScale:number|{along:number;across:number}=1){
   const scale=typeof planScale==='number'?{along:planScale,across:planScale}:planScale;

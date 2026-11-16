@@ -49,6 +49,11 @@ export interface StationLayout {
   concourses?:CommercialConcourse[];
 }
 export interface AtriumVoid {id:string;name:string;openings:{level:LevelId;outline:Point2[]}[];evidence:Evidence}
+/** Self-contained station data; external public connections are assembled separately. */
+export interface StationMap {
+  id:StationId;name:string;levels:Level[];facilities:Facility[];
+  nodes:RouteNode[];edges:RouteEdge[];layout:StationLayout;
+}
 export type CommercialBuildingId='hankyu-dept'|'hankyu-grand'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
 export interface CommercialConcourse {
   id:string;name:string;level:LevelId;outline:Point2[];axis:[Point2,Point2];width:number;height:number;evidence:Evidence;

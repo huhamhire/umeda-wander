@@ -19,6 +19,7 @@
 - TypeScript 配置启用严格类型检查；地图实体、楼层、设施和通行图使用明确类型。类型检查与构建分别验证。
 - 修改 `src/` 中的源码，通过构建生成 `dist/`；不要直接维护或提交生成产物。
 - 按 DDD 边界拆分：`src/domain/` 定义地图模型与导航规则；`src/application/` 协调使用场景；`src/infrastructure/` 提供数据来源；`src/presentation/` 实现渲染和界面；`src/utils/` 只放无领域语义的通用工具。领域层不能依赖 Three.js、DOM 或基础设施。
+- 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`station-maps.ts` 统一登记，`district-map-parts.ts` 单独维护地区公共连接与商业空间，`compose-station-maps.ts` 纯组装，`umeda-map.ts` 只作页面数据入口。JR 特殊层名适配放在 `jr-osaka-station.ts`，不要恢复总图里重复罗列每站数组。轨道走线按站拆分，共用图构造与设备渲染；维护入口见 `docs/station-composition.md`。
 - 测试统一放在根目录 `tests/`，与源码分开；避免为简单逻辑引入不必要的仓储、工厂或服务层。
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
 - JR 布局数据在 `src/infrastructure/jr-osaka-map.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
