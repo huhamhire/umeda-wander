@@ -1,7 +1,7 @@
 import {stationDraft} from '../../station-draft.ts';
 import {districtPlacements} from '../../district-placement.ts';
 
-const placement=districtPlacements.kitashinchi;
+export function createStation(placement:{origin:{x:number;z:number};angle:number;planScale:number|{along:number;across:number}}, geographic=false){
 const b=stationDraft('kitashinchi','JR 北新地站','kitashinchi',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
@@ -47,4 +47,6 @@ for(const value of [...draft.facilities,...draft.layout.areas,...draft.layout.pl
   value.evidence.urls=['https://eki.jr-odekake.net/premises?id=0612303'];
   value.evidence.detail+='; user Kitashinchi PDF p1 dated 2026-10-02, approximate dimensions; temporary equipment closure ignored';
 }
-export const kitashinchiStation=draft;
+return draft;
+}
+export const kitashinchiStation=createStation(districtPlacements.kitashinchi);

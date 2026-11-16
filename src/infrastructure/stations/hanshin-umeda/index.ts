@@ -4,7 +4,7 @@ import {passageOutline} from '../../../domain/map/geometry.ts';
 
 // +X runs west toward Kobe; -X is the eastern terminal. Coordinates are a
 // schematic fit of the user-supplied 2025-12-24 plan, not measured station metres.
-const placement=districtPlacements.hanshin;
+export function createStation(placement:{origin:{x:number;z:number};angle:number;planScale:number|{along:number;across:number}}, geographic=false){
 const b=stationDraft('hanshin-umeda','阪神大阪梅田站 HS01','hanshin',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform,point,proof}=b;
 draft.levels=[
@@ -101,4 +101,6 @@ const high=draft.nodes.find(n=>n.id===`hanshin-umeda-${p12.id}-escalator-high`)!
 const dest=node('destination','hanshin-platform',-12,12.65);
 edge(entry,out);edge(out,inside,'gate');edge(inside,high);edge(high,low,'escalator');edge(low,dest);
 for(const value of [...draft.facilities,...draft.layout.areas,...draft.layout.platforms,...draft.layout.connections])value.evidence.urls??=['https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf'];
-export const hanshinStation=draft;
+return draft;
+}
+export const hanshinStation=createStation(districtPlacements.hanshin);

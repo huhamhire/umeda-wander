@@ -26,11 +26,12 @@ export function rotatePoint(point: Point2, origin: Point2, radians: number): Poi
   return { x: origin.x + x * c - z * s, z: origin.z + x * s + z * c };
 }
 export function platformPoint(platform: Platform, along: number, across: number): Point2 {
-  const p = rotatePoint({ x: along, z: across }, { x: 0, z: 0 }, platform.rotationRad);
+  const p = rotatePoint({ x: along, z: across + platformBow(platform,along) }, { x: 0, z: 0 }, platform.rotationRad);
   return { x: platform.x + p.x, z: platform.z + p.z };
 }
 export function platformLocalPoint(platform: Platform, point: Point2): Point2 {
-  return rotatePoint({ x: point.x - platform.x, z: point.z - platform.z }, { x: 0, z: 0 }, -platform.rotationRad);
+  const p=rotatePoint({ x: point.x - platform.x, z: point.z - platform.z }, { x: 0, z: 0 }, -platform.rotationRad);
+  return {x:p.x,z:p.z-platformBow(platform,p.x)};
 }
 /** A constant-width passage between two horizontal landings. */
 export function passageOutline(start: Point2, end: Point2, width: number): Point2[] {
@@ -67,4 +68,19 @@ export function closestPolygonPoint(point:Point2,outline:Point2[]):Point2 {
     if(d<distance){result=candidate;distance=d;}
   }
   return result;
+}
+
+/** Smooth plan bow; tangent continuation outside the platform avoids end kinks. */
+export function platformBow(p:Platform,u:number):number {
+  if(!p.planBow)return 0;
+  const half=p.length/2,t=Math.max(-half,Math.min(half,u));
+  return p.planBow.offset+p.planBow.sag*(1-(t/half)**2)+(-2*p.planBow.sag*t/half**2)*(u-t);
+}
+export function platformTangent(p:Platform,u:number):number {
+  return p.rotationRad+Math.atan(p.planBow?-8*p.planBow.sag*Math.max(-p.length/2,Math.min(p.length/2,u))/p.length**2:0);
+}
+export function platformOutline(p:Platform):Point2[] {
+  const n=p.planBow?40:1;
+  const edge=(side:number)=>Array.from({length:n+1},(_,i)=>platformPoint(p,-p.length/2+p.length*i/n,side*p.width/2));
+  return [...edge(-1),...edge(1).reverse()];
 }

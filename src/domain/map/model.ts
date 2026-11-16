@@ -35,6 +35,8 @@ export interface Platform {
   name?:string; lineName?:string; lineColor?:number; trackSides?:Array<-1|1>; screenDoors?:'full-height'|'half-height'; terminal?:boolean;
   screenDoorSides?:Array<-1|1>;
   terminalEnd?:'start'|'end';
+  /** Offline calibrated plan: quadratic lateral bow relative to the straight axis (metres). */
+  planBow?:{sag:number;offset:number};
 }
 export interface VerticalConnection {
   id: string; kind: 'stairs' | 'escalator' | 'elevator'; from: RouteNode; to: RouteNode; evidence: Evidence;

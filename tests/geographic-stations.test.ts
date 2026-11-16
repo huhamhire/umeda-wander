@@ -1,3 +1,4 @@
+import {platformLocalPoint} from '../src/domain/map/geometry.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {axisPlacement} from '../src/domain/map/axis-calibration.ts';
@@ -33,9 +34,7 @@ test('calibrated slices retain valid platform ownership and connection endpoints
       if(!c.platformId)continue;
       const p=platforms.get(c.platformId);assert.ok(p,`${c.id} missing platform`);
       const end=[c.from,c.to].find(n=>n.level===p.level);assert.ok(end);
-      const dx=end.x-p.x,dz=end.z-p.z;
-      const along=dx*Math.cos(p.rotationRad)+dz*Math.sin(p.rotationRad);
-      const across=-dx*Math.sin(p.rotationRad)+dz*Math.cos(p.rotationRad);
+      const local=platformLocalPoint(p,end),along=local.x,across=local.z;
       assert.ok(Math.abs(along)<=p.length/2+1e-5,`${c.id} outside platform length`);
       assert.ok(Math.abs(across)<=p.width/2+1e-5,`${c.id} outside platform width`);
     }

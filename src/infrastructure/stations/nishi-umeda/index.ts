@@ -1,7 +1,7 @@
 import {stationDraft} from '../../station-draft.ts';
 import {districtPlacements} from '../../district-placement.ts';
 
-const placement=districtPlacements.nishi;
+export function createStation(placement:{origin:{x:number;z:number};angle:number;planScale:number|{along:number;across:number}}, geographic=false){
 const b=stationDraft('nishi-umeda','四桥线西梅田站 Y11','yotsubashi',placement.origin,placement.angle,1,placement.planScale);
 const {draft,area,facility,node,edge,connection,platform}=b;
 draft.levels=[
@@ -68,4 +68,6 @@ for(const value of [...draft.facilities,...draft.layout.areas,...draft.layout.pl
   value.evidence.urls=['https://subway.osakametro.co.jp/station_guide/station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf'];
   value.evidence.detail+='; user Y11 map p1, equipment spacing and vertical dimensions schematic';
 }
-export const nishiStation=draft;
+return draft;
+}
+export const nishiStation=createStation(districtPlacements.nishi);
