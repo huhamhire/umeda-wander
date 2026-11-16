@@ -154,6 +154,7 @@ export class MapScene {
       this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true);
     }
     for(const passage of this.layout.passages??[]){
+      if(passage.surfaceId)continue;
       const model=new PublicPassageModel(passage,publicContext);this.publicPassages.push(model);this.scene.add(model.group);
       if(passage.kind==='underground'||(passage.kind==='deck'&&!passage.label))continue;
       const boundary=passage.points.find(p=>p.boundaryName);
@@ -162,7 +163,7 @@ export class MapScene {
     }
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
-      const cuts = this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline);
+      const cuts = [...area.holes??[],...this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline)];
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
       if (!geometry.getAttribute('position')) continue;
       const palette=stationPalettes[this.levels.find(l=>l.id===area.level)?.station??'jr-osaka'];

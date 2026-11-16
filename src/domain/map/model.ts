@@ -5,6 +5,12 @@ export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' 
   |'y11-hall'|'y11-platform'|'y11-ground'|'kitashinchi-hall'|'kitashinchi-platform'|'kitashinchi-ground';
 export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information'|'convenience-store'|'platform';
 export interface Point2 { x: number; z: number }
+/** A plan region can surround occupied blocks without filling their interiors. */
+export interface PlanRegion {outline:Point2[];holes?:Point2[][]}
+export interface StationSite {
+  station:StationId;
+  layers:{level:LevelId;regions:PlanRegion[];paidRegions:PlanRegion[]}[];
+}
 export interface Evidence { pages: number[]; detail: string; source?:'jr'|'hankyu'|'metro'|'hanshin'|'tanimachi'|'yotsubashi'|'kitashinchi'|'district';urls?:string[] }
 export interface Facility {
   id: string; name: string; kind: FacilityKind; level: LevelId;
@@ -22,6 +28,7 @@ export interface FloorArea {
   outline: Point2[]; height?: number; label?: boolean; evidence: Evidence;
   elevationOffset?:number;
   labelStyle?:'floating'|'floor';
+  holes?:Point2[][];
 }
 export interface Platform {
   id: string; level: LevelId; tracks: number[]; x: number; z: number; length: number; width: number; rotationRad: number; evidence: Evidence;
@@ -53,6 +60,8 @@ export interface AtriumVoid {id:string;name:string;openings:{level:LevelId;outli
 export interface StationMap {
   id:StationId;name:string;levels:Level[];facilities:Facility[];
   nodes:RouteNode[];edges:RouteEdge[];layout:StationLayout;
+  /** Optional reference-traced perimeter; absent modules derive it from their own floors. */
+  site?:StationSite;
 }
 export type CommercialBuildingId='hankyu-dept'|'hankyu-grand'|'hanshin-dept'|'jp-tower'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
 export interface CommercialConcourse {
@@ -74,6 +83,8 @@ export interface PassageEndpoint extends Point2 {
 export interface PublicPassage {
   id:string;name:string;kind:'deck'|'underground'|'entrance';width:number;
   label?:boolean;
+  /** Connectivity skeleton only; the corresponding excavated surface supplies its floor. */
+  surfaceId?:string;
   points:PassageEndpoint[];evidence:Evidence;
 }
 export interface GuidePoint extends RouteNode {caption?:string}

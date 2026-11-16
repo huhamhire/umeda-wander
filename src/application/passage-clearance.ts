@@ -7,11 +7,11 @@ export function touchesPublicConnection(point:Point2,surface:{level:LevelId;elev
   const y=context.levels.find(l=>l.id===surface.level)!.y+(surface.elevationOffset??0);
   for(const area of context.areas){
     if(area.kind!=='public'||Math.abs(context.levels.find(l=>l.id===area.level)!.y+(area.elevationOffset??0)-y)>0.25)continue;
-    if(pointInPolygon(point,area.outline))return true;
+    if(pointInPolygon(point,area.outline)&&!area.holes?.some(h=>pointInPolygon(point,h)))return true;
     if(margin>0){const edge=closestPolygonPoint(point,area.outline);if(Math.hypot(edge.x-point.x,edge.z-point.z)<margin)return true;}
   }
   for(const passage of context.passages){
-    if(passage.id===excludePassageId)continue;
+    if(passage.id===excludePassageId||passage.surfaceId)continue;
     for(let i=1;i<passage.points.length;i++){
       const a=passage.points[i-1]!,b=passage.points[i]!,dx=b.x-a.x,dz=b.z-a.z;
       const t=Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.z-a.z)*dz)/(dx*dx+dz*dz||1)));

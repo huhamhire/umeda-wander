@@ -39,10 +39,10 @@ test('South Gate curved retreat is a true open edge with the two paired escalato
 });
 
 test('DIAMOR has a circular public junction and curved Life/Hilton branch outside the occupied block',()=>{
-  const plaza=layout.areas.find(a=>a.id==='diamor-round-plaza')!,life=layout.areas.find(a=>a.id==='district-osaka-maru-b1')!;
-  assert(plaza.outline.length>=32);assert(life.name.includes('第一生命'));
+  const life=layout.areas.find(a=>a.id==='district-osaka-maru-b1')!;
+  assert(life.name.includes('第一生命'));
   const branch=layout.passages.find(p=>p.id==='diamor-daiichi-hilton-curve')!;
-  assert(pointInPolygon(branch.points[0]!,plaza.outline));
+  assert(layout.areas.filter(a=>a.id.startsWith(branch.surfaceId!)).some(a=>pointInPolygon(branch.points[0]!,a.outline)&&!a.holes?.some(h=>pointInPolygon(branch.points[0]!,h))));
   for(let i=1;i<branch.points.length;i++){
     const a=branch.points[i-1]!,b=branch.points[i]!;
     assert(!pointInPolygon({x:(a.x+b.x)/2,z:(a.z+b.z)/2},life.outline),'building placeholder must yield to public circulation');

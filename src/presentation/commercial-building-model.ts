@@ -48,7 +48,10 @@ export function buildCommercialFloor(building:CommercialBuilding,floor:Commercia
     mesh.name=name;mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
   };
   const floorColor=floor.name.startsWith('B')?new T.Color(palette.floor).lerp(new T.Color(0xb6ad9b),0.22).getHex():palette.floor;
-  add(buildFloorGeometry(building.outline,cuts,0.4,0.05),floorColor,'building-footprint');
+  const floorY=context?.levels.find(l=>l.id===floor.level)?.y;
+  const publicVoids=floorY!==undefined&&floorY<0?context!.areas.filter(a=>a.kind==='public'&&
+    Math.abs(context!.levels.find(l=>l.id===a.level)!.y+(a.elevationOffset??0)-floorY-(floor.elevationOffset??0))<0.25):[];
+  add(buildFloorGeometry(building.outline,cuts,0.4,0.05,publicVoids),floorColor,'building-footprint');
   if(gallery){
     add(buildFloorGeometry(building.outline,[gallery.innerOutline,...cuts],0.06,0.46),0xe7e5d8,'perimeter-gallery-floor');
     const guards:T.BufferGeometry[]=[];

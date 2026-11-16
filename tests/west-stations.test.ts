@@ -84,7 +84,8 @@ test('district walking map produces public western links and shared DIAMOR junct
     for(const end of p.points.filter(p=>p.station))assert(layout.areas.some(a=>a.kind==='public'&&a.level===end.level&&pointInPolygon(end,a.outline)));
   }
   const main=layout.passages.find(p=>p.id==='diamor-hanshin-kitashinchi-public')!,metro=layout.passages.find(p=>p.id==='diamor-metro-public')!;
-  assert.deepEqual(main.points[0],metro.points.at(-1));
+  const shared=layout.areas.find(a=>a.id==='hanshin-umeda-department-public')!;
+  assert(pointInPolygon(main.points[0]!,shared.outline)&&pointInPolygon(metro.points.at(-1)!,shared.outline),'separate perimeter portals meet through the same station public region');
   assert.equal(main.evidence.source,'district');assert(main.evidence.detail.includes('梅田周边地区通道.pdf'));
 });
 
