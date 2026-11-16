@@ -23,13 +23,13 @@
 - 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`station-maps.ts` 统一登记，`district-map-parts.ts` 单独维护地区公共连接与商业空间，`compose-station-maps.ts` 纯组装，`umeda-map.ts` 只作页面数据入口。JR 特殊层名适配放在 `jr-osaka-station.ts`，不要恢复总图里重复罗列每站数组。轨道走线按站拆分，共用图构造与设备渲染；维护入口见 `docs/station-composition.md`。
 - 测试统一放在根目录 `tests/`，与源码分开；避免为简单逻辑引入不必要的仓储、工厂或服务层。
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
-- JR 布局数据在 `src/infrastructure/jr-osaka-map.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
+- 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录同名文件仅兼容转发，修改实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
 - 梅北的北侧 B1F 闸外地下公共通路与西口的 B2F 闸内连接通道分开建模；通过梅北改札前不得将公共通路标成付费通路。
 - 扶梯与电梯使用 `src/presentation/vertical-connection-model.ts`；直梯井道当前宽 3 场景单位，轿厢与门框按井道宽度同步调整，开口共用 `elevatorShaftWidth`；楼板开口由应用层规划、呈现层做真实多边形裁剪，新增设施时同步检查落点与孔洞。改札围栏和闸机共用付费区边界，不要只改颜色或用实体楼板覆盖孔洞。
 - 与站台相连的设施保留 `platformId`，电梯门向、井道与孔洞共用该站台坐标框架。同一付费区边界可有多组闸机，围栏留口需合并计算。
 - 单层探索时，已显示直梯保留完整井道、轿厢及两端落台；同一落点连续连接的多段井道由 `elevator-visibility.ts` 一起显示，不能按当前层切短。只恢复井道组，不恢复隐藏的上层楼板；取景须包含井道顶端。
 - 连接通道直梯可用 `doorFacingRad` 指定通道门向，不强制归属站台。双排扶梯使用 `lanes`，模型和开口共用逐条展开的端点。选下层时仍显示完整扶梯和楼梯，并将上端落台计入取景；不要将隐藏踏步压成零尺寸网格。
-- 北中庭 2/3 采用 `placement: exterior`，斜段位于上层楼板外侧，端点接楼板边缘，不生成内部井口。夹层 17–31 与南端大楼连接数据在 `jr-osaka-upper-links.ts`；51 只连至 M2F，不能直接连至站台。南门大楼 3F 对应站台标高、4F 对应联络桥标高，区域保留建筑楼层名称。
+- 北中庭 2/3 采用 `placement: exterior`，斜段位于上层楼板外侧，端点接楼板边缘，不生成内部井口。夹层 17–31 与南端大楼连接数据在 `stations/jr-osaka/upper-links.ts`；51 只连至 M2F，不能直接连至站台。南门大楼 3F 对应站台标高、4F 对应联络桥标高，区域保留建筑楼层名称。
 - 同层局部高差使用 `elevationOffset`，例如中央口往大丸的小半层台阶；不要为了小高差新增完整逻辑楼层。自动售票机作为独立设施，与售票柜台区分。
 - `umeda-map.ts` 组装各站数据；各站使用独立 `LevelId`、`station` 和 `stackIndex`，展开偏移不能依赖组合数组下标。JR 原有层名保留兼容；Metro 中间层不能归入 JR M2F。开口按所属站点过滤。
 - 新站设施和区域的 `Evidence.source` 必须指向自己的资料；阪急 SVG 不伪装成 JR PDF 页码。各站以 `district-placement.ts` 的地理锚点和主轴放在同一图中；站间连接为闸外空间示意，未核验前不添加导航边，各站相邻不代表闸内互通。
