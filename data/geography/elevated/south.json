@@ -1,0 +1,81 @@
+{
+  "region": "south",
+  "links": [
+    {
+      "id": "south-skywalk",
+      "name": "大丸南侧 Skywalk",
+      "ways": [
+        1305504565
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "bridge-north",
+      "name": "步道桥北支臂—阪急百货",
+      "ways": [
+        336421843
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "bridge-spine",
+      "name": "步道桥沿路主干",
+      "ways": [
+        496684915
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "bridge-south",
+      "name": "步道桥南支臂—阪急百货",
+      "ways": [
+        496684904,
+        496684911
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "hanshin-approach",
+      "name": "阪神百货接入",
+      "ways": [
+        610936155,
+        610936153,
+        1316299602
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "southeast-extension",
+      "name": "阪神百货东南延伸",
+      "ways": [
+        610936151,
+        610936152
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "region": "north",
+  "links": [
+    {
+      "id": "grand-front-bridge",
+      "name": "Grand Front 南北馆",
+      "ways": [
+        220190709
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "grand-front-atrium",
+      "name": "Grand Front—北中庭",
+      "ways": [
+        501012843,
+        553431479,
+        583058600
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "yodobashi-west",
+      "name": "Yodobashi 西侧跨街",
+      "ways": [
+        850399264
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "yodobashi-ring",
+      "name": "Yodobashi 外圈回廊",
+      "ways": [
+        533778889,
+        537367760,
+        504385461,
+        788888926,
+        794334802,
+        794334801,
+        766957710
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "yodobashi-east",
+      "name": "Yodobashi 东侧跨街",
+      "ways": [
+        1313244355,
+        850398035
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "hankyu-link",
+      "name": "LUCUA—阪急接口",
+      "ways": [
+        1313244356,
+        330561953,
+        548973590,
+        974021327
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "atrium-public",
+      "name": "北中庭公共连接",
+      "ways": [
+        1313244347,
+        1313244348,
+        549066317
+      ],
+      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "displayLevel": "2F",
+      "widthMetres": 6,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    }
+  ]
+}

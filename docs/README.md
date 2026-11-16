@@ -9,5 +9,6 @@
 - [参考资料与社区项目评估](./references-and-community.md)：本地素材检查、外部资料、建模项目对比与验证清单。
 - [JR 大阪站布局整理记录](./jr-osaka-layout.md)：中央改札/夹层的楼层归属、六组地面站台、梅北地下站台与西口连接关系，以及数据简化边界。
 - [地下网络投影核对](./underground-projection-audit.md)：基于地面坐标的地下公共包络、车站留位及已确认／待核实楼层；[数据维护说明](../data/geography/underground/README.md)。
+- [2F 连廊投影核对](./elevated-projection-audit.md)：北侧、南侧、西侧公共连廊与地面路网的首轮对照；[数据维护说明](../data/geography/elevated/README.md)。
 
 当前建议：以 **Three.js 固定正交相机 + 人工重建的语义地图数据 + 独立通行图** 实现；先做一个跨层导航样板，再覆盖两站主干。

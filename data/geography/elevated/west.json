@@ -1,0 +1,41 @@
+{
+  "region": "west",
+  "links": [
+    {
+      "id": "lucua-umekita",
+      "name": "LUCUA 西侧—梅北上方",
+      "ways": [
+        1347368424,
+        1388246368
+      ],
+      "source": "references/Umeda Walkway Maps/osaka-station-city-2f.png",
+      "displayLevel": "2F",
+      "widthMetres": 7,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "umekita-public",
+      "name": "梅北地上公共步道",
+      "ways": [
+        1313936486
+      ],
+      "source": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=1",
+      "displayLevel": "2F",
+      "widthMetres": 7,
+      "geometryEvidence": "OSM 线位；桥面宽度为示意",
+      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+    },
+    {
+      "id": "inogate-grand-green-review",
+      "name": "Inogate—Grand Green 新桥",
+      "ways": [],
+      "source": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=4",
+      "displayLevel": "2F",
+      "widthMetres": 7,
+      "geometryEvidence": "连通目标确认；缺少本轮可用的完整平面端点，暂不绘制",
+      "levelEvidence": "原资料新建步行桥，独立于 LUCUA 连桥",
+      "status": "provisional"
+    }
+  ]
+}
