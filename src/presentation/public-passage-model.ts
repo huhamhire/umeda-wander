@@ -1,5 +1,5 @@
 import * as T from 'three';
-import type {LevelId,PublicPassage} from '../domain/map/model.ts';
+import type {LevelId,PublicPassage,StationId} from '../domain/map/model.ts';
 import type {LayerRole} from '../application/layer-focus.ts';
 import {LayerAppearance} from './layer-appearance.ts';
 import {publicAreaColor,undergroundPublicColor} from './station-palette.ts';
@@ -51,13 +51,14 @@ export class PublicPassageModel {
       group.name=`${passage.id}-${i}`;this.group.add(group);this.parts.push({group,slab,rails,posts,postPositions,index:i-1});
     }
   }
-  update(elevation:(id:LevelId)=>number,role:(id:LevelId)=>LayerRole):void {
+  update(elevation:(id:LevelId)=>number,role:(id:LevelId)=>LayerRole,focus?:StationId|null):void {
     const heights=this.passage.points.map(p=>elevation(p.level)+(p.elevationOffset??0)),key=heights.join(',');
     const changed=key!==this.previousHeights;this.previousHeights=key;
     for(const part of this.parts){
       const a=this.passage.points[part.index]!,b=this.passage.points[part.index+1]!;
       const roles=[role(a.level),role(b.level)];part.group.visible=!roles.every(r=>r==='hidden');
-      this.appearance.apply(part.group,roles.every(r=>r==='context'));
+      const owner=a.station&&a.station===b.station?a.station:null;
+      this.appearance.apply(part.group,roles.every(r=>r==='context'),focus,owner);
       if(!changed)continue;
       const from=new T.Vector3(a.x,heights[part.index]!+0.42,a.z),to=new T.Vector3(b.x,heights[part.index+1]!+0.42,b.z);
       const delta=to.clone().sub(from),length=delta.length(),flat=Math.hypot(delta.x,delta.z);

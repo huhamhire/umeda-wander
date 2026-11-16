@@ -1,7 +1,7 @@
 import type {StationMap} from '../domain/map/model.ts';
 import * as jr from './jr-osaka-map.ts';
 import {northAtrium} from './jr-osaka-upper-links.ts';
-import {southForecourtVoid,southForecourtGround} from './jr-south-forecourt.ts';
+import {southForecourtVoid,southForecourtGround,southBuildingAccessVoids} from './jr-south-forecourt.ts';
 
 // Keep source reference-floor names intact; adapt only the assembled JR station.
 const replacedPlaceholders=new Set(['north-lucua','north-lucua1100','south-daimaru']);
@@ -26,5 +26,5 @@ export const jrStation:StationMap={
   levels:[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as const,stackIndex:i-2})),
     {id:'south-deck',label:'2F',name:'大丸前侧公共通道与南侧步道桥',y:4,stackIndex:1,station:'jr-osaka',description:'南侧站外二层步行层，按较低的相邻标高对齐；不改变 JR 内部夹层。'}],
   facilities:jr.facilities,nodes:jr.nodes,edges:jr.edges,
-  layout:{areas,connections,platforms:jr.platforms,atria:[northAtrium,southForecourtVoid]},
+  layout:{areas,connections,platforms:jr.platforms,atria:[northAtrium,southForecourtVoid,...southBuildingAccessVoids]},
 };

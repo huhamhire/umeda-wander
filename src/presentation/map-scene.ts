@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { Facility, Level, LevelId, RouteNode, StationLayout, FloorOpening } from '../domain/map/model.ts';
+import type { Facility, Level, LevelId, RouteNode, StationLayout, FloorOpening,StationId } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/display-elevation.ts';
 import { platformPoint, pointInPolygon } from '../domain/map/geometry.ts';
@@ -10,7 +10,8 @@ import type { GateBoundary } from '../application/gate-boundaries.ts';
 import { buildFloorGeometry } from './floor-geometry.ts';
 import { VerticalConnectionModel } from './vertical-connection-model.ts';
 import { viewLayerRole } from '../application/view-layer.ts';
-import { LayerAppearance } from './layer-appearance.ts';
+import { LayerAppearance,setRegionOwner } from './layer-appearance.ts';
+import {isRegionMuted} from '../application/region-focus.ts';
 import { cameraOffset, viewBasis } from './view-orientation.ts';
 import { roofHeightAt,roofPlan } from './roof-profile.ts';
 import {visibleElevatorConnections} from '../application/elevator-visibility.ts';
@@ -34,7 +35,7 @@ import {areaColor} from './area-palette.ts';
 
 const colors = { slab: publicAreaColor, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
   steel: 0x647c7a, white: 0xf5f3df, roof: 0xe3e9df, glass: 0x719eac, route: 0xd47747 };
-interface MapLabel { element: HTMLDivElement; position: T.Vector3; level?: LevelId; roof?: boolean }
+interface MapLabel { element: HTMLDivElement; position: T.Vector3; level?: LevelId; roof?: boolean;owner?:StationId|null }
 
 export class MapScene {
   private renderer: T.WebGLRenderer;
@@ -128,10 +129,10 @@ export class MapScene {
     mesh.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), delta.normalize());
     group.add(mesh); return mesh;
   }
-  private label(text: string, x: number, y: number, z: number, level?: LevelId, roof = false, emphasis = false): void {
+  private label(text: string, x: number, y: number, z: number, level?: LevelId, roof = false, emphasis = false,owner?:StationId|null): void {
     const el = document.createElement('div'); el.className = `map-label${emphasis ? ' emphasis' : ''}`;
     el.textContent = text; this.labelHost.append(el);
-    this.labels.push({ element: el, position: new T.Vector3(x, y, z), level, roof });
+    this.labels.push({ element: el, position: new T.Vector3(x, y, z), level, roof,owner });
   }
 
   private buildStation(): void {
@@ -141,17 +142,17 @@ export class MapScene {
       const mesh=new T.Mesh(geometry,this.material(color));mesh.castShadow=true;mesh.receiveShadow=true;base.add(mesh);
       mesh.userData.labelOccluder=true;
     }
-    for (const level of this.levels) { const group = new T.Group(); this.groups.set(level.id, group); this.scene.add(group); }
-    for(const hall of this.layout.concourses??[])this.groups.get(hall.level)!.add(buildCommercialConcourse(hall));
+    for (const level of this.levels) { const group = setRegionOwner(new T.Group(),level.station??'jr-osaka'); this.groups.set(level.id, group); this.scene.add(group); }
+    for(const hall of this.layout.concourses??[])this.groups.get(hall.level)!.add(setRegionOwner(buildCommercialConcourse(hall),null));
     const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
     for(const building of this.layout.buildings??[])if(building.podiumHeight||building.volumes?.length){
-      const model=buildCommercialMassing(building,publicContext);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);
+      const model=setRegionOwner(buildCommercialMassing(building,publicContext),null);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);
     }
     for(const building of this.layout.buildings??[])for(const floor of building.floors){
-      this.groups.get(floor.level)!.add(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext,this.openings));
+      this.groups.get(floor.level)!.add(setRegionOwner(buildCommercialFloor(building,floor,this.layout.passages??[],publicContext,this.openings),null));
       const x=building.outline.reduce((s,p)=>s+p.x,0)/building.outline.length;
       const z=building.outline.reduce((s,p)=>s+p.z,0)/building.outline.length;
-      this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true);
+      this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true,null);
     }
     for(const passage of this.layout.passages??[]){
       if(passage.surfaceId)continue;
@@ -159,7 +160,7 @@ export class MapScene {
       if(passage.kind==='underground'||(passage.kind==='deck'&&!passage.label))continue;
       const boundary=passage.points.find(p=>p.boundaryName);
       const point=boundary??passage.points[Math.floor(passage.points.length/2)]!;
-      this.label(boundary?.boundaryName??passage.name,point.x,3+(point.elevationOffset??0),point.z,point.level,false,!!boundary);
+      this.label(boundary?.boundaryName??passage.name,point.x,3+(point.elevationOffset??0),point.z,point.level,false,!!boundary,null);
     }
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
@@ -170,16 +171,18 @@ export class MapScene {
       const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColor(area,this.levels.find(l=>l.id===area.level)!.y<0)));
       mesh.userData.labelOccluder=true;
       mesh.castShadow = true; mesh.receiveShadow = true;
+      const owner=area.kind==='commercial'||area.evidence.source==='district'?null:this.levels.find(l=>l.id===area.level)!.station??'jr-osaka';
+      setRegionOwner(mesh,owner);
       this.groups.get(area.level)!.add(mesh);
       if (area.label && !(area.kind==='public'&&(this.levels.find(l=>l.id===area.level)!.y<0||/通路|通道|连廊|联络桥|连络桥/.test(area.name)))) {
         if(area.labelStyle==='floor'){
-          this.groups.get(area.level)!.add(buildFloorLabel(area,Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()));
+          this.groups.get(area.level)!.add(setRegionOwner(buildFloorLabel(area,Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()),owner));
           continue;
         }
         const x = area.outline.reduce((sum, point) => sum + point.x, 0) / area.outline.length;
         const z = area.outline.reduce((sum, point) => sum + point.z, 0) / area.outline.length;
         this.label(area.name, x, (area.height ?? 0.55) + (area.elevationOffset??0) + 1, z, area.level, false,
-          area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised');
+          area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised',owner);
       }
     }
     for (const platform of this.layout.platforms) {
@@ -466,11 +469,11 @@ export class MapScene {
     for (const [id, group] of this.groups) {
       group.position.y = this.levelY(id);
       const role=viewLayerRole(this.levels,this.state,id);
-      group.visible=role!=='hidden';this.appearance.apply(group,role==='context');
+      group.visible=role!=='hidden';this.appearance.apply(group,role==='context',this.state.focusStation);
     }
     const baseRole=viewLayerRole(this.levels,this.state,'concourse');
-    for(const passage of this.publicPassages)passage.update(id=>this.levelY(id),id=>viewLayerRole(this.levels,this.state,id));
-    this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context');
+    for(const passage of this.publicPassages)passage.update(id=>this.levelY(id),id=>viewLayerRole(this.levels,this.state,id),this.state.focusStation);
+    this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context',this.state.focusStation,'jr-osaka');
     if(this.ground)this.ground.visible=this.base.visible;
     const fullShafts=visibleElevatorConnections(this.layout.connections,this.levels,this.state.level);
     for (const connector of this.connectors) {
@@ -482,11 +485,15 @@ export class MapScene {
       connector.update(id => this.levelY(id), this.state.level,fullShaft);
       const {from,to}=connector.connection;
       const roles=[from,to].map(p=>viewLayerRole(this.levels,this.state,p.level));
-      this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'));
+      const owners=[from,to].map(p=>this.levels.find(l=>l.id===p.level)!.station??'jr-osaka');
+      const owner=this.activeFacility?.connectionId===connector.connection.id?this.state.focusStation??null:
+        connector.connection.evidence.source==='district'?null:owners[0]===owners[1]?owners[0]!:null;
+      this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'),this.state.focusStation,owner);
     }
     this.roof.position.y = 26 + this.displayedExplode * 56;
     for(const model of this.commercialMassing)model.visible=this.state.roof&&this.state.level==='all';
     this.roof.visible = this.state.roof && this.state.level === 'all';
+    this.appearance.apply(this.roof,false,this.state.focusStation,'jr-osaka');
     this.route.visible = !!this.state.route;
     if (previousExplode !== this.displayedExplode && this.state.route) this.buildRoute();
     this.selected.visible = !!this.activeFacility && ['normal','current'].includes(viewLayerRole(this.levels,this.state,this.activeFacility.level));
@@ -535,12 +542,13 @@ export class MapScene {
     const rect = this.host.getBoundingClientRect();
     const occupied: { x: number; y: number; w: number; h: number }[] = [];
     const occluders=visibleLabelOccluders(this.labelOccluders);
-    const priority=(label:MapLabel)=>Number(label.level&&viewLayerRole(this.levels,this.state,label.level)==='current')*4+Number(label.element.classList.contains('emphasis'));
+    const labelMuted=(label:MapLabel)=>isRegionMuted(this.state.focusStation,label.owner!==undefined?label.owner:label.roof?'jr-osaka':this.levels.find(l=>l.id===label.level)?.station??'jr-osaka');
+    const priority=(label:MapLabel)=>Number(!labelMuted(label))*8+Number(label.level&&viewLayerRole(this.levels,this.state,label.level)==='current')*4+Number(label.element.classList.contains('emphasis'));
     const orderedLabels = [...this.labels].sort((a,b)=>priority(b)-priority(a));
     const placements = orderedLabels.map(label => {
       const role=label.level?viewLayerRole(this.levels,this.state,label.level):'normal';
       let visible = label.roof ? this.roof.visible : role!=='hidden';
-      label.element.classList.toggle('context',role==='context');
+      label.element.classList.toggle('context',role==='context'||labelMuted(label));
       if(role==='context'&&!label.element.classList.contains('emphasis'))visible=false;
       if ((mobile || this.state.level === 'all') && this.zoomValue < 1.2 && !label.element.classList.contains('emphasis')) visible = false;
       const anchor = label.position.clone();
