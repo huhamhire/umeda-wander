@@ -11,9 +11,10 @@ for(const [index,id] of ids.entries()){
  const scale=Math.min(430/(maxX-minX),310/(maxY-minY));
  const screen=(p:Point2,y:number)=>{const q=project(p,y);return `${((q.x-minX)*scale+30).toFixed(2)},${((q.y-minY)*scale+65).toFixed(2)}`;};
  const faces:{d:string;depth:number;fill:string}[]=[];
+ for(const gallery of b.galleries??[])faces.push({d:[gallery.outline,gallery.innerOutline].map(r=>'M'+r.map(p=>screen(p,gallery.y)).join('L')+'Z').join(''),depth:Math.max(...gallery.outline.map(p=>p.z+p.x*.5))+gallery.y*.5,fill:'#e0e7d8'});
  for(const v of b.volumes){
-  for(const ring of [v.outline,...v.holes])for(let i=0;i<ring.length-1;i++){
-   const a=ring[i]!,c=ring[i+1]!;
+  for(const ring of [v.outline,...v.holes])for(let i=0;i<ring.length;i++){
+   const a=ring[i]!,c=ring[(i+1)%ring.length]!;
    faces.push({d:`M${screen(a,v.base)}L${screen(c,v.base)}L${screen(c,v.top)}L${screen(a,v.top)}Z`,depth:(a.z+c.z)*.5+(a.x+c.x)*.25+(v.top+v.base)*.25,fill:v.base?'#a6bdbb':'#d4d4c8'});
   }
   faces.push({d:[v.outline,...v.holes].map(r=>'M'+r.map(p=>screen(p,v.top)).join('L')+'Z').join(''),depth:Math.max(...v.outline.map(p=>p.z+p.x*.5))+v.top*.5,fill:'#eef0e4'});

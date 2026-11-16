@@ -1,5 +1,12 @@
 import type {GeoPoint} from './geography.ts';
-import type {Point2, StationId} from './model.ts';
+import type {Evidence, LevelId, Point2, StationId} from './model.ts';
+
+/** A gate seam, not an inter-station route. Normal points toward public space. */
+export interface StationPublicInterface {
+  id:string;station:StationId;gateId:string;level:LevelId;elevation:number;
+  boundary:[Point2,Point2];inside:Point2;outside:Point2;width:number;
+  access:'public';evidence:Evidence;
+}
 
 /** Geographic plan only: metres, east +x, south +z. No display clearance. */
 export interface GeographicFrame {origin:GeoPoint}

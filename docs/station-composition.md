@@ -1,6 +1,29 @@
 # 车站模块与地区组装
 
-本文描述当前实现。后续按 [空间重构 Roadmap](./spatial-refactor-roadmap.md) 将每站迁入独立目录，商业建筑和公共区域按独立板块交付；公共区域允许覆盖地下、地面及 2F。现有登记和纯组装职责继续保留，目录及契约尚未迁移。
+本文优先描述阶段二后的地理入口。各站已迁入独立目录；商业建筑和公共区域按独立板块交付，公共区域允许覆盖地下、地面及 2F。后续装配顺序见 [空间重构 Roadmap](./spatial-refactor-roadmap.md)。
+
+## 当前地理入口
+
+| 部分 | 入口 | 职责 |
+| --- | --- | --- |
+| 最终站模 | `district/geographic-stations.ts` 的 `createGeographicStation(id)` | 按稳定站点 ID 独立创建、校准设备并恢复本站轨道；全图采用相同工厂 |
+| JR 内部组装 | `stations/jr-osaka/geographic-station.ts` | 地面、梅北两个框架，西口付费通道、Crost 及南门入口 |
+| 其余各站 | `stations/<id>/geographic.ts` 与 `index.ts` | 地理轴、本站布局、设施及来源；不读取其他车站完整数据 |
+| 公共接口 | `application/station-public-interfaces.ts` | 从本站付费边界生成稳定门户，包含方向、宽度、标高、来源，不推断跨站寻路 |
+| 公共前庭 | `public-areas/station-frontages/index.ts` | 选取构内图已有前庭、出入口短臂与设备落台，捐入公共所有者；不恢复旧地区长矩形 |
+| 地下公共组装 | `application/shared-underground.ts` | 合并已有地区网与前庭、扣除付费和服务空间，保留局部高差，几何只画一次 |
+| 接缝绑定 | `application/public-interface-bindings.ts` | 拒绝缺少同标高公共落脚面的 B1 改札；绑定不是路线 |
+| H5 入口 | `district/geographic-map.ts` | 纯组装、补齐设施目录；保留接口和绑定导出供阶段三使用 |
+
+局部复核：`node scripts/geography/review-stage-two.ts --station=nishi-umeda`。省略参数输出七站；生成图放在 `build/geography/`，原始资料不改写。参数记录见 `createRuntimeCalibrations()`，其端点、尺寸为当前示意拟合，测量残差未取得。
+
+设备坡度修正在 `application/calibrate-equipment.ts`；不能默认把下端当作站台端，夹层向上到站台时应保留夹层端。更新设备端点后同时更新对应路线节点和原有设施锚点。共享 B1 的实际楼板开口由全图设备规划，不能按 JR 归属过滤其他站点。
+
+公共前庭与地区网之间仍有阶段三工作：目前 M16 中北东／西前庭没有地区连续连接。完整 2F 连桥属于阶段四；Yodobashi 外环现在是外壳特征，迁入公共高架板块时不能保留重复副本。
+
+## 旧坐标入口与兼容约定
+
+下列旧入口继续用于迁移对照及回归；不再是 `main.ts` 使用的数据入口。
 
 每座车站独立维护布局、来源和设备，最后组装为地区地图。各站沿用同一套 Three.js 设备与楼板渲染器，不复制七份渲染实现。
 

@@ -31,8 +31,9 @@ for(const [key,x,high,z]of [['north',30,42,1.5],['middle',-6,8,0],['south',-32,-
 connection('north-escalator','escalator',node('north-escalator-low','y11-platform',30,-1.5),node('north-escalator-high','y11-hall',42,-1.5),p.id);
 connection('south-escalator','escalator',node('south-escalator-low','y11-platform',-32,-1.5),node('south-escalator-high','y11-hall',-18,-1.5),p.id);
 connection('platform-lift','elevator',node('platform-lift-low','y11-platform',-40,0),node('platform-lift-high','y11-hall',-40,0),p.id);
-area('street-lift-ground','y11-ground','西梅田 · 地面电梯落台','public',30,20,7,7);
-connection('street-lift','elevator',node('street-lift-low','y11-hall',30,20),node('street-lift-high','y11-ground',30,20));
+const streetLiftZ=geographic?-18:20;
+area('street-lift-ground','y11-ground','西梅田 · 地面电梯落台','public',30,streetLiftZ,7,7);
+connection('street-lift','elevator',node('street-lift-low','y11-hall',30,streetLiftZ),node('street-lift-high','y11-ground',30,streetLiftZ));
 area('yoshimoto-raised','y11-hall','吉本大楼 · 短程升降平台落台','public',14,26,12,8);
 draft.layout.areas.at(-1)!.elevationOffset=1.2;
 const liftLow=node('hydraulic-low','y11-hall',10,24),liftHigh={...node('hydraulic-high','y11-hall',10,24),elevationOffset:1.2};

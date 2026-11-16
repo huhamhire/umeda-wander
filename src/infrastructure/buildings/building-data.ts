@@ -5,7 +5,8 @@ import type {Point2} from '../../domain/map/model.ts';
 export interface BuildingVolume {name:string;outline:Point2[];holes:Point2[][];base:number;top:number;source:string;certainty:'osm-height'|'estimate';note:string}
 export interface BuildingSign {text:string;center:Point2;y:number;width:number;height:number;angle:number}
 export interface BuildingEntrance {center:Point2;angle:number;width:number;depth:number;height:number;note:string}
-export interface GeographicBuilding {id:string;name:string;volumes:BuildingVolume[];signs?:BuildingSign[];entrance?:BuildingEntrance}
+export interface BuildingGallery {name:string;outline:Point2[];innerOutline:Point2[];y:number;note:string;source:string}
+export interface GeographicBuilding {id:string;name:string;volumes:BuildingVolume[];signs?:BuildingSign[];entrance?:BuildingEntrance;galleries?:BuildingGallery[]}
 const project=(p:number[]):Point2=>({x:(p[0]!-135.491)*111320*Math.cos(34.708*Math.PI/180),z:(34.708-p[1]!)*111320});
 export function footprint(id:string){
  const part=parts.find(p=>p.id===id);

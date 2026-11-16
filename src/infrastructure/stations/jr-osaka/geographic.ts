@@ -2,13 +2,14 @@ import {planGateBoundaries} from '../../../application/gate-boundaries.ts';
 import type {Point2,StationMap} from '../../../domain/map/model.ts';
 import {jrStation} from './index.ts';
 
+export function jrGroundPoint(p:Point2):Point2 {
+  const angle=-31.65*Math.PI/180,x=p.x< -70?-70+(p.x+70)*.4:p.x;
+  return {x:447+x*2.5*Math.cos(angle)-p.z*1.6*Math.sin(angle),z:610+x*2.5*Math.sin(angle)+p.z*1.6*Math.cos(angle)};
+}
 /** Ground-station review slice only. Umekita needs its own frame. */
 export function createGeographicJrGround():StationMap {
   const angle=-31.65*Math.PI/180,along=2.5,across=1.6;
-  // Remove most of the old westward display stretch, keeping road clearance.
-  const westX=(x:number)=>x< -70?-70+(x+70)*.4:x;
-  const point=(p:Point2)=>({x:447+westX(p.x)*along*Math.cos(angle)-p.z*across*Math.sin(angle),
-    z:610+westX(p.x)*along*Math.sin(angle)+p.z*across*Math.cos(angle)});
+  const point=jrGroundPoint;
   const direction=(a:number)=>angle+Math.atan2(Math.sin(a)*across,Math.cos(a)*along);
   const levels=jrStation.levels.filter(l=>!l.id.startsWith('underground'));
   const levelIds=new Set(levels.map(l=>l.id));

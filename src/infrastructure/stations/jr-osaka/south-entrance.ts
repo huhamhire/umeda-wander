@@ -8,7 +8,9 @@ export function applySouthEntrance(station:StationMap,e:BuildingEntrance):void {
  station.layout.areas.push({id:'south-entrance-ground',level:'concourse',name:'大阪站南侧入口',kind:'public',label:false,elevationOffset:1.3,evidence:proof,
   outline:[[-24,-14],[24,-14],[24,7],[-24,7]].map(([u,v])=>point(u!,v!))},
  {id:'south-entrance-deck',level:'south-deck',name:'南侧二层退避回廊',kind:'public',label:false,evidence:proof,
-  outline:[[-24,-14],[24,-14],[24,3],[10,3],[10,-7],[-10,-7],[-10,3],[-24,3]].map(([u,v])=>point(u!,v!))});
+  outline:[[-24,-24],[24,-24],[24,3],[10,3],...Array.from({length:17},(_,i)=>{const u=10-i*20/16;return [u,-7+5*(u/10)**2];}),[-10,3],[-24,3]].map(([u,v])=>point(u!,v!))},
+ {id:'south-building-upper-landing',level:'platform',name:'南门大楼 3F 公共落台',kind:'public',label:false,evidence:proof,
+  outline:[[-10,-31],[23,-31],[23,-17],[-10,-17]].map(([u,v])=>point(u!,v!))});
  const existing=station.layout.connections.find(c=>c.id==='south-building-61')!;
  const move=(n:typeof existing.from,u:number,v:number)=>{Object.assign(n,point(u,v));Object.assign(station.nodes.find(p=>p.id===n.id)??{},n);};
  move(existing.from,-15,2);move(existing.to,-15,-3);existing.lanes=2;
@@ -16,4 +18,9 @@ export function applySouthEntrance(station:StationMap,e:BuildingEntrance):void {
   from:{...existing.from,id:'south-entrance-east-low',...point(15,2)},to:{...existing.to,id:'south-entrance-east-high',...point(15,-3)}};
  station.layout.connections.push(east);station.nodes.push(east.from,east.to);
  const lift=station.layout.connections.find(c=>c.id==='south-lift-u')!;move(lift.from,-20,-10);move(lift.to,-20,-10);
+ const bank50=station.layout.connections.find(c=>c.id==='south-building-50')!;
+ move(bank50.from,4,-12);move(bank50.to,4,-20);
+ const liftT=station.layout.connections.find(c=>c.id==='south-lift-t')!;move(liftT.from,16,-20);move(liftT.to,16,-20);
+ // Compatibility-view apertures must not cut unrelated positions in metre coordinates.
+ station.layout.atria=station.layout.atria?.filter(a=>!['south-gate-curved-setback','south-building-50-open-bay','south-building-t-open-bay'].includes(a.id));
 }

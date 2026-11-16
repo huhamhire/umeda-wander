@@ -13,7 +13,7 @@
 
 ## 工作约定
 
-- 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，当前处于阶段二地理场景迁移，H5 入口已切换新坐标，详细建筑外壳与公共接口仍待完善。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
+- 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，下一阶段为地区地下公共板块装配。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
@@ -21,6 +21,7 @@
 - 修改 `src/` 中的源码，通过构建生成 `dist/`；不要直接维护或提交生成产物。
 - 按 DDD 边界拆分：`src/domain/` 定义地图模型与导航规则；`src/application/` 协调使用场景；`src/infrastructure/` 提供数据来源；`src/presentation/` 实现渲染和界面；`src/utils/` 只放无领域语义的通用工具。领域层不能依赖 Three.js、DOM 或基础设施。
 - 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`station-maps.ts` 统一登记，`district-map-parts.ts` 单独维护地区公共连接与商业空间，`compose-station-maps.ts` 纯组装，`umeda-map.ts` 只作页面数据入口。JR 特殊层名适配放在 `jr-osaka-station.ts`，不要恢复总图里重复罗列每站数组。轨道走线按站拆分，共用图构造与设备渲染；维护入口见 `docs/station-composition.md`。
+- 上述 `umeda-map.ts` 为旧坐标兼容入口；当前地理 H5 使用 `district/geographic-map.ts`。B1 公共面由 `shared-underground.ts` 单独持有，构内图局部前庭经 `public-areas/station-frontages/` 合并，不重复画本站 public 楼板。`StationPublicInterface` 与 `public-interface-bindings.ts` 校验实际门户标高和落脚面，不因绑定而新增跨站路线。设备坡度修正使用 `calibrate-equipment.ts`，固定站厅／夹层端，调整实际站台端，节点与已有设施锚点同步。
 - 测试统一放在根目录 `tests/`，与源码分开；避免为简单逻辑引入不必要的仓储、工厂或服务层。
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
 - 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录同名文件仅兼容转发，修改实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。

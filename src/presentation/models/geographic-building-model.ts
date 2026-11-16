@@ -26,7 +26,7 @@ export function buildGeographicBuilding(building:GeographicBuilding){
   for(let y=volume.base+4;y<volume.top;y+=4)bands.push(buildFloorGeometry(volume.outline,entrance&&y<entrance.height?[...volume.holes,entranceVoid(entrance)]:volume.holes,.22,y));
   bands.push(buildFloorGeometry(volume.outline,volume.holes,.5,volume.top));
   const geometry=mergeGeometries(bands)!;bands.forEach(g=>g.dispose());
-  if(volume.base&&['hankyu-dept','hankyu-grand','daimaru'].includes(building.id)){
+  if((volume.base&&['hankyu-dept','hankyu-grand','daimaru'].includes(building.id))||building.id==='yodobashi'){
     const fins:T.BufferGeometry[]=[];
     for(let i=1;i<volume.outline.length;i++){
       const a=volume.outline[i-1]!,b=volume.outline[i]!,dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz),count=Math.floor(length/4);
@@ -38,6 +38,21 @@ export function buildGeographicBuilding(building:GeographicBuilding){
     if(fins.length){section.add(new T.Mesh(mergeGeometries(fins)!,trim));fins.forEach(g=>g.dispose());}
   }
   const rim=new T.Mesh(geometry,trim);rim.userData.labelOccluder=true;section.add(rim);
+ }
+ for(const gallery of building.galleries??[]){
+  const section=new T.Group();section.name='building-gallery';group.add(section);
+  const deck=new T.Mesh(buildFloorGeometry(gallery.outline,[gallery.innerOutline],.35,gallery.y),trim);
+  deck.name=gallery.name;deck.userData.labelOccluder=true;section.add(deck);
+  const rails:T.BufferGeometry[]=[];
+  for(let i=0;i<gallery.outline.length;i++){
+    const a=gallery.outline[i]!,b=gallery.outline[(i+1)%gallery.outline.length]!,length=Math.hypot(b.x-a.x,b.z-a.z);
+    if(length<.01)continue;
+    const top=new T.BoxGeometry(length,.045,.045);top.rotateY(-Math.atan2(b.z-a.z,b.x-a.x));
+    top.translate((a.x+b.x)/2,gallery.y+1.45,(a.z+b.z)/2);rails.push(top);
+    const count=Math.ceil(length/.9);
+    for(let j=0;j<count;j++){const g=new T.BoxGeometry(.035,1.1,.035);g.translate(a.x+(b.x-a.x)*j/count,gallery.y+.9,a.z+(b.z-a.z)*j/count);rails.push(g);}
+  }
+  if(rails.length){section.add(new T.Mesh(mergeGeometries(rails)!,new T.MeshStandardMaterial({color:0xc5d2ca,roughness:1})));rails.forEach(g=>g.dispose());}
  }
  for(const sign of building.signs??[]){
   const backing=new T.Mesh(new T.PlaneGeometry(sign.width,sign.height),new T.MeshStandardMaterial({color:0x405754,roughness:.9,side:T.DoubleSide}));
