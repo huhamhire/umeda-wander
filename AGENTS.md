@@ -39,7 +39,7 @@
 - 地区扩展以反映步行连接为主，坡道和小半层可并入同一探索层；车站南北外侧的连接优先选较低相邻层。商业外廊按连续的 2F 步行层展示，不机械按各建筑实际标高拆层；JR 内部既有跨层设施仍保留。
 - 商业轮廓与通路位于 `commercial-footprints.ts`、`commercial-district.ts`，领域模型为 `CommercialBuilding` / `PublicPassage`，呈现位于对应商业体块/公共通路模型。只画轮廓和外部入口，门户必须落在轮廓边缘；不添加商场内部路线或寻路边。资料来源用 `district` 并附直接链接，不伪造 JR PDF 页码；OSM 原始投影轮廓与展示拟合分开记录。B1 通路不得穿过车站付费区。
 - 地下公共通路不设护栏和立柱；站外高架连桥保留护栏。围墙和桥边护栏按同高公共通路全宽避让，包含 T 形交汇，不仅检查命名入口。
-- 闸外公共通路与公共楼板共用 `publicAreaColor` 米色，地下也不使用站台蓝色；运营者付费区主题独立保留。中央口南端 67/68/69 朝南下行到 Crost B1，大丸侧小半层从左右台阶接回中央通道，不能改成中间整幅宽梯，也不能与付费 M2F 混淆。
+- 闸外公共通路与公共楼板共用米色语义，地上用 `publicAreaColor`，地下用更深的 `undergroundPublicColor` 以区分页面背景，不使用站台蓝色；运营者付费区主题独立保留。中央口南端 67/68/69 朝南下行到 Crost B1，大丸侧小半层从左右台阶接回中央通道，不能改成中间整幅宽梯，也不能与付费 M2F 混淆。
 - 具体连接优先采用对应构内图；缺少明确依据的候选只记录在 `docs/commercial-connections.md`，不渲染、不补最短捷径。北侧梅北公共通路按 JR 第 6 页绕 LUCUA 1100 北侧。
 - `references/Umeda-Area-Map.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/area-map-revision.md`。
 - 阪急 Grand Building 使用独立轮廓，不能合并进百货实体。已核对的 1F 南北/东西公共通廊是商业内部不展开规则的明确例外；`CommercialConcourse` 只表达公共空间，不展开店铺。南北挑高裁孔与东西通廊上方 2F 通道分别处理，造型由 `commercial-concourse-model.ts` 生成，商业裁孔同步避让外墙与压顶。
@@ -81,6 +81,8 @@
 - Grand Front 南北馆及 Tower A/B/C 使用独立 OSM 轮廓，和 Yodobashi 西侧道路相邻；JR 北侧中庭连廊在共用分支处分向南馆与 Yodobashi，南北馆之间保留已确认的 2F 公共贯通关系。
 - `CommercialBuilding.volumes` 表示压缩高度的塔楼外形，`podiumHeight` 表示按完整商业轮廓构建的裙楼高度；塔楼落在裙楼屋面，二层公共连接从裙楼下部留空，均不是实测楼高；`commercial-massing-model.ts` 负责造型，总览显示、选层隐藏上部体量，完整取景包络保持稳定。
 - 阪急百货与大丸的外观同样只在总览显示，`department-massing-details.ts` 绘制层带、窗格及大丸南侧“大阪駅”立面标识；大丸上方长条酒店体量的两处屋顶内庭用 `volumes.courtyards` 真正裁空。上部轮廓与压缩高度参考用户照片示意，不新增可通行楼层。
+- 阪神百货和 Twin Towers South 是同一综合体；`hanshin-commercial-building.ts` 独立维护 L 形裙楼及东侧办公塔楼，原始 OSM 轮廓保留在 `commercial-footprints.ts`。`hanshin-commercial-links.ts` 维护 B1/1F 公共接入，二层连桥须落到百货墙面；外观细节在 `hanshin-massing-details.ts`，同样服从“显示建筑轮廓”开关与选层隐藏规则。来源与示意尺寸见 `docs/hanshin-commercial-building.md`。
+- JP Tower／KITTE 是旧大阪中央邮便局地块的现有综合体，建筑和接入分别放在 `jp-tower-building.ts`、`jp-tower-links.ts`；下沉广场连接 B1/1F/2F，地下经 Garden Avenue 接西梅田闸外。JR 南侧二层弧形退避在 `jr-south-forecourt.ts`，真实裁空须同时作用于商业楼板。新增目录 `references/Umeda Walkway Maps/` 用于详细连接核对，Inogate 西端新连桥不能误接成 LUCUA 连桥或地下站台；范围见 `docs/jp-tower-and-walkway-review.md`。
 - 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部 UMEDA 品牌与底部版权。
 - 梅北北端延伸向 Grand Front 西侧道路地下收转，不能穿入南北馆轮廓。修改站台长度时同步检查延伸线和商业体相对位置。
 - 南侧阪神／西梅田／东梅田／北新地的相对布局使用 `projectSouthReference` 共用步行图校准，以阪神为展示锚点；保留各站原始地理锚点，不恢复彼此独立的南移补丁。南侧建筑占位只画 B1 区域轮廓，`FloorArea.labelStyle: floor` 将文字平贴楼板，不生成悬浮标签。

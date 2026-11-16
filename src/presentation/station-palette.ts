@@ -1,6 +1,8 @@
 import type {StationId} from '../domain/map/model.ts';
 
 export const publicAreaColor=0xe9ddc3;
+/** Underground public spaces retain warm beige with more separation from paper. */
+export const undergroundPublicColor=0xd3c4a4;
 
 /** Operator identity accents; public, commercial and service areas keep shared semantics. */
 export const stationPalettes={

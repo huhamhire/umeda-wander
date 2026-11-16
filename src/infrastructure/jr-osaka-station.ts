@@ -1,6 +1,7 @@
 import type {StationMap} from '../domain/map/model.ts';
 import * as jr from './jr-osaka-map.ts';
 import {northAtrium} from './jr-osaka-upper-links.ts';
+import {southForecourtVoid,southForecourtGround} from './jr-south-forecourt.ts';
 
 // Keep source reference-floor names intact; adapt only the assembled JR station.
 const replacedPlaceholders=new Set(['north-lucua','north-lucua1100','south-daimaru']);
@@ -14,11 +15,16 @@ const connections=jr.connections.map(c=>southDeckBanks.has(c.id)?{...c,
   ...(c.id==='south-building-61'?{lanes:2 as const}:{}),
   from:c.from.level==='mezzanine'?{...c.from,level:'south-deck' as const}:c.from,
   to:c.to.level==='mezzanine'?{...c.to,level:'south-deck' as const}:c.to}:c);
+const westPlazaBank=connections.find(c=>c.id==='south-building-61')!;
+westPlazaBank.from={...westPlazaBank.from,x:-15,z:79};
+westPlazaBank.to={...westPlazaBank.to,x:-15,z:70};
+westPlazaBank.evidence={...southForecourtVoid.evidence,detail:southForecourtVoid.evidence.detail+'; western paired escalator landing follows the open central forecourt, reference bank 61'};
+areas.push(southForecourtGround);
 
 export const jrStation:StationMap={
   id:'jr-osaka',name:'JR 大阪站',
   levels:[...jr.levels.map((l,i)=>({...l,station:'jr-osaka' as const,stackIndex:i-2})),
     {id:'south-deck',label:'2F',name:'大丸前侧公共通道与南侧步道桥',y:4,stackIndex:1,station:'jr-osaka',description:'南侧站外二层步行层，按较低的相邻标高对齐；不改变 JR 内部夹层。'}],
   facilities:jr.facilities,nodes:jr.nodes,edges:jr.edges,
-  layout:{areas,connections,platforms:jr.platforms,atria:[northAtrium]},
+  layout:{areas,connections,platforms:jr.platforms,atria:[northAtrium,southForecourtVoid]},
 };

@@ -4,12 +4,14 @@ import {commercialBuildings,commercialPassages,commercialAreas,commercialConnect
 import {hanshinDistrictPassages} from './hanshin-district-links.ts';
 import {higashiDistrictPassages} from './higashi-district-links.ts';
 import {nishiDistrictPassages} from './nishi-district-links.ts';
-import {westDistrictPassages,southDistrictAreas} from './west-district-links.ts';
+import {westDistrictPassages,southDistrictAreas,diamorRoundPlaza} from './west-district-links.ts';
+import {hanshinCommercialPassages} from './hanshin-commercial-links.ts';
+import {jpTowerAreas,jpTowerPassages,jpTowerConnections} from './jp-tower-links.ts';
 
 /** Commercial/public spaces outside station interiors. */
 export const districtMapParts:StationLayout={
-  areas:[...districtAreas,...commercialAreas,...southDistrictAreas],platforms:[],
-  connections:[...districtConnections,...commercialConnections],guides:districtGuides,
+  areas:[...districtAreas,...commercialAreas,...southDistrictAreas,diamorRoundPlaza,...jpTowerAreas],platforms:[],
+  connections:[...districtConnections,...commercialConnections,...jpTowerConnections],guides:districtGuides,
   buildings:commercialBuildings,concourses:commercialConcourses,atria:commercialAtria,
-  passages:[...commercialPassages,...hanshinDistrictPassages,...higashiDistrictPassages,...nishiDistrictPassages,...westDistrictPassages],
+  passages:[...commercialPassages,...hanshinDistrictPassages,...higashiDistrictPassages,...nishiDistrictPassages,...westDistrictPassages,...hanshinCommercialPassages,...jpTowerPassages],
 };

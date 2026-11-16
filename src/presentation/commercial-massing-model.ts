@@ -5,12 +5,14 @@ import {passageOutline} from '../domain/map/geometry.ts';
 import {buildFloorGeometry} from './floor-geometry.ts';
 import {addYodobashiMassingDetails} from './yodobashi-massing-details.ts';
 import {addDepartmentMassingDetails} from './department-massing-details.ts';
+import {addHanshinMassingDetails} from './hanshin-massing-details.ts';
+import {addJpTowerDetails} from './jp-tower-details.ts';
 
 /** Compressed skyline silhouettes; hidden in floor exploration to expose walking connections. */
 export function buildCommercialMassing(building:CommercialBuilding,context?:{areas:FloorArea[];passages:PublicPassage[]}):T.Group {
   const group=new T.Group();group.name=`massing-${building.id}`;
   const department=building.id==='hankyu-dept'||building.id==='hankyu-grand'||building.id==='daimaru';
-  const glass=new T.MeshStandardMaterial({color:department?0xc5ceca:0xc7d8d4,roughness:0.7,metalness:0.12});
+  const glass=new T.MeshStandardMaterial({color:building.id==='jp-tower'?0xb7cbd3:department?0xc5ceca:0xc7d8d4,roughness:0.7,metalness:0.12});
   const trim=new T.MeshStandardMaterial({color:0xe4e9df,roughness:0.85});
   const podiumHeight=building.podiumHeight??0,base=podiumHeight?podiumHeight+0.35:2;
   const podiumOutline=building.perimeterGallery?.innerOutline??building.outline;
@@ -27,7 +29,7 @@ export function buildCommercialMassing(building:CommercialBuilding,context?:{are
           b.buildingId===building.id?{x:b.x+dx*3,z:b.z+dz*3}:b,p.width+1));
       }
     }
-    const wall=new T.MeshStandardMaterial({color:department?building.id==='daimaru'?0xd4d1c4:0xdccdc7:0xb6c9c1,roughness:0.87});
+    const wall=new T.MeshStandardMaterial({color:building.id==='jp-tower'?0xd8d8ce:department?building.id==='daimaru'?0xd4d1c4:0xdccdc7:0xb6c9c1,roughness:0.87});
     for(const part of building.podiumParts??[{name:'podium-envelope',outline:podiumOutline,height:podiumHeight}]){
       const section=new T.Group();section.name=part.name;podium.add(section);
       for(const [geometry,material,name]of [
@@ -54,5 +56,7 @@ export function buildCommercialMassing(building:CommercialBuilding,context?:{are
   }
   if(building.id==='yodobashi')addYodobashiMassingDetails(group,building);
   if(department)addDepartmentMassingDetails(group,building);
+  if(building.id==='hanshin-dept')addHanshinMassingDetails(group,building);
+  if(building.id==='jp-tower')addJpTowerDetails(group,building);
   return group;
 }

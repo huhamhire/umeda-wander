@@ -78,7 +78,7 @@ test('Hanshin public slope and south lift connect underground halls, ground and 
   const lift=hanshinStation.layout.connections.filter(c=>c.id.includes('south-lift'));
   assert.deepEqual(lift.map(c=>[c.from.level,c.to.level]),[['hanshin-hall','hanshin-ground'],['hanshin-ground','hanshin-deck']]);
   const deck=layout.passages.find(p=>p.id==='hanshin-south-connecting-deck')!;
-  assert.equal(deck.points[0]!.level,'south-deck');assert.equal(deck.points.at(-1)!.level,'hanshin-deck');
+  assert.equal(deck.points[0]!.level,'hanshin-deck');assert.equal(deck.points.at(-1)!.level,'hanshin-deck');
   assert.equal(explorationElevation(levels.find(l=>l.id==='hanshin-deck')!),8);
 });
 

@@ -13,6 +13,7 @@ import {explorationElevation} from '../src/application/exploration-level.ts';
 import {hankyuStation} from '../src/infrastructure/hankyu-umeda-map.ts';
 import {districtPlacements} from '../src/infrastructure/district-placement.ts';
 import {sampleRailSegment} from '../src/domain/map/rail-geometry.ts';
+import {undergroundPublicColor} from '../src/presentation/station-palette.ts';
 
 const height=(id:typeof levels[number]['id'])=>levels.find(l=>l.id===id)!.y;
 
@@ -39,7 +40,7 @@ test('Hankyu department store approaches station width and receives both bridges
     }
 });
 test('commercial envelopes have their own footprint evidence and continuous 2F walking band',()=>{
-  assert.deepEqual(layout.buildings.map(b=>b.id),['hankyu-dept','hankyu-grand','daimaru','lucua','lucua-1100','yodobashi','grand-front-south','grand-front-north']);
+  assert.deepEqual(layout.buildings.map(b=>b.id),['hankyu-dept','hankyu-grand','daimaru','lucua','lucua-1100','yodobashi','grand-front-south','grand-front-north','hanshin-dept','jp-tower']);
   for(const b of layout.buildings){
     assert(b.outline.length>=4);assert(b.outline.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.z)));
     assert.equal(b.evidence.source,'district');assert.deepEqual(b.evidence.pages,[]);
@@ -100,7 +101,7 @@ test('passage geometry follows explosion and B1/2F cuts while district framing i
     const model=new PublicPassageModel(passage);
     if(passage.kind==='underground'){
       const floor=model.group.getObjectByName('passage-floor') as T.Mesh<T.BoxGeometry,T.MeshStandardMaterial>;
-      assert.equal(floor.material.color.getHex(),0xe9ddc3,'public passages share public floor semantics rather than platform blue');
+      assert.equal(floor.material.color.getHex(),undergroundPublicColor,'underground public passages share the stronger warm-beige floor palette');
       assert(!model.group.getObjectByName('passage-railing'));
       assert(!model.group.getObjectByName('passage-post'));
     }else assert(model.group.getObjectByName('passage-railing'));

@@ -4,9 +4,13 @@ import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMulti
 import polygonClipping from 'polygon-clipping';
 import {districtFrame,districtPlacements,districtAnchors} from './district-placement.ts';
 import {insetPolygon} from '../utils/polygon-inset.ts';
+import {hanshinCommercialBuilding} from './hanshin-commercial-building.ts';
+import {jpTowerBuilding} from './jp-tower-building.ts';
 
 const cityMap='https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf';
 const access={
+  'hanshin-dept':'https://www.hanshin-dept.jp/hshonten/access/',
+  'jp-tower':'https://www.jp-re.japanpost.jp/sp/osaka/',
   'hankyu-dept':'https://www.hankyu-dept.co.jp/honten/map/index.html',
   'hankyu-grand':'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf',
   daimaru:'https://www.daimaru.co.jp/umedamise/access.html',
@@ -51,6 +55,8 @@ export const commercialBuildings:CommercialBuilding[]=descriptions.map(([id,name
     urls:[`https://www.openstreetmap.org/way/${raw.way}`,access[id],cityMap],
     detail:`OSM way ${raw.way} v${raw.version}, simplified outline and explicit display fitting; building envelope includes the host complex, not a surveyed retail lease boundary; no interior plan`}};
 });
+commercialBuildings.push(hanshinCommercialBuilding);
+commercialBuildings.push(jpTowerBuilding);
 const building=(id:CommercialBuildingId)=>commercialBuildings.find(b=>b.id===id)!;
 // Upper silhouettes follow the supplied oblique photos; heights and setbacks are
 // compressed display choices. They do not define additional walkable floors.
@@ -177,8 +183,8 @@ link('daimaru-deck-north-arm','JR 南口外 · 步道桥北连接臂','deck',[no
 link('daimaru-deck-south-arm','大丸前侧公共通道 · 南连接臂','deck',[southWest,southJunction],5);
 link('hankyu-dept-deck-north-arm','步道桥北支线 → 阪急百货 2F','deck',[northJunction,northEast],5);
 link('hankyu-dept-deck-south-arm','步道桥南支线 → 阪急百货 2F','deck',[southJunction,southEast],5);
-link('hanshin-dept-deck-reserve','步道桥 → 阪神百货方向','deck',[southJunction,
-  {...publicPoint('south-deck',southJunction.x-roadDirection.x*30,southJunction.z-roadDirection.z*30),boundaryName:'往阪神百货 · 2F 连接'}],5);
+link('hanshin-dept-deck-reserve','步道桥 → 阪神百货 2F','deck',[southJunction,
+  {...portal('hanshin-dept','2F',{x:43,z:145}),boundaryName:'往阪神百货 · 2F 连接'}],5);
 
 const deckProof={source:'jr' as const,pages:[5],urls:[cityMap,'https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf'],
   detail:'Pedestrian bridge in JR 1F south/east plan; bus-loop perimeter, north/south branches and Hanshin-facing outlet cross-checked with the user satellite reference. Coordinates and grouping at 2F are schematic, not surveyed deck elevations.'};

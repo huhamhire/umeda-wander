@@ -1,5 +1,5 @@
 import type {FloorArea} from '../domain/map/model.ts';
-import {publicAreaColor} from './station-palette.ts';
+import {publicAreaColor,undergroundPublicColor} from './station-palette.ts';
 
 const southernBlocks:Record<string,number>={
   'district-osaka-ekimae-1-b1':0xd3dfc5,
@@ -11,6 +11,6 @@ const southernBlocks:Record<string,number>={
   'district-e-ma-b1':0xe7dfbc,
 };
 /** Region distinction is a presentation choice, independent of access semantics. */
-export function areaColor(area:FloorArea):number {
-  return southernBlocks[area.id]??({public:publicAreaColor,paid:0xbbd1bd,commercial:0xe4d4c3,service:0xd7dfc4}[area.kind]);
+export function areaColor(area:FloorArea,underground=false):number {
+  return southernBlocks[area.id]??({public:underground?undergroundPublicColor:publicAreaColor,paid:0xbbd1bd,commercial:0xe4d4c3,service:0xd7dfc4}[area.kind]);
 }

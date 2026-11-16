@@ -469,4 +469,11 @@ export const facilityCodes:Record<string,string>={
   'connection-kitashinchi-exit-11-41-stairs-to':'KS-031',
   'platform-nishi-umeda-island':'Y11-041',
   'platform-kitashinchi-island':'KS-032',
+  'connection-jp-garden-b1-ground-stairs-from':'JR-196',
+  'connection-jp-garden-b1-ground-stairs-to':'JR-197',
+  'connection-jp-garden-ground-deck-stairs-from':'JR-198',
+  'connection-jp-garden-ground-deck-stairs-to':'JR-199',
+  'connection-jp-garden-lift-0-from':'JR-200',
+  'connection-jp-garden-lift-0-to':'JR-201',
+  'connection-jp-garden-lift-1-to':'JR-202',
 };

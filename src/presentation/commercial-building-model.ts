@@ -6,6 +6,8 @@ import {touchesPublicConnection,type PublicContactContext} from '../application/
 import {pointInPolygon} from '../domain/map/geometry.ts';
 
 const palettes:Record<CommercialBuildingId,{floor:number;wall:number;trim:number}>={
+  'hanshin-dept':{floor:0xdce2d7,wall:0xc2cebf,trim:0x93a99a},
+  'jp-tower':{floor:0xe0e3e2,wall:0xc7d1d4,trim:0x8c9fa5},
   'hankyu-dept':{floor:0xe7d6d4,wall:0xd6b9b7,trim:0xa27b78},
   'hankyu-grand':{floor:0xe2dad1,wall:0xcdbfb2,trim:0xa18d77},
   daimaru:{floor:0xe4dcc5,wall:0xd1c7a9,trim:0x9c9974},
@@ -45,7 +47,8 @@ export function buildCommercialFloor(building:CommercialBuilding,floor:Commercia
     mesh.userData.labelOccluder=true;
     mesh.name=name;mesh.castShadow=true;mesh.receiveShadow=true;group.add(mesh);
   };
-  add(buildFloorGeometry(building.outline,cuts,0.4,0.05),palette.floor,'building-footprint');
+  const floorColor=floor.name.startsWith('B')?new T.Color(palette.floor).lerp(new T.Color(0xb6ad9b),0.22).getHex():palette.floor;
+  add(buildFloorGeometry(building.outline,cuts,0.4,0.05),floorColor,'building-footprint');
   if(gallery){
     add(buildFloorGeometry(building.outline,[gallery.innerOutline,...cuts],0.06,0.46),0xe7e5d8,'perimeter-gallery-floor');
     const guards:T.BufferGeometry[]=[];

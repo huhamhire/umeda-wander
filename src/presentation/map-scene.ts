@@ -166,7 +166,7 @@ export class MapScene {
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
       if (!geometry.getAttribute('position')) continue;
       const palette=stationPalettes[this.levels.find(l=>l.id===area.level)?.station??'jr-osaka'];
-      const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColor(area)));
+      const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColor(area,this.levels.find(l=>l.id===area.level)!.y<0)));
       mesh.userData.labelOccluder=true;
       mesh.castShadow = true; mesh.receiveShadow = true;
       this.groups.get(area.level)!.add(mesh);

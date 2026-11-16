@@ -1,5 +1,6 @@
 import type {FloorArea,PassageEndpoint,PublicPassage} from '../domain/map/model.ts';
-import {closestPolygonPoint} from '../domain/map/geometry.ts';
+import {closestPolygonPoint,passageOutline} from '../domain/map/geometry.ts';
+import polygonClipping from 'polygon-clipping';
 import {projectSouthReference} from './district-placement.ts';
 import {higashiStation} from './higashi-umeda-map.ts';
 import {commercialBuildings} from './commercial-district.ts';
@@ -28,6 +29,18 @@ export const westDistrictPassages:PublicPassage[]=[
     points:[{...metro,level:'metro-hall',station:metroStation.id},{x:42,z:138,level:'hanshin-hall'},
       {...hanshin,level:'hanshin-hall',station:hanshinStation.id}],evidence},
 ];
+
+const roundOutline=Array.from({length:40},(_,i)=>({x:junction.x+3.6*Math.cos(i*Math.PI/20),z:junction.z+3.6*Math.sin(i*Math.PI/20)}));
+export const diamorRoundPlaza:FloorArea={id:'diamor-round-plaza',name:'DIAMOR · 圆形广场',level:'kitashinchi-hall',kind:'public',outline:roundOutline,
+  evidence:{source:'district',pages:[1],detail:'references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf p1, left underground panel point 3: circular plaza and curved branches beside Dai-ichi Life/Hilton Plaza East; radius and fit schematic'}};
+const y11North=center(nishiStation.layout.areas.find(a=>a.id==='nishi-umeda-north-public')!.outline);
+const c1={x:junction.x,z:145},c2={x:y11North.x,z:145};
+const curvedBranch=Array.from({length:17},(_,i)=>{
+  const t=i/16,u=1-t;return {x:u*u*u*junction.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*y11North.x,
+    z:u*u*u*junction.z+3*u*u*t*c1.z+3*u*t*t*c2.z+t*t*t*y11North.z,level:'kitashinchi-hall' as const};
+});
+westDistrictPassages.push({id:'diamor-daiichi-hilton-curve',name:'DIAMOR—第一生命／Hilton East · 地下互通',kind:'underground',width:4.5,
+  points:[...curvedBranch.slice(0,-1),{...y11North,level:'y11-hall',station:nishiStation.id}],evidence:diamorRoundPlaza.evidence});
 
 // Shared public junctions are geometry, not inter-operator navigation edges.
 const cross=ref(550,625),diagonalCross=ref(760,625),eastCross=ref(1030,625),eastTurn=ref(964,363);
@@ -60,13 +73,22 @@ const blocks:[string,string,[number,number][]][]=[
   ['osaka-ekimae-3','大阪站前第 3 大楼',[[790,665],[1007,653],[1080,830],[871,845]]],
   ['osaka-ekimae-4','大阪站前第 4 大楼',[[680,425],[920,371],[972,543],[776,552],[731,464]]],
   ['umeda-dt','梅田 DT Tower',[[557,424],[627,466],[686,548],[557,560]]],
-  ['osaka-maru','大阪 MARU 大厦',[[370,403],[476,355],[529,397],[524,562],[368,561]]],
+  ['osaka-maru','大阪第一生命大楼\nMARU／第一酒店',[[315,360],[440,290],[470,312],[515,350],[529,397],[524,562],[368,561],[295,540]]],
   ['e-ma','E-ma',[[740,280],[905,238],[940,339],[780,379]]],
 ];
 export const southDistrictAreas:FloorArea[]=blocks.map(([id,name,outline])=>({
   id:`district-${id}-b1`,name:`${name} · B1`,kind:'commercial',level:'kitashinchi-hall',height:0.45,label:true,labelStyle:'floor',
   outline:outline.map(([x,z])=>ref(x,z)),evidence:{...evidence,detail:evidence.detail+'; simplified basement building-region placeholder traced from the walking map; display-fitted outline, no surveyed footprint or interior routes'},
 }));
+// The curved public interchange is outside the occupied building region. Keep
+// the main Life/MARU block, trimming the old coarse northern wedge at the street.
+const life=southDistrictAreas.find(a=>a.id==='district-osaka-maru-b1')!;
+const ring=(points:{x:number;z:number}[])=>[points.map(p=>[p.x,p.z] as [number,number])];
+const cut=polygonClipping.difference(ring(life.outline),...curvedBranch.slice(1).map((p,i)=>ring(passageOutline(curvedBranch[i]!,p,5.8))),ring(roundOutline));
+const polygonArea=(p:[number,number][])=>Math.abs(p.reduce((sum,a,i)=>{const b=p[(i+1)%p.length]!;return sum+a[0]*b[1]-b[0]*a[1];},0));
+const mainBlock=cut.sort((a,b)=>polygonArea(b[0]!)-polygonArea(a[0]!))[0];
+if(mainBlock)life.outline=mainBlock[0]!.slice(0,-1).map(([x,z])=>({x,z}));
+life.evidence={...diamorRoundPlaza.evidence,detail:diamorRoundPlaza.evidence.detail+'; Life/MARU occupied-region boundary follows the curved public interchange, fitted from the combined district maps, not surveyed'};
 const entries=[[390,625,390,644],[650,625,650,650],[920,625,920,653],
   [850,625,850,552],[550,625,600,560],[550,380,529,450],[964,363,860,380]];
 for(const [index,a]of southDistrictAreas.entries()){

@@ -54,7 +54,7 @@ export interface StationMap {
   id:StationId;name:string;levels:Level[];facilities:Facility[];
   nodes:RouteNode[];edges:RouteEdge[];layout:StationLayout;
 }
-export type CommercialBuildingId='hankyu-dept'|'hankyu-grand'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
+export type CommercialBuildingId='hankyu-dept'|'hankyu-grand'|'hanshin-dept'|'jp-tower'|'daimaru'|'lucua'|'lucua-1100'|'yodobashi'|'grand-front-south'|'grand-front-north';
 export interface CommercialConcourse {
   id:string;name:string;level:LevelId;outline:Point2[];axis:[Point2,Point2];width:number;height:number;evidence:Evidence;
 }
