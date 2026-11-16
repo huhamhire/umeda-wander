@@ -21,6 +21,7 @@
     <aside class="sidebar panel" aria-label="车站导览">
       <div class="sidebar-tabs" role="tablist" aria-label="导览页面"><button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">楼层</button><button id="tab-facilities" role="tab" aria-selected="false" aria-controls="panel-facilities" tabindex="-1">设施</button></div>
       <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
+      <label class="roof-option"><span>显示地面层</span><input id="roads" type="checkbox" checked role="switch" /></label>
       <div class="section-heading floor-heading"><span>探索楼层</span><label class="roof-option"><span>显示建筑轮廓</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
       <div id="floor-list"></div>
       <div class="layer-options"><label for="explode">分层展开 <output id="explode-value">0%</output></label><input id="explode" type="range" min="0" max="100" value="0" aria-label="分层展开程度" /></div>

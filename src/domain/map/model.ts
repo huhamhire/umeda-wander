@@ -49,6 +49,7 @@ export interface VerticalConnection {
   placement?:'exterior';
 }
 export interface StationLayout {
+  geographic?:boolean;
   areas: FloorArea[]; platforms: Platform[]; connections: VerticalConnection[];
   railApproaches?:RailApproach[];
   guides?:PassageGuide[];

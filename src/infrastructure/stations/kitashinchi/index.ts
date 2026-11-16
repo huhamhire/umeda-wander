@@ -19,8 +19,8 @@ area('south-public','kitashinchi-hall','北新地 · 地面出入口通路','pub
 area('diamor-public','kitashinchi-hall','DIAMOR 大阪 · 北新地接入口','public',0,-18,12,24);
 area('office','kitashinchi-hall','北新地 · 站务室','service',0,11,14,4);
 for(const [key,name,x]of [['west','西',-45],['east','东',45]] as const){
-  facility(`${key}-gate`,'kitashinchi-hall',`北新地 · ${name}改札`,'gate',x,0,'参考图 B1 改札；闸内外保持独立。',Math.PI/2);
-  facility(`${key}-machines`,'kitashinchi-hall',`北新地 · ${name}口售票机`,'ticket-machine',key==='west'?-58:58,-10,'指定券售票机位置按参考图示意。',key==='west'?Math.PI/2:-Math.PI/2);
+  facility(`${key}-gate`,'kitashinchi-hall',`北新地 · ${name}改札`,'gate',geographic?x*0.78:x,geographic?-6:0,'参考图 B1 改札；闸内外保持独立。',geographic?0:Math.PI/2);
+  facility(`${key}-machines`,'kitashinchi-hall',`北新地 · ${name}口售票机`,'ticket-machine',geographic?x*0.78:(key==='west'?-58:58),-10,'指定券售票机位置按参考图示意。',key==='west'?Math.PI/2:-Math.PI/2);
 }
 facility('ticket','kitashinchi-hall','北新地 · 绿色窗口','ticket',-55,12,'参考图“みどりの窓口”及相关受取柜台，具体柜台数量示意。');
 facility('office','kitashinchi-hall','北新地 · 站务咨询','information',0,11,'参考图站务室位置。');
@@ -39,7 +39,12 @@ for(const [number,x,z,highX,highZ]of [
   facility(`exit-${number}`,'kitashinchi-hall',`北新地 · ${number} 出入口`,'entrance',x,z,'参考图的出口去向，坡道及局部路面高差归并到相应公共层。');
   connection(`exit-${number}-stairs`,'stairs',node(`exit-${number}-low`,'kitashinchi-hall',x,z),node(`exit-${number}-high`,'kitashinchi-ground',highX,highZ));
 }
-const entry=node('route-entry','kitashinchi-hall',-60,0),outside=node('route-west-out','kitashinchi-hall',-48,0),inside=node('route-west-in','kitashinchi-hall',-42,0);
+const entry=node('route-entry','kitashinchi-hall',geographic?-35.1:-60,geographic?-13:0),outside=node('route-west-out','kitashinchi-hall',geographic?-35.1:-48,geographic?-9:0),inside=node('route-west-in','kitashinchi-hall',geographic?-35.1:-42,geographic?-3:0);
+if(geographic){
+  const eastOut=node('route-east-out','kitashinchi-hall',35.1,-9),eastIn=node('route-east-in','kitashinchi-hall',35.1,-3);
+  edge(eastOut,eastIn,'gate');
+  edge(eastIn,draft.nodes.find(n=>n.id==='kitashinchi-east-escalators-high')!);
+}
 const high=draft.nodes.find(n=>n.id==='kitashinchi-west-escalators-high')!,low=draft.nodes.find(n=>n.id==='kitashinchi-west-escalators-low')!;
 const dest=node('destination','kitashinchi-platform',-4,0);
 edge(entry,outside);edge(outside,inside,'gate');edge(inside,high);edge(high,low,'escalator');edge(low,dest);

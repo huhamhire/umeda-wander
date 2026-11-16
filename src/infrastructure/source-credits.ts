@@ -26,7 +26,7 @@ export const sourceCredits:SourceCredits={
   // No public remote, project LICENSE or verified feedback channel in this repository.
   project:{},
   data:[
-    {name:'OpenStreetMap 数据',use:'建筑及塔楼平面轮廓、车站地理锚点、站台轴向和站外轨道延伸方向；经投影、简化及示意比例调整。',
+    {name:'OpenStreetMap 数据',use:'地面道路铺装轮廓及估计宽度、建筑及塔楼平面轮廓、车站地理锚点、站台轴向和站外轨道延伸方向；经投影、简化及示意比例调整。',
       links:[link('OpenStreetMap 版权与许可','https://www.openstreetmap.org/copyright')],
       licence:link('Open Database License 1.0（ODbL）','https://opendatacommons.org/licenses/odbl/1-0/'),attribution:'© OpenStreetMap contributors',download:'osm'},
     {name:'JR 大阪站与北新地站布局整理',use:'楼板、站台、闸机、扶梯、楼梯、直梯及南北门大楼连接几何；原 PDF 和图标未嵌入页面。',links:[jr,kitashinchi],attribution:'资料发布者：西日本旅客鉄道株式会社',status:pending},

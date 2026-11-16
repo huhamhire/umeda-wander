@@ -1,17 +1,17 @@
-import {facilities,levels,nodes,edges,layout,stations} from './infrastructure/umeda-map.ts';
+import {facilities,levels,nodes,edges,layout,stations} from './infrastructure/district/geographic-map.ts';
 import type {Facility,FacilityKind,LevelId,StationId} from './domain/map/model.ts';
 import {MapSession} from './application/map-session.ts';
 import {MapScene} from './presentation/map-scene.ts';
 import {element} from './utils/dom.ts';
 import {bindSidebarTabs} from './presentation/sidebar-tabs.ts';
 import {stationPalettes} from './presentation/station-palette.ts';
-import {districtFrame} from './infrastructure/district-placement.ts';
+
 import {screenDirection} from './presentation/view-orientation.ts';
 import {floorOptions} from './presentation/floor-options.ts';
 import {filterFacilities,facilityCategory} from './application/facility-filter.ts';
 import {facilityCodes} from './infrastructure/facility-codes.ts';
 import {sourceCredits} from './infrastructure/source-credits.ts';
-import {osmCreditData} from './infrastructure/osm-credit-download.ts';
+import {geographicOsmData as osmCreditData} from './infrastructure/district/geographic-map.ts';
 import {bindCreditsDialog,renderSourceCredits} from './presentation/source-credits-dialog.ts';
 
 renderSourceCredits(element('#credits-content'),sourceCredits,()=>{
@@ -23,12 +23,17 @@ bindCreditsDialog(element<HTMLDialogElement>('#credits-dialog'),element('#credit
 
 const session=new MapSession(edges);
 let scene:MapScene|undefined;
-const north=screenDirection(-districtFrame.bearingDeg*Math.PI/180);
+function updateCompass(){
+const north=screenDirection(-Math.PI/2);
 element('#compass-needle').setAttribute('transform',`rotate(${Math.atan2(north.x,-north.y)*180/Math.PI} 30 30)`);
 for(const [id,sign]of [['compass-north',1],['compass-south',-1]] as const){
   element(`#${id}`).setAttribute('x',String(30+north.x*25*sign));
   element(`#${id}`).setAttribute('y',String(30+north.y*25*sign));
 }
+}
+updateCompass();window.addEventListener('map-orientation',updateCompass);
+
+element<HTMLInputElement>('#roads').addEventListener('change',event=>scene?.setRoadsVisible((event.target as HTMLInputElement).checked));
 const slider=element<HTMLInputElement>('#explode'),roof=element<HTMLInputElement>('#roof');
 const facilityPicker=element<HTMLSelectElement>('#facility-picker');
 const facilityStation=element<HTMLSelectElement>('#facility-station'),facilityFloor=element<HTMLSelectElement>('#facility-floor');
@@ -128,7 +133,7 @@ slider.addEventListener('input',()=>{
 roof.addEventListener('change',()=>{session.state.roof=roof.checked;sync();});
 facilityPicker.addEventListener('change',()=>{const f=facilities.find(f=>f.id===facilityPicker.value);if(f)select(f);});
 function reset():void {
-  session.reset();scene?.reset();Object.assign(facilityFilter,{station:null,level:'all',kind:'all'});
+  session.reset();scene?.reset(true);Object.assign(facilityFilter,{station:null,level:'all',kind:'all'});
   refreshFacilities();showSidebarTab(0);sync();
 }
 element('#zoom-in').addEventListener('click',()=>scene?.zoom(1.18));
@@ -136,5 +141,13 @@ element('#zoom-out').addEventListener('click',()=>scene?.zoom(1/1.18));
 element('#reset').addEventListener('click',reset);
 element('.brand').addEventListener('click',e=>{e.preventDefault();reset();});
 try{scene=new MapScene(element('#viewport'),element('#labels'),levels,facilities,nodes,layout,session.state,select);}
-catch(error){console.error('Map renderer unavailable',error);element('#fallback').hidden=false;}
+catch(error){
+  console.error('Map initialization failed',error);
+  const fallback=element('#fallback');fallback.hidden=false;
+  const message=error instanceof Error?error.message:String(error);
+  const webgl=/WebGL|context creation|Error creating WebGL context/i.test(message);
+  fallback.querySelector('h2')!.textContent=webgl?'当前设备无法显示立体地图':'地图初始化失败';
+  fallback.querySelector('p')!.textContent=webgl?'请检查浏览器 WebGL 2 与硬件加速设置。':`场景加载出现异常：${message}`;
+  element('#viewport').replaceChildren();element('#labels').replaceChildren();
+}
 refreshFacilities();sync();

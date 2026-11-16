@@ -8,7 +8,8 @@ import {displayElevation} from '../src/application/display-elevation.ts';
 import {viewLayerRole} from '../src/application/view-layer.ts';
 import {buildFloorGeometry} from '../src/presentation/floor-geometry.ts';
 import {VerticalConnectionModel} from '../src/presentation/vertical-connection-model.ts';
-import {cameraOffset} from '../src/presentation/view-orientation.ts';
+// This test uses the archived schematic layout and its matching camera.
+const cameraOffset=new T.Vector3(-130,170,240);
 
 test('Daimaru bank 50 and shaft T stay visible through the upper public floor from either 2F selection',()=>{
   const openings=[...planFloorOpenings(layout.connections,levels,layout.platforms),...planAtriumOpenings(layout.atria)];

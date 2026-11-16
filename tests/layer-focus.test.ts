@@ -57,10 +57,10 @@ test('Daimaru 1F raised landings retain the 2F escalator and lift across cuts an
     assert(!model.group.visible,'connections entirely above 1F remain hidden');
   }
 });
-test('official-style fixed camera gives tracks a gentle bottom-left to top-right projection',()=>{
+test('fixed camera aligns the geographic JR axis left to right',()=>{
   const camera=new T.OrthographicCamera(-100,100,100,-100,0.1,1000);
   camera.position.copy(cameraOffset);camera.lookAt(0,0,0);camera.updateMatrixWorld();
-  const origin=new T.Vector3().project(camera),along=new T.Vector3(10,0,0).project(camera);
+  const origin=new T.Vector3().project(camera),along=new T.Vector3(10*Math.cos(-31.65*Math.PI/180),0,10*Math.sin(-31.65*Math.PI/180)).project(camera);
   const dx=along.x-origin.x,dy=along.y-origin.y;
   assert(dx>0&&dy>0);assert(dy/dx>0.2&&dy/dx<0.4);
 });

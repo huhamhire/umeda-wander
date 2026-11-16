@@ -1,6 +1,10 @@
 import * as T from 'three';
-/** Fixed orthographic illustration view, matching the official diagram's gentle rail angle. */
-export const cameraOffset=new T.Vector3(-130,170,240);
+/** Default north-up oblique view; mouse orbit changes yaw only. */
+export const viewRailAngle=-31.65*Math.PI/180;
+const horizontalDistance=Math.hypot(130,240);
+export const cameraOffset=new T.Vector3(0,170,horizontalDistance);
+export function rotateView(radians:number):void {cameraOffset.applyAxisAngle(new T.Vector3(0,1,0),radians);}
+export function resetView():void {cameraOffset.set(0,170,horizontalDistance);}
 export function viewBasis():{right:T.Vector3;up:T.Vector3} {
   const back=cameraOffset.clone().normalize();
   const right=new T.Vector3(0,1,0).cross(back).normalize();

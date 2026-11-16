@@ -1,9 +1,13 @@
+import {orbitAboutPoint} from './orbit-view.ts';
+import {geographicBuildings} from '../infrastructure/buildings/index.ts';
+import {buildGeographicBuilding} from './models/geographic-building-model.ts';
+import {buildGeographicContext} from './geographic-context.ts';
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Facility, Level, LevelId, RouteNode, StationLayout, FloorOpening,StationId } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/display-elevation.ts';
-import { platformPoint, pointInPolygon } from '../domain/map/geometry.ts';
+import { platformPoint, platformOutline, platformTangent, pointInPolygon } from '../domain/map/geometry.ts';
 import { planFloorOpenings } from '../application/connection-openings.ts';
 import { planGateBoundaries } from '../application/gate-boundaries.ts';
 import type { GateBoundary } from '../application/gate-boundaries.ts';
@@ -12,7 +16,7 @@ import { VerticalConnectionModel } from './vertical-connection-model.ts';
 import { viewLayerRole } from '../application/view-layer.ts';
 import { LayerAppearance,setRegionOwner } from './layer-appearance.ts';
 import {isRegionMuted} from '../application/region-focus.ts';
-import { cameraOffset, viewBasis } from './view-orientation.ts';
+import { cameraOffset, viewBasis,resetView } from './view-orientation.ts';
 import { roofHeightAt,roofPlan } from './roof-profile.ts';
 import {visibleElevatorConnections} from '../application/elevator-visibility.ts';
 import { advanceExplode } from './explode-transition.ts';
@@ -40,12 +44,16 @@ interface MapLabel { element: HTMLDivElement; position: T.Vector3; level?: Level
 export class MapScene {
   private renderer: T.WebGLRenderer;
   private scene = new T.Scene();
-  private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 1200);
+  private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 6000);
   private groups = new Map<LevelId, T.Group>();
   private roof = new T.Group();
   private commercialMassing:T.Group[]=[];
   private base = new T.Group();
   private ground?: T.Mesh;
+  private context?:ReturnType<typeof buildGeographicContext>;
+  private roadsVisible=true;
+  private geographicExteriors=new T.Group();
+  setRoadsVisible(visible:boolean):void {this.roadsVisible=visible;this.requestRender();}
   private appearance = new LayerAppearance();
   private labels: MapLabel[] = [];
   private labelOccluders:T.Object3D[]=[];
@@ -56,6 +64,8 @@ export class MapScene {
   private state: MapViewState;
   private displayedExplode: number;
   private immediateExplode = false;
+  private manualView?:{center:T.Vector3;span:number};
+  private orbit?:{pointer:number;pivot:T.Vector3};
   private framing?:{center:T.Vector3;span:number};
   private focusTransition=false;
   private locatingFacility=false;
@@ -105,6 +115,11 @@ export class MapScene {
     this.openings = [...planFloorOpenings(this.layout.connections, this.levels, this.layout.platforms),...planAtriumOpenings(this.layout.atria??[])];
     this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
     this.buildStation();
+    if(layout.geographic){this.context=buildGeographicContext(this.openings.filter(o=>this.levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));this.scene.add(this.context.roads,this.context.buildings,this.context.underground);this.ground!.visible=false;
+      for(const building of geographicBuildings){const model=buildGeographicBuilding(building);this.geographicExteriors.add(model);}
+      this.scene.add(this.geographicExteriors);
+      this.geographicExteriors.traverse(o=>{if(o.userData.labelOccluder)this.labelOccluders.push(o);});
+    }
     this.scene.add(this.roof, this.route, this.selected);
     this.scene.traverse(object=>{if(object.userData.labelOccluder)this.labelOccluders.push(object);});
     this.roof.traverse(object=>{if(object instanceof T.Mesh)this.labelOccluders.push(object);});
@@ -137,7 +152,7 @@ export class MapScene {
 
   private buildStation(): void {
     const base = this.base; this.scene.add(base);
-    for(const {geometry,color}of stationPlinthParts(this.openings)){
+    for(const {geometry,color}of (this.layout.geographic?[]:stationPlinthParts(this.openings))){
       if(!geometry.getAttribute('position'))continue;
       const mesh=new T.Mesh(geometry,this.material(color));mesh.castShadow=true;mesh.receiveShadow=true;base.add(mesh);
       mesh.userData.labelOccluder=true;
@@ -190,12 +205,18 @@ export class MapScene {
       const platformGroup = this.groups.get(level)!;
       const position = (along: number, across: number) => platformPoint(platform, along, across);
       const block = (along: number, y: number, across: number, w: number, h: number, d: number, color: number) => {
+        if(platform.planBow&&w>4){
+          const count=Math.ceil(w/3);let result!:T.Mesh;
+          for(let i=0;i<count;i++){const u=along-w/2+w*(i+.5)/count,p=position(u,across);
+            result=this.box(platformGroup,p.x,y,p.z,w/count+.02,h,d,color);result.rotation.y=-platformTangent(platform,u);}
+          return result;
+        }
         const p = position(along, across);
         const mesh = this.box(platformGroup, p.x, y, p.z, w, h, d, color);
-        mesh.rotation.y = -platform.rotationRad;
+        mesh.rotation.y = -platformTangent(platform,along);
         return mesh;
       };
-      const outline = [position(-length/2,-width/2),position(length/2,-width/2),position(length/2,width/2),position(-length/2,width/2)];
+      const outline = platformOutline(platform);
       const slab = new T.Mesh(buildFloorGeometry(outline, this.openings.filter(opening => opening.level === level).map(opening => opening.outline), 0.95, -0.475),
         this.material(level==='underground-platform'?0x90b6c5:stationPalettes[this.levels.find(l=>l.id===level)?.station??'jr-osaka'].platform));
       slab.name = `platform-slab-${platform.id}`; slab.castShadow = true; slab.receiveShadow = true; platformGroup.add(slab);
@@ -296,9 +317,15 @@ export class MapScene {
       const model = new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
       this.connectors.push(model); this.scene.add(model.group);
     }
-    this.label('1F 中央改札口', -9, 3.5, 4, 'concourse', false, true);
-    this.label('3F 桥上改札口', -3, 3.5, 4, 'bridge');
+    if(!this.layout.geographic)this.label('1F 中央改札口', -9, 3.5, 4, 'concourse', false, true);
+    if(!this.layout.geographic)this.label('3F 桥上改札口', -3, 3.5, 4, 'bridge');
     this.buildRoof();
+    if(this.layout.geographic){
+      const a=-31.65*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
+      this.roof.position.set(447+roofPlan.centerX*2.5*c,0,610+roofPlan.centerX*2.5*s);
+      this.roof.rotation.y=-a;this.roof.scale.x*=2.5;this.roof.scale.z=1.6;
+      for(const label of this.labels.filter(l=>l.roof)){const x=label.position.x,z=label.position.z;label.position.x=447+x*2.5*c-z*1.6*s;label.position.z=610+x*2.5*s+z*1.6*c;}
+    }
     for (const group of [base, ...this.groups.values(), this.roof]) this.batchStaticMeshes(group);
     for (const facility of this.facilities) {
       const target = new T.Mesh(new T.BoxGeometry(7, 5, 7), new T.MeshBasicMaterial({ visible: false }));
@@ -415,6 +442,7 @@ export class MapScene {
   }
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
+    if(this.state.level!==state.level||this.state.focusStation!==state.focusStation||this.state.explode!==state.explode)this.manualView=undefined;
     const routeChanged = this.state.route !== state.route;
     if(this.state.level!==state.level)this.locatingFacility=false;
     if(this.state.focusStation!==state.focusStation)this.focusTransition=true;
@@ -425,12 +453,13 @@ export class MapScene {
     this.requestRender();
   }
   select(facility: Facility): void {
+    this.manualView=undefined;this.orbit=undefined;
     this.activeFacility = facility;
     this.locatingFacility=true;this.focusTransition=true;
     this.selectionMarker.restart(performance.now());this.requestRender();
   }
-  zoom(factor: number): void { this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(2.8,this.minimumZoom*3)); this.requestRender(); }
-  reset(): void { this.locatingFacility=false;this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.visible=false; this.requestRender(); }
+  zoom(factor: number): void { const previousZoom=this.zoomValue;this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(2.8,this.minimumZoom*3));if(this.manualView)this.manualView.span*=previousZoom/this.zoomValue; this.requestRender(); }
+  reset(resetOrientation=false): void { this.manualView=undefined;this.orbit=undefined; if(resetOrientation){resetView();window.dispatchEvent(new Event('map-orientation'));} this.locatingFacility=false;this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.visible=false; this.requestRender(); }
   refreshViewport():void {this.requestRender();}
   private levelY(id: LevelId): number {
     return displayElevation(this.levels, id, this.displayedExplode);
@@ -474,7 +503,7 @@ export class MapScene {
     const baseRole=viewLayerRole(this.levels,this.state,'concourse');
     for(const passage of this.publicPassages)passage.update(id=>this.levelY(id),id=>viewLayerRole(this.levels,this.state,id),this.state.focusStation);
     this.base.visible=baseRole!=='hidden';this.appearance.apply(this.base,baseRole==='context',this.state.focusStation,'jr-osaka');
-    if(this.ground)this.ground.visible=this.base.visible;
+    if(this.ground)this.ground.visible=!this.layout.geographic&&this.base.visible;
     const fullShafts=visibleElevatorConnections(this.layout.connections,this.levels,this.state.level);
     for (const connector of this.connectors) {
       const fullShaft=fullShafts.has(connector.connection.id);
@@ -490,6 +519,15 @@ export class MapScene {
         connector.connection.evidence.source==='district'?null:owners[0]===owners[1]?owners[0]!:null;
       this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'),this.state.focusStation,owner);
     }
+    if(this.context){
+      const above=this.state.level==='all'||this.levels.find(l=>l.id===this.state.level)!.y>=0;
+      this.context.roads.visible=this.roadsVisible&&above;
+      this.context.buildings.visible=this.roadsVisible&&above;
+      this.geographicExteriors.visible=this.roadsVisible&&this.state.roof&&this.state.level==='all';
+      this.appearance.apply(this.geographicExteriors,false,this.state.focusStation,null);
+      this.context.underground.visible=true;
+      this.context.underground.position.y=-14*this.displayedExplode;
+    }
     this.roof.position.y = 26 + this.displayedExplode * 56;
     for(const model of this.commercialMassing)model.visible=this.state.roof&&this.state.level==='all';
     this.roof.visible = this.state.roof && this.state.level === 'all';
@@ -503,8 +541,9 @@ export class MapScene {
     const aspect = this.width / Math.max(1, this.height);
     const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
     const envelope=cameraEnvelope(this.layout,this.levels,this.state,id=>this.levelY(id));
-    if(!this.state.focusStation||this.state.focusStation==='jr-osaka')
+    if(!this.layout.geographic&&(!this.state.focusStation||this.state.focusStation==='jr-osaka'))
       for(const x of [roofPlan.centerX-roofPlan.width/2-1,roofPlan.centerX+roofPlan.width/2+1])for(const z of [-37,37])envelope.push(new T.Vector3(x,this.roof.position.y+14,z));
+    if(this.layout.geographic&&!this.state.focusStation)for(const b of geographicBuildings)for(const v of b.volumes)for(const p of v.outline)envelope.push(new T.Vector3(p.x,v.top,p.z));
     const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
     const {right,up} = viewBasis();
     const boundsX = envelope.map(point => point.clone().sub(center).dot(right));
@@ -515,7 +554,7 @@ export class MapScene {
     const sidebar=this.host.parentElement?.querySelector('.sidebar')?.getBoundingClientRect();
     const usable=facilityFocusRect(viewport,sidebar,mobile);
     const baseSpan=Math.max(55,(maxY-minY)*1.18,(maxX-minX)*this.height/usableWidth*1.12);
-    this.minimumZoom=minimumMapZoom(baseSpan,maxY-minY,this.height,usable.height);
+    if(!this.manualView)this.minimumZoom=minimumMapZoom(baseSpan,maxY-minY,this.height,usable.height);
     this.zoomValue=T.MathUtils.clamp(this.zoomValue,this.minimumZoom,Math.max(2.8,this.minimumZoom*3));
     let span = baseSpan / this.zoomValue;
     if(!mobile)center.addScaledVector(right,-Math.min(150,this.width*0.13)*span/this.height);
@@ -524,6 +563,7 @@ export class MapScene {
       const target=facilityCameraCenter(this.selected.position,span,this.width,this.height,usable);
       this.pan.add(target.clone().sub(center));center.copy(target);
     }
+    if(this.manualView){center.copy(this.manualView.center);span=this.manualView.span;}
     this.targetCenter=center.clone();
     if(this.framing&&this.focusTransition&&!reducedMotion){
       this.framing.center.lerp(center,0.24);this.framing.span+=(span-this.framing.span)*0.24;
@@ -534,7 +574,7 @@ export class MapScene {
     this.selectionMarker.update(performance.now(),reducedMotion,span/this.height);
     this.camera.left=-span*aspect/2;this.camera.right=span*aspect/2;
     this.camera.top=span/2;this.camera.bottom=-span/2;
-    this.camera.position.copy(center).add(cameraOffset);
+    this.camera.position.copy(center).addScaledVector(cameraOffset,this.layout.geographic?6:1);
     this.camera.lookAt(center);
     this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
     this.scene.updateMatrixWorld(true);
@@ -575,9 +615,26 @@ export class MapScene {
   }
   private bindGestures(): void {
     const canvas = this.renderer.domElement;
+    canvas.addEventListener('lostpointercapture',e=>{this.pointers.delete(e.pointerId);if(this.orbit?.pointer===e.pointerId)this.orbit=undefined;});
+    canvas.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
     canvas.addEventListener('wheel', e => { e.preventDefault(); this.zoom(Math.exp(-e.deltaY * 0.001)); }, { passive: false });
     canvas.addEventListener('pointerdown', e => {
-      if (this.pointers.size === 0) { this.down = { x: e.clientX, y: e.clientY }; this.dragged = false; }
+      if(e.button===1&&this.framing){
+        e.preventDefault();this.dragged=true;this.locatingFacility=false;this.focusTransition=false;
+        this.manualView={center:this.framing.center.clone(),span:this.framing.span};
+        const rect=canvas.getBoundingClientRect();
+        this.raycaster.setFromCamera(new T.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),this.camera);
+        const hit=this.raycaster.intersectObjects(this.scene.children,true).find(h=>{
+          for(let o:T.Object3D|null=h.object;o;o=o.parent)if(!o.visible||o===this.selected||o===this.route)return false;
+          const material=(h.object as T.Mesh).material;
+          return material&&!Array.isArray(material)&&material.visible&&!(material instanceof T.ShadowMaterial);
+        });
+        const fallback=new T.Vector3();
+        const plane=new T.Plane(new T.Vector3(0,1,0),-this.framing.center.y);
+        const pivot=hit?.point??this.raycaster.ray.intersectPlane(plane,fallback)??this.framing.center;
+        this.orbit={pointer:e.pointerId,pivot:pivot.clone()};
+      }
+      if (this.pointers.size === 0) { this.down = { x: e.clientX, y: e.clientY }; this.dragged = e.button!==0; }
       else this.dragged = true;
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); canvas.setPointerCapture(e.pointerId);
     });
@@ -589,7 +646,9 @@ export class MapScene {
       this.focusTransition=false;
       if (this.down && Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y) > 5) this.dragged = true;
       const other = [...this.pointers].find(([id]) => id !== e.pointerId)?.[1];
-      if (other) {
+      if(this.orbit?.pointer===e.pointerId&&this.manualView&&(e.buttons&4)){
+        orbitAboutPoint(cameraOffset,this.manualView.center,this.orbit.pivot,e.clientX-old.x,e.clientY-old.y);this.dragged=true;window.dispatchEvent(new Event('map-orientation'));
+      }else if (other) {
         const previous = Math.hypot(old.x - other.x, old.y - other.y);
         const current = Math.hypot(e.clientX - other.x, e.clientY - other.y);
         if (previous > 1) this.zoom(current / previous);
@@ -597,14 +656,16 @@ export class MapScene {
         const scale = (this.camera.top - this.camera.bottom) / this.height;
         const right = new T.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 0);
         const up = new T.Vector3().setFromMatrixColumn(this.camera.matrixWorld, 1);
-        this.pan.addScaledVector(right, -(e.clientX - old.x) * scale);
-        this.pan.addScaledVector(up, (e.clientY - old.y) * scale);
+        const pan=this.manualView?.center??this.pan;
+        pan.addScaledVector(right, -(e.clientX - old.x) * scale);
+        pan.addScaledVector(up, (e.clientY - old.y) * scale);
       }
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); this.requestRender();
     });
     canvas.addEventListener('pointerup', e => {
+      if(this.orbit?.pointer===e.pointerId)this.orbit=undefined;
       this.pointers.delete(e.pointerId);
-      if (!this.dragged && this.down) {
+      if (e.button===0&&!this.dragged && this.down) {
         const rect = canvas.getBoundingClientRect();
         this.raycaster.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), this.camera);
         const candidates = this.pickables.filter(obj => obj.parent?.visible && ['normal','current'].includes(viewLayerRole(this.levels,this.state,(obj.userData.facility as Facility).level)));
@@ -613,6 +674,6 @@ export class MapScene {
       }
       if (!this.pointers.size) this.down = null;
     });
-    canvas.addEventListener('pointercancel', e => { this.pointers.delete(e.pointerId); this.dragged = true; this.down = null; });
+    canvas.addEventListener('pointercancel', e => { this.orbit=undefined; this.pointers.delete(e.pointerId); this.dragged = true; this.down = null; });
   }
 }

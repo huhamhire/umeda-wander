@@ -1,3 +1,4 @@
+import {planGateBoundaries} from '../../../application/gate-boundaries.ts';
 import type {Point2,StationMap} from '../../../domain/map/model.ts';
 import {jrStation} from './index.ts';
 
@@ -11,10 +12,11 @@ export function createGeographicJrGround():StationMap {
   const levelIds=new Set(levels.map(l=>l.id));
   const nodes=jrStation.nodes.filter(n=>levelIds.has(n.level)).map(n=>({...n,...point(n)}));
   const nodeIds=new Set(nodes.map(n=>n.id));
+  const gates=new Map(planGateBoundaries(jrStation.facilities,jrStation.layout.areas).map(g=>[g.gateId,g]));
   return {...jrStation,levels,nodes,
     edges:jrStation.edges.filter(e=>nodeIds.has(e.from)&&nodeIds.has(e.to)),
-    facilities:jrStation.facilities.filter(f=>levelIds.has(f.level)).map(f=>({...f,...point(f),
-      rotationRad:f.rotationRad===undefined?undefined:direction(f.rotationRad)})),
+    facilities:jrStation.facilities.filter(f=>levelIds.has(f.level)).map(f=>({...f,...point(gates.get(f.id)?.center??f),
+      rotationRad:direction(f.rotationRad??(f.axis==='z'?Math.PI/2:0))})),
     layout:{
       areas:jrStation.layout.areas.filter(a=>levelIds.has(a.level)).map(a=>({...a,
         outline:a.outline.map(point),holes:a.holes?.map(h=>h.map(point))})),

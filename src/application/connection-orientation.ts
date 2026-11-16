@@ -1,3 +1,4 @@
+import {platformLocalPoint,platformTangent} from '../domain/map/geometry.ts';
 import type { Platform, VerticalConnection } from '../domain/map/model.ts';
 
 /** Model local X: escalator run, or elevator cross-door axis. */
@@ -11,5 +12,5 @@ export function connectionHeading(connection:VerticalConnection,platforms:Platfo
   }
   const toward=(platform.x-low.x)*Math.cos(platform.rotationRad)+(platform.z-low.z)*Math.sin(platform.rotationRad);
   // Doors face along the platform toward its usable central length.
-  return platform.rotationRad-(toward>=0?1:-1)*Math.PI/2;
+  return platformTangent(platform,platformLocalPoint(platform,low).x)-(toward>=0?1:-1)*Math.PI/2;
 }

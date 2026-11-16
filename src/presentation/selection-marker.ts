@@ -25,6 +25,7 @@ export class SelectionMarker {
   }
   restart(now:number):void {this.startedAt=now;}
   update(now:number,reducedMotion:boolean,worldPerPixel:number):void {
+    this.floating.rotation.y=Math.atan2(cameraOffset.x,cameraOffset.z);
     const elapsed=Math.max(0,now-this.startedAt),entry=reducedMotion?1:Math.min(1,elapsed/320);
     const eased=1-Math.pow(1-entry,3);
     this.group.scale.setScalar(T.MathUtils.clamp(worldPerPixel*4.8,0.65,4));
