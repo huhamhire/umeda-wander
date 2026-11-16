@@ -1,3 +1,4 @@
+import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {geographicBuildings} from '../src/infrastructure/buildings/index.ts';
 import {buildGeographicBuilding} from '../src/presentation/models/geographic-building-model.ts';
 import {planGateBoundaries} from '../src/application/gate-boundaries.ts';
@@ -52,4 +53,15 @@ test('geographic commercial exteriors separate podiums and towers with finite me
  }
  const gf=geographicBuildings.find(b=>b.id==='grand-front-south')!;
  assert.equal(gf.volumes[1]!.top,166);assert.equal(gf.volumes[1]!.base,40);
+});
+
+test('South Gate portal remains open below its sign and has flanking paired escalators',()=>{
+ const b=geographicBuildings.find(b=>b.id==='daimaru')!,e=b.entrance!,c=Math.cos(e.angle),s=Math.sin(e.angle);
+ const model=buildGeographicBuilding(b);model.updateMatrixWorld(true);
+ const start=new T.Vector3(e.center.x+c*5-s*8,8,e.center.z+s*5+c*8);
+ const ray=new T.Raycaster(start,new T.Vector3(s,0,-c),0,18);
+ assert.equal(ray.intersectObject(model,true).length,0,'solid facade closes the portal');
+ const banks=['south-building-61','south-entrance-east-escalators'].map(id=>layout.connections.find(c=>c.id===id)!);
+ assert.ok(banks.every(c=>c.lanes===2));
+ for(const bank of banks){const upper=[bank.from,bank.to].find(n=>n.level==='south-deck')!;assert.ok(layout.areas.some(a=>a.id==='south-entrance-deck'&&pointInPolygon(upper,a.outline)));}
 });

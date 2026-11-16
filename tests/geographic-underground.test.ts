@@ -1,3 +1,5 @@
+import {createGeographicNishi} from '../src/infrastructure/stations/nishi-umeda/geographic.ts';
+import {createGeographicKitashinchi} from '../src/infrastructure/stations/kitashinchi/geographic.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createGeographicStations} from '../src/infrastructure/district/geographic-stations.ts';
@@ -40,7 +42,7 @@ test('Umekita uses its own geographic axis without stretching JR ground or inven
 });
 
 test('western geographic tracks extend outwards, attach to platform ends and cross below Y11',()=>{
-  const stations=createGeographicStations(),y=stations.find(s=>s.id==='nishi-umeda')!,k=stations.find(s=>s.id==='kitashinchi')!;
+  const y=createGeographicNishi(),k=createGeographicKitashinchi();
   assert.equal(y.layout.railApproaches!.length,1);assert.equal(k.layout.railApproaches!.length,2);
   for(const s of [y,k])for(const a of s.layout.railApproaches!){
     const p=s.layout.platforms[0]!;

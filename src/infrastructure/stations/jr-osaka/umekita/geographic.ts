@@ -35,7 +35,7 @@ export function createGeographicUmekita():StationMap {
   const facilityIds=new Set(['umekita-gate','umekita-platform','machines-umekita','umekita-94-poi','umekita-96-poi']);
   const nodes=[...new Map(connections.flatMap(c=>[c.from,c.to]).map(n=>[n.id,n])).values()];
   const gates=new Map(planGateBoundaries(jrStation.facilities,jrStation.layout.areas).map(g=>[g.gateId,g]));
-  return {id:'jr-osaka',name:'JR 梅北地下站台',
+  const station:StationMap={id:'jr-osaka',name:'JR 梅北地下站台',
     levels:jrStation.levels.filter(l=>l.id.startsWith('underground')).map(l=>({...l})),
     nodes,edges:[],
     facilities:jrStation.facilities.filter(f=>facilityIds.has(f.id)).map(f=>({...f,...point(gates.get(f.id)?.center??f),
@@ -46,4 +46,17 @@ export function createGeographicUmekita():StationMap {
         outline:ring(a.outline),holes:a.holes?.map(ring)})),
       connections,
     }};
+  // Move the hall north along its own axis; platforms retain their calibrated footprint.
+  const shift={x:Math.cos(angle)*30,z:Math.sin(angle)*30};
+  for(const a of station.layout.areas)for(const p of [a.outline,...a.holes??[]].flat()){p.x+=shift.x;p.z+=shift.z;}
+  const moved=new Set<object>();
+  for(const p of [...station.facilities,...station.nodes,...station.layout.connections.flatMap(c=>[c.from,c.to])]){
+    if(p.level!=='underground-hall'||moved.has(p))continue;p.x+=shift.x;p.z+=shift.z;moved.add(p);
+  }
+  // Shafts remain vertical after moving their hall landing.
+  for(const c of station.layout.connections.filter(c=>c.kind==='elevator')){
+    const upper=[c.from,c.to].find(n=>n.level==='underground-hall')!,lower=[c.from,c.to].find(n=>n.level==='underground-platform')!;
+    lower.x=upper.x;lower.z=upper.z;
+  }
+  return station;
 }

@@ -17,7 +17,7 @@ import { viewLayerRole } from '../application/view-layer.ts';
 import { LayerAppearance,setRegionOwner } from './layer-appearance.ts';
 import {isRegionMuted} from '../application/region-focus.ts';
 import { cameraOffset, viewBasis,resetView } from './view-orientation.ts';
-import { roofHeightAt,roofPlan } from './roof-profile.ts';
+import { roofHeightAt,geographicRoofHeightAt,roofPlan } from './roof-profile.ts';
 import {visibleElevatorConnections} from '../application/elevator-visibility.ts';
 import { advanceExplode } from './explode-transition.ts';
 import {stationPalettes,publicAreaColor} from './station-palette.ts';
@@ -115,7 +115,7 @@ export class MapScene {
     this.openings = [...planFloorOpenings(this.layout.connections, this.levels, this.layout.platforms),...planAtriumOpenings(this.layout.atria??[])];
     this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
     this.buildStation();
-    if(layout.geographic){this.context=buildGeographicContext(this.openings.filter(o=>this.levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));this.scene.add(this.context.roads,this.context.buildings,this.context.underground);this.ground!.visible=false;
+    if(layout.geographic){this.context=buildGeographicContext(this.openings.filter(o=>this.levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));this.scene.add(this.context.roads,this.context.buildings);this.ground!.visible=false;
       for(const building of geographicBuildings){const model=buildGeographicBuilding(building);this.geographicExteriors.add(model);}
       this.scene.add(this.geographicExteriors);
       this.geographicExteriors.traverse(o=>{if(o.userData.labelOccluder)this.labelOccluders.push(o);});
@@ -286,7 +286,7 @@ export class MapScene {
     }
     for(const approach of this.layout.railApproaches??[]){
       this.groups.get(approach.level)!.add(buildRailApproachModel(approach));
-      this.label(approach.name,approach.labelPoint.x,2.5,approach.labelPoint.z,approach.level,false,true);
+      if(!approach.id.startsWith('map-rail-')||approach.level==='platform'||approach.level==='underground-platform'||approach.level==='hankyu-platform')this.label(approach.name,approach.labelPoint.x,2.5,approach.labelPoint.z,approach.level,false,true);
     }
     for(const guide of this.layout.guides??[]){
       for(const p of guide.points)if(p.caption)this.label(p.caption,p.x,3,p.z,p.level,false,true);
@@ -412,7 +412,7 @@ export class MapScene {
 
   private buildRoof(): void {
     this.roof.scale.x=roofPlan.width/126;this.roof.position.x=roofPlan.centerX;
-    const slope = roofHeightAt;
+    const slope = this.layout.geographic?geographicRoofHeightAt:roofHeightAt;
     // Low-poly roof profile: shallow curved slope, separate strips for the skylights.
     for (let x = -63; x < 63; x += 6) {
       for (let z = -36; z < 36; z += 6) {
@@ -438,7 +438,7 @@ export class MapScene {
         this.beam(this.roof, new T.Vector3(x + 4.5, slope(z) - 0.5, z), new T.Vector3(x + 9, slope(z) - 3, z), 0.13, colors.steel);
       }
     }
-    this.label('大阪站', roofPlan.centerX, 13, 0, undefined, true, true);
+    this.label('大阪站', roofPlan.centerX, this.layout.geographic?geographicRoofHeightAt(0)+1.5:13, 0, undefined, true, true);
   }
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {
@@ -458,7 +458,7 @@ export class MapScene {
     this.locatingFacility=true;this.focusTransition=true;
     this.selectionMarker.restart(performance.now());this.requestRender();
   }
-  zoom(factor: number): void { const previousZoom=this.zoomValue;this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(2.8,this.minimumZoom*3));if(this.manualView)this.manualView.span*=previousZoom/this.zoomValue; this.requestRender(); }
+  zoom(factor: number): void { const previousZoom=this.zoomValue;this.focusTransition=false;this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(16,this.minimumZoom*16));if(this.manualView)this.manualView.span*=previousZoom/this.zoomValue; this.requestRender(); }
   reset(resetOrientation=false): void { this.manualView=undefined;this.orbit=undefined; if(resetOrientation){resetView();window.dispatchEvent(new Event('map-orientation'));} this.locatingFacility=false;this.focusTransition=false;this.zoomValue = 1; this.pan.set(0, 0, 0); this.activeFacility = undefined; this.selected.visible=false; this.requestRender(); }
   refreshViewport():void {this.requestRender();}
   private levelY(id: LevelId): number {
@@ -525,8 +525,7 @@ export class MapScene {
       this.context.buildings.visible=this.roadsVisible&&above;
       this.geographicExteriors.visible=this.roadsVisible&&this.state.roof&&this.state.level==='all';
       this.appearance.apply(this.geographicExteriors,false,this.state.focusStation,null);
-      this.context.underground.visible=true;
-      this.context.underground.position.y=-14*this.displayedExplode;
+
     }
     this.roof.position.y = 26 + this.displayedExplode * 56;
     for(const model of this.commercialMassing)model.visible=this.state.roof&&this.state.level==='all';
@@ -555,7 +554,7 @@ export class MapScene {
     const usable=facilityFocusRect(viewport,sidebar,mobile);
     const baseSpan=Math.max(55,(maxY-minY)*1.18,(maxX-minX)*this.height/usableWidth*1.12);
     if(!this.manualView)this.minimumZoom=minimumMapZoom(baseSpan,maxY-minY,this.height,usable.height);
-    this.zoomValue=T.MathUtils.clamp(this.zoomValue,this.minimumZoom,Math.max(2.8,this.minimumZoom*3));
+    this.zoomValue=T.MathUtils.clamp(this.zoomValue,this.minimumZoom,Math.max(16,this.minimumZoom*16));
     let span = baseSpan / this.zoomValue;
     if(!mobile)center.addScaledVector(right,-Math.min(150,this.width*0.13)*span/this.height);
     else center.copy(facilityCameraCenter(center,span,this.width,this.height,usable));

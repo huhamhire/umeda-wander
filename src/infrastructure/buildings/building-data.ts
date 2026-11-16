@@ -3,7 +3,9 @@ import plan from '../../../data/geography/runtime-plan.json' with {type:'json'};
 import parts from '../../../data/geography/building-parts.json' with {type:'json'};
 import type {Point2} from '../../domain/map/model.ts';
 export interface BuildingVolume {name:string;outline:Point2[];holes:Point2[][];base:number;top:number;source:string;certainty:'osm-height'|'estimate';note:string}
-export interface GeographicBuilding {id:string;name:string;volumes:BuildingVolume[]}
+export interface BuildingSign {text:string;center:Point2;y:number;width:number;height:number;angle:number}
+export interface BuildingEntrance {center:Point2;angle:number;width:number;depth:number;height:number;note:string}
+export interface GeographicBuilding {id:string;name:string;volumes:BuildingVolume[];signs?:BuildingSign[];entrance?:BuildingEntrance}
 const project=(p:number[]):Point2=>({x:(p[0]!-135.491)*111320*Math.cos(34.708*Math.PI/180),z:(34.708-p[1]!)*111320});
 export function footprint(id:string){
  const part=parts.find(p=>p.id===id);
@@ -25,4 +27,16 @@ export function insetPart(host:BuildingVolume,name:string,base:number,top:number
  if(!clipped[0])throw new Error('Empty tower '+name);
  return {...host,name,base,top,certainty:'estimate',note:'Reference-derived upper silhouette clipped to host; height/setback estimated.',
  outline:clipped[0][0]!.map(([x,z])=>({x,z})),holes:[]};
+}
+
+/** Reference silhouette in a building-aligned frame, rather than an east/north crop. */
+export function alignedPart(host:BuildingVolume,name:string,base:number,top:number,angle:number,u0:number,u1:number,v0:number,v1:number):BuildingVolume {
+ const c=Math.cos(angle),s=Math.sin(angle),local=host.outline.map(p=>({x:p.x*c+p.z*s,z:-p.x*s+p.z*c}));
+ const crop=insetPart({...host,outline:local},name,base,top,u0,u1,v0,v1);
+ return {...crop,outline:crop.outline.map(p=>({x:p.x*c-p.z*s,z:p.x*s+p.z*c}))};
+}
+export function alignedPoint(outline:Point2[],angle:number,u:number,v:number):Point2 {
+ const c=Math.cos(angle),s=Math.sin(angle),xs=outline.map(p=>p.x*c+p.z*s),zs=outline.map(p=>-p.x*s+p.z*c);
+ const x=Math.min(...xs)+(Math.max(...xs)-Math.min(...xs))*u,z=Math.min(...zs)+(Math.max(...zs)-Math.min(...zs))*v;
+ return {x:x*c-z*s,z:x*s+z*c};
 }

@@ -4,7 +4,7 @@ import {buildFloorGeometry} from './floor-geometry.ts';
 import type {Point2} from '../domain/map/model.ts';
 const project=(p:number[]):Point2=>({x:(p[0]!-135.491)*111320*Math.cos(34.708*Math.PI/180),z:(34.708-p[1]!)*111320});
 export function buildGeographicContext(groundOpenings:Point2[][]=[]){
- const roads=new T.Group(),buildings=new T.Group(),underground=new T.Group();
+ const roads=new T.Group(),buildings=new T.Group();
  const add=(g:T.Group,rings:Point2[][],color:number,y:number,height=.15)=>{
   if(!rings[0]?.length)return;
   const geometry=buildFloorGeometry(rings[0],rings.slice(1),height,y);
@@ -27,7 +27,5 @@ export function buildGeographicContext(groundOpenings:Point2[][]=[]){
    for(const polygon of polygons)add(t.building?buildings:roads,polygon.map(r=>r.map(project)),t.building?0xd6ddce:0xe6dfc5,-1.3,t.building?.3:.15);
   }
  }
- for(const polygon of plan.underground)add(underground,polygon.map(r=>r.map(p=>({x:p[0]!,z:p[1]!}))),0xd4bc80,-8.6,.3);
- return {roads,buildings,underground};
+ return {roads,buildings};
 }
-

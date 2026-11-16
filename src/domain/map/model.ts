@@ -1,5 +1,5 @@
 export type StationId='jr-osaka'|'hankyu-umeda'|'metro-umeda'|'hanshin-umeda'|'higashi-umeda'|'nishi-umeda'|'kitashinchi';
-export type LevelId = 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
+export type LevelId = 'district-underground' | 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge'
   |'hankyu-ground'|'hankyu-hall'|'hankyu-platform'|'metro-hall'|'metro-intermediate'|'metro-platform'|'south-deck'
   |'hanshin-hall'|'hanshin-platform'|'hanshin-ground'|'hanshin-deck'|'t20-hall'|'t20-platform'|'t20-ground'
   |'y11-hall'|'y11-platform'|'y11-ground'|'kitashinchi-hall'|'kitashinchi-platform'|'kitashinchi-ground';

@@ -6,6 +6,7 @@ import {surfaceRailwayPlan} from '../../src/infrastructure/geography/railway-pla
 
 const underground=process.argv.includes('--underground');
 const stations=createGeographicStations();
+for(const station of stations)station.layout.areas=station.layout.areas.filter(a=>!(a.kind==='public'&&station.levels.find(l=>l.id===a.level)?.y===-8));
 const output=underground?'underground-station-interiors':'station-interiors';
 const path=(p:Point2[])=>'M'+p.map(v=>`${v.x.toFixed(2)},${v.z.toFixed(2)}`).join('L')+'Z';
 const escape=(s:string)=>s.replaceAll('&','&amp;').replaceAll('<','&lt;');
@@ -15,7 +16,7 @@ const railParts=rails.map(r=>{const d='M'+r.points.map(p=>`${p.x},${p.z}`).join(
   return `<path d="${d}" fill="none" stroke="#b8b9af" stroke-width="${r.bedWidth}" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#777f79" stroke-width=".65"><title>${escape(r.name)} · ${r.id}</title></path>`;});
 for(const s of stations){
   const shown=new Set(s.levels.filter(l=>!underground||l.y<0).map(l=>l.id));
-  for(const rail of s.layout.railApproaches??[]){
+  for(const rail of (s.layout.railApproaches??[]).filter(r=>shown.has(r.level))){
     const nodes=new Map(rail.nodes.map(n=>[n.id,n.point]));
     for(const segment of rail.segments){
       const a=nodes.get(segment.from)!,b=nodes.get(segment.to)!;

@@ -12,5 +12,6 @@ const southernBlocks:Record<string,number>={
 };
 /** Region distinction is a presentation choice, independent of access semantics. */
 export function areaColor(area:FloorArea,underground=false):number {
+  if(underground&&area.kind==='public')return undergroundPublicColor;
   return southernBlocks[area.id]??({public:underground?undergroundPublicColor:publicAreaColor,paid:0xbbd1bd,commercial:0xe4d4c3,service:0xd7dfc4}[area.kind]);
 }
