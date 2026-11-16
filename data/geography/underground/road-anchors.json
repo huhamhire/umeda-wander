@@ -1,0 +1,581 @@
+{
+  "note": "PDF corridor axes matched to OSM roads/buildings. targetHint selects the corresponding road segment rather than the nearest segment to the initial affine projection; targetMetres is an approximate building-axis control, not a surveyed underground coordinate.",
+  "anchors": [
+    {
+      "name": "桜橋・西端",
+      "reference": [
+        390,
+        615
+      ],
+      "roadId": "1009803610"
+    },
+    {
+      "name": "北新地・DIAMOR 接口",
+      "reference": [
+        490,
+        625
+      ],
+      "roadId": "1009803610"
+    },
+    {
+      "name": "曾根地下道西段",
+      "reference": [
+        560,
+        630
+      ],
+      "roadId": "1009803610"
+    },
+    {
+      "name": "曾根地下道中段",
+      "reference": [
+        600,
+        632
+      ],
+      "roadId": "1009803610"
+    },
+    {
+      "name": "曾根地下道东段",
+      "reference": [
+        660,
+        636
+      ],
+      "roadId": "1009803610"
+    },
+    {
+      "name": "西梅田南段",
+      "reference": [
+        390,
+        580
+      ],
+      "roadId": "1101022363"
+    },
+    {
+      "name": "西梅田中段",
+      "reference": [
+        390,
+        540
+      ],
+      "roadId": "1101022363"
+    },
+    {
+      "name": "西梅田北段",
+      "reference": [
+        398,
+        490
+      ],
+      "roadId": "173601367"
+    },
+    {
+      "name": "东梅田南侧",
+      "reference": [
+        630,
+        465
+      ],
+      "roadId": "485150928"
+    },
+    {
+      "name": "御堂筋南段",
+      "reference": [
+        650,
+        560
+      ],
+      "roadId": "485150928"
+    },
+    {
+      "name": "Yodobashi 南侧接口",
+      "reference": [
+        460,
+        198
+      ],
+      "roadId": "35092226"
+    },
+    {
+      "name": "LUCUA 北侧西段",
+      "reference": [
+        380,
+        280
+      ],
+      "buildingId": "162183788",
+      "targetHint": [
+        425,
+        520
+      ]
+    },
+    {
+      "name": "LUCUA 北侧东段",
+      "reference": [
+        430,
+        250
+      ],
+      "buildingId": "162183788",
+      "targetHint": [
+        500,
+        490
+      ]
+    },
+    {
+      "name": "阪急站南侧地下公共厅",
+      "reference": [
+        560,
+        190
+      ],
+      "buildingId": "139168082"
+    },
+    {
+      "name": "御堂筋北段转折",
+      "reference": [
+        485,
+        230
+      ],
+      "roadId": "850436188"
+    },
+    {
+      "name": "御堂筋站南侧接口",
+      "reference": [
+        519,
+        299
+      ],
+      "roadId": "850418184"
+    },
+    {
+      "name": "阪神西端沿路",
+      "reference": [
+        405,
+        447
+      ],
+      "roadId": "1011009011",
+      "targetHint": [
+        450,
+        820
+      ]
+    },
+    {
+      "name": "阪神中段沿路",
+      "reference": [
+        450,
+        418
+      ],
+      "roadId": "555472031",
+      "targetHint": [
+        534,
+        771
+      ]
+    },
+    {
+      "name": "阪神东段沿路",
+      "reference": [
+        500,
+        389
+      ],
+      "roadId": "555472031",
+      "targetHint": [
+        607,
+        725
+      ]
+    },
+    {
+      "name": "阪神东端御堂筋路口",
+      "reference": [
+        540,
+        365
+      ],
+      "roadId": "555472031",
+      "targetHint": [
+        670,
+        692
+      ]
+    },
+    {
+      "name": "Whity 东侧道路交叉口",
+      "reference": [
+        606,
+        375
+      ],
+      "roadId": "44394392",
+      "targetHint": [
+        757,
+        680
+      ]
+    },
+    {
+      "name": "Whity 东向地下街",
+      "reference": [
+        700,
+        355
+      ],
+      "roadId": "874525545",
+      "targetHint": [
+        897,
+        668
+      ]
+    },
+    {
+      "name": "三番街北段建筑轴",
+      "reference": [
+        550,
+        95
+      ],
+      "buildingId": "139168082",
+      "targetMetres": [
+        657,
+        213
+      ]
+    },
+    {
+      "name": "三番街中段建筑轴",
+      "reference": [
+        562,
+        145
+      ],
+      "buildingId": "139168082",
+      "targetMetres": [
+        675,
+        328
+      ]
+    },
+    {
+      "name": "LUCUA 西端转向梅北",
+      "reference": [
+        265,
+        313
+      ],
+      "buildingId": "162183788",
+      "targetMetres": [
+        295,
+        590
+      ],
+      "note": "用户确认：通道先沿 LUCUA，再折向梅北站台上方；西端转角为示意配准，不是道路吸附。"
+    },
+    {
+      "name": "LUCUA 西北沿楼段",
+      "reference": [
+        295,
+        288
+      ],
+      "buildingId": "162183788",
+      "targetHint": [
+        325,
+        570
+      ]
+    },
+    {
+      "name": "LUCUA 北侧沿楼段",
+      "reference": [
+        330,
+        260
+      ],
+      "buildingId": "162183788",
+      "targetHint": [
+        365,
+        545
+      ]
+    },
+    {
+      "name": "Grand Front 南侧接口",
+      "reference": [
+        354,
+        240
+      ],
+      "buildingId": "178942581"
+    },
+    {
+      "name": "HEP 南北通道北段",
+      "reference": [
+        620,
+        210
+      ],
+      "roadId": "1025049712",
+      "targetHint": [
+        773,
+        455
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "HEP NAVIO 西侧通道",
+      "reference": [
+        630,
+        250
+      ],
+      "roadId": "1069584113",
+      "targetHint": [
+        782,
+        515
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "阪急 Grand Building 东侧通道",
+      "reference": [
+        628,
+        280
+      ],
+      "roadId": "1069584113",
+      "targetHint": [
+        780,
+        555
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "阪急东侧公共通道转角",
+      "reference": [
+        621,
+        300
+      ],
+      "roadId": "1069584113",
+      "targetHint": [
+        775,
+        588
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "Whity 北侧道路接口",
+      "reference": [
+        617,
+        330
+      ],
+      "roadId": "1069584113",
+      "targetHint": [
+        779,
+        637
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "Whity 路口北侧通道",
+      "reference": [
+        607,
+        355
+      ],
+      "roadId": "31096737",
+      "targetHint": [
+        766,
+        664
+      ],
+      "note": "按 PDF 南北公共通道与本地 OSM 对应道路配准；支路及边界凹凸保留，非现场测量。"
+    },
+    {
+      "name": "第一生命南侧互通节点",
+      "reference": [
+        494,
+        480
+      ],
+      "roadId": "44394396",
+      "targetHint": [
+        576,
+        840
+      ],
+      "note": "根据 PDF 互通节点与 MARU 东侧道路的对应关系校正；地下开挖边界仍保留原图细节。"
+    },
+    {
+      "name": "MARU 东侧南北通道",
+      "reference": [
+        491,
+        515
+      ],
+      "roadId": "1011009031",
+      "targetHint": [
+        575,
+        903
+      ],
+      "note": "根据 PDF 互通节点与 MARU 东侧道路的对应关系校正；地下开挖边界仍保留原图细节。"
+    },
+    {
+      "name": "DIAMOR 西侧十字交会",
+      "reference": [
+        490,
+        557
+      ],
+      "roadId": "1011009031",
+      "targetHint": [
+        574,
+        951
+      ],
+      "note": "根据 PDF 互通节点与 MARU 东侧道路的对应关系校正；地下开挖边界仍保留原图细节。"
+    },
+    {
+      "name": "站前第一第二大楼间通道",
+      "reference": [
+        490,
+        585
+      ],
+      "roadId": "1101022366",
+      "targetHint": [
+        573,
+        1012
+      ],
+      "note": "根据 PDF 互通节点与 MARU 东侧道路的对应关系校正；地下开挖边界仍保留原图细节。"
+    },
+    {
+      "name": "Whity 东西街西段",
+      "reference": [
+        650,
+        359
+      ],
+      "roadId": "874525545",
+      "targetHint": [
+        827,
+        672
+      ],
+      "note": "PDF 黄色东西街主轴匹配扇町通；东端与道路交会点对齐，保留支路。"
+    },
+    {
+      "name": "Whity 东西街东段",
+      "reference": [
+        740,
+        352
+      ],
+      "roadId": "874525545",
+      "targetHint": [
+        949,
+        662
+      ],
+      "note": "PDF 黄色东西街主轴匹配扇町通；东端与道路交会点对齐，保留支路。"
+    },
+    {
+      "name": "Whity 东端道路交会",
+      "reference": [
+        770,
+        350
+      ],
+      "roadId": "874525545",
+      "targetHint": [
+        984,
+        658
+      ],
+      "note": "PDF 黄色东西街主轴匹配扇町通；东端与道路交会点对齐，保留支路。"
+    },
+    {
+      "name": "第一生命建筑岛定位",
+      "reference": [
+        465,
+        458
+      ],
+      "buildingId": "162158153",
+      "note": "第一生命建筑岛的示意位置控制，依据 OSM 建筑内部位置估计，避免把岛内点错误吸附到外边界。",
+      "targetMetres": [
+        524,
+        829
+      ]
+    },
+    {
+      "name": "第一生命互通东侧弧段",
+      "reference": [
+        484,
+        468
+      ],
+      "roadId": "44394396",
+      "targetHint": [
+        562,
+        846
+      ],
+      "note": "匹配 MARU 北侧弧形道路东段；黄色公共空间的原始边缘保留。"
+    },
+    {
+      "name": "DIAMOR 斜街北段",
+      "reference": [
+        535,
+        510
+      ],
+      "buildingId": "135624700",
+      "targetMetres": [
+        645,
+        896
+      ],
+      "note": "依据第4大楼西侧与 DT Tower 东侧间隙估计通道轴线，非建筑边界直接描摹。"
+    },
+    {
+      "name": "DIAMOR 斜街十字口",
+      "reference": [
+        555,
+        550
+      ],
+      "roadId": "173603450",
+      "targetHint": [
+        675,
+        951
+      ],
+      "note": "斜街与东西街交会的近似路口匹配。"
+    },
+    {
+      "name": "DIAMOR 东西街中段",
+      "reference": [
+        530,
+        557
+      ],
+      "roadId": "173603450",
+      "targetHint": [
+        635,
+        951
+      ],
+      "note": "沿东西道路的主街轴线。"
+    },
+    {
+      "name": "第4大楼南侧公共街",
+      "reference": [
+        600,
+        557
+      ],
+      "buildingId": "135624700",
+      "targetMetres": [
+        749,
+        952
+      ],
+      "note": "第4大楼南侧道路空间，保持与建筑南缘间距，人工估计。"
+    },
+    {
+      "name": "西梅田北端广场",
+      "reference": [
+        392,
+        472
+      ],
+      "roadId": "173601367",
+      "note": "按四桥筋及北端公共广场匹配，保留原图广场扩宽。 广场中心位于道路轴线西侧约数米，避免将扩宽区域压成路中心线。",
+      "targetMetres": [
+        425,
+        842
+      ]
+    },
+    {
+      "name": "Hilton 北侧转向阪神",
+      "reference": [
+        408,
+        462
+      ],
+      "roadId": "1011009011",
+      "note": "西梅田北侧弧形公共连接沿 Hilton 北侧进入阪神南侧；以道路南侧公共空间估计，不吸附到车行道中心，也不跨入付费区。",
+      "targetMetres": [
+        455,
+        837
+      ]
+    },
+    {
+      "name": "第一生命至阪神南侧接入",
+      "reference": [
+        460,
+        428
+      ],
+      "roadId": "555472031",
+      "targetMetres": [
+        535,
+        771
+      ],
+      "note": "根据 PDF 第一生命节点至阪神南侧支路校正，接入轴与阪神道路长轴近似正交；位置为人工示意配准。"
+    },
+    {
+      "name": "第一生命至阪神正交通道中段",
+      "reference": [
+        477,
+        454
+      ],
+      "roadId": "555472031",
+      "targetMetres": [
+        555.5,
+        805.5
+      ],
+      "note": "根据 PDF 第一生命节点至阪神南侧支路校正，接入轴与阪神道路长轴近似正交；位置为人工示意配准。"
+    }
+  ]
+}
