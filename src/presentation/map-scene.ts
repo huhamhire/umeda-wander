@@ -186,12 +186,12 @@ export class MapScene {
       const mesh = new T.Mesh(geometry, this.material(area.kind==='paid'?palette.paid:areaColor(area,this.levels.find(l=>l.id===area.level)!.y<0)));
       mesh.userData.labelOccluder=true;
       mesh.castShadow = true; mesh.receiveShadow = true;
-      const owner=area.kind==='commercial'||area.evidence.source==='district'?null:this.levels.find(l=>l.id===area.level)!.station??'jr-osaka';
+      const owner=area.blockId||area.kind==='commercial'||area.evidence.source==='district'?null:this.levels.find(l=>l.id===area.level)!.station??'jr-osaka';
       setRegionOwner(mesh,owner);
       this.groups.get(area.level)!.add(mesh);
       if (area.label && !(area.kind==='public'&&(this.levels.find(l=>l.id===area.level)!.y<0||/通路|通道|连廊|联络桥|连络桥/.test(area.name)))) {
         if(area.labelStyle==='floor'){
-          this.groups.get(area.level)!.add(setRegionOwner(buildFloorLabel(area,Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()),owner));
+          if(typeof document!=='undefined')this.groups.get(area.level)!.add(setRegionOwner(buildFloorLabel(area,area.labelAngleRad??Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()),owner));
           continue;
         }
         const x = area.outline.reduce((sum, point) => sum + point.x, 0) / area.outline.length;
@@ -516,7 +516,7 @@ export class MapScene {
       const roles=[from,to].map(p=>viewLayerRole(this.levels,this.state,p.level));
       const owners=[from,to].map(p=>this.levels.find(l=>l.id===p.level)!.station??'jr-osaka');
       const owner=this.activeFacility?.connectionId===connector.connection.id?this.state.focusStation??null:
-        connector.connection.evidence.source==='district'?null:owners[0]===owners[1]?owners[0]!:null;
+        connector.connection.blockId||connector.connection.evidence.source==='district'?null:owners[0]===owners[1]?owners[0]!:null;
       this.appearance.apply(connector.group,!roles.some(role=>role==='current'||role==='normal'),this.state.focusStation,owner);
     }
     if(this.context){

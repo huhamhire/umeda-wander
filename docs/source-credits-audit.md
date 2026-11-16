@@ -1,6 +1,6 @@
 # 数据来源与版权核查
 
-核查日期：2026-11-16。展示配置集中在 `src/infrastructure/source-credits.ts`；本记录列出交付边界，不是对所有现有材料的授权确认。
+核查日期：2026-11-17。展示配置集中在 `src/infrastructure/source-credits.ts`；本记录列出交付边界，不是对所有现有材料的授权确认。
 
 ## 实际发布资源
 
@@ -31,6 +31,8 @@
 | 日本邮便 JP Tower 连桥 PDF、阪急通廊说明、日本设计／设施官网图文 | `jp-tower-links.ts`、`hanshin-commercial-building.ts`、建筑造型与外部通廊整理 | 发布页已核对；仍未确认适用于本项目改编的明确授权 |
 
 配置中的公开链接逐项通过原发布站核对，包括 JR、阪急、阪神、Osaka Metro、大阪市两份 PDF、日本邮便、LUCUA、大丸、Grand Front、日本设计及 RESPIRE。线上资料可能更新，不能据此认定与仓库本地版本完全相同。无法确认的原始资料没有伪造公开下载链接，也没有把本地参考文件随弹窗发布。
+
+阶段三新增在用结果：`public-areas/metro-interchange/` 的三处局部接驳面依据 JR p6、M16 p1 与地区图编写；`north-atrium/access.ts` 的公共设备依据 JR p5–6／8。`basement-buildings.ts` 的 OSM 宿主轮廓经 `basement-occupancy.ts` 与参考 PDF 公共面相减，属于混合来源结果，不纳入纯 OSM 下载。对应原始资料仍适用上表的待授权事项，本轮没有获得新的许可、引入外部模型或在线瓦片。维护分区不会将 PDF 派生数据变成 ODbL。
 
 ## 交互检查
 

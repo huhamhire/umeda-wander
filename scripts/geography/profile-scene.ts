@@ -31,4 +31,6 @@ scene.scene.traverse((o:T.Object3D)=>{if(!(o instanceof T.Mesh))return;
  triangles+=(g.index?.count??g.getAttribute('position')?.count??0)/3*count;
 });
 const result={node:process.version,platform:process.platform,scope:'CPU geometry construction only; labels, WebGL/GPU and browser interaction excluded',milliseconds,meshes,vertices,triangles};
-writeFileSync('build/geography/stage-two-profile.json',JSON.stringify(result,null,2));console.log(result);
+const output=process.argv.find(a=>a.startsWith('--output='))?.slice('--output='.length)??'stage-two-profile.json';
+if(!/^[\w-]+\.json$/.test(output))throw new Error('Expected a JSON basename for profile output');
+writeFileSync('build/geography/'+output,JSON.stringify(result,null,2));console.log(result);

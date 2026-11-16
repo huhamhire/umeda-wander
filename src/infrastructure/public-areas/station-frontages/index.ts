@@ -4,7 +4,7 @@ import clipping from 'polygon-clipping';
 
 /** Only operator-side concourses; obsolete district-spanning rectangles are excluded.
  * These source-plan aprons are donated to the district owner, never drawn twice.
- * Detailed regional contours/branch bindings remain phase three work.
+ * Regional contours/branch bindings are owned by the public-area registry.
  */
 const core:Record<StationId,string[]>={
   'jr-osaka':['umekita-public','crost-public'],
@@ -13,7 +13,8 @@ const core:Record<StationId,string[]>={
   'hanshin-umeda':['west-public','central-public'],
   'higashi-umeda':['public-spine','whity-public'],
   'nishi-umeda':['public-hall','north-west-public','south-public'],
-  'kitashinchi':['north-public','south-public'],
+  // The southern exits have local equipment bays, not a confirmed full-length hall.
+  'kitashinchi':['north-public'],
 };
 export function stationFrontages(stations:StationMap[]):FloorArea[]{
   return stations.flatMap(s=>{
@@ -28,7 +29,7 @@ export function stationFrontages(stations:StationMap[]):FloorArea[]{
       // only its equipment bays; the reviewed regional mesh owns the corridor.
       const xs=a.outline.map(p=>p.x),zs=a.outline.map(p=>p.z);
       if(Math.hypot(Math.max(...xs)-Math.min(...xs),Math.max(...zs)-Math.min(...zs))<90)
-        return a.elevationOffset?[a,{...a,id:a.id+':lower-apron',elevationOffset:0}]:[a];
+        return a.elevationOffset?[{...a,blockId:s.id==='nishi-umeda'?'hanshin-west-b1':undefined},{...a,id:a.id+':lower-apron',elevationOffset:0}]:[a];
       const masks=landings.map(p=>[[p.x-5,p.z-5],[p.x+5,p.z-5],[p.x+5,p.z+5],[p.x-5,p.z+5]] as [number,number][]);
       const geometry=clipping.intersection([a.outline.map(p=>[p.x,p.z] as [number,number])],clipping.union([masks[0]!],...masks.slice(1).map(r=>[r])));
       return geometry.map((rings,i)=>({...a,id:a.id+':landing-'+i,outline:rings[0]!.map(([x,z])=>({x,z})),holes:rings.slice(1).map(r=>r.map(([x,z])=>({x,z})))}));

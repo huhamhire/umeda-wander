@@ -7,6 +7,8 @@ export function completeFacilityDirectory(existing:Facility[],connections:Vertic
   const result:Facility[]=existing.map(f=>knownPlatforms[f.id]?{...f,kind:'platform',platformId:knownPlatforms[f.id]}:{...f});
   const names={escalator:'扶梯',elevator:'直梯',stairs:'楼梯'};
   const caption=(id:string)=>{
+    if(id.startsWith('public-north'))return '北中庭';
+    if(id.startsWith('public-umekita'))return '梅北闸外';
     if(id.startsWith('jp-garden'))return 'JP Tower 下沉广场';
     if(id.startsWith('district-jr-metro'))return 'JR—御堂筋线通路';
     if(id.startsWith('hankyu'))return '阪急';if(id.startsWith('metro'))return '御堂筋线';

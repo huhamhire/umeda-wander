@@ -12,15 +12,15 @@ draft.levels=[
 const p=platform('island','y11-platform',[1,2],0,0,86,7,
   {width:7,name:'Y11 · 1/2 番线岛式站台',lineName:'四桥线',lineColor:0x328bb7,terminal:true,terminalEnd:'end',trackSides:[1,-1],screenDoors:'half-height'});
 area('paid-hall','y11-hall','西梅田 · 闸内站厅','paid',-2,geographic?-4:0,90,geographic?14:12);
-area('public-hall','y11-hall','西梅田 · B1 公共通路','public',0,geographic?-18:16,116,geographic?14:20);
+area('public-hall','y11-hall','西梅田 · B1 公共通路','public',0,geographic?13:16,116,20);
 area('north-public','y11-hall','西梅田 · 阪神 / JR 方向公共通路','public',55,7,16,38);
 area('south-public','y11-hall','西梅田 · 北新地 / 堂岛方向','public',-60,geographic?-4:12,26,geographic?42:28);
 area('north-west-public','y11-hall','西梅田 · 北侧闸外转角','public',55,-20,16,40);
 area('west-public','y11-hall','Hilton / Herbis · 外部地下通路','public',-2.5,-28,115,8);
 area('south-west-public','y11-hall','西梅田 · 南侧闸外转角','public',-60,-14,12,28);
 for(const [key,name,x]of [['north','北改札 · 仅出站',33],['middle','中改札 · 仅进站',6],['south','南改札',-32]] as const){
-  facility(`${key}-gate`,'y11-hall',`Y11 · ${name}`,'gate',geographic&&key==='south'?-47:x,geographic?(key==='south'?-4:-11):6,'参考图保留改札使用方向；模型通路和设备间距为示意。',geographic&&key==='south'?Math.PI/2:0);
-  facility(`${key}-machines`,'y11-hall',`Y11 · ${key==='north'?'北侧':key==='middle'?'中部':'南侧'}售票机`,'ticket-machine',geographic&&key==='south'?-55:x+6,geographic?-18:17,'闸外售票机组，数量和机柜间距为示意。',Math.PI);
+  facility(`${key}-gate`,'y11-hall',`Y11 · ${name}`,'gate',geographic&&key==='south'?-47:x,geographic?(key==='south'?-4:3):6,'参考图保留改札使用方向；模型通路和设备间距为示意。',geographic&&key==='south'?Math.PI/2:0);
+  facility(`${key}-machines`,'y11-hall',`Y11 · ${key==='north'?'北侧':key==='middle'?'中部':'南侧'}售票机`,'ticket-machine',geographic&&key==='south'?-55:x+6,geographic?13:17,'闸外售票机组，数量和机柜间距为示意。',Math.PI);
 }
 area('office','y11-hall','Y11 · 站务室','service',-23,geographic?-21:21,10,6);
 facility('office','y11-hall','Y11 · 站务咨询','information',-23,geographic?-21:21,'图示站长室／咨询区域。');
@@ -31,7 +31,7 @@ for(const [key,x,high,z]of [['north',30,42,1.5],['middle',-6,8,0],['south',-32,-
 connection('north-escalator','escalator',node('north-escalator-low','y11-platform',30,-1.5),node('north-escalator-high','y11-hall',42,-1.5),p.id);
 connection('south-escalator','escalator',node('south-escalator-low','y11-platform',-32,-1.5),node('south-escalator-high','y11-hall',-18,-1.5),p.id);
 connection('platform-lift','elevator',node('platform-lift-low','y11-platform',-40,0),node('platform-lift-high','y11-hall',-40,0),p.id);
-const streetLiftZ=geographic?-18:20;
+const streetLiftZ=geographic?13:20;
 area('street-lift-ground','y11-ground','西梅田 · 地面电梯落台','public',30,streetLiftZ,7,7);
 connection('street-lift','elevator',node('street-lift-low','y11-hall',30,streetLiftZ),node('street-lift-high','y11-ground',30,streetLiftZ));
 area('yoshimoto-raised','y11-hall','吉本大楼 · 短程升降平台落台','public',14,26,12,8);
@@ -57,13 +57,13 @@ for(const [key,name,x,z]of [
 const common=node('paid-route','y11-hall',0,0);
 for(const [key,x]of [['north',33],['middle',6],['south',-32]] as const){
   const south=geographic&&key==='south';
-  const outside=node(`${key}-route-out`,'y11-hall',south?-50:x,geographic?(south?-4:-14):10),inside=node(`${key}-route-in`,'y11-hall',south?-44:x,geographic?(south?-4:-8):3);
+  const outside=node(`${key}-route-out`,'y11-hall',south?-50:x,geographic?(south?-4:6):10),inside=node(`${key}-route-in`,'y11-hall',south?-44:x,geographic?(south?-4:0):3);
   if(key==='north')draft.edges.push({from:inside.id,to:outside.id,kind:'gate',cost:7,directed:true});
   else if(key==='middle')draft.edges.push({from:outside.id,to:inside.id,kind:'gate',cost:7,directed:true});
   else edge(outside,inside,'gate');
   edge(inside,common);
 }
-const entry=node('route-entry','y11-hall',6,geographic?-18:17),high=draft.nodes.find(n=>n.id==='nishi-umeda-middle-stairs-high')!,low=draft.nodes.find(n=>n.id==='nishi-umeda-middle-stairs-low')!;
+const entry=node('route-entry','y11-hall',6,geographic?13:17),high=draft.nodes.find(n=>n.id==='nishi-umeda-middle-stairs-high')!,low=draft.nodes.find(n=>n.id==='nishi-umeda-middle-stairs-low')!;
 const dest=node('destination','y11-platform',8,0);
 edge(entry,draft.nodes.find(n=>n.id==='nishi-umeda-middle-route-out')!);edge(common,high);edge(high,low,'stairs');edge(low,dest);
 for(const value of [...draft.facilities,...draft.layout.areas,...draft.layout.platforms,...draft.layout.connections]){

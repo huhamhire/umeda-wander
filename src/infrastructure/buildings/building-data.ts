@@ -11,10 +11,11 @@ const project=(p:number[]):Point2=>({x:(p[0]!-135.491)*111320*Math.cos(34.708*Ma
 export function footprint(id:string){
  const part=parts.find(p=>p.id===id);
  if(part)return {outline:part.coordinates.map(project),holes:[] as Point2[][]};
- const raw=plan.ground.find(f=>f.id==='way/'+id);if(!raw)throw new Error('Missing building '+id);
+ const raw=plan.ground.find(f=>f.id===(id.includes('/')?id:'way/'+id));if(!raw)throw new Error('Missing building '+id);
  const f=raw as unknown as {geometry:{type:string;coordinates:number[][][]}};
- if(f.geometry.type!=='Polygon')throw new Error('Expected single building polygon '+id);
- return {outline:f.geometry.coordinates[0]!.map(project),holes:f.geometry.coordinates.slice(1).map(r=>r.map(project))};
+ const rings=f.geometry.type==='MultiPolygon'?(f.geometry.coordinates as unknown as number[][][][]).length===1?(f.geometry.coordinates as unknown as number[][][][])[0]:undefined:f.geometry.type==='Polygon'?f.geometry.coordinates:undefined;
+ if(!rings)throw new Error('Expected single building polygon '+id);
+ return {outline:rings[0]!.map(project),holes:rings.slice(1).map(r=>r.map(project))};
 }
 export function volume(id:string,name:string,base:number,top:number,certainty:BuildingVolume['certainty']='estimate'):BuildingVolume {
  return {name,...footprint(id),base,top,source:'https://www.openstreetmap.org/way/'+id,certainty,

@@ -13,5 +13,10 @@ const southernBlocks:Record<string,number>={
 /** Region distinction is a presentation choice, independent of access semantics. */
 export function areaColor(area:FloorArea,underground=false):number {
   if(underground&&area.kind==='public')return undergroundPublicColor;
+  if(area.blockId?.startsWith('building:')){
+    const colors=[0xd3dfc5,0xe8d8b9,0xcbdde5,0xddd0e2,0xe7cfbf,0xc9ddd4,0xe7dfbc];
+    const hash=Array.from(area.blockId).reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,0);
+    return colors[hash%colors.length]!;
+  }
   return southernBlocks[area.id]??({public:underground?undergroundPublicColor:publicAreaColor,paid:0xbbd1bd,commercial:0xe4d4c3,service:0xd7dfc4}[area.kind]);
 }
