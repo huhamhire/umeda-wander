@@ -23,11 +23,11 @@ test('each of seven station blocks can be built independently, without cross-sta
   }
 });
 
-test('all equipment landings lie on their own station floor/platform or the shared B1 public floor',()=>{
+test('all equipment landings lie on their own station floor/platform or a same-height shared public floor',()=>{
   for(const c of layout.connections){
     for(const n of [c.from,c.to]){
       const y=levels.find(l=>l.id===n.level)!.y+(n.elevationOffset??0);
-      const floor=layout.areas.some(a=>(a.level===n.level||a.level==='district-underground'&&levels.find(l=>l.id===n.level)!.y===-8)&&
+      const floor=layout.areas.some(a=>(a.level===n.level||a.kind==='public'&&(c.blockId!==undefined||a.blockId!==undefined))&&
         Math.abs(levels.find(l=>l.id===a.level)!.y+(a.elevationOffset??0)-y)<.01&&
         pointInPolygon(n,a.outline)&&!a.holes?.some(h=>pointInPolygon(n,h)));
       const platform=layout.platforms.some(p=>{const local=platformLocalPoint(p,n);return p.level===n.level&&Math.abs(local.x)<=p.length/2+.001&&Math.abs(local.z)<=p.width/2+.001;});
@@ -73,8 +73,10 @@ test('JR retains three Central Court to Crost flights separately from the paid w
 
 test('Yodobashi has an open exterior gallery around its inward retail podium',()=>{
   const b=geographicBuildings.find(b=>b.id==='yodobashi')!,g=b.galleries![0]!;
-  const model=buildGeographicBuilding(b);assert.ok(model.getObjectByName('building-gallery'));
-  assert.equal(g.y,4);assert.ok(g.innerOutline.every(p=>pointInPolygon(p,g.outline)));
+  const model=buildGeographicBuilding(b);assert.ok(!model.getObjectByName('building-gallery'),'gallery must be owned by the public deck');
+  const center=g.innerOutline.reduce((s,p)=>({x:s.x+p.x/g.innerOutline.length,z:s.z+p.z/g.innerOutline.length}),{x:0,z:0});
+  assert.ok(!layout.areas.some(a=>a.blockId==='north-decks'&&pointInPolygon(center,a.outline)&&!a.holes?.some(h=>pointInPolygon(center,h))),'gallery fills retail interior');
+  assert.equal(g.y,8);assert.ok(g.innerOutline.every(p=>pointInPolygon(p,g.outline)));
   const edge=g.outline[0]!,inner=g.innerOutline[0]!,p={x:(edge.x+inner.x)/2,z:(edge.z+inner.z)/2};
   assert.ok(!pointInPolygon(p,b.volumes[0]!.outline),'podium blocks the gallery');
 });

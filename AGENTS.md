@@ -13,9 +13,11 @@
 
 ## 工作约定
 
+- 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北／南／西板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源与未定位新桥见 `docs/stage-four-decks.md`。
+
 - 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/stage-three-underground.md`。
 
-- 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，阶段三首批地下公共板块已接入，建筑门位及部分出口层高仍待核对。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
+- 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，阶段三地下公共板块与阶段四主要 2F 连廊已接入，地下门位、局部高差和未定位新桥仍待核对。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。

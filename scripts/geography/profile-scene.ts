@@ -22,7 +22,7 @@ Object.assign(scene,{layout,levels,facilities,openings,gateBoundaries:planGateBo
 Reflect.get(scene,'buildStation').call(scene);
 for(const c of scene.connectors)c.update((id:string)=>levels.find(l=>l.id===id)!.y,'all');
 const context=buildGeographicContext(openings.filter(o=>levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));
-scene.scene.add(...Object.values(context),...geographicBuildings.map(buildGeographicBuilding));
+scene.scene.add(...Object.values(context),...geographicBuildings.map(b=>buildGeographicBuilding(b,layout.exteriorOpenings)));
 const milliseconds=performance.now()-start;
 let meshes=0,triangles=0,vertices=0;
 scene.scene.traverse((o:T.Object3D)=>{if(!(o instanceof T.Mesh))return;

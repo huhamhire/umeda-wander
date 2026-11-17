@@ -20,8 +20,8 @@ export function planFloorOpenings(connections: VerticalConnection[], levels: Lev
     for (const level of surfaces) {
       const owner=levels.find(l=>l.id===level.id)?.station??'jr-osaka';
       const owners=[connection.from.level,connection.to.level].map(id=>levels.find(l=>l.id===id)?.station??'jr-osaka');
-      // The shared B1 floor belongs to the district, including non-JR equipment.
-      if(level.id!=='district-underground'&&!owners.includes(owner))continue;
+      // Shared district surfaces receive equipment openings across station ownership.
+      if(levels.find(l=>l.id===level.id)?.station&&!connection.blockId&&!owners.includes(owner))continue;
       if (level.y < lowY || level.y > highY) continue;
       if (connection.kind !== 'elevator' && level.y === lowY) continue;
       const t = (level.y - fromY) / (toY - fromY);

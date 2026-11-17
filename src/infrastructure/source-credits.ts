@@ -26,14 +26,14 @@ export const sourceCredits:SourceCredits={
   // No public remote, project LICENSE or verified feedback channel in this repository.
   project:{},
   data:[
-    {name:'OpenStreetMap 数据',use:'地面道路铺装轮廓及估计宽度、建筑及塔楼平面轮廓、车站地理锚点、站台轴向和站外轨道延伸方向；经投影、简化及示意比例调整。',
+    {name:'OpenStreetMap 数据',use:'地面道路铺装轮廓及估计宽度、建筑及塔楼平面轮廓、车站地理锚点、站台轴向、站外轨道延伸方向及 34 段高架步行轴线；经投影、简化及示意比例调整。',
       links:[link('OpenStreetMap 版权与许可','https://www.openstreetmap.org/copyright')],
       licence:link('Open Database License 1.0（ODbL）','https://opendatacommons.org/licenses/odbl/1-0/'),attribution:'© OpenStreetMap contributors',download:'osm'},
     {name:'JR 大阪站与北新地站布局整理',use:'楼板、站台、闸机、扶梯、楼梯、直梯及南北门大楼连接几何；北中庭 75／76、B 直梯和梅北闸外地面入口。原 PDF 和图标未嵌入页面。',links:[jr,kitashinchi],attribution:'资料发布者：西日本旅客鉄道株式会社',status:pending},
     {name:'阪急大阪梅田站布局整理',use:'站台、收费区、站厅、竖向连接几何；本地 SVG 为主要参考，在线 PDF 用于补充核对，版本不同。',links:[hankyu],attribution:'资料发布者：阪急電鉄株式会社；本地 SVG 的原始发布地址待确认',status:pending},
     {name:'阪神大阪梅田站布局整理',use:'B1／B2 平面、东西出口、两段式主阶梯及南出口竖向连接几何。',links:[hanshin],attribution:'资料发布者：阪神電気鉄道株式会社',status:pending},
     {name:'Osaka Metro 三站布局整理',use:'御堂筋线梅田、谷町线东梅田、四桥线西梅田的站厅、站台及出入口几何。',links:metro,attribution:'资料发布者：大阪市高速電気軌道株式会社（Osaka Metro）',status:pending},
-    {name:'地区步行图与连廊资料整理',use:'异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪、2F 连廊和 JP Tower 下沉广场连接几何。OSM 建筑轮廓与 PDF 通路相减的混合结果不包含在纯 OSM 下载中。',links:[city,cityRoute,umedaMap,jp],attribution:'资料发布者包括大阪市、日本邮便、UMEDA CONNECT；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实',status:pending},
+    {name:'地区步行图与连廊资料整理',use:'异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪、2F 公共桥面、开放前庭、公共设备、建筑门口裁口和 JP Tower 接入几何。OSM 建筑轮廓与 PDF 通路相减的混合结果不包含在纯 OSM 下载中。',links:[city,cityRoute,umedaMap,jp],attribution:'资料发布者包括大阪市、日本邮便、UMEDA CONNECT；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实',status:pending},
     {name:'程序化建筑外观与设施模型',use:'屋顶、裙楼、塔楼、扶梯、电梯井、围栏，以及 Canvas 生成的标牌纹理；没有引入第三方模型、照片贴图或图标文件。',links:[],attribution:'项目内以 Three.js 几何、Canvas 和内联 SVG 生成',status:'未设置独立资产许可证；外景照片与截图参与造型观察，其来源及可用于改编的授权待补充。'},
   ],
   references:[

@@ -11,6 +11,7 @@ export function composeStationMaps(stations:StationMap[],district:StationLayout)
     railApproaches:parts.flatMap(p=>p.railApproaches??[]),guides:parts.flatMap(p=>p.guides??[]),
     buildings:parts.flatMap(p=>p.buildings??[]),passages:parts.flatMap(p=>p.passages??[]),
     atria:parts.flatMap(p=>p.atria??[]),concourses:parts.flatMap(p=>p.concourses??[]),
+    exteriorOpenings:parts.flatMap(p=>p.exteriorOpenings??[]),
   };
   return {stations:stations.map(({id,name})=>({id,name})),levels,layout,
     sourceFacilities:stations.flatMap(s=>s.facilities),nodes:stations.flatMap(s=>s.nodes),edges:stations.flatMap(s=>s.edges)};

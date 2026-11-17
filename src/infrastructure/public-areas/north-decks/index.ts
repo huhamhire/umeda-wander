@@ -1,0 +1,25 @@
+import type {StationMap} from '../../../domain/map/model.ts';
+import type {DeckBlock,DeckPortal} from '../../../domain/map/public-deck.ts';
+import {building as yodobashi} from '../../buildings/yodobashi/index.ts';
+import {deckEvidence,sourceDeckPaths,deckPath} from '../elevated-source.ts';
+
+export function northDecks(stations:StationMap[]):{blocks:DeckBlock[];portals:DeckPortal[]}{
+  const gallery=yodobashi.galleries![0]!;
+  const hankyu=stations.find(s=>s.id==='hankyu-umeda')!.layout.areas.find(a=>a.id==='hankyu-umeda-jr-interface')!;
+  const stationDoor=hankyu.outline.reduce((p,q)=>({x:p.x+q.x/4,z:p.z+q.z/4}),{x:0,z:0});
+  const paths=sourceDeckPaths(['grand-front-bridge','grand-front-atrium','yodobashi-west','yodobashi-east','hankyu-link','atrium-public']);
+  // The calibrated station moved north of the raw OSM arcade end. Continue along
+  // the west public frontage to its declared JR interface, outside the paid hall.
+  paths.push(deckPath('hankyu-public-frontage','阪急西侧公共接入',[{x:659.8,z:446.5},{x:644,z:390},stationDoor]));
+  const portal=(id:string,target:string,point:{x:number;z:number},angle:number):DeckPortal=>({id,blockId:'north-decks',target,point,angle,width:6,level:'district-north-deck',evidence:deckEvidence});
+  return {blocks:[{id:'north-decks',name:'北中庭—商业设施公共连廊',level:'district-north-deck',paths,
+    regions:[{outline:gallery.outline,holes:[gallery.innerOutline]}],evidence:deckEvidence}],portals:[
+    portal('grand-front-north-door','grand-front-north',{x:339.7,z:326.5},Math.PI/2),
+    portal('grand-front-south-bridge-door','grand-front-south',{x:347.2,z:373.5},Math.PI/2),
+    portal('grand-front-atrium-door','grand-front-south',{x:369.3,z:481.6},Math.PI/3),
+    portal('hankyu-jr-interface','station:hankyu-umeda',stationDoor,-Math.PI/2),
+    portal('jr-north-atrium','station:jr-osaka',{x:393.7,z:521.8},Math.PI/3),
+    portal('yodobashi-west-gallery','yodobashi',{x:438.3,z:473.1},-Math.PI/4),
+    portal('yodobashi-east-gallery','yodobashi',{x:510.7,z:447.9},Math.PI/3),
+  ]};
+}

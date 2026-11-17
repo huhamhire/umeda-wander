@@ -11,6 +11,8 @@ export interface PublicAreaBlock {
 export interface PublicRegionPatch {
   id:string;blockId:string;name:string;region:PlanRegion;evidence:Evidence;
 }
-export interface BasementOccupancy {
+export interface BuildingOccupancy {
   id:string;name:string;region:PlanRegion;evidence:Evidence;
 }
+
+export type BasementOccupancy=BuildingOccupancy;

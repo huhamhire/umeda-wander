@@ -35,6 +35,7 @@ import {facilityFocusRect,facilityCameraCenter,minimumMapZoom} from './facility-
 import {SelectionMarker} from './selection-marker.ts';
 import {buildCommercialConcourse} from './commercial-concourse-model.ts';
 import {buildFloorLabel} from './floor-label.ts';
+import {buildPublicDeckRailing} from './models/public-deck-model.ts';
 import {areaColor} from './area-palette.ts';
 
 const colors = { slab: publicAreaColor, edge: 0xc6bea8, mint: 0xbbd1bd, blue: 0xb0c6ce,
@@ -43,6 +44,7 @@ interface MapLabel { element: HTMLDivElement; position: T.Vector3; level?: Level
 
 export class MapScene {
   private renderer: T.WebGLRenderer;
+  private geographicBuildingFloors:T.Group[]=[];
   private scene = new T.Scene();
   private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 6000);
   private groups = new Map<LevelId, T.Group>();
@@ -116,7 +118,7 @@ export class MapScene {
     this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
     this.buildStation();
     if(layout.geographic){this.context=buildGeographicContext(this.openings.filter(o=>this.levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));this.scene.add(this.context.roads,this.context.buildings);this.ground!.visible=false;
-      for(const building of geographicBuildings){const model=buildGeographicBuilding(building);this.geographicExteriors.add(model);}
+      for(const building of geographicBuildings){const model=buildGeographicBuilding(building,this.layout.exteriorOpenings);this.geographicExteriors.add(model);}
       this.scene.add(this.geographicExteriors);
       this.geographicExteriors.traverse(o=>{if(o.userData.labelOccluder)this.labelOccluders.push(o);});
     }
@@ -170,8 +172,7 @@ export class MapScene {
       this.label(`${building.name} · ${floor.name}`,x,3+(floor.elevationOffset??0),z,floor.level,false,true,null);
     }
     for(const passage of this.layout.passages??[]){
-      if(passage.surfaceId)continue;
-      const model=new PublicPassageModel(passage,publicContext);this.publicPassages.push(model);this.scene.add(model.group);
+      if(!passage.surfaceId){const model=new PublicPassageModel(passage,publicContext);this.publicPassages.push(model);this.scene.add(model.group);}
       if(passage.kind==='underground'||(passage.kind==='deck'&&!passage.label))continue;
       const boundary=passage.points.find(p=>p.boundaryName);
       const point=boundary??passage.points[Math.floor(passage.points.length/2)]!;
@@ -179,6 +180,8 @@ export class MapScene {
     }
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
+      const floorGroup=area.id.startsWith('deck-context-')?new T.Group():this.groups.get(area.level)!;
+      if(area.id.startsWith('deck-context-')){this.groups.get(area.level)!.add(floorGroup);(this.geographicBuildingFloors??=[]).push(floorGroup);}
       const cuts = [...area.holes??[],...this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline)];
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
       if (!geometry.getAttribute('position')) continue;
@@ -188,10 +191,11 @@ export class MapScene {
       mesh.castShadow = true; mesh.receiveShadow = true;
       const owner=area.blockId||area.kind==='commercial'||area.evidence.source==='district'?null:this.levels.find(l=>l.id===area.level)!.station??'jr-osaka';
       setRegionOwner(mesh,owner);
-      this.groups.get(area.level)!.add(mesh);
+      floorGroup.add(mesh);
+      if(area.railings)this.groups.get(area.level)!.add(setRegionOwner(buildPublicDeckRailing(area,this.layout,this.levels),null));
       if (area.label && !(area.kind==='public'&&(this.levels.find(l=>l.id===area.level)!.y<0||/通路|通道|连廊|联络桥|连络桥/.test(area.name)))) {
         if(area.labelStyle==='floor'){
-          if(typeof document!=='undefined')this.groups.get(area.level)!.add(setRegionOwner(buildFloorLabel(area,area.labelAngleRad??Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()),owner));
+          if(typeof document!=='undefined')floorGroup.add(setRegionOwner(buildFloorLabel(area,area.labelAngleRad??Math.PI/2-58.35*Math.PI/180,this.renderer.capabilities.getMaxAnisotropy()),owner));
           continue;
         }
         const x = area.outline.reduce((sum, point) => sum + point.x, 0) / area.outline.length;
@@ -523,6 +527,7 @@ export class MapScene {
       const above=this.state.level==='all'||this.levels.find(l=>l.id===this.state.level)!.y>=0;
       this.context.roads.visible=this.roadsVisible&&above;
       this.context.buildings.visible=this.roadsVisible&&above;
+      for(const floor of this.geographicBuildingFloors)floor.visible=this.roadsVisible&&above;
       this.geographicExteriors.visible=this.roadsVisible&&this.state.roof&&this.state.level==='all';
       this.appearance.apply(this.geographicExteriors,false,this.state.focusStation,null);
 

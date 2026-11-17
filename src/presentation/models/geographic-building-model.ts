@@ -2,10 +2,13 @@ import {entranceVoid,buildStationEntrance} from './station-entrance-model.ts';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import type {GeographicBuilding} from '../../infrastructure/buildings/building-data.ts';
+import type {BuildingOpening} from '../../domain/map/model.ts';
+import {pointInPolygon} from '../../domain/map/geometry.ts';
 import {buildFloorGeometry} from '../floor-geometry.ts';
 /** Shared metre-scale exterior; detached from walkable floors and their openings. */
-export function buildGeographicBuilding(building:GeographicBuilding){
+export function buildGeographicBuilding(building:GeographicBuilding,openings:BuildingOpening[]=[]){
  const group=new T.Group();group.name='geographic-building-'+building.id;
+ const doors=openings.filter(o=>o.buildingId===building.id);
  const warm=['hankyu-dept','hankyu-grand','daimaru','hanshin-dept'].includes(building.id);
  const wall=new T.MeshStandardMaterial({color:warm?0xd8d4c9:0xb8cdca,roughness:.75});
  const glass=new T.MeshStandardMaterial({color:0x91aaa9,roughness:.65,metalness:.12});
@@ -13,7 +16,9 @@ export function buildGeographicBuilding(building:GeographicBuilding){
  for(const volume of building.volumes){
   const section=new T.Group();section.name=volume.name;group.add(section);
   const entrance=volume.base===0?building.entrance:undefined;
-  const pieces=entrance?[{base:0,top:entrance.height,holes:[...volume.holes,entranceVoid(entrance)]},{base:entrance.height,top:volume.top,holes:volume.holes}]:[{base:volume.base,top:volume.top,holes:volume.holes}];
+  const cutsAt=(y:number)=>[...volume.holes,...(entrance&&y<entrance.height?[entranceVoid(entrance)]:[]),...doors.filter(d=>d.base<=y&&d.top>y).map(d=>d.outline)];
+  const bounds=[...new Set([volume.base,volume.top,...(entrance?[entrance.height]:[]),...doors.flatMap(d=>[d.base,d.top])].filter(y=>y>=volume.base&&y<=volume.top))].sort((a,b)=>a-b);
+  const pieces=bounds.slice(1).map((top,i)=>({base:bounds[i]!,top,holes:cutsAt((top+bounds[i]!)/2)}));
   for(const piece of pieces){
     const body=new T.Mesh(buildFloorGeometry(volume.outline,piece.holes,piece.top-piece.base,piece.base),volume.base?glass:wall);
     body.userData.labelOccluder=true;body.castShadow=true;body.receiveShadow=true;section.add(body);
@@ -23,7 +28,7 @@ export function buildGeographicBuilding(building:GeographicBuilding){
     for(const hole of volume.holes){const garden=new T.Mesh(buildFloorGeometry(hole,[],.3,volume.base+.1),new T.MeshStandardMaterial({color:0x98af91,roughness:1}));garden.name='roof-court-garden';section.add(garden);}
   }
   const bands:T.BufferGeometry[]=[];
-  for(let y=volume.base+4;y<volume.top;y+=4)bands.push(buildFloorGeometry(volume.outline,entrance&&y<entrance.height?[...volume.holes,entranceVoid(entrance)]:volume.holes,.22,y));
+  for(let y=volume.base+4;y<volume.top;y+=4)bands.push(buildFloorGeometry(volume.outline,cutsAt(y),.22,y));
   bands.push(buildFloorGeometry(volume.outline,volume.holes,.5,volume.top));
   const geometry=mergeGeometries(bands)!;bands.forEach(g=>g.dispose());
   if((volume.base&&['hankyu-dept','hankyu-grand','daimaru'].includes(building.id))||building.id==='yodobashi'){
@@ -31,6 +36,7 @@ export function buildGeographicBuilding(building:GeographicBuilding){
     for(let i=1;i<volume.outline.length;i++){
       const a=volume.outline[i-1]!,b=volume.outline[i]!,dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz),count=Math.floor(length/4);
       for(let j=1;j<count;j++){
+        if(doors.some(d=>pointInPolygon({x:a.x+dx*j/count,z:a.z+dz*j/count},d.outline)))continue;
         const g=new T.BoxGeometry(.45,volume.top-volume.base,.8);
         g.rotateY(-Math.atan2(dz,dx));g.translate(a.x+dx*j/count,(volume.base+volume.top)/2,a.z+dz*j/count);fins.push(g);
       }
@@ -38,21 +44,6 @@ export function buildGeographicBuilding(building:GeographicBuilding){
     if(fins.length){section.add(new T.Mesh(mergeGeometries(fins)!,trim));fins.forEach(g=>g.dispose());}
   }
   const rim=new T.Mesh(geometry,trim);rim.userData.labelOccluder=true;section.add(rim);
- }
- for(const gallery of building.galleries??[]){
-  const section=new T.Group();section.name='building-gallery';group.add(section);
-  const deck=new T.Mesh(buildFloorGeometry(gallery.outline,[gallery.innerOutline],.35,gallery.y),trim);
-  deck.name=gallery.name;deck.userData.labelOccluder=true;section.add(deck);
-  const rails:T.BufferGeometry[]=[];
-  for(let i=0;i<gallery.outline.length;i++){
-    const a=gallery.outline[i]!,b=gallery.outline[(i+1)%gallery.outline.length]!,length=Math.hypot(b.x-a.x,b.z-a.z);
-    if(length<.01)continue;
-    const top=new T.BoxGeometry(length,.045,.045);top.rotateY(-Math.atan2(b.z-a.z,b.x-a.x));
-    top.translate((a.x+b.x)/2,gallery.y+1.45,(a.z+b.z)/2);rails.push(top);
-    const count=Math.ceil(length/.9);
-    for(let j=0;j<count;j++){const g=new T.BoxGeometry(.035,1.1,.035);g.translate(a.x+(b.x-a.x)*j/count,gallery.y+.9,a.z+(b.z-a.z)*j/count);rails.push(g);}
-  }
-  if(rails.length){section.add(new T.Mesh(mergeGeometries(rails)!,new T.MeshStandardMaterial({color:0xc5d2ca,roughness:1})));rails.forEach(g=>g.dispose());}
  }
  for(const sign of building.signs??[]){
   const backing=new T.Mesh(new T.PlaneGeometry(sign.width,sign.height),new T.MeshStandardMaterial({color:0x405754,roughness:.9,side:T.DoubleSide}));
