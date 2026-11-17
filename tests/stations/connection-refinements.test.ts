@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { connectionLanes, escalatorOverallWidth } from '../../src/application/connection-lanes.ts';
-import { elevatorShaftWidth, planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
+import { connectionLanes, escalatorOverallWidth } from '../../src/application/connections/connection-lanes.ts';
+import { elevatorShaftWidth, planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { platformLocalPoint, platformPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { layout as districtLayout } from '../../src/infrastructure/district/geographic-map.ts';
 import { areas, connections, facilities, levels, platforms } from '../../src/infrastructure/stations/jr-osaka/layout.ts';
-import { advanceExplode } from '../../src/presentation/explode-transition.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { advanceExplode } from '../../src/presentation/appearance/explode-transition.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'narrowed underground platforms retain full-width stairs and elevator landing clearance',
     () => {

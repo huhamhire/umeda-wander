@@ -9,7 +9,7 @@ import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts
 import { deckBuildingOccupancies } from '../../src/infrastructure/public-areas/deck-buildings.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion } from '../../src/domain/map/model.ts';
-import { buildGeographicContext } from '../../src/presentation/geographic-context.ts';
+import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
 
 const geometry = (region: PlanRegion): clipping.Polygon => [region.outline, ...region.holes ?? []].map(r => r.map(p => [p.x, p.z]));

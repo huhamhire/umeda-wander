@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { visibleElevatorConnections } from '../../src/application/elevator-visibility.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { visibleElevatorConnections } from '../../src/application/connections/elevator-visibility.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'floor cuts preserve complete served elevator shafts and doors at both ends',
     () => {

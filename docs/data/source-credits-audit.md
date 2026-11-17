@@ -40,7 +40,7 @@
 
 使用原生 `<dialog>.showModal()`，依赖浏览器的顶层模态与 inert 隔离；标题接收初始焦点，关闭按钮、Esc 和 cancel 均恢复入口焦点，Tab 首尾循环。手机入口包含 12px OSM 署名，触摸区域至少 44px，底部导览预留 58px 加安全区；对话框限制屏幕高度、内容独立滚动，关闭按钮在滚动区外。
 
-版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits.css`、`src/infrastructure/source-credits.ts`、`src/presentation/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集，旧下载对照已退役；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
+版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits.css`、`src/infrastructure/source-credits.ts`、`src/presentation/components/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集，旧下载对照已退役；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
 
 自动化测试覆盖内容节顺序、空节省略、许可分离、下载数据边界、打开关闭与键盘焦点生命周期，以及窄屏样式约束。遵照既有“不直接操作浏览器”的要求，没有做真实浏览器／手机视口的视觉和原生模态验收；原生 inert、触摸滚动与关闭后地图手势仍需在浏览器实测，不能把测试替身称为该项实测通过。
 
@@ -54,6 +54,6 @@
 
 Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽楼梯的拓扑及方位核对，单列在运行时数据与素材来源中；几何改编及公开使用授权待确认。原图保存在 `references/commercial/grand-front/`。全部本地资料按车站、地区、接驳及商业体分类，稳定 ID、原名、SHA-256、核对用途及待确认事项集中于 `references/catalog.json`；文件来源可追溯与获得授权是两个独立事项。
 
-阪急 1F 公共通廊现役几何在 `src/infrastructure/buildings/hankyu-dept/concourse.ts`，拱门及橱窗程序模型在 `src/presentation/commercial-concourse-model.ts`；依据官方通廊说明和既有用户照片拟合，原始素材未嵌入页面。已单列数据条目，几何改编、外观参考及公开使用授权仍待核实，不能归入 PLATEAU 或 OSM 的许可。
+阪急 1F 公共通廊现役几何在 `src/infrastructure/buildings/hankyu-dept/concourse.ts`，拱门及橱窗程序模型在 `src/presentation/models/buildings/commercial-concourse-model.ts`；依据官方通廊说明和既有用户照片拟合，原始素材未嵌入页面。已单列数据条目，几何改编、外观参考及公开使用授权仍待核实，不能归入 PLATEAU 或 OSM 的许可。
 
 2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/design/buildings/model-calibration.md`。

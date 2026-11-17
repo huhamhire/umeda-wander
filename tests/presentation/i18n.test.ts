@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import ts from 'typescript';
 import { formatMessage } from '../../src/application/i18n/format-message.ts';
-import { showAreaLabel } from '../../src/application/area-label-policy.ts';
+import { showAreaLabel } from '../../src/application/exploration/area-label-policy.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { availableLocales, messageText, sourceLocale } from '../../src/infrastructure/i18n/index.ts';
 import { chineseMessages } from '../../src/infrastructure/i18n/zh-CN/index.ts';

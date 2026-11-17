@@ -17,7 +17,7 @@ build/geography/
 └── *.svg / *.png / *.json    # 当前平面图、组装预览与审计结果
 ```
 
-早期试验脚本不放在生成目录长期维护；有复用价值时整理到本目录。旧阶段输出、重复日志和转换中间图可删除，需要时由原命令重建。建筑网格预览只保留最终 PNG，转换中间文件在完成或失败后自动清理；CPU profile 的临时 JS bundle 也自动清理。已核对的原始资料进入 `references/` 及其索引，下载缓存不作为唯一事实依据。
+早期试验脚本不放在生成目录长期维护；有复用价值时整理到本目录。旧阶段输出、重复日志和转换中间图可删除，需要时由原命令重建。建筑网格预览只保留最终 PNG，转换中间文件在完成或失败后自动清理；CPU profile 的临时 JS bundle 也自动清理；`profile-scene.ts` 直接构造 `presentation/models/map-models.ts`，不创建 WebGLRenderer 或伪造 MapScene 私有状态。已核对的原始资料进入 `references/` 及其索引，下载缓存不作为唯一事实依据。
 
 `ground-plan.geojson`、`road-width-audit.json` 和 `plateau-roofs.json` 虽可重建，但被后续数据生成脚本读取，清理时保留。当前提取脚本使用 `plateau-2025/`；无年份的早期 `plateau/` 不再使用。整个 `build/geography/` 删除后不会影响 `npm run build`，但重新提取建筑需要下载 CityGML。
 

@@ -4,15 +4,15 @@ import type { Facility, FacilityKind, LevelId, StationId } from './domain/map/mo
 import { MapSession } from './application/map-session.ts';
 import { MapScene } from './presentation/map-scene.ts';
 import { element } from './utils/dom.ts';
-import { bindSidebarTabs } from './presentation/sidebar-tabs.ts';
-import { stationPalettes } from './presentation/station-palette.ts';
-import { screenDirection } from './presentation/view-orientation.ts';
-import { floorOptions } from './presentation/floor-options.ts';
-import { filterFacilities, facilityCategory } from './application/facility-filter.ts';
+import { bindSidebarTabs } from './presentation/components/sidebar-tabs.ts';
+import { stationPalettes } from './presentation/appearance/station-palette.ts';
+import { screenDirection } from './presentation/camera/view-orientation.ts';
+import { floorOptions } from './presentation/components/floor-options.ts';
+import { filterFacilities, facilityCategory } from './application/exploration/facility-filter.ts';
 import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { sourceCredits } from './infrastructure/source-credits.ts';
 import { geographicOsmData as osmCreditData } from './infrastructure/district/geographic-map.ts';
-import { bindCreditsDialog, renderSourceCredits } from './presentation/source-credits-dialog.ts';
+import { bindCreditsDialog, renderSourceCredits } from './presentation/components/source-credits-dialog.ts';
 renderSourceCredits(
     element('#credits-content'),
     sourceCredits,

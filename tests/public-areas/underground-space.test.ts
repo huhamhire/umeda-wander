@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { describeStationSite, stationPublicPortal } from '../../src/application/station-site.ts';
-import { planUndergroundSpace } from '../../src/application/underground-space.ts';
+import { describeStationSite, stationPublicPortal } from '../../src/application/stations/station-site.ts';
+import { planUndergroundSpace } from '../../src/application/public-areas/underground-space.ts';
 import { closestPolygonPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 
 const contains = (r: PlanRegion, p: Point2) => pointInPolygon(p, r.outline) && !r.holes?.some(h => pointInPolygon(p, h));
 const stationMaps = createGeographicStations();

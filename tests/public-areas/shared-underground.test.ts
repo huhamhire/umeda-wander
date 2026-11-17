@@ -4,8 +4,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import clipping from 'polygon-clipping';
 import { layout, levels, removedPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { geographicRoofHeightAt } from '../../src/presentation/roof-profile.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 
 const ring = (p: {

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { orbitAboutPoint } from '../../src/presentation/orbit-view.ts';
+import { orbitAboutPoint } from '../../src/presentation/camera/orbit-view.ts';
 
 function camera(offset: T.Vector3, center: T.Vector3) {
     const c = new T.OrthographicCamera(-240, 240, 160, -160, .1, 6000);

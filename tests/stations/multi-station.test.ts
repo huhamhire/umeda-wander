@@ -1,18 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { planGateBoundaries } from '../../src/application/gate-boundaries.ts';
-import { viewLayerRole } from '../../src/application/view-layer.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
+import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { platformLocalPoint, platformPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import { edges, facilities, layout, levels, nodes } from '../../src/infrastructure/district/geographic-map.ts';
 import { hankyuStation } from '../../src/infrastructure/stations/hankyu-umeda/index.ts';
 import * as jr from '../../src/infrastructure/stations/jr-osaka/layout.ts';
 import { metroStation } from '../../src/infrastructure/stations/metro-umeda/index.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'station entities and source identities stay separate and unique',
     () => {

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { layerRole } from '../../src/application/layer-focus.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { layerRole } from '../../src/application/exploration/layer-focus.ts';
 import { layout as districtLayout, levels as districtLevels } from '../../src/infrastructure/district/geographic-map.ts';
 import { connections, levels, platforms } from '../../src/infrastructure/stations/jr-osaka/layout.ts';
-import { LayerAppearance } from '../../src/presentation/layer-appearance.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
-import { cameraOffset } from '../../src/presentation/view-orientation.ts';
+import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+import { cameraOffset } from '../../src/presentation/camera/view-orientation.ts';
 test(
     'focused floors retain all lower levels as context and hide upper levels',
     () => {

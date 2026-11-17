@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { bindSidebarTabs } from '../../src/presentation/sidebar-tabs.ts';
+import { bindSidebarTabs } from '../../src/presentation/components/sidebar-tabs.ts';
 
 class Button extends EventTarget {
     tabIndex = -1;

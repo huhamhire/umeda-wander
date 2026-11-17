@@ -12,7 +12,7 @@ import type { FloorArea, PlanRegion } from '../../src/domain/map/model.ts';
 import { footprint } from '../../src/infrastructure/buildings/building-data.ts';
 import { basements, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { referenceBasements } from '../../src/infrastructure/public-areas/south-diamor/basement-outlines.ts';
-import { areaColor } from '../../src/presentation/area-palette.ts';
+import { areaColor } from '../../src/presentation/appearance/area-palette.ts';
 
 const geometry = (region: PlanRegion): clipping.Polygon => [region.outline, ...region.holes ?? []].map(ring => ring.map(p => [p.x, p.z]));
 const area = (g: clipping.MultiPolygon) => g.reduce(

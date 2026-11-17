@@ -2,17 +2,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import polygonClipping from 'polygon-clipping';
 import * as T from 'three';
-import { connectionLanes } from '../../src/application/connection-lanes.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { planGateBoundaries } from '../../src/application/gate-boundaries.ts';
+import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
 import { MapSession } from '../../src/application/map-session.ts';
 import { platformLocalPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import { edges, facilities, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
 import { hanshinStation } from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'Hanshin has separate B1 west/department gates, B2 east gate and four tracks with independent alighting strips',
     () => {

@@ -3,8 +3,8 @@ import { test } from 'node:test';
 import * as T from 'three';
 import type { CommercialBuilding, PublicPassage } from '../../src/domain/map/model.ts';
 import { levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { buildCommercialFloor } from '../../src/presentation/commercial-building-model.ts';
-import { PublicPassageModel } from '../../src/presentation/public-passage-model.ts';
+import { buildCommercialFloor } from '../../src/presentation/models/buildings/commercial-building-model.ts';
+import { PublicPassageModel } from '../../src/presentation/models/public-areas/public-passage-model.ts';
 
 const proof = { source: 'district' as const, pages: [], detail: 'test geometry' };
 const endpoint = (x: number, z: number) => ({ x, z, level: 'platform' as const });

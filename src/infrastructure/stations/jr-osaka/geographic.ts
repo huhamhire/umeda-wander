@@ -1,4 +1,4 @@
-import { planGateBoundaries } from '../../../application/gate-boundaries.ts';
+import { planGateBoundaries } from '../../../application/connections/gate-boundaries.ts';
 import type { Point2, StationMap } from '../../../domain/map/model.ts';
 import { jrStation } from './index.ts';
 

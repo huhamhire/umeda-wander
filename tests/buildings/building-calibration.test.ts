@@ -5,9 +5,9 @@ import * as T from 'three';
 import profiles from '../../data/geography/buildings/plateau-profiles.json' with { type: 'json' };
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import type { BuildingVolume } from '../../src/infrastructure/buildings/building-data.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
-import { buildingPalette } from '../../src/presentation/models/building-palette.ts';
-import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/roof-profile.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
+import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
+import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
 import { exteriorOpenings, deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
 
 const polygon = (v: Pick<BuildingVolume, 'outline' | 'holes'>): clipping.Polygon => [v.outline, ...v.holes].map(r => r.map(p => [p.x, p.z]));

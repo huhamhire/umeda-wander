@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import clipping from 'polygon-clipping';
 import * as T from 'three';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { partitionPublicAreas } from '../../src/application/public-area-blocks.ts';
-import { assembleSharedUnderground } from '../../src/application/shared-underground.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { partitionPublicAreas } from '../../src/application/public-areas/public-area-blocks.ts';
+import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { basements, edges, facilities, geographicPlan, layout, levels, nodes, publicAccess, publicFrontages, publicInterfaceBindings, publicInterfaces, undergroundBlocks, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 
 const geometry = (a: PlanRegion) => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
     number,

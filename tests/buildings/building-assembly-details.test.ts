@@ -6,9 +6,9 @@ import { building as hanshin } from '../../src/infrastructure/buildings/hanshin-
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { layout, deckBuildingAreas, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
-import { buildCommercialConcourse } from '../../src/presentation/commercial-concourse-model.ts';
-import { buildingPalette } from '../../src/presentation/models/building-palette.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
+import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
+import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
 test(
     'Hanshin has a continuous retail podium and an inset office, without overlapping transfer shafts',
     () => {

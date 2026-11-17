@@ -3,7 +3,7 @@ import clipping from 'polygon-clipping';
 import { layout, levels, undergroundBlocks, undergroundPublicAreas, publicInterfaceBindings, publicInterfaces, publicAccess, basements, geographicPlan } from '../../src/infrastructure/district/geographic-map.ts';
 import { undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
-import { areaColor } from '../../src/presentation/area-palette.ts';
+import { areaColor } from '../../src/presentation/appearance/area-palette.ts';
 import { sourceProjection } from './reference-projection.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';

@@ -4,25 +4,22 @@ import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import * as T from 'three';
 import { layout, levels, facilities } from '../../src/infrastructure/district/geographic-map.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { planAtriumOpenings } from '../../src/application/atrium-openings.ts';
-import { planGateBoundaries } from '../../src/application/gate-boundaries.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
-import { buildGeographicContext } from '../../src/presentation/geographic-context.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
+import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 mkdirSync('build/geography', { recursive: true });
-const bundle = 'build/geography/profile-map-scene.mjs';
-let SceneConstructor: typeof import('../../src/presentation/map-scene.ts').MapScene;
+const bundle = 'build/geography/profile-map-models.mjs';
+let ModelConstructor: typeof import('../../src/presentation/models/map-models.ts').MapModels;
 try {
     await build({
-        entryPoints: ['src/presentation/map-scene.ts'],
+        entryPoints: ['src/presentation/models/map-models.ts'],
         bundle: true,
         platform: 'node',
         format: 'esm',
         packages: 'external',
         outfile: bundle,
     });
-    ({ MapScene: SceneConstructor } = await import(pathToFileURL(resolve(bundle)).href));
+    ({ MapModels: ModelConstructor } = await import(pathToFileURL(resolve(bundle)).href));
 }
 finally {
     if (existsSync(bundle)) {
@@ -30,40 +27,14 @@ finally {
     }
 }
 const start = performance.now();
-const scene = Object.create(SceneConstructor.prototype);
-const openings = [
-    ...planFloorOpenings(layout.connections, levels, layout.platforms),
-    ...planAtriumOpenings(layout.atria ?? [])
-];
-Object.assign(
-    scene,
-    {
-        layout,
-        levels,
-        facilities,
-        openings,
-        gateBoundaries: planGateBoundaries(facilities, layout.areas),
-        scene: new T.Scene(),
-        base: new T.Group(),
-        roof: new T.Group(),
-        groups: new Map(),
-        materials: new Map(),
-        commercialMassing: [],
-        geographicBuildingFloors: [],
-        publicPassages: [],
-        connectors: [],
-        pickables: [],
-        labels: [],
-        renderer: { capabilities: { getMaxAnisotropy: () => 1 } },
-        label: () => { }
-    }
-);
-Reflect.get(scene, 'buildStation').call(scene);
+const root = new T.Scene();
+const scene = new ModelConstructor({ scene: root, layout, levels, facilities, maxAnisotropy: 1 });
+const openings = scene.openings;
 for (const c of scene.connectors) {
     c.update((id: string) => levels.find(l => l.id === id)!.y, 'all');
 }
 const context = buildGeographicContext(openings.filter(o => levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline));
-scene.scene.add(
+root.add(
     ...Object.values(context),
     ...geographicBuildings.map(b => buildGeographicBuilding(b, layout.exteriorOpenings))
 );
@@ -71,7 +42,7 @@ const milliseconds = performance.now() - start;
 let meshes = 0;
 let triangles = 0;
 let vertices = 0;
-scene.scene.traverse((o: T.Object3D) => {
+root.traverse((o: T.Object3D) => {
     if (!(o instanceof T.Mesh)) {
         return;
     }

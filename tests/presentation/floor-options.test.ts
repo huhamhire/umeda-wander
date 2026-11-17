@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { explorationElevation } from '../../src/application/exploration-level.ts';
-import { viewLayerRole } from '../../src/application/view-layer.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
+import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { floorOptions } from '../../src/presentation/floor-options.ts';
+import { floorOptions } from '../../src/presentation/components/floor-options.ts';
 test(
     'floor exploration combines local half-floors into five district bands',
     () => {

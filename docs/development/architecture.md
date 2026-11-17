@@ -9,20 +9,24 @@ H5 使用地理米制总图，车站、商业建筑及公共区域按独立板�
 | 最终站模 | `infrastructure/district/geographic-stations.ts` | `createGeographicStation(id)` 独立创建站模；与全图共用设备校准与轨道恢复 |
 | JR 子区 | `infrastructure/stations/jr-osaka/geographic-station.ts` | 组装地面、梅北独立框架及西口、Crost、南门连接 |
 | 各站 | `infrastructure/stations/<id>/index.ts`、`geographic.ts` | 本站原始布局、设施、证据及地理校准；不引用其他站内部数据 |
-| 公共接口 | `application/station-public-interfaces.ts` | 从付费边界生成稳定门户及标高、宽度、朝向和依据 |
+| 公共接口 | `application/stations/station-public-interfaces.ts` | 从付费边界生成稳定门户及标高、宽度、朝向和依据 |
 | 公共前庭 | `infrastructure/public-areas/station-frontages/index.ts` | 提取已有前庭与局部落台，捐入公共网，避免车站重复绘制 |
-| 地下装配 | `application/shared-underground.ts` | 合并地区公共面及前庭，扣除付费／服务空间，保留孔洞 |
-| 2F 装配 | `application/public-deck-assembly.ts` | 分支并集、重复所有权裁剪及板块接缝 |
-| 纯组装 | `application/compose-station-maps.ts` | 汇总领域实体并拒绝重复身份，不耦合 Three.js |
+| 地下装配 | `application/public-areas/shared-underground.ts` | 合并地区公共面及前庭，扣除付费／服务空间，保留孔洞 |
+| 2F 装配 | `application/public-areas/public-deck-assembly.ts` | 分支并集、重复所有权裁剪及板块接缝 |
+| 纯组装 | `application/stations/compose-station-maps.ts` | 汇总领域实体并拒绝重复身份，不耦合 Three.js |
 | H5 数据 | `infrastructure/district/geographic-map.ts` | 组装站体与公共板块、补齐设施目录，导出公共接口及绑定 |
 
 公共地下与高架所有者见 [公共板块说明](../../src/infrastructure/public-areas/README.md)。M16 前庭已接入共享地下公共面；Yodobashi 外环由公共 2F 板块持有，不属于建筑外壳副本。
 
 ## 共享规则
 
+应用层按 stations、public-areas、connections、exploration、i18n 归组，保留 map-session 状态入口，见[应用层说明](../../src/application/README.md)。呈现层按 camera、labels、appearance、components 和模型对象归组，见[呈现层说明](../../src/presentation/README.md)。不添加旧路径转发或聚合所有导出的 barrel。
+
+MapScene 协调镜头、状态和生命周期；MapModels 构造网格并输出设备组及标签锚点；SceneLabels 管理 DOM 投影、遮挡和碰撞；MapGestures 管理指针及手势；RouteModel 渲染既有路线。通过明确参数及回调协作，不能将整个 MapScene 私有状态传给子模块。离线脚本直接使用 MapModels，不再伪造 MapScene 并反射调用私有方法。
+
 - 每站交付同一套领域 `StationMap`，不复制类型、渲染器或服务。原始局部布局仍被地理站模复用，不能因采用新坐标就删除。
-- 设备坡度在 `application/calibrate-equipment.ts` 校准；保留站厅／夹层端，更新实际站台端、路线节点及设施锚点。开口按实际承载楼板处理。
-- 门户在 `application/public-interface-bindings.ts` 校验同标高公共落脚面；几何绑定不自动生成跨站寻路边。
+- 设备坡度在 `application/connections/calibrate-equipment.ts` 校准；保留站厅／夹层端，更新实际站台端、路线节点及设施锚点。开口按实际承载楼板处理。
+- 门户在 `application/stations/public-interface-bindings.ts` 校验同标高公共落脚面；几何绑定不自动生成跨站寻路边。
 - 当前轨道由 `infrastructure/geography/runtime-rails.ts` 从校准站台端点生成；JR 走廊约束在 `stations/jr-osaka/rail-corridors.ts`。OSM 只提供宽泛方向，共切向并线及公共尾段保持独立 RailApproach。
 - 共享空间、设备模型和 DOM 控件遵循根级 DDD 分层；无地图语义的通用方法才进入 utils。
 

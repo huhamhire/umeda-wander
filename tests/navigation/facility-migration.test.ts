@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import clipping from 'polygon-clipping';
 import { auditFacilityMigration } from '../../scripts/geography/facility-migration.ts';
-import { visibleElevatorConnections } from '../../src/application/elevator-visibility.ts';
+import { visibleElevatorConnections } from '../../src/application/connections/elevator-visibility.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { facilities, jpAccess, layout, levels, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';

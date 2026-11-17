@@ -3,18 +3,18 @@ import { test } from 'node:test';
 import clipping from 'polygon-clipping';
 import * as T from 'three';
 import ways from '../../data/geography/elevated/ways.json' with { type: 'json' };
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { deckBoundarySegments } from '../../src/application/deck-boundaries.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { explorationElevation } from '../../src/application/exploration-level.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { deckBoundarySegments } from '../../src/application/public-areas/deck-boundaries.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { FloorArea, PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 
 const geometry = (a: PlanRegion) => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
     number,

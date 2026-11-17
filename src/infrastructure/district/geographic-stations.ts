@@ -1,5 +1,5 @@
 import type { StationId, StationMap } from '../../domain/map/model.ts';
-import { calibratePlatformEquipment } from '../../application/calibrate-equipment.ts';
+import { calibratePlatformEquipment } from '../../application/connections/calibrate-equipment.ts';
 import { restoreMapRails } from '../geography/runtime-rails.ts';
 import { createGeographicJr } from '../stations/jr-osaka/geographic-station.ts';
 import { createGeographicHankyu } from '../stations/hankyu-umeda/geographic.ts';

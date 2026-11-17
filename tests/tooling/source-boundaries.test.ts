@@ -33,3 +33,28 @@ test(
         }
     }
 );
+
+test('domain and application modules cannot depend on rendering or infrastructure adapters', () => {
+    const root = path.resolve('src') + path.sep;
+    for (const file of ['src/domain', 'src/application'].flatMap(sources)) {
+        const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+        for (const statement of source.statements) {
+            if (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) {
+                continue;
+            }
+            const specifier = statement.moduleSpecifier;
+            if (!specifier || !ts.isStringLiteral(specifier)) {
+                continue;
+            }
+            assert(!/^three(?:\/|$)/.test(specifier.text), `${file} imports Three.js`);
+            if (!specifier.text.startsWith('.')) {
+                continue;
+            }
+            const target = path.relative(root, path.resolve(path.dirname(file), specifier.text));
+            assert(!/^(?:infrastructure|presentation)(?:[/\\]|$)/.test(target), `${file} imports ${target}`);
+            if (file.startsWith(path.join('src', 'domain'))) {
+                assert(!/^application(?:[/\\]|$)/.test(target), `${file} imports an application service`);
+            }
+        }
+    }
+});

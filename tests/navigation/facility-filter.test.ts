@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { explorationElevation } from '../../src/application/exploration-level.ts';
-import { filterFacilities } from '../../src/application/facility-filter.ts';
+import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
+import { filterFacilities } from '../../src/application/exploration/facility-filter.ts';
 import type { FacilityKind } from '../../src/domain/map/model.ts';
 import { facilities, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';

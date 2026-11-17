@@ -13,7 +13,7 @@
 
 现役入口为 `src/infrastructure/buildings/hanshin-dept/`，不再使用旧坐标的独立平移或压缩高度。地面 L 形裙楼保留道路退让，上部曲面裙楼与跨道路部分先合并为连续包络，再承接东侧退台办公塔；North 是另一侧阪急百货综合体，不在阪神上方补第二座塔。尺寸、测绘年代及当前承接关系见[白模校对](./model-calibration.md)。
 
-`src/presentation/hanshin-massing-details.ts` 保留浅色立面和层带，架空裙楼显式使用裙楼材质，不能因基底高于零而被误判为塔身。不增加街边树木或店铺内部。
+`src/presentation/models/buildings/hanshin-massing-details.ts` 保留浅色立面和层带，架空裙楼显式使用裙楼材质，不能因基底高于零而被误判为塔身。不增加街边树木或店铺内部。
 
 ## 步行连接与显示
 

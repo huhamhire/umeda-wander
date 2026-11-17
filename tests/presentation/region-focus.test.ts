@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { isRegionMuted } from '../../src/application/region-focus.ts';
-import { LayerAppearance, setRegionOwner } from '../../src/presentation/layer-appearance.ts';
-import { PublicPassageModel } from '../../src/presentation/public-passage-model.ts';
+import { isRegionMuted } from '../../src/application/exploration/region-focus.ts';
+import { LayerAppearance, setRegionOwner } from '../../src/presentation/appearance/layer-appearance.ts';
+import { PublicPassageModel } from '../../src/presentation/models/public-areas/public-passage-model.ts';
 test(
     'station focus mutes other owners and district models without changing shared originals',
     () => {

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { displayElevation } from '../../src/application/display-elevation.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { MapSession } from '../../src/application/map-session.ts';
-import { viewLayerRole } from '../../src/application/view-layer.ts';
+import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { edges, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { cameraEnvelope } from '../../src/presentation/camera-framing.ts';
+import { cameraEnvelope } from '../../src/presentation/camera/camera-framing.ts';
 test(
     'two navigation tabs share station focusing through the facility station dropdown',
     () => {

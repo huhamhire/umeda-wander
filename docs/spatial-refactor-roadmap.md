@@ -32,7 +32,13 @@ umeda-h5/
 │   ├── domain/
 │   │   ├── map/                  # 坐标、楼层、板块、接口、几何与设施语义
 │   │   └── navigation/           # 本站通行规则
-│   ├── application/              # 组装、校准、开口、可见性和聚焦
+│   ├── application/
+│   │   ├── map-session.ts        # 应用状态与用例入口
+│   │   ├── stations/            # 站模、包络及公共接口
+│   │   ├── public-areas/        # 地下／高架和占位装配
+│   │   ├── connections/         # 设备、开口及边界
+│   │   ├── exploration/         # 楼层、筛选与聚焦
+│   │   └── i18n/                # 消息格式化
 │   ├── infrastructure/
 │   │   ├── geography/            # 地图适配、来源与坐标基准
 │   │   ├── stations/             # 七站各有独立目录
@@ -57,7 +63,12 @@ umeda-h5/
 │   │   │   └── west-decks/
 │   │   └── district/             # 板块登记、地理总图入口
 │   ├── presentation/
-│   │   └── models/               # 共享公共面、建筑与设备模型
+│   │   ├── map-scene.ts          # 场景协调及生命周期
+│   │   ├── camera/              # 取景、定位、旋转与手势
+│   │   ├── labels/              # 标签、遮挡和碰撞
+│   │   ├── appearance/          # 配色、灰化及缓动
+│   │   ├── components/          # 控件及定位标记
+│   │   └── models/              # 构造入口、几何及 buildings／stations／public-areas
 │   ├── utils/                    # 无地图领域语义的通用工具
 │   ├── main.ts                   # 应用与 DOM 事件绑定
 │   ├── index.html                # 单入口模板
@@ -80,7 +91,7 @@ umeda-h5/
 └── references/                   # 分类原始资料及 catalog.json 事实索引
 ```
 
-页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./data/facility-migration-audit.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
+页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./data/facility-migration-audit.md)。应用与呈现能力已按职责归组，见[应用层说明](../src/application/README.md)和[呈现层说明](../src/presentation/README.md)。
 
 工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案迁到七个中文领域词库，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
 

@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import context from '../../data/geography/display-context.json' with { type: 'json' };
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { areaColor } from '../../src/presentation/area-palette.ts';
+import { areaColor } from '../../src/presentation/appearance/area-palette.ts';
 
 /**
  * Convert plan rings into an offline SVG path without discarding boundaries.

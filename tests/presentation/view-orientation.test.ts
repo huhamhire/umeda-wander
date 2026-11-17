@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { screenDirection, rotateView, resetView } from '../../src/presentation/view-orientation.ts';
+import { screenDirection, rotateView, resetView } from '../../src/presentation/camera/view-orientation.ts';
 test(
     'north-up default and yaw rotation retain compass opposition and reset',
     () => {

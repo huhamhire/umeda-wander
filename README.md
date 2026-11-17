@@ -72,9 +72,9 @@ npm run build
 umeda-h5/
 ├── src/
 │   ├── domain/             # 地图与导航语义，不依赖 DOM 或 Three.js
-│   ├── application/        # 组装、校准及交互用例
+│   ├── application/        # stations／public-areas／connections／exploration／i18n
 │   ├── infrastructure/     # 独立站点、商业体、公共板块及地理数据
-│   ├── presentation/       # 场景、设备模型与 DOM 控件
+│   ├── presentation/       # 场景入口、camera／labels／appearance／components／models
 │   ├── utils/              # 通用工具
 │   ├── main.ts             # 应用组装与事件绑定
 │   ├── index.html          # 页面模板

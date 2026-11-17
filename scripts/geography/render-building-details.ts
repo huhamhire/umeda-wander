@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import * as T from 'three';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
 import { hankyuConcourses } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
-import { buildCommercialConcourse } from '../../src/presentation/commercial-concourse-model.ts';
+import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
 // Offline CPU depth buffer over the actual H5 meshes, not a painter-sorted box sketch.
 // No browser, WebGL, photographic texture or external renderer is required.
 const assembly = process.argv.includes('--assembly');

@@ -15,7 +15,7 @@
 
 ## 维护入口
 
-当前生成在 `src/infrastructure/geography/runtime-rails.ts`，JR 约束在 `stations/jr-osaka/rail-corridors.ts`，共用 `RailApproach` 领域图与 `presentation/rail-approach-model.ts`。站台轨道和延伸线共用 `platformRail` 端点，合流节点共用切向，公共尾段只绘制一次。轨道不进入步行 `RouteEdge`。
+当前生成在 `src/infrastructure/geography/runtime-rails.ts`，JR 约束在 `stations/jr-osaka/rail-corridors.ts`，共用 `RailApproach` 领域图与 `presentation/models/stations/rail-approach-model.ts`。站台轨道和延伸线共用 `platformRail` 端点，合流节点共用切向，公共尾段只绘制一次。轨道不进入步行 `RouteEdge`。
 
 OSM 原始对象及许可见[轨道数据说明](../../data/geography/railways/README.md)；当前处理不能将示意合流映射当成各番线实际列车方向。地理延伸长度、转弯半径及束间距仍为展示拟合，实际乘车以站内标识为准。
 

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { grandFrontPlazaAccess, layout, levels, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
-import { buildGeographicContext } from '../../src/presentation/geographic-context.ts';
+import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 test(
     'JR-facing Grand Front plaza banks retain sourced 1F–B1 relationships and supported public landings',
     () => {

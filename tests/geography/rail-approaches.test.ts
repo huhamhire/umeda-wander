@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { displayElevation } from '../../src/application/display-elevation.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { offsetRailSample, sampleRailSegment } from '../../src/domain/map/rail-geometry.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { cameraEnvelope } from '../../src/presentation/camera-framing.ts';
-import { buildRailApproachModel } from '../../src/presentation/rail-approach-model.ts';
+import { cameraEnvelope } from '../../src/presentation/camera/camera-framing.ts';
+import { buildRailApproachModel } from '../../src/presentation/models/stations/rail-approach-model.ts';
 
 const approaches = layout.railApproaches;
 test(

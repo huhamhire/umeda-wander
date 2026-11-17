@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { geographicRoofHeightAt as roofHeightAt } from '../../src/presentation/roof-profile.ts';
+import { geographicRoofHeightAt as roofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
 test(
     'the large roof is higher on the north side and lower on the south side',
     () => {

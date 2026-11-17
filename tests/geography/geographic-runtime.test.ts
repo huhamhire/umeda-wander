@@ -5,16 +5,15 @@ import { resolve } from 'node:path';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import * as T from 'three';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { planGateBoundaries } from '../../src/application/gate-boundaries.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { edges, facilities, geographicOsmData, layout, levels, nodes } from '../../src/infrastructure/district/geographic-map.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { buildGeographicContext } from '../../src/presentation/geographic-context.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
-import { stationPalettes } from '../../src/presentation/station-palette.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
+import { stationPalettes } from '../../src/presentation/appearance/station-palette.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'runtime geographic scene has finite ground, floors, openings and all cross-floor models',
     () => {
@@ -58,40 +57,21 @@ test(
     async () => {
         await mkdir('build/tests', { recursive: true });
         await build({
-            entryPoints: ['src/presentation/map-scene.ts'],
+            entryPoints: ['src/presentation/models/map-models.ts'],
             bundle: true,
             platform: 'node',
             format: 'esm',
             packages: 'external',
-            outfile: 'build/tests/map-scene.mjs'
+            outfile: 'build/tests/map-models.mjs'
         });
-        const { MapScene } = await import(pathToFileURL(resolve('build/tests/map-scene.mjs')).href);
-        const scene = Object.create(MapScene.prototype);
-        const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-        Object.assign(
-            scene,
-            {
-                layout,
-                levels,
-                facilities,
-                openings,
-                gateBoundaries: planGateBoundaries(facilities, layout.areas),
-                scene: new T.Scene(),
-                base: new T.Group(),
-                roof: new T.Group(),
-                groups: new Map(),
-                materials: new Map(),
-                commercialMassing: [],
-                geographicBuildingFloors: [],
-                publicPassages: [],
-                connectors: [],
-                pickables: [],
-                labels: [],
-                renderer: { capabilities: { getMaxAnisotropy: () => 1 } },
-                label: () => { }
-            }
-        );
-        assert.doesNotThrow(() => Reflect.get(scene, 'buildStation').call(scene));
+        const { MapModels } = await import(pathToFileURL(resolve('build/tests/map-models.mjs')).href);
+        const scene = new MapModels({ scene: new T.Scene(), layout, levels, facilities, maxAnisotropy: 1 });
+        assert.equal(scene.pickables.length, facilities.length);
+        assert.equal(scene.connectors.length, layout.connections.length);
+        for (const label of scene.labels) {
+            assert(label.text.trim());
+            assert(label.position.toArray().every(Number.isFinite));
+        }
         for (const p of layout.platforms.filter(p => p.level === 'hankyu-platform')) {
             const slab = scene.groups.get(p.level)!.getObjectByName('platform-slab-' + p.id) as T.Mesh;
             const material = slab.material as T.MeshStandardMaterial;

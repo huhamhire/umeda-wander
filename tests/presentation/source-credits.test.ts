@@ -5,7 +5,7 @@ import { renderHtmlMessages } from '../../scripts/html.ts';
 import { test } from 'node:test';
 import { geographicOsmData as osmCreditData } from '../../src/infrastructure/district/geographic-map.ts';
 import { sourceCredits } from '../../src/infrastructure/source-credits.ts';
-import { bindCreditsDialog, renderSourceCredits } from '../../src/presentation/source-credits-dialog.ts';
+import { bindCreditsDialog, renderSourceCredits } from '../../src/presentation/components/source-credits-dialog.ts';
 
 class Node extends EventTarget {
     children: (Node | string)[] = [];

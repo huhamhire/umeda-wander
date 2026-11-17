@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { composeStationMaps } from '../../src/application/compose-station-maps.ts';
+import { composeStationMaps } from '../../src/application/stations/compose-station-maps.ts';
 import type { StationLayout } from '../../src/domain/map/model.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 

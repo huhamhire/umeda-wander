@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { displayElevation } from '../../src/application/display-elevation.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import type { StationId } from '../../src/domain/map/model.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { cameraEnvelope } from '../../src/presentation/camera-framing.ts';
+import { cameraEnvelope } from '../../src/presentation/camera/camera-framing.ts';
 test(
     'floor cuts retain an identical camera envelope within each station focus',
     () => {

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { planAtriumOpenings } from '../../src/application/atrium-openings.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 test(
     'North atrium is a shared void with all four bank groups arriving at exterior edges',
     () => {

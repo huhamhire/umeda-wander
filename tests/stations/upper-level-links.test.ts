@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { areas, connections, levels, platforms } from '../../src/infrastructure/stations/jr-osaka/layout.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'Sakurabashi 51 stops at the mezzanine and all separate source flights are present',
     () => {

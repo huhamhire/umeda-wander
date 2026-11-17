@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from '../../src/presentation/facility-focus.ts';
-import { cameraOffset } from '../../src/presentation/view-orientation.ts';
+import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from '../../src/presentation/camera/facility-focus.ts';
+import { cameraOffset } from '../../src/presentation/camera/view-orientation.ts';
 test(
     'maximum zoom-out fills 80 percent of usable height regardless of horizontal fit and menu size',
     () => {

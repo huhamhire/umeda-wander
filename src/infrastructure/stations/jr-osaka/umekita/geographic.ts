@@ -1,5 +1,5 @@
 import { messageText } from '../../../i18n/index.ts';
-import { planGateBoundaries } from '../../../../application/gate-boundaries.ts';
+import { planGateBoundaries } from '../../../../application/connections/gate-boundaries.ts';
 import type { Point2, StationMap } from '../../../../domain/map/model.ts';
 import { platformBow, platformTangent } from '../../../../domain/map/geometry.ts';
 import { jrStation } from '../index.ts';

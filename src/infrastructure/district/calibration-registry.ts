@@ -6,7 +6,7 @@ import { hankyuCalibrationSource } from '../stations/hankyu-umeda/calibration.ts
 import { metroCalibration } from '../stations/metro-umeda/calibration.ts';
 import { createGeographicStations } from './geographic-stations.ts';
 import { platformPoint, platformOutline } from '../../domain/map/geometry.ts';
-import { stationPublicInterfaces } from '../../application/station-public-interfaces.ts';
+import { stationPublicInterfaces } from '../../application/stations/station-public-interfaces.ts';
 import type { StationId } from '../../domain/map/model.ts';
 
 const references: Record<StationId, string[]> = {

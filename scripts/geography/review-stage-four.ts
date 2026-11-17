@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { layout, levels, elevated, elevatedAreas, deckBuildingAreas, deckAccess, geographicPlan } from '../../src/infrastructure/district/geographic-map.ts';
-import { areaColor } from '../../src/presentation/area-palette.ts';
+import { areaColor } from '../../src/presentation/appearance/area-palette.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
 import { deckBuildingOccupancies } from '../../src/infrastructure/public-areas/deck-buildings.ts';

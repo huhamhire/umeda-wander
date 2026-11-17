@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { SelectionMarker } from '../../src/presentation/selection-marker.ts';
+import { SelectionMarker } from '../../src/presentation/components/selection-marker.ts';
 test(
     'selected facility pin has raised beveled geometry, a ground halo and deterministic reduced-motion pose',
     () => {

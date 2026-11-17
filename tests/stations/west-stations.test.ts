@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import polygonClipping from 'polygon-clipping';
 import * as T from 'three';
-import { connectionLanes } from '../../src/application/connection-lanes.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { planGateBoundaries } from '../../src/application/gate-boundaries.ts';
+import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
 import { MapSession } from '../../src/application/map-session.ts';
 import { platformLocalPoint, platformPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { platformRail } from '../../src/domain/map/rail-geometry.ts';
@@ -13,7 +13,7 @@ import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import { edges, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
 import { kitashinchiStation } from '../../src/infrastructure/stations/kitashinchi/index.ts';
 import { nishiStation } from '../../src/infrastructure/stations/nishi-umeda/index.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
     'Y11 north terminal and Kitashinchi through island retain their own tracks and evidence',
     () => {

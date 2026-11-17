@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { planAtriumOpenings } from '../../src/application/atrium-openings.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { displayElevation } from '../../src/application/display-elevation.ts';
-import { viewLayerRole } from '../../src/application/view-layer.ts';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
+import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { VerticalConnectionModel } from '../../src/presentation/vertical-connection-model.ts';
-import { cameraOffset } from '../../src/presentation/view-orientation.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+import { cameraOffset } from '../../src/presentation/camera/view-orientation.ts';
 test(
     'Daimaru bank 50 and shaft T stay visible through the upper public floor from either 2F selection',
     () => {

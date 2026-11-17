@@ -4,11 +4,11 @@ import * as T from 'three';
 import { createGeographicStation, createGeographicStations, geographicStationIds } from '../../src/infrastructure/district/geographic-stations.ts';
 import { layout, levels, publicInterfaces, publicInterfaceBindings } from '../../src/infrastructure/district/geographic-map.ts';
 import { pointInPolygon, platformLocalPoint } from '../../src/domain/map/geometry.ts';
-import { planFloorOpenings } from '../../src/application/connection-openings.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
-import { bindPublicInterfaces } from '../../src/application/public-interface-bindings.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { bindPublicInterfaces } from '../../src/application/stations/public-interface-bindings.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { buildGeographicBuilding } from '../../src/presentation/models/geographic-building-model.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 test(
     'each of seven station blocks can be built independently, without cross-station level or route references',
     () => {

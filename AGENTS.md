@@ -40,6 +40,7 @@
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
 - TypeScript 配置启用严格类型检查；地图实体、楼层、设施和通行图使用明确类型。类型检查与构建分别验证。
 - 修改 `src/` 中的源码，通过构建生成 `dist/`；不要直接维护或提交生成产物。
+- 应用层在 stations、public-areas、connections、exploration、i18n 下按能力归组，map-session 保留状态入口；呈现层在 camera、labels、appearance、components、models 下归组，模型再分 buildings、stations、public-areas。MapScene 只协调生命周期、镜头和状态，模型构造用 MapModels，DOM 标签用 SceneLabels，指针识别用 MapGestures；离线核查直接使用模型入口，不通过反射调用场景私有方法。移动模块更新源码、脚本、测试和文档引用，不保留旧路径转发；细则见 `src/application/README.md`、`src/presentation/README.md`。
 - 按 DDD 边界拆分：`src/domain/` 定义地图模型与导航规则；`src/application/` 协调使用场景；`src/infrastructure/` 提供数据来源；`src/presentation/` 实现渲染和界面；`src/utils/` 只放无领域语义的通用工具。领域层不能依赖 Three.js、DOM 或基础设施。
 - 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`district/geographic-stations.ts` 登记并创建地理站模，`compose-station-maps.ts` 纯组装，`district/geographic-map.ts` 为 H5 数据入口。JR 特殊层名适配在 `stations/jr-osaka/index.ts`，不要在总图重复罗列本站数组。旧版登记与总图已移除，对照使用 Git 历史；维护入口见 `docs/development/architecture.md`。
 - 当前地理 H5 使用 `district/geographic-map.ts`。B1 公共面由 `shared-underground.ts` 单独持有，构内图局部前庭经 `public-areas/station-frontages/` 合并，不重复画本站 public 楼板。`StationPublicInterface` 与 `public-interface-bindings.ts` 校验实际门户标高和落脚面，不因绑定而新增跨站路线。设备坡度修正使用 `calibrate-equipment.ts`，固定站厅／夹层端，调整实际站台端，节点与已有设施锚点同步。
@@ -47,7 +48,7 @@
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
 - 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录十个兼容转发已删除，调用方直接引用实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/design/stations/jr-osaka.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
 - 梅北的北侧 B1F 闸外地下公共通路与西口的 B2F 闸内连接通道分开建模；通过梅北改札前不得将公共通路标成付费通路。
-- 扶梯与电梯使用 `src/presentation/vertical-connection-model.ts`；直梯井道当前宽 3 场景单位，轿厢与门框按井道宽度同步调整，开口共用 `elevatorShaftWidth`；楼板开口由应用层规划、呈现层做真实多边形裁剪，新增设施时同步检查落点与孔洞。改札围栏和闸机共用付费区边界，不要只改颜色或用实体楼板覆盖孔洞。
+- 扶梯与电梯使用 `src/presentation/models/stations/vertical-connection-model.ts`；直梯井道当前宽 3 场景单位，轿厢与门框按井道宽度同步调整，开口共用 `elevatorShaftWidth`；楼板开口由应用层规划、呈现层做真实多边形裁剪，新增设施时同步检查落点与孔洞。改札围栏和闸机共用付费区边界，不要只改颜色或用实体楼板覆盖孔洞。
 - 与站台相连的设施保留 `platformId`，电梯门向、井道与孔洞共用该站台坐标框架。同一付费区边界可有多组闸机，围栏留口需合并计算。
 - 单层探索时，已显示直梯保留完整井道、轿厢及两端落台；同一落点连续连接的多段井道由 `elevator-visibility.ts` 一起显示，不能按当前层切短。只恢复井道组，不恢复隐藏的上层楼板；取景须包含井道顶端。
 - 连接通道直梯可用 `doorFacingRad` 指定通道门向，不强制归属站台。双排扶梯使用 `lanes`，模型和开口共用逐条展开的端点。选下层时仍显示完整扶梯和楼梯，并将上端落台计入取景；不要将隐藏踏步压成零尺寸网格。
@@ -55,8 +56,8 @@
 - 同层局部高差使用 `elevationOffset`，例如中央口往大丸的小半层台阶；不要为了小高差新增完整逻辑楼层。自动售票机作为独立设施，与售票柜台区分。
 - `district/geographic-map.ts` 组装各站数据；各站使用独立 `LevelId`、`station` 和 `stackIndex`，展开偏移不能依赖组合数组下标。JR 原有层名保留兼容；Metro 中间层不能归入 JR M2F。开口按所属站点过滤。
 - 新站设施和区域的 `Evidence.source` 必须指向自己的资料；阪急 SVG 不伪装成 JR PDF 页码。各站以 `stations/<id>/geographic.ts` 的地理框架放在同一图中，`district-placement.ts` 只保留原图适配／旧展示拟合；站间连接为闸外空间示意，未核验前不添加导航边，各站相邻不代表闸内互通。
-- 阪急仅使用浅灰粉、淡栗红作为主题提示，付费区、闸机与边界均保持浅色，不使用深色栗红；三条线路的绿/橙/蓝标识独立保留。调色定义在 `presentation/station-palette.ts`，属于呈现规则。
-- 导览统一位于左侧：楼层、设施为两个 Tab；桌面面板宽 290px，移动端自适应。已移除独立“车站”页和底部导航卡，设施页车站下拉框兼顾筛选与 `focusStation` 聚焦，“全部车站”回到地区总览；未选具体探索层时，M16、阪神、T20、Y11、北新地默认聚焦 B1，其余车站聚焦全部层级，手动楼层筛选优先；默认七站总览，模型是否隐藏只由楼层剖切决定。楼层选项为 3F / 2F / 1F / B1 / B2，JR 樱桥及中央口夹层并入 1F 探索，M16 中间层并入 B1；`application/exploration-level.ts` 定义分组，`presentation/floor-options.ts` 定义文案。组内跨站同时高亮且可点选，下层灰化、上层隐藏，物理标高、站点身份和 LevelId 仍独立。同物理标高须共用展开位置，导览分组不表示 M16 真实楼层编号已核验或付费区互通。
+- 阪急仅使用浅灰粉、淡栗红作为主题提示，付费区、闸机与边界均保持浅色，不使用深色栗红；三条线路的绿/橙/蓝标识独立保留。调色定义在 `presentation/appearance/station-palette.ts`，属于呈现规则。
+- 导览统一位于左侧：楼层、设施为两个 Tab；桌面面板宽 290px，移动端自适应。已移除独立“车站”页和底部导航卡，设施页车站下拉框兼顾筛选与 `focusStation` 聚焦，“全部车站”回到地区总览；未选具体探索层时，M16、阪神、T20、Y11、北新地默认聚焦 B1，其余车站聚焦全部层级，手动楼层筛选优先；默认七站总览，模型是否隐藏只由楼层剖切决定。楼层选项为 3F / 2F / 1F / B1 / B2，JR 樱桥及中央口夹层并入 1F 探索，M16 中间层并入 B1；`application/exploration/exploration-level.ts` 定义分组，`presentation/components/floor-options.ts` 定义文案。组内跨站同时高亮且可点选，下层灰化、上层隐藏，物理标高、站点身份和 LevelId 仍独立。同物理标高须共用展开位置，导览分组不表示 M16 真实楼层编号已核验或付费区互通。
 - 现役站间连接分别由 `public-areas/` 的地下／高架板块及公共设备维护；旧图连接仅在 Git 历史中保留。内部下行除了上层楼板，基座和铺装线也必须裁出开口。地理投影在领域层，取景范围与镜头缓动在呈现层；完整车站包络独立于楼层剖切与屋顶显隐，切层保留镜头定位、缩放和平移；拖动展开滑块时取消镜头缓动以保持跟手。
 - `PassageGuide` 只保留普通通路去向标注及关系检查数据，不加入步行寻路图。默认不显示常驻路线箭头、路线虚线或专用图例；正式实现路线导航后再按所选路线显示引导。M16 中间层去向需落到已有直梯/扶梯及具体改札内侧；含扶梯的示意不能描述为完整无障碍路线。
 - 地区扩展以反映步行连接为主，坡道和小半层可并入同一探索层；车站南北外侧的连接优先选较低相邻层。商业外廊按连续的 2F 步行层展示，不机械按各建筑实际标高拆层；JR 内部既有跨层设施仍保留。
@@ -89,7 +90,7 @@
 
 - 来源展示集中于 `src/infrastructure/source-credits.ts`。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。版权弹窗使用原生 dialog，入口与可见 OSM 署名合并为文本链接，焦点在打开／关闭时正确转移；详细核查见 `docs/data/source-credits-audit.md`。
 
-- 地下公共空间采用面状布局，与二层天桥区分：现役合并在 `application/shared-underground.ts`；旧地区示例已退役；`application/underground-space.ts` 的纯几何能力保留独立夹具回归。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/design/public-areas/underground.md`。
+- 地下公共空间采用面状布局，与二层天桥区分：现役合并在 `application/public-areas/shared-underground.ts`；旧地区示例已退役；`application/public-areas/underground-space.ts` 的纯几何能力保留独立夹具回归。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/design/public-areas/underground.md`。
 
 - 按实际改动运行相关检查。尚无可用测试或构建命令时，明确说明已检查的内容和未验证的部分。
 - 应用界面建立后，界面改动需检查移动端布局、资源加载及基本交互。

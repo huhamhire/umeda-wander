@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { LabelOcclusion, visibleLabelOccluders } from '../../src/presentation/label-occlusion.ts';
-import { buildFloorGeometry } from '../../src/presentation/floor-geometry.ts';
+import { LabelOcclusion, visibleLabelOccluders } from '../../src/presentation/labels/label-occlusion.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 
 const camera = new T.OrthographicCamera(-20, 20, 20, -20, 0.1, 200);
 camera.position.set(0, 30, 30);

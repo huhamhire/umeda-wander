@@ -17,7 +17,7 @@
 
 1. 保留 `data/geography/runtime-plan.json` 的原 PDF 异形投影；通过原提取和道路校准脚本重建，不用等宽线段重画。
 2. 合并车站捐出的必要前庭、公共设备落台和明确编写的接驳面，扣除车站付费／服务等占用。
-3. `application/public-area-blocks.ts` 按有序管理窗口分割成九个不重叠所有者。窗口只划分维护责任，不是地下开挖边界；末项必须接收剩余几何。
+3. `application/public-areas/public-area-blocks.ts` 按有序管理窗口分割成九个不重叠所有者。窗口只划分维护责任，不是地下开挖边界；末项必须接收剩余几何。
 4. 所有板块共用 `district-underground`，标高 -8、stackIndex -1。西梅田短升降平台保留局部 offset，显式指定所有者。
 5. 建筑宿主轮廓减去公共面及站体占用，再按先后去重。有明确地下图边界的街区使用 `basement-outlines.json`，不强套地上轮廓；改变道路配准后运行 `build-basement-outlines.ts` 重投影。保留不同填色、平面文字；文字不挤出自身区块。`geometric-contact` 只表示几何接触，不确认门洞。
 
@@ -33,6 +33,6 @@
 
 ## 公共高架板块
 
-`elevated-blocks.ts` 登记 `north-decks/`、`south-decks/`、`west-decks/`，`deck-access.ts` 维护公共上下设备。北侧与南侧分别使用 `district-north-deck`（8）和 `district-south-deck`（4），均归 2F 探索。`assemblePublicDecks` 合并路口并避让既有站厅／付费区／天井；`deck-boundaries.ts` 控制外缘栏杆留口；`deck-interface-bindings.ts` 仅处理已指定的建筑接入对象。`deck-buildings.ts` 声明二层目的建筑占位，复用 `application/building-occupancy.ts` 并避让公共桥面；不增加商场内部可通行区。不要恢复建筑外壳中的 Yodobashi 回廊副本。
+`elevated-blocks.ts` 登记 `north-decks/`、`south-decks/`、`west-decks/`，`deck-access.ts` 维护公共上下设备。北侧与南侧分别使用 `district-north-deck`（8）和 `district-south-deck`（4），均归 2F 探索。`assemblePublicDecks` 合并路口并避让既有站厅／付费区／天井；`deck-boundaries.ts` 控制外缘栏杆留口；`deck-interface-bindings.ts` 仅处理已指定的建筑接入对象。`deck-buildings.ts` 声明二层目的建筑占位，复用 `application/public-areas/building-occupancy.ts` 并避让公共桥面；不增加商场内部可通行区。不要恢复建筑外壳中的 Yodobashi 回廊副本。
 
 运行 `node scripts/geography/review-stage-four.ts` 或 `node --test tests/public-areas/stage-four-decks.test.ts` 检查。来源、设备及未定位新桥见 [阶段四记录](../../../docs/design/public-areas/elevated.md)。
