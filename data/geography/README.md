@@ -23,3 +23,7 @@ https://opendatacommons.org/licenses/odbl/1-0/
 - 已补 JR 大阪站、阪急站、第一生命、Hilton 及站前四栋大楼标注，主要道路每个名称选择一段较长路段标记，标签进行边界与相互避让。LUCUA 等建筑部件的完整命名及道路面细节仍待核对。
 - 用户在会话提供 Google Maps 地图及卫星图，供方位、裙楼和街区关系视觉核对；当前坐标全部来自 OSM，没有描摹或发布这些截图。
 - SVG 保留可见署名，派生数据随原始快照和重建脚本一起提供。尚未接入现有 H5，运行时来源列表未改变。
+
+## 当前 H5 展示范围
+
+地理底稿已接入 H5。原始快照和完整投影继续作为数据基准；页面地面从 `display-context.json` 加载按地下网、站体及高架板块筛选的范围，普通建筑仅保留相关宿主。展示政策在 `context-policy.json`；道路内部中段及同名分段保持连接，只裁外围端头。重建命令为 `node scripts/geography/build-ground-context.ts`，规则及数量见 [地面展示范围](../../docs/ground-context.md)。

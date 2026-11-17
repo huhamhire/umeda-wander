@@ -33,9 +33,10 @@
       "source": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=4",
       "displayLevel": "2F",
       "widthMetres": 7,
-      "geometryEvidence": "连通目标确认；缺少本轮可用的完整平面端点，暂不绘制",
+      "geometryEvidence": "位置图及两端二层图与 OSM 宿主轮廓联合拟合；几何见 inogate.json，不推定为测量端点",
       "levelEvidence": "原资料新建步行桥，独立于 LUCUA 连桥",
-      "status": "provisional"
+      "status": "reference-fit",
+      "geometryFile": "data/geography/elevated/inogate.json"
     }
   ]
 }

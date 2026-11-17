@@ -4,7 +4,7 @@
 
 - `north.json`：Grand Front、Yodobashi、LUCUA 与阪急接口。
 - `south.json`：大丸南侧、梅田新步道桥、阪急及阪神百货接口。
-- `west.json`：LUCUA 西侧、梅北上方公共步道及待定位的新桥。
+- `west.json`：LUCUA 西侧、梅北上方公共步道及独立参考拟合的新桥。
 
 每组记录稳定 ID、OSM way ID、参考文件／页码、展示层与几何证据。修改对应区域配置后重新生成即可。OSM `level=1` 不机械转换为建筑 1F，参考图确认的二层外部公共步道归入展示 2F；原始 level 保存在导出属性中。H5 北侧标高 8、南侧 4，同归 2F；标高与桥宽为估计，不能据此认为全部等高。
 
@@ -19,3 +19,5 @@ magick -background white build/geography/elevated-plan.svg build/geography/eleva
 OSM 线位适用 ODbL，保留原 way 链接。参考图所依据的公共平台轮廓、图像和衍生几何不因此取得 OSM 许可；授权待核实，当前用于内部校对。源文件不修改，详情见 `docs/elevated-projection-audit.md`。
 
 阶段四维护见 [公共连廊装配记录](../../../docs/stage-four-decks.md)。运行 `node scripts/geography/build-elevated.ts` 重建 34 段原始步行轴线，再运行 `node scripts/geography/review-stage-four.ts` 检查实际装配。Yodobashi 外环由独立公共面持有，原轴线不重复生成桥面。
+
+Inogate 新桥的人工参考拟合单独保存在 `inogate.json`，由 `west-decks/inogate.ts` 接入 H5，包含两条路径及两端平面宿主；不伪装成额外 OSM way。原始轴线预览仍只画 34 段，完整组装请运行 review-stage-four。具体端点、宽度、统一展示标高及待核对门位见阶段四记录。

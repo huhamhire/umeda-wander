@@ -1,0 +1,6 @@
+{
+  "marginMetres": 35,
+  "outlineToleranceMetres": 1.5,
+  "note": "展示裁剪范围；地下公共网外围留出地面道路参照，保留七站、已建商业体及二层连廊。不是通行边界或道路实测范围。",
+  "additionalBuildingIds": []
+}

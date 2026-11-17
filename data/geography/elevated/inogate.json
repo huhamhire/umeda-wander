@@ -1,0 +1,88 @@
+{
+  "id": "inogate-grand-green",
+  "level": "district-north-deck",
+  "widthMetres": 7,
+  "hosts": [
+    {
+      "id": "inogate",
+      "name": "Inogate 大阪 · 2F",
+      "way": "1147394005"
+    },
+    {
+      "id": "grand-green-south-gate",
+      "name": "Grand Green 南馆 · 2F 接入",
+      "way": "1347368433"
+    }
+  ],
+  "paths": [
+    {
+      "id": "inogate-2f-frontage",
+      "name": "Inogate 2F 公共前沿",
+      "points": [
+        {
+          "x": 283.08872968014384,
+          "z": 634.7124909450758
+        },
+        {
+          "x": 248,
+          "z": 657
+        },
+        {
+          "x": 157,
+          "z": 728
+        }
+      ]
+    },
+    {
+      "id": "inogate-grand-green-bridge",
+      "name": "Inogate—Grand Green 南馆 2F 连桥",
+      "points": [
+        {
+          "x": 157,
+          "z": 728
+        },
+        {
+          "x": 105,
+          "z": 687
+        }
+      ]
+    }
+  ],
+  "portals": [
+    {
+      "id": "inogate-jr-public",
+      "target": "station:jr-osaka",
+      "point": {
+        "x": 283.08872968014384,
+        "z": 634.7124909450758
+      },
+      "angle": -0.57
+    },
+    {
+      "id": "inogate-west-bridge",
+      "target": "inogate",
+      "point": {
+        "x": 157,
+        "z": 728
+      },
+      "angle": -2.47
+    },
+    {
+      "id": "grand-green-south-bridge",
+      "target": "grand-green-south-gate",
+      "point": {
+        "x": 105,
+        "z": 687
+      },
+      "angle": -2.47
+    }
+  ],
+  "sources": [
+    "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=1",
+    "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=4",
+    "references/Umeda Walkway Maps/osaka-station-city-2f.png",
+    "references/Umeda Walkway Maps/grand-green-osaka-south-2f.png"
+  ],
+  "certainty": "reference-fit",
+  "note": "目标与楼层来自参考图；前沿、门位、桥宽及统一展示标高为人工拟合，不是测量端点。只显示公共连接和宿主平面占位，不展开商业内部。"
+}

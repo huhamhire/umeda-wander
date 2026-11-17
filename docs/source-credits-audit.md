@@ -43,3 +43,5 @@
 本功能修改文件为 `src/index.html`、`src/main.ts`、`src/styles.css`、`src/infrastructure/source-credits.ts`、`deprecated/infrastructure/osm-credit-download.ts`（旧下载对照，页面现用 geographicOsmData）、`src/presentation/source-credits-dialog.ts`、`tests/source-credits.test.ts` 及本记录；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
 
 自动化测试覆盖内容节顺序、空节省略、许可分离、下载数据边界、打开关闭与键盘焦点生命周期，以及窄屏样式约束。遵照既有“不直接操作浏览器”的要求，没有做真实浏览器／手机视口的视觉和原生模态验收；原生 inert、触摸滚动与关闭后地图手势仍需在浏览器实测，不能把测试替身称为该项实测通过。
+
+本轮追加：公共 2F 桥面使用统一暖赭色；`west-decks/inogate.ts` 根据 JR 位置图及两端 2F 图拟合独立公共前沿／新桥，具体资源为 `data/geography/elevated/inogate.json`。新增宿主轮廓来自仓库 OSM，前沿、桥面、门口及统一展示标高仍为混合来源参考拟合，适用原有待授权事项。`display-context.json` 根据地下公共面、核心站体及连廊裁剪地面铺装，不能当作纯 OSM 下载；原始数据下载内容和许可保持原样。

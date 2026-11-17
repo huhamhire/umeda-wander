@@ -12,7 +12,15 @@ test('elevated groups retain distinct identities, walking geometry and source ev
    assert.ok(!ids.has(link.id));ids.add(link.id);
    assert.ok(existsSync(link.source.split('#')[0]));
    assert.ok(link.geometryEvidence&&link.levelEvidence);
-   if(!link.ways.length)assert.equal(link.status,'provisional');
+   if (!link.ways.length) {
+     if (link.status === 'reference-fit') {
+       assert.ok(existsSync(link.geometryFile));
+       const fit = JSON.parse(readFileSync(link.geometryFile, 'utf8'));
+       assert.ok(fit.sources.length && fit.paths.every((path: {points: unknown[]}) => path.points.length >= 2));
+     } else {
+       assert.equal(link.status, 'provisional');
+     }
+   }
    for(const id of link.ways){assert.equal(way(id)?.tags.highway,'footway');assert.ok(way(id).coordinates.length>=2);}
   }
  }

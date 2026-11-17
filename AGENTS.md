@@ -13,6 +13,9 @@
 
 ## 工作约定
 
+- 地面展示使用 `data/geography/display-context.json`，原始 OSM／地下公共面不裁掉。修改站体、公共网、高架或宿主清单后运行 `node scripts/geography/build-ground-context.ts`，再构建页面。`context-policy.json` 维护外围参照余量；同一源道路从首次进入到最后离开范围之间保留连续走线，同名／同 ref 分段只按原始共用顶点接续，只裁外围端头，不补无来源捷径。无关普通建筑占位剔除，核心站体、地下宿主与连廊目的地保留；维护记录见 `docs/ground-context.md`。
+- 公共二层桥面采用 `elevatedPublicColor` 暖赭色，与浅色商业占位区分；细浅栏杆和既有区域灰化规则保留。`west-decks/inogate.ts` 是独立第四个高架板块，资源为 `data/geography/elevated/inogate.json`；新桥连接 Inogate 西端与 Grand Green 南馆，端点、宽度和标高为参考拟合，不误接 Grand Front 或梅北付费站台。
+
 - 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北／南／西板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源与未定位新桥见 `docs/stage-four-decks.md`。
 
 - 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/stage-three-underground.md`。
