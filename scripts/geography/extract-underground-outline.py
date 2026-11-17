@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import pymupdf
+from pdf_vectors import closed_drawing_rings
 
 source = Path('references/梅田周边地区通道.pdf')
 page = pymupdf.open(source)[0]
@@ -16,32 +17,7 @@ for index, drawing in enumerate(page.get_drawings()):
         continue
     if drawing['rect'].y0 > 810:  # Exclude bottom legend, outside main map.
         continue
-    rings, ring = [], []
-    def flush():
-        global ring
-        if len(ring) > 2:
-            if ring[-1] != ring[0]:
-                ring.append(ring[0])
-            rings.append(ring)
-        ring = []
-    for item in drawing['items']:
-        kind, *points = item
-        if kind not in ('l', 'c'):
-            raise ValueError(f'Unsupported path command: {kind}')
-        points = [(float(p.x), float(p.y)) for p in points]
-        if ring and sum((a-b)**2 for a,b in zip(ring[-1], points[0])) > 1e-8:
-            flush()
-        if not ring:
-            ring.append(points[0])
-        if kind == 'l':
-            ring.append(points[-1])
-        else:
-            # Fine sampling preserves the source curve, without rounding corners.
-            for step in range(1, 25):
-                t = step / 24
-                s = 1-t
-                ring.append(tuple(s**3*points[0][a]+3*s*s*t*points[1][a]+3*s*t*t*points[2][a]+t**3*points[3][a] for a in (0,1)))
-    flush()
+    rings = closed_drawing_rings(drawing)
     paths.append({'drawingIndex': index, 'fill': color, 'evenOdd': drawing['even_odd'], 'commandCount': len(drawing['items']), 'rings': rings})
 
 result = {'source': source.as_posix(), 'sha256': hashlib.sha256(source.read_bytes()).hexdigest(), 'page': 1, 'pageSize': [page.rect.width, page.rect.height], 'coordinateFrame': 'PDF points, top-left origin, x right / y down', 'curveSamples': 24, 'paths': paths}

@@ -49,9 +49,13 @@ export const sourceCredits: SourceCredits = {
       licence: link('Open Database License 1.0（ODbL）', 'https://opendatacommons.org/licenses/odbl/1-0/'), attribution: '© OpenStreetMap contributors', download: 'osm' },
     { name: 'JR 大阪站与北新地站布局整理', use: '楼板、站台、闸机、扶梯、楼梯、直梯及南北门大楼连接几何；北中庭 75／76、B 直梯和梅北闸外地面入口。原 PDF 和图标未嵌入页面。', links: [jr, kitashinchi], attribution: '资料发布者：西日本旅客鉄道株式会社', status: pending },
     { name: '阪急大阪梅田站布局整理', use: '站台、收费区、站厅、竖向连接几何；本地 SVG 为主要参考，在线 PDF 用于补充核对，版本不同。', links: [hankyu], attribution: '资料发布者：阪急電鉄株式会社；本地 SVG 的原始发布地址待确认', status: pending },
+    { name: '阪急百货 1F 公共通廊整理', use: '南北挑高通廊、东西公共通廊与 2F 裁空关系；旧版程序化拱门、暖色橱窗及地坪细节按当前地理轮廓重新拟合。宽度、层高及外观细节为示意，未嵌入原 PDF 或照片。', links: [
+        link('阪急公共通廊说明', 'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf'),
+        link('阪急梅田本店介绍', 'https://website.hankyu-dept.co.jp/honten/about/'),
+      ], attribution: '资料发布者：阪急电铁、阪急阪神百货店；外观另参考用户提供照片', status: pending },
     { name: '阪神大阪梅田站布局整理', use: 'B1／B2 平面、东西出口、两段式主阶梯及南出口竖向连接几何。', links: [hanshin], attribution: '资料发布者：阪神電気鉄道株式会社', status: pending },
     { name: 'Osaka Metro 三站布局整理', use: '御堂筋线梅田、谷町线东梅田、四桥线西梅田的站厅、站台及出入口几何。', links: metro, attribution: '资料发布者：大阪市高速電気軌道株式会社（Osaka Metro）', status: pending },
-    { name: '地区步行图与连廊资料整理', use: '异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪、地面展示范围筛选、2F 公共桥面、开放前庭、公共设备、建筑门口裁口、JP Tower 接入与 Inogate—Grand Green 2F 连接几何。OSM 建筑轮廓与 PDF 通路相减的混合结果不包含在纯 OSM 下载中。', links: [city, cityRoute, umedaMap, jp, umekita], attribution: '资料发布者包括大阪市、日本邮便、UMEDA CONNECT、JR 西日本；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实', status: pending },
+    { name: '地区步行图与连廊资料整理', use: '异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪，以及 E-ma／Hilton West／MARU 的源图街区填充边界；地面展示范围筛选、2F 公共桥面、开放前庭、公共设备、建筑门口裁口、JP Tower 接入与 Inogate—Grand Green 2F 连接几何。PDF 街区轮廓及 OSM／PDF 混合裁剪结果不包含在纯 OSM 下载中。', links: [city, cityRoute, umedaMap, jp, umekita], attribution: '资料发布者包括大阪市、日本邮便、UMEDA CONNECT、JR 西日本；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实', status: pending },
     { name: '程序化建筑外观与设施模型', use: '阪神跨道路裙楼／办公塔楼、JP Tower 连续主体与冠部、屋顶、扶梯、电梯井、围栏及 Canvas 标牌；PLATEAU 派生体量单列。没有引入照片贴图或外部图标文件。', links: [
         link('阪神：日本设计项目说明', 'https://www.nihonsekkei.co.jp/projects/18825/'),
         link('JP Tower：业主建筑介绍', 'https://www.jp-re.japanpost.jp/properties/jptower-osaka.html'),

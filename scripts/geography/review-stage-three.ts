@@ -6,6 +6,8 @@ import {pointInPolygon} from '../../src/domain/map/geometry.ts';
 import {areaColor} from '../../src/presentation/area-palette.ts';
 import {sourceProjection} from './reference-projection.ts';
 import type {PlanRegion,Point2} from '../../src/domain/map/model.ts';
+import {basementOccupancies} from '../../src/infrastructure/public-areas/basement-buildings.ts';
+import {basementBoundaryGaps} from './basement-contact-audit.ts';
 
 const geometry=(a:PlanRegion)=>[a.outline,...a.holes??[]].map(r=>r.map(p=>[p.x,p.z] as [number,number]));
 const flat=undergroundPublicAreas.filter(a=>!a.elevationOffset);
@@ -41,6 +43,10 @@ writeFileSync(output+'/stage-three-underground.svg',panel('阶段三地下公共
 writeFileSync(output+'/stage-three-north.svg',panel('北侧地下接口及公共设备','240 380 500 300',1500,900));
 writeFileSync(output+'/stage-three-south.svg',panel('南侧地下公共区及建筑占用','300 660 650 510',1300,1020));
 const projection=sourceProjection();
+const pendingBuildings = basementOccupancies.filter(building => basements.contacts.some(c =>
+  c.buildingId === building.id && c.status === 'needs-review',
+));
+const basementGaps = basementBoundaryGaps(pendingBuildings, undergroundPublicAreas);
 const report={
   scope:'Offline planar geometry only; no route certification, surveyed heights, WebGL or touch verification.',
   blocks:undergroundBlocks.map(b=>({id:b.id,faces:b.areas.length,holes:b.areas.reduce((n,a)=>n+(a.holes?.length??0),0)})),
@@ -51,9 +57,19 @@ const report={
   authoredPatches:undergroundPatches,
   publicEquipment:publicAccess.connections,
   basementContacts:basements.contacts,
+  basementGaps,
   unconfirmed:'Building contact means geometric adjacency/overlap of host envelopes only, not a verified door. PDF derivative permission and individual underground heights remain pending.',
 };
 writeFileSync(output+'/stage-three-audit.json',JSON.stringify(report,null,2));
+const gapMarks = basementGaps.flatMap(gap => {
+  if (gap.kind !== 'boundary-gap' || !gap.buildingPoint || !gap.publicPoint) {
+    return [];
+  }
+  const {buildingPoint: a, publicPoint: b} = gap;
+  return [`<path d="M${a.x},${a.z}L${b.x},${b.z}" stroke="#ad604e" stroke-width="1" stroke-dasharray="1 1"/><circle cx="${a.x}" cy="${a.z}" r="2" fill="#ad604e"><title>${esc(gap.buildingId)}: ${gap.gapMetres?.toFixed(2)} m diagnostic gap, NOT a passage</title></circle>`];
+});
+shapes.push(...gapMarks);
+writeFileSync(output+'/stage-three-basement-review.svg',panel('占位边界差距核查：虚线是诊断距离，不是通道','200 720 650 340',1500,785));
 console.log(JSON.stringify({blocks:report.blocks.length,publicFaces:undergroundPublicAreas.length,components:components.length,
   b1Gates:report.interfaces.length,gateComponents:[...new Set(report.interfaces.map(i=>i.component))],
   basementBuildings:report.basementContacts.length,needsContactReview:report.basementContacts.filter(c=>c.status==='needs-review').map(c=>c.buildingId),publicEquipment:report.publicEquipment.length}));

@@ -10,6 +10,7 @@ import {deckBuildingOccupancies} from '../src/infrastructure/public-areas/deck-b
 import {platformOutline} from '../src/domain/map/geometry.ts';
 import type {PlanRegion} from '../src/domain/map/model.ts';
 import {buildGeographicContext} from '../src/presentation/geographic-context.ts';
+import {basementOccupancies} from '../src/infrastructure/public-areas/basement-buildings.ts';
 
 const geometry = (region: PlanRegion): clipping.Polygon => [region.outline, ...region.holes ?? []].map(r => r.map(p => [p.x, p.z]));
 const area = (g: clipping.MultiPolygon) => g.reduce((sum, p) => sum + p.reduce((sum, r, i) => sum + (i ? -1 : 1) * Math.abs(r.reduce((sum, a, j) => {
@@ -21,6 +22,7 @@ const scope = context.scope as clipping.MultiPolygon;
 test('display pruning keeps underground, platforms and destination contexts under an opaque ground mask', () => {
   const regions = [
     ...undergroundPublicAreas,
+    ...basementOccupancies.map(b => b.region),
     ...layout.platforms.map(p => ({outline: platformOutline(p)})),
     ...layout.areas.filter(a => a.railings),
     ...geographicBuildings.map(b => ({outline: b.volumes[0]!.outline})),

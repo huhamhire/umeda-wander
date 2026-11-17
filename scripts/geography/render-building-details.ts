@@ -4,12 +4,18 @@ import * as T from 'three';
 import {geographicBuildings} from '../../src/infrastructure/buildings/index.ts';
 import {buildGeographicBuilding} from '../../src/presentation/models/geographic-building-model.ts';
 import {exteriorOpenings} from '../../src/infrastructure/district/geographic-map.ts';
+import {hankyuConcourses} from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
+import {buildCommercialConcourse} from '../../src/presentation/commercial-concourse-model.ts';
 
 // Offline CPU depth buffer over the actual H5 meshes, not a painter-sorted box sketch.
 // No browser, WebGL, photographic texture or external renderer is required.
-const ids = ['hanshin-dept', 'hankyu-dept', 'jp-tower', 'hankyu-sanbangai', 'daimaru', 'yodobashi', 'grand-front-south', 'lucua-1100'];
+const assembly = process.argv.includes('--assembly');
+const ids = assembly
+  ? ['hanshin-dept', 'hanshin-dept', 'hanshin-dept', 'hanshin-dept', 'hankyu-dept', 'hankyu-dept']
+  : ['hanshin-dept', 'hankyu-dept', 'jp-tower', 'hankyu-sanbangai', 'daimaru', 'yodobashi', 'grand-front-south', 'lucua-1100'];
+const output = assembly ? 'building-assembly' : 'building-details';
 const width = 1200;
-const height = 1840;
+const height = Math.ceil(ids.length / 2) * 460;
 const rgb = Buffer.alloc(width * height * 3);
 for (let i = 0; i < rgb.length; i += 3) {
   rgb[i] = 247;
@@ -24,6 +30,21 @@ const labels: string[] = [];
 for (const [panel, id] of ids.entries()) {
   const building = geographicBuildings.find(b => b.id === id)!;
   const model = buildGeographicBuilding(building, exteriorOpenings);
+  if (assembly) {
+    if (id === 'hankyu-dept') {
+      model.clear();
+      for (const b of geographicBuildings.filter(b => ['hankyu-dept', 'hankyu-grand'].includes(b.id))) {
+        model.add(buildGeographicBuilding({
+          ...b,
+          volumes: b.volumes.filter(v => v.base === 0).map(v => ({...v, top: .55})),
+        }, exteriorOpenings));
+      }
+      for (const hall of hankyuConcourses) {
+        model.add(buildCommercialConcourse(hall, hankyuConcourses));
+      }
+    }
+    model.rotation.y = (panel % 4) * Math.PI / 2;
+  }
   model.updateMatrixWorld(true);
   const meshes: T.Mesh[] = [];
   model.traverse(o => {
@@ -95,9 +116,10 @@ for (const [panel, id] of ids.entries()) {
   labels.push(`<text x="${x}" y="${y + 443}" font-size="13">H5 实际网格 · CPU 深度遮挡 · 各建筑独立缩放</text>`);
 }
 mkdirSync('build/geography', {recursive: true});
-writeFileSync('build/geography/building-details.ppm', Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), rgb]));
-execFileSync('magick', ['build/geography/building-details.ppm', 'build/geography/building-details-base.png']);
-writeFileSync('build/geography/building-details.svg', `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${labels.join('')}</g></svg>`);
-execFileSync('magick', ['-background', 'none', 'build/geography/building-details.svg', 'build/geography/building-details-labels.png']);
-execFileSync('magick', ['build/geography/building-details-base.png', 'build/geography/building-details-labels.png', '-composite', 'build/geography/building-details.png']);
-console.log('Wrote actual-mesh building-details.png');
+const path = 'build/geography/' + output;
+writeFileSync(path + '.ppm', Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), rgb]));
+execFileSync('magick', [path + '.ppm', path + '-base.png']);
+writeFileSync(path + '.svg', `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${labels.join('')}</g></svg>`);
+execFileSync('magick', ['-background', 'none', path + '.svg', path + '-labels.png']);
+execFileSync('magick', [path + '-base.png', path + '-labels.png', '-composite', path + '.png']);
+console.log('Wrote actual-mesh ' + output + '.png');

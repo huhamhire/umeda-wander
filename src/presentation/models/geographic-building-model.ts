@@ -39,7 +39,8 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
     ].filter(y => y >= volume.base && y <= volume.top))].sort((a, b) => a - b);
     const pieces = bounds.slice(1).map((top, i) => ({ base: bounds[i]!, top, holes: cutsAt((top + bounds[i]!) / 2) }));
     for (const piece of pieces) {
-      const body = new T.Mesh(buildFloorGeometry(volume.outline, piece.holes, piece.top - piece.base, piece.base), volume.base ? glass : wall);
+      const towerSurface = volume.surface ? volume.surface === 'tower' : volume.base > 0;
+      const body = new T.Mesh(buildFloorGeometry(volume.outline, piece.holes, piece.top - piece.base, piece.base), towerSurface ? glass : wall);
       body.userData.labelOccluder = true;
       body.castShadow = true;
       body.receiveShadow = true;

@@ -1,5 +1,13 @@
 # 地下公共空间轮廓投影
 
+当前已接入地理 H5；下文初期“未接入”是当时阶段记录。现役公共板块、占位与待核对范围见 [阶段三](../../../docs/stage-three-underground.md)。
+
+## 独立地下街区占位
+
+`basement-source.json` 从同份 PDF 中提取已人工判读的 E-ma、Hilton West 绿色面与 MARU 闭合曲线，记录源哈希、绘图对象及原坐标；`basement-outlines.json` 使用与公共面完全相同的 `sourceProjection` 投影。它们是 B1 街区填充边界，不替代地上 OSM 建筑，也不确认门洞、地下室范围或通行权限。其改编授权与原 PDF 一并待核实，不纳入纯 OSM 下载。
+
+只在源 PDF 改变时重新运行 `extract-basement-outlines.py`；绘图对象序号依赖已记录 SHA-256，文件不符时中止而非沿用旧编号。道路控制点调整后运行 `node scripts/geography/build-basement-outlines.ts`，随后重建地面展示并运行阶段三核查。PDF 黄色公共面和新占位共用离线 `pdf_vectors.py` 采样，不修改原始 references。
+
 当前以 `references/梅田周边地区通道.pdf` 第 1 页黄色区域的**原始矢量填充**为轮廓底稿，不再使用中心线加宽或简化多边形代替地区网络。
 
 ## 数据与生成

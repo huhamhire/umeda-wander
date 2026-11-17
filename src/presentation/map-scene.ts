@@ -160,7 +160,13 @@ export class MapScene {
       mesh.userData.labelOccluder=true;
     }
     for (const level of this.levels) { const group = setRegionOwner(new T.Group(),level.station??'jr-osaka'); this.groups.set(level.id, group); this.scene.add(group); }
-    for(const hall of this.layout.concourses??[])this.groups.get(hall.level)!.add(setRegionOwner(buildCommercialConcourse(hall),null));
+    for (const hall of this.layout.concourses ?? []) {
+      const model = setRegionOwner(buildCommercialConcourse(hall, this.layout.concourses), null);
+      this.groups.get(hall.level)!.add(model);
+      if (this.layout.geographic) {
+        this.geographicBuildingFloors.push(model);
+      }
+    }
     const publicContext={areas:this.layout.areas,levels:this.levels,passages:this.layout.passages??[]};
     for(const building of this.layout.buildings??[])if(building.podiumHeight||building.volumes?.length){
       const model=setRegionOwner(buildCommercialMassing(building,publicContext),null);this.groups.get('platform')!.add(model);this.commercialMassing.push(model);
@@ -180,8 +186,12 @@ export class MapScene {
     }
     const screenGlass = new T.MeshStandardMaterial({color:0x9dc5cc,transparent:true,opacity:0.38,depthWrite:false,roughness:0.3});
     for (const area of this.layout.areas) {
-      const floorGroup=area.id.startsWith('deck-context-')?new T.Group():this.groups.get(area.level)!;
-      if(area.id.startsWith('deck-context-')){this.groups.get(area.level)!.add(floorGroup);(this.geographicBuildingFloors??=[]).push(floorGroup);}
+      const buildingContext = area.id.startsWith('deck-context-') || area.blockId === 'building:hankyu-concourse';
+      const floorGroup = buildingContext ? new T.Group() : this.groups.get(area.level)!;
+      if (buildingContext) {
+        this.groups.get(area.level)!.add(floorGroup);
+        (this.geographicBuildingFloors ??= []).push(floorGroup);
+      }
       const cuts = [...area.holes??[],...this.openings.filter(opening => opening.level === area.level).map(opening => opening.outline)];
       const geometry = buildFloorGeometry(area.outline, cuts, area.height ?? 0.55, area.elevationOffset??0);
       if (!geometry.getAttribute('position')) continue;

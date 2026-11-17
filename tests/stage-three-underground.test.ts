@@ -50,7 +50,7 @@ test('Y11 public hall and north/middle gate exits face east while its paid conco
 });
 
 test('basement fills and labels remain inside host occupancy and yield to public and station interiors',()=>{
-  assert.equal(basements.contacts.length,17);
+  assert.equal(basements.contacts.length,18);
   const interiors=layout.areas.filter(a=>!a.blockId&&a.kind!=='public'&&levels.find(l=>l.id===a.level)?.y===-8);
   for(const a of basements.areas){
     assert.ok(area(clipping.intersection(geometry(a),union))<1e-5,a.id+' seals public excavation');
@@ -59,7 +59,7 @@ test('basement fills and labels remain inside host occupancy and yield to public
   }
   for(let i=0;i<basements.areas.length;i++)for(let j=i+1;j<basements.areas.length;j++)
     assert.ok(area(clipping.intersection(geometry(basements.areas[i]!),geometry(basements.areas[j]!)))<1e-5);
-  assert.deepEqual(basements.contacts.filter(c=>c.status==='needs-review').map(c=>c.buildingId),['jp-tower','e-ma','hilton-west']);
+  assert.deepEqual(basements.contacts.filter(c=>c.status==='needs-review').map(c=>c.buildingId),['jp-tower']);
 });
 
 test('public equipment retains source references and actual upper-floor apertures, without inventing paid transfers',()=>{

@@ -38,9 +38,12 @@ test('geographic runtime builds the actual station scene including gate fences',
  const openings=planFloorOpenings(layout.connections,levels,layout.platforms);
  Object.assign(scene,{layout,levels,facilities,openings,gateBoundaries:planGateBoundaries(facilities,layout.areas),
   scene:new T.Scene(),base:new T.Group(),roof:new T.Group(),groups:new Map(),materials:new Map(),
-  commercialMassing:[],publicPassages:[],connectors:[],pickables:[],labels:[],
+  commercialMassing:[],geographicBuildingFloors:[],publicPassages:[],connectors:[],pickables:[],labels:[],
   renderer:{capabilities:{getMaxAnisotropy:()=>1}},label:()=>{}});
  assert.doesNotThrow(()=>Reflect.get(scene,'buildStation').call(scene));
+ for(const hall of layout.concourses){
+  assert.ok(scene.geographicBuildingFloors.some((model:T.Group)=>model.name===hall.id), '1F hall must follow the ground visibility switch');
+ }
 });
 
 test('geographic commercial exteriors separate podiums and towers with finite metre heights',()=>{

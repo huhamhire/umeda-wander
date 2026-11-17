@@ -5,6 +5,7 @@ build/
 coverage/
 .vite/
 .cache/
+__pycache__/
 
 # Local secrets; templates may be committed.
 .env

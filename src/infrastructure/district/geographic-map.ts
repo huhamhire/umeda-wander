@@ -24,6 +24,12 @@ import {deckExtensionLabels} from '../../application/deck-extension-labels.ts';
 import {buildBuildingOccupancies} from '../../application/building-occupancy.ts';
 import {deckBuildingOccupancies} from '../public-areas/deck-buildings.ts';
 import {stationBuildingOpenings} from '../../application/station-building-openings.ts';
+import {
+  hankyuConcourses,
+  hankyuConcourseAreas,
+  hankyuConcourseOpenings,
+  hankyuConcourseAtria,
+} from '../buildings/hankyu-dept/concourse.ts';
 const stationMaps=createGeographicStations();
 export const publicInterfaces=stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages=stationFrontages(stationMaps);
@@ -41,16 +47,49 @@ const assemblyLevels=[...shared.stations.flatMap(s=>s.levels),...elevatedLevels,
 // Equipment pads join their block before union; a floor is never drawn twice at a junction.
 for(const b of elevated.blocks)b.regions.push(...deckAccess.areas.filter(a=>a.level===b.level&&a.blockId===b.id));
 export const elevatedAreas=assemblePublicDecks(elevated.blocks,shared.stations,assemblyLevels);
-export const exteriorOpenings=[...deckBuildingOpenings(elevated.portals,assemblyLevels),...equipmentBuildingOpenings(deckAccess.connections,deckAccess.buildingEquipment,assemblyLevels),...stationBuildingOpenings(shared.stations)];
-export const deckBuildingAreas=deckBuildingOccupancies.flatMap(group=>{
-  const y=assemblyLevels.find(l=>l.id===group.level)!.y;
-  const stationAreas=shared.stations.flatMap(s=>s.layout.areas.filter(a=>Math.abs(s.levels.find(l=>l.id===a.level)!.y+(a.elevationOffset??0)-y)<.01));
-  return buildBuildingOccupancies(group.definitions,elevatedAreas.filter(a=>a.level===group.level),stationAreas,{level:group.level,prefix:'deck-context'}).areas;
+export const exteriorOpenings = [
+  ...deckBuildingOpenings(elevated.portals, assemblyLevels),
+  ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
+  ...stationBuildingOpenings(shared.stations),
+  ...hankyuConcourseOpenings,
+];
+export const deckBuildingAreas = deckBuildingOccupancies.flatMap(group => {
+  const y = assemblyLevels.find(l => l.id === group.level)!.y;
+  const stationAreas = shared.stations.flatMap(s => s.layout.areas.filter(a =>
+    Math.abs(s.levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) - y) < .01,
+  ));
+  const atriumCuts = hankyuConcourseAtria.flatMap(a => a.openings.filter(o => o.level === group.level).map(o => ({
+    id: a.id,
+    name: a.name,
+    kind: 'public' as const,
+    ...o,
+    evidence: a.evidence,
+  })));
+  return buildBuildingOccupancies(
+    group.definitions,
+    [...elevatedAreas.filter(a => a.level === group.level), ...atriumCuts],
+    stationAreas,
+    {level: group.level, prefix: 'deck-context'},
+  ).areas;
 });
 const externalConnections=[...publicAccess.connections,...deckAccess.connections];
-const composed=composeStationMaps(shared.stations,{areas:[...undergroundPublicAreas,...basements.areas,...publicAccess.areas.filter(a=>a.level!=='district-underground'),
- ...elevatedAreas,...deckBuildingAreas,...deckAccess.areas.filter(a=>a.level==='district-ground')],platforms:[],connections:externalConnections,exteriorOpenings,
- passages:deckExtensionLabels(elevated.blocks,elevatedAreas)});
+const composed = composeStationMaps(shared.stations, {
+  areas: [
+    ...undergroundPublicAreas,
+    ...basements.areas,
+    ...publicAccess.areas.filter(a => a.level !== 'district-underground'),
+    ...elevatedAreas,
+    ...deckBuildingAreas,
+    ...deckAccess.areas.filter(a => a.level === 'district-ground'),
+    ...hankyuConcourseAreas,
+  ],
+  platforms: [],
+  connections: externalConnections,
+  exteriorOpenings,
+  concourses: hankyuConcourses,
+  atria: hankyuConcourseAtria,
+  passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
+});
 export const {stations,edges}=composed;
 export const nodes=[...composed.nodes,...externalConnections.flatMap(c=>[c.from,c.to])];
 export const levels=[...composed.levels,sharedUndergroundLevel,publicGroundLevel,...elevatedLevels];

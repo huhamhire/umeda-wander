@@ -18,7 +18,7 @@ const start=performance.now(),scene=Object.create(MapScene.prototype);
 const openings=[...planFloorOpenings(layout.connections,levels,layout.platforms),...planAtriumOpenings(layout.atria??[])];
 Object.assign(scene,{layout,levels,facilities,openings,gateBoundaries:planGateBoundaries(facilities,layout.areas),
  scene:new T.Scene(),base:new T.Group(),roof:new T.Group(),groups:new Map(),materials:new Map(),
- commercialMassing:[],publicPassages:[],connectors:[],pickables:[],labels:[],renderer:{capabilities:{getMaxAnisotropy:()=>1}},label:()=>{}});
+ commercialMassing:[],geographicBuildingFloors:[],publicPassages:[],connectors:[],pickables:[],labels:[],renderer:{capabilities:{getMaxAnisotropy:()=>1}},label:()=>{}});
 Reflect.get(scene,'buildStation').call(scene);
 for(const c of scene.connectors)c.update((id:string)=>levels.find(l=>l.id===id)!.y,'all');
 const context=buildGeographicContext(openings.filter(o=>levels.find(l=>l.id===o.level)!.y===0).map(o=>o.outline));

@@ -1,6 +1,7 @@
 import {footprint} from '../buildings/building-data.ts';
 import type {BasementOccupancy} from '../../domain/map/public-area.ts';
 import {districtUndergroundEvidence} from './underground-source.ts';
+import {referenceBasements} from './south-diamor/basement-outlines.ts';
 
 /** Host envelopes only; underground leasing/interior plans are not represented. */
 const buildings=[
@@ -13,6 +14,22 @@ const buildings=[
  ['umeda-dt','梅田 DT Tower','162158019'],['daiichi-life','大阪第一生命大楼','162158153'],
  ['e-ma','E-ma','162158020'],['hilton-east','Hilton Plaza East','162158151'],['hilton-west','Hilton Plaza West','162158150'],
 ] as const;
-export const basementOccupancies:BasementOccupancy[]=buildings.map(([id,name,way])=>({id,name,region:footprint(way),
- evidence:{...districtUndergroundEvidence,urls:[...districtUndergroundEvidence.urls!,'https://www.openstreetmap.org/'+(way.includes('/')?way:'way/'+way)],
- detail:districtUndergroundEvidence.detail+' Named host building in district underground map; OSM host outline clipped by public faces and paid station interiors. Filled area is occupancy only, not confirmed walkable basement or a shop plan.'}}));
+export const basementOccupancies: BasementOccupancy[] = buildings.map(([id, name, way]) => {
+  const reference = referenceBasements.find(b => b.id === id);
+  return {
+    id,
+    name,
+    region: reference?.region ?? footprint(way),
+    evidence: {
+      ...(reference?.evidence ?? districtUndergroundEvidence),
+      urls: [
+        ...districtUndergroundEvidence.urls!,
+        'https://www.openstreetmap.org/' + (way.includes('/') ? way : 'way/' + way),
+      ],
+      detail: reference?.evidence.detail ?? districtUndergroundEvidence.detail
+        + ' Named host building in district underground map; OSM host outline clipped by public faces and paid station interiors.'
+        + ' Filled area is occupancy only, not confirmed walkable basement or a shop plan.',
+    },
+  };
+});
+basementOccupancies.push(...referenceBasements.filter(b => !basementOccupancies.some(existing => existing.id === b.id)));

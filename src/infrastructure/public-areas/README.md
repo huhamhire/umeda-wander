@@ -11,6 +11,7 @@
 | `south-diamor/` | Crost、阪神—西梅田、第一生命、DIAMOR、北新地／曾根地下道及外围延伸 |
 | `station-frontages/` | 选取构内图的必要前庭和设备落台，交给公共层；剔除旧版长距离公共矩形 |
 | `basement-buildings.ts` | 有地下关系依据的建筑宿主轮廓清单；不是店铺或可通行地下室 |
+| `south-diamor/basement-outlines.ts` | E-ma／Hilton West／MARU 的地下图街区边界；与地上实体分开，不以占位接触推定门洞 |
 
 ## 几何流程
 
@@ -18,7 +19,7 @@
 2. 合并车站捐出的必要前庭、公共设备落台和明确编写的接驳面，扣除车站付费／服务等占用。
 3. `application/public-area-blocks.ts` 按有序管理窗口分割成九个不重叠所有者。窗口只划分维护责任，不是地下开挖边界；末项必须接收剩余几何。
 4. 所有板块共用 `district-underground`，标高 -8、stackIndex -1。西梅田短升降平台保留局部 offset，显式指定所有者。
-5. 建筑宿主轮廓减去公共面及站体占用，再按先后去重。保留不同填色、平面文字；文字不挤出自身区块。`geometric-contact` 只表示几何接触，不确认门洞。
+5. 建筑宿主轮廓减去公共面及站体占用，再按先后去重。有明确地下图边界的街区使用 `basement-outlines.json`，不强套地上轮廓；改变道路配准后运行 `build-basement-outlines.ts` 重投影。保留不同填色、平面文字；文字不挤出自身区块。`geometric-contact` 只表示几何接触，不确认门洞。
 
 修改局部接驳时记录来源、关系、估计参数；禁止把最近点自动连线当作资料依据。原图的平面连通不证明同标高、无障碍或现场通行，不能自动添加 RouteEdge。
 

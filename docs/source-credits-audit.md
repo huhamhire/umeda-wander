@@ -48,4 +48,8 @@
 
 ## PLATEAU 建筑补充
 
+地下街区占位另有 `data/geography/underground/basement-source.json`／`basement-outlines.json`，分别保存 E-ma、Hilton West、MARU 的 PDF 原始边界及投影结果，用于 H5 B1 占位填充。来源为 `references/梅田周边地区通道.pdf`，哈希及绘图对象可追溯；几何整理、改编和公开使用授权仍待核实。该部分不属于 OSM 或 PLATEAU 许可，不包含在纯 OSM 数据下载中。
+
+阪急 1F 公共通廊现役几何在 `src/infrastructure/buildings/hankyu-dept/concourse.ts`，拱门及橱窗程序模型在 `src/presentation/commercial-concourse-model.ts`；依据官方通廊说明和既有用户照片拟合，原始素材未嵌入页面。已单列数据条目，几何改编、外观参考及公开使用授权仍待核实，不能归入 PLATEAU 或 OSM 的许可。
+
 2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/building-model-calibration.md`。
