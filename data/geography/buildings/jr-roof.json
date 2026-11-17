@@ -1,0 +1,138 @@
+{
+  "source": "https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025",
+  "gmlId": "bldg_9c2c736c-68d2-42b8-837a-dbdf9d7ca1a1",
+  "lod": 1,
+  "outline": [
+    [
+      507.25,
+      541.19
+    ],
+    [
+      501.82,
+      532.32
+    ],
+    [
+      345.64,
+      628.75
+    ],
+    [
+      351.04,
+      637.58
+    ],
+    [
+      356.78,
+      646.95
+    ],
+    [
+      358.04,
+      649.01
+    ],
+    [
+      367.92,
+      665.16
+    ],
+    [
+      369.24,
+      667.31
+    ],
+    [
+      376.77,
+      679.63
+    ],
+    [
+      378.24,
+      682.03
+    ],
+    [
+      385.65,
+      694.15
+    ],
+    [
+      387.96,
+      697.91
+    ],
+    [
+      397.51,
+      713.52
+    ],
+    [
+      412.11,
+      704.5
+    ],
+    [
+      470.1,
+      668.7
+    ],
+    [
+      474.57,
+      665.94
+    ],
+    [
+      480.33,
+      662.38
+    ],
+    [
+      481.24,
+      661.82
+    ],
+    [
+      529.51,
+      632.01
+    ],
+    [
+      553.68,
+      617.09
+    ],
+    [
+      552.26,
+      614.76
+    ],
+    [
+      544.43,
+      601.96
+    ],
+    [
+      541.92,
+      597.86
+    ],
+    [
+      534.51,
+      585.74
+    ],
+    [
+      532.88,
+      583.08
+    ],
+    [
+      525.46,
+      570.96
+    ],
+    [
+      524.1,
+      568.73
+    ],
+    [
+      514.2,
+      552.55
+    ],
+    [
+      512.76,
+      550.19
+    ],
+    [
+      507.25,
+      541.19
+    ]
+  ],
+  "center": {
+    "x": 449.67,
+    "z": 622.92
+  },
+  "angle": -0.5523967082562052,
+  "width": 180,
+  "depth": 100,
+  "northHeight": 49.3,
+  "southHeight": 34,
+  "dimensionsSource": "https://www.city.osaka.lg.jp/toshiseibi/page/0000647324.html",
+  "note": "Plan centre fitted to the PLATEAU LOD0/1 station envelope (about 184 by 100 m); 180 by 100 m from Osaka City. North height about 50 m is consistent with LOD1 49.31 m. South height, slope and skylight spacing remain reference fits, not surveyed roof geometry."
+}

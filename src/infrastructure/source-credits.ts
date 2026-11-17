@@ -34,11 +34,16 @@ const jp = link('日本邮便：JP Tower 连桥说明', 'https://www.post.japanp
 const umedaMap = link('UMEDA CONNECT 周边地图（同系列繁体版）', 'https://umeda-sc.jp/wp2/wp-content/uploads/2020/03/map_tw.pdf');
 const umekita = link('JR 西日本梅北步行者 Deck 发布页', 'https://www.westjr.co.jp/press/article/2025/02/page_27332.html');
 const pending = '未查到适用于本项目几何整理、改编及公开使用的明确许可或授权；待核实。';
+const plateau = link('大阪市 PLATEAU 2025 建筑模型', 'https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025');
 export const sourceCredits: SourceCredits = {
   description: '本项目是面向大阪梅田地区的非官方交互式步行地图，展示车站、楼层、连廊与地下通道的连接关系。部分位置和路径为示意，现场通行情况以实际标识为准。',
   // No public remote, project LICENSE or verified feedback channel in this repository.
   project: {},
   data: [
+    { name: '大阪市 PLATEAU 建筑模型派生轮廓', use: '阪急百货与三番街／车站附属建筑的 LOD2 屋面分层体量；JR 大屋顶位置参考 LOD0／1 站房包络。仅取指定建筑几何，合并屋面、按高度分段、投影并裁到宿主；未加载照片贴图。选中建筑的测绘年份为 2017，不能视为 2025 年现场实测；阪神与 JP 重建后的体量未使用旧 PLATEAU 几何。',
+      links: [plateau, link('PLATEAU 使用说明', 'https://www.mlit.go.jp/plateau/site-policy/')],
+      licence: link('CC BY 4.0（本项目选用）', 'https://creativecommons.org/licenses/by/4.0/'),
+      attribution: '出典：3D都市モデル（Project PLATEAU）大阪市（2025年度）を加工して作成。项目进行了屋面合并、分层简化与展示拟合。' },
     { name: 'OpenStreetMap 数据', use: '地面道路铺装轮廓及估计宽度、建筑及塔楼平面轮廓、车站地理锚点、站台轴向、站外轨道延伸方向及 34 段高架步行轴线；经投影、简化及示意比例调整。',
       links: [link('OpenStreetMap 版权与许可', 'https://www.openstreetmap.org/copyright')],
       licence: link('Open Database License 1.0（ODbL）', 'https://opendatacommons.org/licenses/odbl/1-0/'), attribution: '© OpenStreetMap contributors', download: 'osm' },
@@ -47,7 +52,12 @@ export const sourceCredits: SourceCredits = {
     { name: '阪神大阪梅田站布局整理', use: 'B1／B2 平面、东西出口、两段式主阶梯及南出口竖向连接几何。', links: [hanshin], attribution: '资料发布者：阪神電気鉄道株式会社', status: pending },
     { name: 'Osaka Metro 三站布局整理', use: '御堂筋线梅田、谷町线东梅田、四桥线西梅田的站厅、站台及出入口几何。', links: metro, attribution: '资料发布者：大阪市高速電気軌道株式会社（Osaka Metro）', status: pending },
     { name: '地区步行图与连廊资料整理', use: '异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪、地面展示范围筛选、2F 公共桥面、开放前庭、公共设备、建筑门口裁口、JP Tower 接入与 Inogate—Grand Green 2F 连接几何。OSM 建筑轮廓与 PDF 通路相减的混合结果不包含在纯 OSM 下载中。', links: [city, cityRoute, umedaMap, jp, umekita], attribution: '资料发布者包括大阪市、日本邮便、UMEDA CONNECT、JR 西日本；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实', status: pending },
-    { name: '程序化建筑外观与设施模型', use: '屋顶、裙楼、塔楼、扶梯、电梯井、围栏，以及 Canvas 生成的标牌纹理；没有引入第三方模型、照片贴图或图标文件。', links: [], attribution: '项目内以 Three.js 几何、Canvas 和内联 SVG 生成', status: '未设置独立资产许可证；外景照片与截图参与造型观察，其来源及可用于改编的授权待补充。' },
+    { name: '程序化建筑外观与设施模型', use: '阪神跨道路裙楼／办公塔楼、JP Tower 连续主体与冠部、屋顶、扶梯、电梯井、围栏及 Canvas 标牌；PLATEAU 派生体量单列。没有引入照片贴图或外部图标文件。', links: [
+        link('阪神：日本设计项目说明', 'https://www.nihonsekkei.co.jp/projects/18825/'),
+        link('JP Tower：业主建筑介绍', 'https://www.jp-re.japanpost.jp/properties/jptower-osaka.html'),
+        link('阪急三番街楼层关系', 'https://www.h-sanbangai.com/floor/'),
+        link('大阪市：大屋顶约 180×100 米', 'https://www.city.osaka.lg.jp/toshiseibi/page/0000647324.html'),
+      ], attribution: '项目内以 Three.js 几何、Canvas 和内联 SVG 生成；建筑外观参考发布者包括日本设计、日本邮政不动产与阪急三番街', status: '未设置独立资产许可证；非开放外观资料参与造型观察，改编授权仍待核实，不能将其视为 PLATEAU 的 CC BY 许可覆盖。' },
   ],
   references: [
     { name: '铁路与地铁构内图', use: '核对七站楼层、出入口、番线与竖向设施连接；本地文件与线上版本可能不同。', links: [jr, kitashinchi, hankyu, hanshin, ...metro], attribution: 'JR 西日本、阪急电铁、阪神电铁、Osaka Metro' },

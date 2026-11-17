@@ -13,6 +13,8 @@
 
 ## 工作约定
 
+- 建筑白模校对见 `docs/building-model-calibration.md`。`data/geography/buildings/plateau-profiles.json` 只含已核对的阪急 LOD2 分层屋面，包版本 2025、选中建筑 surveyYear=2017；阪神／JP 重建体量不能套用旧模型。阪神地面退让与跨道路上部裙楼分开，JP 保持连续塔身。三番街共用站体宿主，不另画 2F 占位；公共站厅外壳裁口由 `station-building-openings.ts` 维护。浅色建筑主题在 `models/building-palette.ts`，地下公共颜色不随线路更改。JR 地理屋顶按独立 `jr-roof.json` 的约 180×100 米及 LOD0／1 包络拟合，斜面仍是示意，旧屋顶参数不混用。
+
 - 地面展示使用 `data/geography/display-context.json`，原始 OSM／地下公共面不裁掉。修改站体、公共网、高架或宿主清单后运行 `node scripts/geography/build-ground-context.ts`，再构建页面。`context-policy.json` 维护外围参照余量；同一源道路从首次进入到最后离开范围之间保留连续走线，同名／同 ref 分段只按原始共用顶点接续，只裁外围端头，不补无来源捷径。无关普通建筑占位剔除，核心站体、地下宿主与连廊目的地保留；维护记录见 `docs/ground-context.md`。
 - 公共二层桥面采用 `elevatedPublicColor` 暖赭色，与浅色商业占位区分；细浅栏杆和既有区域灰化规则保留。`west-decks/inogate.ts` 是独立第四个高架板块，资源为 `data/geography/elevated/inogate.json`；新桥连接 Inogate 西端与 Grand Green 南馆，端点、宽度和标高为参考拟合，不误接 Grand Front 或梅北付费站台。
 

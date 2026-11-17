@@ -10,6 +10,8 @@ import {inogateDeckEvidence} from './west-decks/inogate.ts';
 export const deckBuildingOccupancies: {level: LevelId; definitions: BuildingOccupancy[]}[] =
   (['district-north-deck', 'district-south-deck'] as const).map(level => {
     const definitions: BuildingOccupancy[] = geographicBuildings
+      // Sanbangai is already represented by its station's floors, not a second slab.
+      .filter(b => b.id !== 'hankyu-sanbangai')
       .filter(b => ['daimaru', 'hankyu-dept', 'hanshin-dept', 'jp-tower'].includes(b.id) === (level === 'district-south-deck'))
       .map(b => ({
         id: b.id,

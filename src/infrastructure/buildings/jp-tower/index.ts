@@ -1,9 +1,18 @@
-import {volume,alignedPoint,type GeographicBuilding} from '../building-data.ts';
-import {pointInPolygon} from '../../../domain/map/geometry.ts';
-const podium=volume('1146510724','KITTE 裙楼',0,32),angle=-31.65*Math.PI/180;
-// An estimated inscribed slab, rather than a tower clipped by the acute site corner.
-const center=alignedPoint(podium.outline,angle,.65,.48);
-let outline=[[.34,.13],[.93,.13],[.93,.83],[.34,.83]].map(([u,v])=>alignedPoint(podium.outline,angle,u!,v!));
-for(let i=0;i<25&&!outline.every(p=>pointInPolygon(p,podium.outline));i++)outline=outline.map(p=>({x:center.x+(p.x-center.x)*.95,z:center.z+(p.z-center.z)*.95}));
-export const building:GeographicBuilding={id:'jp-tower',name:'JP Tower Osaka / KITTE',volumes:[podium,
- {...podium,name:'办公及酒店塔楼',base:32,top:188,outline,holes:[],note:'Rectangular tower slab aligned with station axis, inscribed in host; footprint/setback estimated. 188 m total height from host OSM tag.'}]};
+import {volume, type GeographicBuilding} from '../building-data.ts';
+import {inscribedSlab} from '../profile-data.ts';
+
+const podium = volume('1146510724', 'KITTE 商业及剧场裙楼', 0, 32);
+const angle = -31.65 * Math.PI / 180;
+const office = inscribedSlab(podium, '连续办公及酒店主体', 32, 188, angle, [.27, .94, .15, .88]);
+const hotel = inscribedSlab(podium, '上部酒店冠部', 171, 188, angle, [.25, .95, .12, .85]);
+const shoulder = inscribedSlab(podium, '相接的中层侧翼', 32, 121, angle, [.12, .62, .18, .86]);
+for (const part of [office, hotel, shoulder]) {
+  part.facade = 'vertical';
+  part.references = ['https://www.jp-re.japanpost.jp/properties/jptower-osaka.html'];
+  part.note = 'Post-2024 owner exterior reference: continuous full-height core with an attached middle wing and a shallow overlapping hotel crown, about 188 m overall. Parts are estimated inside the OSM host; no detached blocks or old PLATEAU post-office geometry.';
+}
+export const building: GeographicBuilding = {
+  id: 'jp-tower',
+  name: 'JP Tower Osaka / KITTE',
+  volumes: [podium, office, hotel, shoulder],
+};

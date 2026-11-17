@@ -5,6 +5,7 @@ import policy from '../../data/geography/context-policy.json' with {type: 'json'
 import {createGeographicStations} from '../../src/infrastructure/district/geographic-stations.ts';
 import {createElevatedBlocks} from '../../src/infrastructure/public-areas/elevated-blocks.ts';
 import {geographicBuildings} from '../../src/infrastructure/buildings/index.ts';
+import {footprint} from '../../src/infrastructure/buildings/building-data.ts';
 import {basementOccupancies} from '../../src/infrastructure/public-areas/basement-buildings.ts';
 import {deckBuildingOccupancies} from '../../src/infrastructure/public-areas/deck-buildings.ts';
 import {platformOutline, passageOutline} from '../../src/domain/map/geometry.ts';
@@ -16,7 +17,8 @@ const stations = createGeographicStations();
 const decks = createElevatedBlocks(stations);
 const protectedOutlines = [
   ...stations.flatMap(s => [...s.layout.areas.map(a => a.outline), ...s.layout.platforms.map(platformOutline)]),
-  ...geographicBuildings.map(b => b.volumes[0]!.outline),
+  // Ground scope follows the declared source host, not a rounded facade decoration.
+  ...geographicBuildings.map(b => footprint(b.volumes[0]!.source.split('/').at(-1)!).outline),
   ...basementOccupancies.map(b => b.region.outline),
   ...deckBuildingOccupancies.flatMap(group => group.definitions.map(b => b.region.outline)),
   ...decks.blocks.flatMap(b => b.regions.map(r => r.outline)),

@@ -1,26 +1,103 @@
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync, writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import * as T from 'three';
 import {geographicBuildings} from '../../src/infrastructure/buildings/index.ts';
-import type {Point2} from '../../src/domain/map/model.ts';
-const ids=['daimaru','hankyu-dept','yodobashi','grand-front-south','jp-tower','lucua-1100'];
-const parts:string[]=[];
-const project=(p:Point2,y:number)=>({x:p.x*.86+p.z*.5,y:p.z*.43-p.x*.25-y*.86});
-for(const [index,id] of ids.entries()){
- const b=geographicBuildings.find(b=>b.id===id)!;
- const points=b.volumes.flatMap(v=>v.outline.flatMap(p=>[project(p,v.base),project(p,v.top)]));
- const minX=Math.min(...points.map(p=>p.x)),maxX=Math.max(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y)),maxY=Math.max(...points.map(p=>p.y));
- const scale=Math.min(430/(maxX-minX),310/(maxY-minY));
- const screen=(p:Point2,y:number)=>{const q=project(p,y);return `${((q.x-minX)*scale+30).toFixed(2)},${((q.y-minY)*scale+65).toFixed(2)}`;};
- const faces:{d:string;depth:number;fill:string}[]=[];
- for(const gallery of b.galleries??[])faces.push({d:[gallery.outline,gallery.innerOutline].map(r=>'M'+r.map(p=>screen(p,gallery.y)).join('L')+'Z').join(''),depth:Math.max(...gallery.outline.map(p=>p.z+p.x*.5))+gallery.y*.5,fill:'#e0e7d8'});
- for(const v of b.volumes){
-  for(const ring of [v.outline,...v.holes])for(let i=0;i<ring.length;i++){
-   const a=ring[i]!,c=ring[(i+1)%ring.length]!;
-   faces.push({d:`M${screen(a,v.base)}L${screen(c,v.base)}L${screen(c,v.top)}L${screen(a,v.top)}Z`,depth:(a.z+c.z)*.5+(a.x+c.x)*.25+(v.top+v.base)*.25,fill:v.base?'#a6bdbb':'#d4d4c8'});
-  }
-  faces.push({d:[v.outline,...v.holes].map(r=>'M'+r.map(p=>screen(p,v.top)).join('L')+'Z').join(''),depth:Math.max(...v.outline.map(p=>p.z+p.x*.5))+v.top*.5,fill:'#eef0e4'});
- }
- const x=index%2*510,y=Math.floor(index/2)*440;
- parts.push(`<g transform="translate(${x},${y})"><text x="24" y="28">${b.name}</text>${faces.sort((a,b)=>a.depth-b.depth).map(f=>`<path d="${f.d}" fill="${f.fill}" fill-rule="evenodd" stroke="#708981" stroke-width=".6"/>`).join('')}<text x="24" y="420" font-size="13">高度／退台含估计 · 建筑各自缩放 · 仅核对形体</text></g>`);
+import {buildGeographicBuilding} from '../../src/presentation/models/geographic-building-model.ts';
+import {exteriorOpenings} from '../../src/infrastructure/district/geographic-map.ts';
+
+// Offline CPU depth buffer over the actual H5 meshes, not a painter-sorted box sketch.
+// No browser, WebGL, photographic texture or external renderer is required.
+const ids = ['hanshin-dept', 'hankyu-dept', 'jp-tower', 'hankyu-sanbangai', 'daimaru', 'yodobashi', 'grand-front-south', 'lucua-1100'];
+const width = 1200;
+const height = 1840;
+const rgb = Buffer.alloc(width * height * 3);
+for (let i = 0; i < rgb.length; i += 3) {
+  rgb[i] = 247;
+  rgb[i + 1] = 246;
+  rgb[i + 2] = 240;
 }
-mkdirSync('build/geography',{recursive:true});
-writeFileSync('build/geography/building-details.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="1320"><rect width="1020" height="1320" fill="#f6f4e9"/><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${parts.join('')}</g></svg>`);
+const depth = new Float64Array(width * height).fill(-Infinity);
+const light = new T.Vector3(-.5, 1, .8).normalize();
+const project = (p: T.Vector3) => ({x: p.x * .86 + p.z * .5, y: p.z * .43 - p.x * .25 - p.y * .86,
+  depth: -p.x * .43 + p.y * .4948 + p.z * .7396});
+const labels: string[] = [];
+for (const [panel, id] of ids.entries()) {
+  const building = geographicBuildings.find(b => b.id === id)!;
+  const model = buildGeographicBuilding(building, exteriorOpenings);
+  model.updateMatrixWorld(true);
+  const meshes: T.Mesh[] = [];
+  model.traverse(o => {
+    if (o instanceof T.Mesh) {
+      meshes.push(o);
+    }
+  });
+  const bounds: ReturnType<typeof project>[] = [];
+  for (const mesh of meshes) {
+    const positions = mesh.geometry.getAttribute('position');
+    for (let i = 0; i < positions.count; i++) {
+      bounds.push(project(new T.Vector3().fromBufferAttribute(positions, i).applyMatrix4(mesh.matrixWorld)));
+    }
+  }
+  const minX = Math.min(...bounds.map(p => p.x));
+  const maxX = Math.max(...bounds.map(p => p.x));
+  const minY = Math.min(...bounds.map(p => p.y));
+  const maxY = Math.max(...bounds.map(p => p.y));
+  const scale = Math.min(540 / (maxX - minX), 350 / (maxY - minY));
+  const originX = panel % 2 * 600 + (600 - (maxX - minX) * scale) / 2;
+  const originY = Math.floor(panel / 2) * 460 + 58 + (350 - (maxY - minY) * scale) / 2;
+  for (const mesh of meshes) {
+    const geometry = mesh.geometry;
+    const positions = geometry.getAttribute('position');
+    const index = geometry.index;
+    const count = index?.count ?? positions.count;
+    const material = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material) as T.MeshStandardMaterial;
+    const color = material.color.clone().convertLinearToSRGB();
+    for (let i = 0; i < count; i += 3) {
+      const vertices = [0, 1, 2].map(j => new T.Vector3()
+        .fromBufferAttribute(positions, index ? index.getX(i + j) : i + j).applyMatrix4(mesh.matrixWorld));
+      const normal = vertices[1]!.clone().sub(vertices[0]!).cross(vertices[2]!.clone().sub(vertices[0]!)).normalize();
+      const shade = .66 + .34 * Math.max(0, normal.dot(light));
+      const [a, b, c] = vertices.map(p => {
+        const q = project(p);
+        return {x: originX + (q.x - minX) * scale, y: originY + (q.y - minY) * scale, depth: q.depth};
+      }) as [ReturnType<typeof project>, ReturnType<typeof project>, ReturnType<typeof project>];
+      const determinant = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
+      if (Math.abs(determinant) < 1e-8) {
+        continue;
+      }
+      const left = Math.max(0, Math.floor(Math.min(a.x, b.x, c.x)));
+      const right = Math.min(width - 1, Math.ceil(Math.max(a.x, b.x, c.x)));
+      const top = Math.max(0, Math.floor(Math.min(a.y, b.y, c.y)));
+      const bottom = Math.min(height - 1, Math.ceil(Math.max(a.y, b.y, c.y)));
+      for (let y = top; y <= bottom; y++) {
+        for (let x = left; x <= right; x++) {
+          const u = ((b.y - c.y) * (x + .5 - c.x) + (c.x - b.x) * (y + .5 - c.y)) / determinant;
+          const v = ((c.y - a.y) * (x + .5 - c.x) + (a.x - c.x) * (y + .5 - c.y)) / determinant;
+          if (u < 0 || v < 0 || u + v > 1) {
+            continue;
+          }
+          const z = u * a.depth + v * b.depth + (1 - u - v) * c.depth;
+          const pixel = y * width + x;
+          if (z <= depth[pixel]!) {
+            continue;
+          }
+          depth[pixel] = z;
+          rgb[pixel * 3] = Math.round(color.r * shade * 255);
+          rgb[pixel * 3 + 1] = Math.round(color.g * shade * 255);
+          rgb[pixel * 3 + 2] = Math.round(color.b * shade * 255);
+        }
+      }
+    }
+  }
+  const x = panel % 2 * 600 + 24;
+  const y = Math.floor(panel / 2) * 460;
+  labels.push(`<text x="${x}" y="${y + 30}">${building.name.replaceAll('&', '&amp;')}</text>`);
+  labels.push(`<text x="${x}" y="${y + 443}" font-size="13">H5 实际网格 · CPU 深度遮挡 · 各建筑独立缩放</text>`);
+}
+mkdirSync('build/geography', {recursive: true});
+writeFileSync('build/geography/building-details.ppm', Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), rgb]));
+execFileSync('magick', ['build/geography/building-details.ppm', 'build/geography/building-details-base.png']);
+writeFileSync('build/geography/building-details.svg', `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${labels.join('')}</g></svg>`);
+execFileSync('magick', ['-background', 'none', 'build/geography/building-details.svg', 'build/geography/building-details-labels.png']);
+execFileSync('magick', ['build/geography/building-details-base.png', 'build/geography/building-details-labels.png', '-composite', 'build/geography/building-details.png']);
+console.log('Wrote actual-mesh building-details.png');

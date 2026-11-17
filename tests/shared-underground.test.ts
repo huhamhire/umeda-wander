@@ -28,7 +28,7 @@ test('fitted railway corridors extend all seven stations without requiring exact
  }
 });
 test('north roof meets the retail roof and JP tower has no acute clipped corner',()=>{
- assert.equal(26+geographicRoofHeightAt(-36),48);assert.ok(geographicRoofHeightAt(-36)>geographicRoofHeightAt(36));
+ assert.equal(26+geographicRoofHeightAt(-36),49.3);assert.ok(geographicRoofHeightAt(-36)>geographicRoofHeightAt(36));
  const jp=geographicBuildings.find(b=>b.id==='jp-tower')!.volumes[1]!.outline;assert.equal(jp.length,4);
  for(let i=0;i<4;i++){const p=jp[i]!,a=jp[(i+3)%4]!,b=jp[(i+1)%4]!;assert.ok(Math.abs((a.x-p.x)*(b.x-p.x)+(a.z-p.z)*(b.z-p.z))<1e-6);}
  assert.equal(geographicBuildings.find(b=>b.id==='daimaru')!.volumes[1]!.holes.length,2);

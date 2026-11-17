@@ -17,7 +17,7 @@ import { viewLayerRole } from '../application/view-layer.ts';
 import { LayerAppearance,setRegionOwner } from './layer-appearance.ts';
 import {isRegionMuted} from '../application/region-focus.ts';
 import { cameraOffset, viewBasis,resetView } from './view-orientation.ts';
-import { roofHeightAt,geographicRoofHeightAt,roofPlan } from './roof-profile.ts';
+import { roofHeightAt,geographicRoofHeightAt,roofPlan,geographicRoofPlan,geographicRoofPoint } from './roof-profile.ts';
 import {visibleElevatorConnections} from '../application/elevator-visibility.ts';
 import { advanceExplode } from './explode-transition.ts';
 import {stationPalettes,publicAreaColor} from './station-palette.ts';
@@ -324,11 +324,15 @@ export class MapScene {
     if(!this.layout.geographic)this.label('1F 中央改札口', -9, 3.5, 4, 'concourse', false, true);
     if(!this.layout.geographic)this.label('3F 桥上改札口', -3, 3.5, 4, 'bridge');
     this.buildRoof();
-    if(this.layout.geographic){
-      const a=-31.65*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
-      this.roof.position.set(447+roofPlan.centerX*2.5*c,0,610+roofPlan.centerX*2.5*s);
-      this.roof.rotation.y=-a;this.roof.scale.x*=2.5;this.roof.scale.z=1.6;
-      for(const label of this.labels.filter(l=>l.roof)){const x=label.position.x,z=label.position.z;label.position.x=447+x*2.5*c-z*1.6*s;label.position.z=610+x*2.5*s+z*1.6*c;}
+    if (this.layout.geographic) {
+      this.roof.position.set(geographicRoofPlan.center.x, 0, geographicRoofPlan.center.z);
+      this.roof.rotation.y = -geographicRoofPlan.angle;
+      this.roof.scale.set(geographicRoofPlan.width / 126, 1, geographicRoofPlan.depth / 72);
+      for (const label of this.labels.filter(l => l.roof)) {
+        const point = geographicRoofPoint(label.position.x, label.position.z);
+        label.position.x = point.x;
+        label.position.z = point.z;
+      }
     }
     for (const group of [base, ...this.groups.values(), this.roof]) this.batchStaticMeshes(group);
     for (const facility of this.facilities) {
@@ -442,7 +446,7 @@ export class MapScene {
         this.beam(this.roof, new T.Vector3(x + 4.5, slope(z) - 0.5, z), new T.Vector3(x + 9, slope(z) - 3, z), 0.13, colors.steel);
       }
     }
-    this.label('大阪站', roofPlan.centerX, this.layout.geographic?geographicRoofHeightAt(0)+1.5:13, 0, undefined, true, true);
+    this.label('大阪站', this.layout.geographic ? 0 : roofPlan.centerX, this.layout.geographic?geographicRoofHeightAt(0)+1.5:13, 0, undefined, true, true);
   }
 
   update(state: MapViewState, options: { immediateExplode?: boolean } = {}): void {

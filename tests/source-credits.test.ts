@@ -25,7 +25,10 @@ test('credits skip empty source-code section and keep data licences separate fro
   const body=text(container);assert(body.includes(sourceCredits.description));assert(!body.includes('项目源码'));
   const headings=container.children.filter((c):c is Node=>typeof c!=='string').map(s=>(s.children[0] as Node).textContent);
   assert.deepEqual(headings,['项目说明','数据与素材许可','参考资料']);
-  assert.equal(sourceCredits.data.filter(d=>d.licence).length,1);
+  const licensed = sourceCredits.data.filter(d => d.licence);
+  assert.equal(licensed.length, 2);
+  assert(licensed.some(d => d.licence!.url.includes('/odbl/')));
+  assert(licensed.some(d => d.licence!.url.includes('/licenses/by/4.0/')));
   assert(sourceCredits.data.filter(d=>!d.licence).every(d=>d.status));
   for(const item of [...sourceCredits.data,...sourceCredits.references])for(const link of [...item.links,...item.licence?[item.licence]:[]])assert.equal(new URL(link.url).protocol,'https:');
   const button=container.querySelectorAll().find(n=>n.tagName==='button')!;button.dispatchEvent(new Event('click'));assert.equal(downloads,1);

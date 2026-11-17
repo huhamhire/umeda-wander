@@ -45,3 +45,7 @@
 自动化测试覆盖内容节顺序、空节省略、许可分离、下载数据边界、打开关闭与键盘焦点生命周期，以及窄屏样式约束。遵照既有“不直接操作浏览器”的要求，没有做真实浏览器／手机视口的视觉和原生模态验收；原生 inert、触摸滚动与关闭后地图手势仍需在浏览器实测，不能把测试替身称为该项实测通过。
 
 本轮追加：公共 2F 桥面使用统一暖赭色；`west-decks/inogate.ts` 根据 JR 位置图及两端 2F 图拟合独立公共前沿／新桥，具体资源为 `data/geography/elevated/inogate.json`。新增宿主轮廓来自仓库 OSM，前沿、桥面、门口及统一展示标高仍为混合来源参考拟合，适用原有待授权事项。`display-context.json` 根据地下公共面、核心站体及连廊裁剪地面铺装，不能当作纯 OSM 下载；原始数据下载内容和许可保持原样。
+
+## PLATEAU 建筑补充
+
+2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/building-model-calibration.md`。

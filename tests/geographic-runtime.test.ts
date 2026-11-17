@@ -44,10 +44,10 @@ test('geographic runtime builds the actual station scene including gate fences',
 });
 
 test('geographic commercial exteriors separate podiums and towers with finite metre heights',()=>{
- assert.equal(geographicBuildings.length,10);
+ assert.equal(geographicBuildings.length,11);
  for(const b of geographicBuildings){
   assert.ok(b.volumes.length);
-  for(const v of b.volumes){assert.ok(v.top>v.base&&v.top<=200);assert.ok(v.outline.length>=4);assert.ok(v.source.startsWith('https://www.openstreetmap.org/'));}
+  for(const v of b.volumes){assert.ok(v.top>v.base&&v.top<=200);assert.ok(v.outline.length>=4);assert.ok(v.source.startsWith('https://www.openstreetmap.org/')||v.certainty==='plateau-lod2');}
   const model=buildGeographicBuilding(b);
   model.traverse(o=>{const mesh=o as T.Mesh;if(mesh.geometry)for(const v of mesh.geometry.getAttribute('position').array)assert.ok(Number.isFinite(v));});
  }

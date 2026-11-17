@@ -1,0 +1,21 @@
+{
+  "catalog": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-27100-osaka-shi-2025",
+  "archive": "https://assets.cms.plateau.reearth.io/assets/10/a0aecb-67d1-4463-92d5-d67c99f3b8b6/27100_osaka-shi_city_2025_citygml_1_op.zip",
+  "licence": "https://creativecommons.org/licenses/by/4.0/",
+  "selectedLicence": "CC BY 4.0",
+  "checked": "2026-11-17",
+  "files": [
+    {
+      "path": "udx/bldg/52350349_bldg_6697_op.gml",
+      "sha256": "1d4238ea5923cf0cc34dde79cfe4d64ec8d96e3d2593bec2fab28a5fb34f7175"
+    },
+    {
+      "path": "udx/bldg/52350359_bldg_6697_op.gml",
+      "sha256": "012a3916b91035e66609ddf95ad299a7b691d6101347c125ab1e1e301b94cfab"
+    },
+    {
+      "path": "README.md",
+      "sha256": "09513f2f43ae7310a8b0d3c117cf3a4aeac429e6326cef9e369c09bab07f060c"
+    }
+  ]
+}

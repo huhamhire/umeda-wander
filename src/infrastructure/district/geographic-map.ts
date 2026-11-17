@@ -23,6 +23,7 @@ import elevatedWays from '../../../data/geography/elevated/ways.json' with {type
 import {deckExtensionLabels} from '../../application/deck-extension-labels.ts';
 import {buildBuildingOccupancies} from '../../application/building-occupancy.ts';
 import {deckBuildingOccupancies} from '../public-areas/deck-buildings.ts';
+import {stationBuildingOpenings} from '../../application/station-building-openings.ts';
 const stationMaps=createGeographicStations();
 export const publicInterfaces=stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages=stationFrontages(stationMaps);
@@ -40,7 +41,7 @@ const assemblyLevels=[...shared.stations.flatMap(s=>s.levels),...elevatedLevels,
 // Equipment pads join their block before union; a floor is never drawn twice at a junction.
 for(const b of elevated.blocks)b.regions.push(...deckAccess.areas.filter(a=>a.level===b.level&&a.blockId===b.id));
 export const elevatedAreas=assemblePublicDecks(elevated.blocks,shared.stations,assemblyLevels);
-export const exteriorOpenings=[...deckBuildingOpenings(elevated.portals,assemblyLevels),...equipmentBuildingOpenings(deckAccess.connections,deckAccess.buildingEquipment,assemblyLevels)];
+export const exteriorOpenings=[...deckBuildingOpenings(elevated.portals,assemblyLevels),...equipmentBuildingOpenings(deckAccess.connections,deckAccess.buildingEquipment,assemblyLevels),...stationBuildingOpenings(shared.stations)];
 export const deckBuildingAreas=deckBuildingOccupancies.flatMap(group=>{
   const y=assemblyLevels.find(l=>l.id===group.level)!.y;
   const stationAreas=shared.stations.flatMap(s=>s.layout.areas.filter(a=>Math.abs(s.levels.find(l=>l.id===a.level)!.y+(a.elevationOffset??0)-y)<.01));

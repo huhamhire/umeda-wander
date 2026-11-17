@@ -8,4 +8,5 @@ import {building as b6} from './hankyu-dept/index.ts';
 import {building as b7} from './daimaru/index.ts';
 import {building as b8} from './hanshin-dept/index.ts';
 import {building as b9} from './jp-tower/index.ts';
-export const geographicBuildings=[b0,b1,b2,b3,b4,b5,b6,b7,b8,b9];
+import {building as sanbangai} from './hankyu-sanbangai/index.ts';
+export const geographicBuildings=[b0,b1,b2,b3,b4,b5,b6,b7,b8,b9,sanbangai];

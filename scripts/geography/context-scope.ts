@@ -67,8 +67,8 @@ export function unionContextPieces(pieces: clipping.MultiPolygon[]): clipping.Mu
   let batches = pieces;
   while (batches.length > 1) {
     const next: clipping.MultiPolygon[] = [];
-    for (let i = 0; i < batches.length; i += 16) {
-      const batch = batches.slice(i, i + 16);
+    for (let i = 0; i < batches.length; i += 2) {
+      const batch = batches.slice(i, i + 2);
       const merged = clipping.union(batch[0]!, ...batch.slice(1));
       next.push(merged.map(p => p.map(r => r.map(([x, z]) => [
         Math.round(x * 1000) / 1000,
