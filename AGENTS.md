@@ -29,7 +29,10 @@
 - 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，阶段三地下公共板块与阶段四主要 2F 连廊已接入，地下门位、局部高差和未定位新桥仍待核对。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
-- 源码以可读性为基本要求，不手写压缩代码。CSS 每条属性独占一行，选择器与声明块分行，媒体查询内正常缩进；TypeScript 一行只保留一条 statement，条件分支、循环及回调中的多条语句必须分行，避免长链式三元表达式和多个副作用挤在同一行。使用 2 空格缩进、明确的空格和必要的段落分隔，复杂对象、调用及表达式按语义换行；构建压缩仅由构建工具完成。修改已有压缩代码时整理所涉及段落，整体格式整理应与行为变更明确区分。
+- 源码风格参考本地 nstarter service-express 模板，规范见 `docs/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
+- 注释统一使用英文。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc；关键算法、坐标框架、人工估计和副作用补必要说明，不生成复述代码的模板注释。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 使用已有 TypeScript 解析器检查基本规则，不安装 nstarter／ESLint 依赖。格式整理与行为变更分别校对。
+- CSS 按 `src/styles/index.css`、`foundations/` 和 `components/` 维护，响应式规则放在所属组件中；每条属性独占一行。`scripts/styles.ts` 使用现有 esbuild 合并为 `dist/styles.css`，目前无需 Sass，不把新覆盖不断堆到入口末尾。
+- 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 只分界面、车站、建筑、公共区域、设施、线路、版权七个领域文件；目前只维护中文，不实际翻译日文／英文。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/i18n.md`。
 - 当前源码入口与目录职责见 roadmap 的 tree。旧坐标总图、专属商业模块和旧校准脚本已退役，`deprecated/` 目录已移除；历史对照查 Git `b2a3da6` 与 `docs/legacy-retirement.md`，不恢复第二个运行入口。清理代码须先迁移有价值的回归；仍被现役站模复用的局部数据不按旧文件年龄删除。
 - 设施迁移基线固定在 `tests/fixtures/legacy-facilities.json`，检查命令为 `node scripts/geography/audit-facility-migration.ts`；改名设备需登记明确替代关系，不以增加总数抵消遗漏，也不自动覆盖基线。旧测试依赖已清除，源码、脚本及测试均不能重新导入已退役模块。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
@@ -38,7 +41,7 @@
 - 按 DDD 边界拆分：`src/domain/` 定义地图模型与导航规则；`src/application/` 协调使用场景；`src/infrastructure/` 提供数据来源；`src/presentation/` 实现渲染和界面；`src/utils/` 只放无领域语义的通用工具。领域层不能依赖 Three.js、DOM 或基础设施。
 - 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`district/geographic-stations.ts` 登记并创建地理站模，`compose-station-maps.ts` 纯组装，`district/geographic-map.ts` 为 H5 数据入口。JR 特殊层名适配在 `stations/jr-osaka/index.ts`，不要在总图重复罗列本站数组。旧版登记与总图已移除，对照使用 Git 历史；维护入口见 `docs/station-composition.md`。
 - 当前地理 H5 使用 `district/geographic-map.ts`。B1 公共面由 `shared-underground.ts` 单独持有，构内图局部前庭经 `public-areas/station-frontages/` 合并，不重复画本站 public 楼板。`StationPublicInterface` 与 `public-interface-bindings.ts` 校验实际门户标高和落脚面，不因绑定而新增跨站路线。设备坡度修正使用 `calibrate-equipment.ts`，固定站厅／夹层端，调整实际站台端，节点与已有设施锚点同步。
-- 测试统一放在根目录 `tests/`，与源码分开；避免为简单逻辑引入不必要的仓储、工厂或服务层。
+- 测试统一放在根目录 `tests/`，按 stations、public-areas、geography、buildings、navigation、presentation、tooling 领域维护，共享基线放 fixtures；`npm test` 递归收集各领域测试，移动后同步更新引用及文档命令。避免为简单逻辑引入不必要的仓储、工厂或服务层。参数、对象及数组分隔符内侧不填充空行，语义段落之间最多一行空行；模板字符串中的空白按数据保留。
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
 - 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录十个兼容转发已删除，调用方直接引用实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
 - 梅北的北侧 B1F 闸外地下公共通路与西口的 B2F 闸内连接通道分开建模；通过梅北改札前不得将公共通路标成付费通路。

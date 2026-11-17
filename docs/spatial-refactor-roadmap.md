@@ -45,6 +45,7 @@ umeda-h5/
 │   │   │   ├── nishi-umeda/
 │   │   │   └── kitashinchi/
 │   │   ├── buildings/            # 各商业综合体独立目录
+│   │   ├── i18n/zh-CN/           # 七个领域的中文词条，日英尚未翻译
 │   │   ├── public-areas/
 │   │   │   ├── north-atrium/
 │   │   │   ├── metro-interchange/
@@ -60,15 +61,25 @@ umeda-h5/
 │   ├── utils/                    # 无地图领域语义的通用工具
 │   ├── main.ts                   # 应用与 DOM 事件绑定
 │   ├── index.html                # 单入口模板
-│   └── styles.css
+│   └── styles/                   # 基础样式及品牌／地图／导览／版权组件
 ├── data/geography/               # 地面、地下、轨道与 2F 可重建资源
-├── tests/                        # 独立测试目录
+├── tests/
+│   ├── stations/                 # 本站布局、设备与跨站组装
+│   ├── public-areas/             # 地下公共空间、天井与二层连廊
+│   ├── geography/                # 坐标、路网、轨道与运行时地理数据
+│   ├── buildings/                # 商业体量、外观及建筑设备
+│   ├── navigation/               # 本站寻路、设施筛选与迁移基线核对
+│   ├── presentation/             # 镜头、交互、可见性与界面资源
+│   ├── tooling/                  # 开发规范与源码依赖边界
+│   └── fixtures/                 # 共享事实／迁移基线
 ├── scripts/                      # 构建、服务、提取与离线复核
 ├── docs/                         # 校准、来源及维护记录
 └── references/                   # 分类原始资料及 catalog.json 事实索引
 ```
 
 页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./legacy-retirement.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
+
+工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案迁到七个中文领域词库，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./code-style.md)和[国际化规划](./i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
 
 ## 剩余细节
 

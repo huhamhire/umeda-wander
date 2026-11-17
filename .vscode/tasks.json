@@ -15,6 +15,7 @@
       "presentation": { "reveal": "always", "panel": "dedicated" },
       "runOptions": { "instanceLimit": 1 }
     },
+    { "label": "地图：风格检查", "type": "shell", "command": "npm run check:style", "windows": { "command": "npm.cmd run check:style" }, "problemMatcher": [] },
     { "label": "地图：类型检查", "type": "shell", "command": "npm run typecheck", "windows": { "command": "npm.cmd run typecheck" }, "problemMatcher": "$tsc" },
     { "label": "地图：构建网页", "type": "shell", "command": "npm run build", "windows": { "command": "npm.cmd run build" }, "group": { "kind": "build", "isDefault": true }, "problemMatcher": [] },
     { "label": "地图：运行测试", "type": "shell", "command": "npm test", "windows": { "command": "npm.cmd test" }, "problemMatcher": [] }

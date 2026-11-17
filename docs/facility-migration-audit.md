@@ -18,7 +18,7 @@
 
 ```powershell
 node scripts/geography/audit-facility-migration.ts
-node --test tests/facility-migration.test.ts
+node --test tests/navigation/facility-migration.test.ts
 ```
 
 报告生成到 `build/geography/facility-migration.json`。回归还会故意移除设备／定位项、移动错误落点，确认审计能够发现这些回退；JP 下段在 B1 探索时保留上段井道，并检查没有悄悄补出通向主网的捷径。

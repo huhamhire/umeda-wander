@@ -23,7 +23,9 @@ Windows PowerShell 若阻止执行 `npm.ps1`，将命令中的 `npm` 换成 `npm
 
 另有 **JR 大阪站 · 本地预览** 配置，可由用户主动选择，让 VS Code 启动 Chrome。该配置的后台开发任务需要通过“终止任务”或终端 Ctrl+C 停止。两个入口均使用 5173 端口，不要同时启动。
 
-`Ctrl+Shift+B` 构建网页；“运行任务”中还提供类型检查和测试入口。
+`Ctrl+Shift+B` 构建网页；“运行任务”中还提供风格检查、类型检查和测试入口。
+
+代码使用 TypeScript 四空格缩进、单行单语句和英文方法文档注释；`npm run check:style` 检查基本规则，无新增工具依赖。见[代码风格](docs/code-style.md)。样式按基础／组件拆分，仍构建成单个 CSS；显示文案通过七个领域的中文 i18n 词条维护，日文与英文暂未翻译，见[国际化规划](docs/i18n.md)。
 
 ## 交互范围
 
@@ -76,8 +78,8 @@ umeda-h5/
 │   ├── utils/              # 通用工具
 │   ├── main.ts             # 应用组装与事件绑定
 │   ├── index.html          # 页面模板
-│   └── styles.css
-├── tests/                  # 独立回归测试
+│   └── styles/              # foundations／components，单入口合并
+├── tests/                  # 按车站、公共区域、地理、建筑、导航及呈现分组，见 tests/README.md
 ├── scripts/                # 构建、本地服务与离线复核
 ├── data/                   # 地理快照及可重建资源
 ├── dist/                   # 网页产物（忽略）

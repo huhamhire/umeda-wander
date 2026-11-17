@@ -1,0 +1,19 @@
+{
+  "railways.hankyu.kobe": "神户线",
+  "railways.hankyu.kyoto": "京都线",
+  "railways.hankyu.takarazuka": "宝冢线",
+  "railways.hankyu.takarazukaAlternate": "宝塚线",
+  "railways.jr.loop.east": "JR 环状线 · 京桥方向",
+  "railways.jr.loop.name": "JR 环状线",
+  "railways.jr.loop.west": "JR 环状线 · 福岛 / 西九条方向",
+  "railways.jr.main.east": "JR 本线 · 新大阪 / 京都方向",
+  "railways.jr.main.name": "JR 本线",
+  "railways.jr.main.west": "JR 本线 · 尼崎 / 神户方向",
+  "railways.labels.approach": "轨道延伸",
+  "railways.labels.generic": "轨道",
+  "railways.tozai.east": "JR 东西线 · 京桥方向",
+  "railways.tozai.west": "JR 东西线 · 尼崎方向",
+  "railways.umekita.north": "梅北 · 新大阪 / 京都方向",
+  "railways.umekita.south": "梅北 · 关西机场 / 和歌山方向",
+  "railways.yotsubashi.south": "四桥线 · 肥后桥方向"
+}
