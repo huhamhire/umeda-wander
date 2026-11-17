@@ -1,5 +1,5 @@
-import type {PlanRegion} from '../domain/map/model.ts';
-import {projectWalkwayReference} from './district-placement.ts';
+import type {PlanRegion} from '../../src/domain/map/model.ts';
+import {projectWalkwayReference} from '../../src/infrastructure/district-placement.ts';
 
 /** Simplified yellow public-space boundaries from the UMEDA CONNECT map crop.
  * These faces are authored independently of the old station-to-station chords. */

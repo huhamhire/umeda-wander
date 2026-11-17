@@ -1,8 +1,8 @@
-import type {PublicPassage} from '../domain/map/model.ts';
-import {hanshinStation} from './hanshin-umeda-map.ts';
-import {metroStation} from './metro-umeda-map.ts';
+import type {PublicPassage} from '../../src/domain/map/model.ts';
+import {hanshinStation} from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
+import {metroStation} from '../../src/infrastructure/stations/metro-umeda/index.ts';
 import {commercialPassages} from './commercial-district.ts';
-import {areas as jrAreas} from './jr-osaka-map.ts';
+import {areas as jrAreas} from '../../src/infrastructure/stations/jr-osaka/layout.ts';
 
 const center=(area:{outline:{x:number;z:number}[]})=>area.outline.reduce((s,p)=>({x:s.x+p.x/area.outline.length,z:s.z+p.z/area.outline.length}),{x:0,z:0});
 const west=center(hanshinStation.layout.areas.find(a=>a.id==='hanshin-umeda-west-public')!);

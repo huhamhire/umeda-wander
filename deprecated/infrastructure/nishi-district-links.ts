@@ -1,7 +1,7 @@
-import type {PublicPassage} from '../domain/map/model.ts';
-import {nishiStation} from './nishi-umeda-map.ts';
-import {hanshinStation} from './hanshin-umeda-map.ts';
-import {districtPlacements} from './district-placement.ts';
+import type {PublicPassage} from '../../src/domain/map/model.ts';
+import {nishiStation} from '../../src/infrastructure/stations/nishi-umeda/index.ts';
+import {hanshinStation} from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
+import {districtPlacements} from '../../src/infrastructure/district-placement.ts';
 
 const outline=nishiStation.layout.areas.find(a=>a.id==='nishi-umeda-north-public')!.outline;
 const start=outline.reduce((s,p)=>({x:s.x+p.x/outline.length,z:s.z+p.z/outline.length}),{x:0,z:0});

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {sourceCredits} from '../src/infrastructure/source-credits.ts';
-import {osmCreditData} from '../src/infrastructure/osm-credit-download.ts';
+import {osmCreditData} from '../deprecated/infrastructure/osm-credit-download.ts';
 import {bindCreditsDialog,renderSourceCredits} from '../src/presentation/source-credits-dialog.ts';
 
 class Node extends EventTarget {
@@ -59,7 +59,8 @@ test('attribution is always visible in markup and mobile CSS reserves safe foote
   assert.match(html,/<dialog[^>]+aria-labelledby="credits-title"/);assert.match(html,/<h2 id="credits-title" tabindex="-1"/);
   assert.match(html,/<a id="credits-open"[^>]+>数据来源与版权 · © OpenStreetMap contributors<\/a>/);
   assert(!html.includes('href="https://www.openstreetmap.org/copyright"'),'no independent OSM link outside the dialog');
-  assert.match(css,/\.credits-dialog\[open\]\{display:flex/);assert.match(css,/\.credits-content\{[^}]*overflow-y:auto/);
+  assert.match(css,/\.credits-dialog\[open\]\s*\{\s*display:\s*flex/);
+  assert.match(css,/\.credits-content\s*\{[^}]*overflow-y:\s*auto/);
   assert.match(css,/--navigation-bottom:calc\(58px \+ env\(safe-area-inset-bottom/);
-  assert.match(css,/\.atlas footer \.map-credits a\{font-size:12px;max-width:none/);
+  assert.match(css,/\.atlas footer \.map-credits a\s*\{\s*font-size:\s*12px;\s*max-width:\s*none/);
 });

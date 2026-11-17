@@ -1,6 +1,6 @@
-import type {Platform,RailApproach} from '../domain/map/model.ts';
-import {platformRail} from '../domain/map/rail-geometry.ts';
-import {railApproachDraft} from './rail-approach-draft.ts';
+import type {Platform,RailApproach} from '../../src/domain/map/model.ts';
+import {platformRail} from '../../src/domain/map/rail-geometry.ts';
+import {railApproachDraft} from '../../src/infrastructure/rail-approach-draft.ts';
 
 export function createJrRailApproaches(platforms:Platform[]):RailApproach[]{
   const {approaches,make,node,segment}=railApproachDraft();

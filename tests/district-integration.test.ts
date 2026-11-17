@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {levels,layout,edges} from '../src/infrastructure/umeda-map.ts';
+import {levels,layout,edges} from '../deprecated/infrastructure/umeda-map.ts';
 import {districtPlacements,districtFrame} from '../src/infrastructure/district-placement.ts';
-import {districtConnections} from '../src/infrastructure/district-links.ts';
+import {districtConnections} from '../deprecated/infrastructure/district-links.ts';
 import {projectDistrictPoint} from '../src/domain/map/geography.ts';
 import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {cameraEnvelope} from '../src/presentation/camera-framing.ts';
@@ -13,7 +13,7 @@ import {displayElevation} from '../src/application/display-elevation.ts';
 import {MapSession} from '../src/application/map-session.ts';
 import {planFloorOpenings} from '../src/application/connection-openings.ts';
 import {readFileSync} from 'node:fs';
-import {metroStation} from '../src/infrastructure/metro-umeda-map.ts';
+import {metroStation} from '../src/infrastructure/stations/metro-umeda/index.ts';
 import {platformPoint} from '../src/domain/map/geometry.ts';
 import {platformRail} from '../src/domain/map/rail-geometry.ts';
 

@@ -1,9 +1,9 @@
-import type {FloorArea,PassageEndpoint,PublicPassage,VerticalConnection} from '../domain/map/model.ts';
-import {closestPolygonPoint} from '../domain/map/geometry.ts';
+import type {FloorArea,PassageEndpoint,PublicPassage,VerticalConnection} from '../../src/domain/map/model.ts';
+import {closestPolygonPoint} from '../../src/domain/map/geometry.ts';
 import {jpTowerBuilding as building,jpTowerEvidence as evidence} from './jp-tower-building.ts';
 import {commercialBuildings} from './commercial-district.ts';
-import {nishiStation} from './nishi-umeda-map.ts';
-import {areas as jrAreas} from './jr-osaka-map.ts';
+import {nishiStation} from '../../src/infrastructure/stations/nishi-umeda/index.ts';
+import {areas as jrAreas} from '../../src/infrastructure/stations/jr-osaka/layout.ts';
 
 const garden=(level:PassageEndpoint['level'],x=-55,z=81):PassageEndpoint=>({level,x,z});
 const door=(name:string,near:{x:number;z:number}):PassageEndpoint=>({

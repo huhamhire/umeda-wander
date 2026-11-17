@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {layout,levels} from '../src/infrastructure/umeda-map.ts';
-import {hankyuStation} from '../src/infrastructure/hankyu-umeda-map.ts';
+import {layout,levels} from '../deprecated/infrastructure/umeda-map.ts';
+import {hankyuStation} from '../src/infrastructure/stations/hankyu-umeda/index.ts';
 import {platformRail,sampleRailSegment,offsetRailSample} from '../src/domain/map/rail-geometry.ts';
 import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {districtFrame} from '../src/infrastructure/district-placement.ts';

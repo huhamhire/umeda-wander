@@ -1,9 +1,9 @@
-import type {CommercialBuilding,CommercialBuildingId,CommercialConcourse,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection,AtriumVoid} from '../domain/map/model.ts';
-import {closestPolygonPoint,rotatePoint,passageOutline} from '../domain/map/geometry.ts';
+import type {CommercialBuilding,CommercialBuildingId,CommercialConcourse,FloorArea,LevelId,PassageEndpoint,Point2,PublicPassage,VerticalConnection,AtriumVoid} from '../../src/domain/map/model.ts';
+import {closestPolygonPoint,rotatePoint,passageOutline} from '../../src/domain/map/geometry.ts';
 import {commercialFootprints,grandFrontTowers,yodobashiHotelTower,yodobashiMultimediaPodium,northGateOfficeTower} from './commercial-footprints.ts';
 import polygonClipping from 'polygon-clipping';
-import {districtFrame,districtPlacements,districtAnchors} from './district-placement.ts';
-import {insetPolygon} from '../utils/polygon-inset.ts';
+import {districtFrame,districtPlacements,districtAnchors} from '../../src/infrastructure/district-placement.ts';
+import {insetPolygon} from '../../src/utils/polygon-inset.ts';
 import {hanshinCommercialBuilding} from './hanshin-commercial-building.ts';
 import {jpTowerBuilding} from './jp-tower-building.ts';
 

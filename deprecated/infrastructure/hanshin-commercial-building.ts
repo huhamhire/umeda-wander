@@ -1,5 +1,5 @@
 import polygonClipping from 'polygon-clipping';
-import type {CommercialBuilding,Point2} from '../domain/map/model.ts';
+import type {CommercialBuilding,Point2} from '../../src/domain/map/model.ts';
 import {commercialFootprints} from './commercial-footprints.ts';
 
 const reference=commercialFootprints['hanshin-dept'];

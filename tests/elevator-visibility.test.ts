@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {layout,levels} from '../src/infrastructure/umeda-map.ts';
+import {layout,levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {visibleElevatorConnections} from '../src/application/elevator-visibility.ts';
 import {VerticalConnectionModel} from '../src/presentation/vertical-connection-model.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { areas, facilities, connections, platforms, levels } from '../src/infrastructure/jr-osaka-map.ts';
+import { areas, facilities, connections, platforms, levels } from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import { planFloorOpenings } from '../src/application/connection-openings.ts';
 import { planGateBoundaries } from '../src/application/gate-boundaries.ts';
 import { displayElevation } from '../src/application/display-elevation.ts';
@@ -9,7 +9,7 @@ import { platformPoint } from '../src/domain/map/geometry.ts';
 import { buildFloorGeometry } from '../src/presentation/floor-geometry.ts';
 import { VerticalConnectionModel } from '../src/presentation/vertical-connection-model.ts';
 import { connectionHeading } from '../src/application/connection-orientation.ts';
-import { edges,nodes } from '../src/infrastructure/jr-osaka-map.ts';
+import { edges,nodes } from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import { pointInPolygon } from '../src/domain/map/geometry.ts';
 
 const openings=planFloorOpenings(connections,levels,platforms);

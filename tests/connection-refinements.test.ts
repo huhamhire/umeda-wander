@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {areas,connections,facilities,levels,platforms} from '../src/infrastructure/jr-osaka-map.ts';
+import {areas,connections,facilities,levels,platforms} from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import {connectionLanes,escalatorOverallWidth} from '../src/application/connection-lanes.ts';
 import {planFloorOpenings} from '../src/application/connection-openings.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';
@@ -9,7 +9,7 @@ import {platformLocalPoint,platformPoint,pointInPolygon} from '../src/domain/map
 import {buildFloorGeometry} from '../src/presentation/floor-geometry.ts';
 import {VerticalConnectionModel} from '../src/presentation/vertical-connection-model.ts';
 import {advanceExplode} from '../src/presentation/explode-transition.ts';
-import {layout as districtLayout} from '../src/infrastructure/umeda-map.ts';
+import {layout as districtLayout} from '../deprecated/infrastructure/umeda-map.ts';
 
 test('narrowed underground platforms retain full-width stairs and elevator landing clearance',()=>{
   for(const platform of districtLayout.platforms.filter(p=>['underground-platform','metro-platform'].includes(p.level))){

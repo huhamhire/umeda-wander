@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {filterFacilities} from '../src/application/facility-filter.ts';
 import {explorationElevation} from '../src/application/exploration-level.ts';
-import {facilities,levels,stations,layout} from '../src/infrastructure/umeda-map.ts';
+import {facilities,levels,stations,layout} from '../deprecated/infrastructure/umeda-map.ts';
 import {facilityCodes} from '../src/infrastructure/facility-codes.ts';
 import type {FacilityKind} from '../src/domain/map/model.ts';
 

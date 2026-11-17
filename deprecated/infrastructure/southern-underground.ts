@@ -1,6 +1,6 @@
-import type {PublicPassage} from '../domain/map/model.ts';
-import {describeStationSite,stationPublicPortal} from '../application/station-site.ts';
-import {planUndergroundSpace} from '../application/underground-space.ts';
+import type {PublicPassage} from '../../src/domain/map/model.ts';
+import {describeStationSite,stationPublicPortal} from '../../src/application/station-site.ts';
+import {planUndergroundSpace} from '../../src/application/underground-space.ts';
 import {stationMaps} from './station-maps.ts';
 import {southDistrictAreas,diamorRoundPlaza} from './west-district-links.ts';
 import {southWalkwayRegions} from './south-walkway-plan.ts';

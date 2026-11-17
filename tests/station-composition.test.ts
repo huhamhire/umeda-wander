@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {composeStationMaps} from '../src/application/compose-station-maps.ts';
-import {stationMaps} from '../src/infrastructure/station-maps.ts';
-import {districtMapParts} from '../src/infrastructure/district-map-parts.ts';
+import {stationMaps} from '../deprecated/infrastructure/station-maps.ts';
+import {districtMapParts} from '../deprecated/infrastructure/district-map-parts.ts';
 import type {StationLayout} from '../src/domain/map/model.ts';
 
 const empty:StationLayout={areas:[],platforms:[],connections:[]};

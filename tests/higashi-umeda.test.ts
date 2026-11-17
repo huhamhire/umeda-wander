@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {higashiStation} from '../src/infrastructure/higashi-umeda-map.ts';
-import {layout,levels,facilities,edges,stations} from '../src/infrastructure/umeda-map.ts';
+import {higashiStation} from '../src/infrastructure/stations/higashi-umeda/index.ts';
+import {layout,levels,facilities,edges,stations} from '../deprecated/infrastructure/umeda-map.ts';
 import {platformLocalPoint,pointInPolygon} from '../src/domain/map/geometry.ts';
 import {platformRail} from '../src/domain/map/rail-geometry.ts';
 import {planGateBoundaries} from '../src/application/gate-boundaries.ts';

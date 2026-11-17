@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import polygonClipping from 'polygon-clipping';
-import {layout,levels} from '../src/infrastructure/umeda-map.ts';
+import {layout,levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {planFloorOpenings} from '../src/application/connection-openings.ts';
 import {connectionLanes} from '../src/application/connection-lanes.ts';

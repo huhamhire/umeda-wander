@@ -1,12 +1,12 @@
-import type {FloorArea,PassageEndpoint,PublicPassage} from '../domain/map/model.ts';
-import {closestPolygonPoint} from '../domain/map/geometry.ts';
-import {projectWalkwayReference} from './district-placement.ts';
-import {higashiStation} from './higashi-umeda-map.ts';
+import type {FloorArea,PassageEndpoint,PublicPassage} from '../../src/domain/map/model.ts';
+import {closestPolygonPoint} from '../../src/domain/map/geometry.ts';
+import {projectWalkwayReference} from '../../src/infrastructure/district-placement.ts';
+import {higashiStation} from '../../src/infrastructure/stations/higashi-umeda/index.ts';
 import {commercialBuildings} from './commercial-district.ts';
-import {kitashinchiStation} from './kitashinchi-map.ts';
-import {nishiStation} from './nishi-umeda-map.ts';
-import {hanshinStation} from './hanshin-umeda-map.ts';
-import {metroStation} from './metro-umeda-map.ts';
+import {kitashinchiStation} from '../../src/infrastructure/stations/kitashinchi/index.ts';
+import {nishiStation} from '../../src/infrastructure/stations/nishi-umeda/index.ts';
+import {hanshinStation} from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
+import {metroStation} from '../../src/infrastructure/stations/metro-umeda/index.ts';
 import {southBlockPlans} from './south-walkway-plan.ts';
 
 const center=(points:{x:number;z:number}[])=>points.reduce((s,p)=>({x:s.x+p.x/points.length,z:s.z+p.z/points.length}),{x:0,z:0});

@@ -2,12 +2,12 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {layerRole} from '../src/application/layer-focus.ts';
-import {levels,connections,platforms} from '../src/infrastructure/jr-osaka-map.ts';
+import {levels,connections,platforms} from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import {LayerAppearance} from '../src/presentation/layer-appearance.ts';
 import {VerticalConnectionModel} from '../src/presentation/vertical-connection-model.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';
 import {cameraOffset} from '../src/presentation/view-orientation.ts';
-import {layout as districtLayout,levels as districtLevels} from '../src/infrastructure/umeda-map.ts';
+import {layout as districtLayout,levels as districtLevels} from '../deprecated/infrastructure/umeda-map.ts';
 
 test('focused floors retain all lower levels as context and hide upper levels',()=>{
   for(const focus of levels)for(const target of levels){

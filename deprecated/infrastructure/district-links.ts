@@ -1,7 +1,7 @@
-import type {FloorArea,VerticalConnection,PassageGuide} from '../domain/map/model.ts';
-import {passageOutline,rotatePoint} from '../domain/map/geometry.ts';
-import {districtPlacements,districtAnchors} from './district-placement.ts';
-import {metroStation} from './metro-umeda-map.ts';
+import type {FloorArea,VerticalConnection,PassageGuide} from '../../src/domain/map/model.ts';
+import {passageOutline,rotatePoint} from '../../src/domain/map/geometry.ts';
+import {districtPlacements,districtAnchors} from '../../src/infrastructure/district-placement.ts';
+import {metroStation} from '../../src/infrastructure/stations/metro-umeda/index.ts';
 
 const p=districtPlacements.hankyu;
 const target=rotatePoint({x:-26*p.planScale,z:-52*p.planScale},{x:0,z:0},p.angle);

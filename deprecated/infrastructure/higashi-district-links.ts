@@ -1,7 +1,7 @@
-import type {PublicPassage} from '../domain/map/model.ts';
-import {higashiStation} from './higashi-umeda-map.ts';
-import {metroStation} from './metro-umeda-map.ts';
-import {projectWalkwayReference} from './district-placement.ts';
+import type {PublicPassage} from '../../src/domain/map/model.ts';
+import {higashiStation} from '../../src/infrastructure/stations/higashi-umeda/index.ts';
+import {metroStation} from '../../src/infrastructure/stations/metro-umeda/index.ts';
+import {projectWalkwayReference} from '../../src/infrastructure/district-placement.ts';
 
 const metroFloor=metroStation.layout.areas.find(a=>a.id==='metro-umeda-south-public')!.outline;
 const [a,,c,d]=metroFloor;

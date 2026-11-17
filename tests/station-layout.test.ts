@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { facilities, levels, platforms, connections, nodes, edges, areas } from '../src/infrastructure/jr-osaka-map.ts';
+import { facilities, levels, platforms, connections, nodes, edges, areas } from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import { pointInPolygon, platformLocalPoint, platformPoint } from '../src/domain/map/geometry.ts';
 import { displayElevation } from '../src/application/display-elevation.ts';
 import { findRoute } from '../src/domain/navigation/find-route.ts';

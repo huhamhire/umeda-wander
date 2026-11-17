@@ -1,9 +1,9 @@
-import type {Platform,RailApproach} from '../domain/map/model.ts';
+import type {Platform,RailApproach} from '../../src/domain/map/model.ts';
 import {createJrRailApproaches} from './jr-osaka-rail-approaches.ts';
 import {createHankyuRailApproaches} from './hankyu-rail-approaches.ts';
 import {createHanshinRailApproaches} from './hanshin-rail-approaches.ts';
 import {createMidosujiRailApproaches} from './midosuji-rail-approaches.ts';
-import {createIslandRailApproaches} from './island-rail-approaches.ts';
+import {createIslandRailApproaches} from '../../src/infrastructure/island-rail-approaches.ts';
 
 /** Build only alignments belonging to the supplied independent station layout. */
 export function createRailApproaches(platforms:Platform[]):RailApproach[]{

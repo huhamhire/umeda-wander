@@ -3,7 +3,7 @@ import {createPilotCalibrations} from '../../src/infrastructure/district/calibra
 import {toGeographicPlan} from '../../src/domain/map/spatial-block.ts';
 import {geographicFrame} from '../../src/infrastructure/geography/frame.ts';
 import {districtFrame} from '../../src/infrastructure/district-placement.ts';
-import {stationMaps} from '../../src/infrastructure/station-maps.ts';
+import {stationMaps} from '../../deprecated/infrastructure/station-maps.ts';
 import type {OsmPlanFeature} from '../../src/infrastructure/geography/osm-envelope.ts';
 import type {Point2} from '../../src/domain/map/model.ts';
 

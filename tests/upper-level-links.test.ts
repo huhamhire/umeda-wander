@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {areas,connections,levels,platforms} from '../src/infrastructure/jr-osaka-map.ts';
+import {areas,connections,levels,platforms} from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {planFloorOpenings} from '../src/application/connection-openings.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {layout} from '../src/infrastructure/umeda-map.ts';
+import {layout} from '../deprecated/infrastructure/umeda-map.ts';
 import {pointInPolygon,platformLocalPoint} from '../src/domain/map/geometry.ts';
 
 test('JR guide stays outside both paid areas and follows the modeled descent',()=>{

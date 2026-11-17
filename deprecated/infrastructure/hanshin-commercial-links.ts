@@ -1,6 +1,6 @@
-import type {PassageEndpoint,PublicPassage} from '../domain/map/model.ts';
-import {closestPolygonPoint} from '../domain/map/geometry.ts';
-import {hanshinStation} from './hanshin-umeda-map.ts';
+import type {PassageEndpoint,PublicPassage} from '../../src/domain/map/model.ts';
+import {closestPolygonPoint} from '../../src/domain/map/geometry.ts';
+import {hanshinStation} from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
 import {hanshinCommercialBuilding as building} from './hanshin-commercial-building.ts';
 
 export const hanshinCommercialPassages:PublicPassage[]=(['B1','1F'] as const).map(name=>{

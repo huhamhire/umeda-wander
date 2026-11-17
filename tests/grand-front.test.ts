@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {layout,levels} from '../src/infrastructure/umeda-map.ts';
+import {layout,levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {pointInPolygon,closestPolygonPoint} from '../src/domain/map/geometry.ts';
 import {buildCommercialMassing} from '../src/presentation/commercial-massing-model.ts';
 import {cameraEnvelope} from '../src/presentation/camera-framing.ts';

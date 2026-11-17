@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {layout,levels} from '../src/infrastructure/umeda-map.ts';
+import {layout,levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {cameraEnvelope} from '../src/presentation/camera-framing.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';
 import type {StationId} from '../src/domain/map/model.ts';

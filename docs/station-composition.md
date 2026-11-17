@@ -1,58 +1,40 @@
 # 车站模块与地区组装
 
-本文优先描述阶段二后的地理入口。各站已迁入独立目录；商业建筑和公共区域按独立板块交付，公共区域允许覆盖地下、地面及 2F。后续装配顺序见 [空间重构 Roadmap](./spatial-refactor-roadmap.md)。
+H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。当前目录 tree、状态与剩余任务见[空间重构 Roadmap](./spatial-refactor-roadmap.md)。
 
-## 当前地理入口
+## 现役入口
 
-| 部分 | 入口 | 职责 |
+| 部分 | 入口（相对 src/） | 职责 |
 | --- | --- | --- |
-| 最终站模 | `district/geographic-stations.ts` 的 `createGeographicStation(id)` | 按稳定站点 ID 独立创建、校准设备并恢复本站轨道；全图采用相同工厂 |
-| JR 内部组装 | `stations/jr-osaka/geographic-station.ts` | 地面、梅北两个框架，西口付费通道、Crost 及南门入口 |
-| 其余各站 | `stations/<id>/geographic.ts` 与 `index.ts` | 地理轴、本站布局、设施及来源；不读取其他车站完整数据 |
-| 公共接口 | `application/station-public-interfaces.ts` | 从本站付费边界生成稳定门户，包含方向、宽度、标高、来源，不推断跨站寻路 |
-| 公共前庭 | `public-areas/station-frontages/index.ts` | 选取构内图已有前庭、出入口短臂与设备落台，捐入公共所有者；不恢复旧地区长矩形 |
-| 地下公共组装 | `application/shared-underground.ts` | 合并已有地区网与前庭、扣除付费和服务空间，保留局部高差，几何只画一次 |
-| 接缝绑定 | `application/public-interface-bindings.ts` | 拒绝缺少同标高公共落脚面的 B1 改札；绑定不是路线 |
-| H5 入口 | `district/geographic-map.ts` | 纯组装、补齐设施目录；保留接口和绑定导出供阶段三使用 |
+| 最终站模 | `infrastructure/district/geographic-stations.ts` | `createGeographicStation(id)` 独立创建站模；与全图共用设备校准与轨道恢复 |
+| JR 子区 | `infrastructure/stations/jr-osaka/geographic-station.ts` | 组装地面、梅北独立框架及西口、Crost、南门连接 |
+| 各站 | `infrastructure/stations/<id>/index.ts`、`geographic.ts` | 本站原始布局、设施、证据及地理校准；不引用其他站内部数据 |
+| 公共接口 | `application/station-public-interfaces.ts` | 从付费边界生成稳定门户及标高、宽度、朝向和依据 |
+| 公共前庭 | `infrastructure/public-areas/station-frontages/index.ts` | 提取已有前庭与局部落台，捐入公共网，避免车站重复绘制 |
+| 地下装配 | `application/shared-underground.ts` | 合并地区公共面及前庭，扣除付费／服务空间，保留孔洞 |
+| 2F 装配 | `application/public-deck-assembly.ts` | 分支并集、重复所有权裁剪及板块接缝 |
+| 纯组装 | `application/compose-station-maps.ts` | 汇总领域实体并拒绝重复身份，不耦合 Three.js |
+| H5 数据 | `infrastructure/district/geographic-map.ts` | 组装站体与公共板块、补齐设施目录，导出公共接口及绑定 |
 
-局部复核：`node scripts/geography/review-stage-two.ts --station=nishi-umeda`。省略参数输出七站；生成图放在 `build/geography/`，原始资料不改写。参数记录见 `createRuntimeCalibrations()`，其端点、尺寸为当前示意拟合，测量残差未取得。
+公共地下与高架所有者见 [公共板块说明](../src/infrastructure/public-areas/README.md)。M16 前庭已接入共享地下公共面；Yodobashi 外环由公共 2F 板块持有，不属于建筑外壳副本。
 
-设备坡度修正在 `application/calibrate-equipment.ts`；不能默认把下端当作站台端，夹层向上到站台时应保留夹层端。更新设备端点后同时更新对应路线节点和原有设施锚点。共享 B1 的实际楼板开口由全图设备规划，不能按 JR 归属过滤其他站点。
+## 共享规则
 
-公共前庭与地区网之间仍有阶段三工作：目前 M16 中北东／西前庭没有地区连续连接。完整 2F 连桥属于阶段四；Yodobashi 外环现在是外壳特征，迁入公共高架板块时不能保留重复副本。
+- 每站交付同一套领域 `StationMap`，不复制类型、渲染器或服务。原始局部布局仍被地理站模复用，不能因采用新坐标就删除。
+- 设备坡度在 `application/calibrate-equipment.ts` 校准；保留站厅／夹层端，更新实际站台端、路线节点及设施锚点。开口按实际承载楼板处理。
+- 门户在 `application/public-interface-bindings.ts` 校验同标高公共落脚面；几何绑定不自动生成跨站寻路边。
+- 当前轨道由 `infrastructure/geography/runtime-rails.ts` 从校准站台端点生成；JR 走廊约束在 `stations/jr-osaka/rail-corridors.ts`。OSM 只提供宽泛方向，共切向并线及公共尾段保持独立 RailApproach。
+- 共享空间、设备模型和 DOM 控件遵循根级 DDD 分层；无地图语义的通用方法才进入 utils。
 
-## 旧坐标入口与兼容约定
+## 维护和验证
 
-下列旧入口继续用于迁移对照及回归；不再是 `main.ts` 使用的数据入口。
+1. 修改具体站点、建筑或公共板块，保留稳定 ID 与来源。
+2. 修改空间时检查包络、设备端点、孔洞、围栏、公共接口、轨道与设施候选。
+3. 用 `node scripts/geography/review-stage-two.ts --station=nishi-umeda` 独立复核；省略站点参数输出七站。阶段三、四分别使用同目录下的 review 脚本。
+4. 按改动运行类型检查、回归、构建及离线图检查。几何相邻不解释为已核验门位或现场导航。
 
-每座车站独立维护布局、来源和设备，最后组装为地区地图。各站沿用同一套 Three.js 设备与楼板渲染器，不复制七份渲染实现。
+## 旧坐标对照
 
-## 三层边界
+旧总图、商业轮廓和连接生成器已移到根目录 [deprecated/](../deprecated/README.md)。旧回归与 `render-station-calibration.ts` 仍可引用归档；现役 src 不依赖该目录。
 
-| 部分 | 入口 | 职责 |
-| --- | --- | --- |
-| 车站 | `infrastructure/station-maps.ts` | 七站统一清单，各站只登记一次 |
-| 地区 | `infrastructure/district-map-parts.ts` | 商业区域、站间公共通路、外部连廊 |
-| 组装 | `application/compose-station-maps.ts` | 合并站点与地区数据，拒绝重复站点和楼层 |
-| 网页数据 | `infrastructure/umeda-map.ts` | 调用组装、补齐设施菜单，保留原有导出接口 |
-
-领域层的 `StationMap` 定义每站交付的数据：身份、楼层、设施、路线节点、本站路线和 `StationLayout`。它不依赖 DOM、Three.js 或资料读取方式。
-
-JR 原始资料包含夹层、南门大楼特殊层名，`jr-osaka-station.ts` 将这些数据适配为独立车站模块；原始 `jr-osaka-map.ts` 不因组装被改写。其余车站继续使用各自的 `*-map.ts`，`station-draft.ts` 只提供共用数据构造方法。
-
-## 轨道的独立维护
-
-`jr-osaka-rail-approaches.ts`、`hankyu-rail-approaches.ts`、`hanshin-rail-approaches.ts`、`midosuji-rail-approaches.ts` 分别维护各站出站轨道；西梅田和北新地的普通岛式站台延伸共用 `island-rail-approaches.ts`，站点身份、方向、楼层和来源仍独立。`rail-approach-draft.ts` 只提供节点与曲线段构造，不包含站点布局。
-
-`rail-approaches.ts` 根据传入站台调用对应生成器；站点清单给每站补上自己的 `layout.railApproaches`，总图不再以全体站台重新生成一次。轨道延伸和步行路线保持独立。
-
-## 修改流程
-
-1. 修改本站 `*-map.ts` 的平面、设备和资料来源；同站上层复杂结构可继续抽为局部模块，如 JR 夹层与中庭。
-2. 修改本站轨道模块，轨道端点仍由 `platformRail` 推导；设备、开口和设施编号沿用共用规则。
-3. 出口变化时检查地区连接模块。地区层从站体公共接口推导端点，不把外部商场或跨站寻路塞入本站付费区。
-4. 新站登记到 `station-maps.ts`；楼层、设施、路线和站台会自动加入组装，不再逐个修改总图数组。
-
-`district-placement.ts` 统一维护地理锚点和展示拟合，各站内部仍使用局部坐标。跨站避让是地区关系检查，不能在渲染器里偷偷移动单个楼梯或站台。
-
-`station-composition.test.ts` 验证每站不带地区数据时可独立组装、路线不引用外站节点、轨道只引用本站站台，以及组装不修改输入数据。此次重构另与 `150173d` 的完整导出数据逐项比较，地图实体、坐标及路线一致。
+原十个兼容转发入口已删除，直接导入 `stations/<id>/` 中的实际模块。历史文档中的 `umeda-map.ts`、`station-maps.ts`、`district-map-parts.ts` 等旧总图路径对应 deprecated/infrastructure，不再是页面数据入口。归档与现役代码一起参加类型检查。

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import type {CommercialBuilding,PublicPassage} from '../src/domain/map/model.ts';
-import {levels} from '../src/infrastructure/umeda-map.ts';
+import {levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {buildCommercialFloor} from '../src/presentation/commercial-building-model.ts';
 import {PublicPassageModel} from '../src/presentation/public-passage-model.ts';
 

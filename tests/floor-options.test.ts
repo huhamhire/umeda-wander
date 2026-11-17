@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {levels} from '../src/infrastructure/umeda-map.ts';
+import {levels} from '../deprecated/infrastructure/umeda-map.ts';
 import {floorOptions} from '../src/presentation/floor-options.ts';
 import {viewLayerRole} from '../src/application/view-layer.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';

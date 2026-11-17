@@ -1,5 +1,5 @@
 import polygonClipping from 'polygon-clipping';
-import type {CommercialBuilding} from '../domain/map/model.ts';
+import type {CommercialBuilding} from '../../src/domain/map/model.ts';
 import {commercialFootprints} from './commercial-footprints.ts';
 
 const raw=commercialFootprints['jp-tower'];

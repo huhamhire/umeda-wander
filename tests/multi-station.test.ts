@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {levels,facilities,nodes,edges,layout} from '../src/infrastructure/umeda-map.ts';
-import * as jr from '../src/infrastructure/jr-osaka-map.ts';
-import {hankyuStation} from '../src/infrastructure/hankyu-umeda-map.ts';
-import {metroStation} from '../src/infrastructure/metro-umeda-map.ts';
+import {levels,facilities,nodes,edges,layout} from '../deprecated/infrastructure/umeda-map.ts';
+import * as jr from '../src/infrastructure/stations/jr-osaka/layout.ts';
+import {hankyuStation} from '../src/infrastructure/stations/hankyu-umeda/index.ts';
+import {metroStation} from '../src/infrastructure/stations/metro-umeda/index.ts';
 import {platformLocalPoint,pointInPolygon,platformPoint} from '../src/domain/map/geometry.ts';
 import {displayElevation} from '../src/application/display-elevation.ts';
 import {viewLayerRole} from '../src/application/view-layer.ts';

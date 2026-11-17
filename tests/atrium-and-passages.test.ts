@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {layout,levels,nodes,facilities} from '../src/infrastructure/umeda-map.ts';
+import {layout,levels,nodes,facilities} from '../deprecated/infrastructure/umeda-map.ts';
 import {pointInPolygon} from '../src/domain/map/geometry.ts';
 import {planFloorOpenings} from '../src/application/connection-openings.ts';
 import {planAtriumOpenings} from '../src/application/atrium-openings.ts';

@@ -1,7 +1,7 @@
-import type {Platform,RailApproach} from '../domain/map/model.ts';
-import {platformRail} from '../domain/map/rail-geometry.ts';
-import {railApproachDraft} from './rail-approach-draft.ts';
-import type {Point2} from '../domain/map/model.ts';
+import type {Platform,RailApproach} from '../../src/domain/map/model.ts';
+import {platformRail} from '../../src/domain/map/rail-geometry.ts';
+import {railApproachDraft} from '../../src/infrastructure/rail-approach-draft.ts';
+import type {Point2} from '../../src/domain/map/model.ts';
 
 export function createMidosujiRailApproaches(platforms:Platform[]):RailApproach[]{
   const {approaches,make,node,segment}=railApproachDraft();

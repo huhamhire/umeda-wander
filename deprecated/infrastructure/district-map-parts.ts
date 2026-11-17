@@ -1,4 +1,4 @@
-import type {StationLayout} from '../domain/map/model.ts';
+import type {StationLayout} from '../../src/domain/map/model.ts';
 import {districtAreas,districtConnections,districtGuides} from './district-links.ts';
 import {commercialBuildings,commercialPassages,commercialAreas,commercialConnections,commercialConcourses,commercialAtria} from './commercial-district.ts';
 import {hanshinDistrictPassages} from './hanshin-district-links.ts';

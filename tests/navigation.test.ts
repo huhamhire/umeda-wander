@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { edges } from '../src/infrastructure/jr-osaka-map.ts';
+import { edges } from '../src/infrastructure/stations/jr-osaka/layout.ts';
 import { findRoute } from '../src/domain/navigation/find-route.ts';
 test('platform route crosses a gate and the explicit vertical connection', () => {
   assert.deepEqual(findRoute(edges, 'entry', 'destination', true),

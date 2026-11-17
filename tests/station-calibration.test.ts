@@ -5,7 +5,7 @@ import {toGeographicPlan,fromGeographicPlan} from '../src/domain/map/spatial-blo
 import {geographicFrame} from '../src/infrastructure/geography/frame.ts';
 import {createPilotCalibrations} from '../src/infrastructure/district/calibration-registry.ts';
 import {osmBuildingEnvelopes} from '../src/infrastructure/geography/osm-envelope.ts';
-import {stationMaps} from '../src/infrastructure/station-maps.ts';
+import {stationMaps} from '../deprecated/infrastructure/station-maps.ts';
 
 test('geographic plan has east/south axes and reversible metres',()=>{
   const p={lat:34.7022133,lon:135.4955732};

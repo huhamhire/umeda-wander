@@ -1,6 +1,6 @@
 import * as footprints from './commercial-footprints.ts';
-import {districtFrame,districtPlacements} from './district-placement.ts';
-import * as orientation from './station-orientation.ts';
+import {districtFrame,districtPlacements} from '../../src/infrastructure/district-placement.ts';
+import * as orientation from '../../src/infrastructure/station-orientation.ts';
 import {commercialBuildings} from './commercial-district.ts';
 import {layout} from './umeda-map.ts';
 

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { roofHeightAt,roofPlan } from '../src/presentation/roof-profile.ts';
-import {layout} from '../src/infrastructure/umeda-map.ts';
+import {layout} from '../deprecated/infrastructure/umeda-map.ts';
 
 test('the large roof is higher on the north side and lower on the south side', () => {
   assert(roofHeightAt(-36) > roofHeightAt(36));

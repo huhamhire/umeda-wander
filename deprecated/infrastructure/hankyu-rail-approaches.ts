@@ -1,8 +1,8 @@
-import type {Platform,RailApproach} from '../domain/map/model.ts';
-import {platformRail} from '../domain/map/rail-geometry.ts';
-import {railApproachDraft} from './rail-approach-draft.ts';
-import {rotatePoint} from '../domain/map/geometry.ts';
-import {districtPlacements} from './district-placement.ts';
+import type {Platform,RailApproach} from '../../src/domain/map/model.ts';
+import {platformRail} from '../../src/domain/map/rail-geometry.ts';
+import {railApproachDraft} from '../../src/infrastructure/rail-approach-draft.ts';
+import {rotatePoint} from '../../src/domain/map/geometry.ts';
+import {districtPlacements} from '../../src/infrastructure/district-placement.ts';
 
 export function createHankyuRailApproaches(platforms:Platform[]):RailApproach[]{
   const {approaches,make,node,segment}=railApproachDraft();
