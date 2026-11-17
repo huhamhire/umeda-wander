@@ -26,4 +26,4 @@ https://opendatacommons.org/licenses/odbl/1-0/
 
 ## 当前 H5 展示范围
 
-地理底稿已接入 H5。原始快照和完整投影继续作为数据基准；页面地面从 `display-context.json` 加载按地下网、站体及高架板块筛选的范围，普通建筑仅保留相关宿主。展示政策在 `context-policy.json`；道路内部中段及同名分段保持连接，只裁外围端头。重建命令为 `node scripts/geography/build-ground-context.ts`，规则及数量见 [地面展示范围](../../docs/ground-context.md)。
+地理底稿已接入 H5。原始快照和完整投影继续作为数据基准；页面地面从 `display-context.json` 加载按地下网、站体及高架板块筛选的范围，普通建筑仅保留相关宿主。展示政策在 `context-policy.json`；道路内部中段及同名分段保持连接，只裁外围端头。重建命令为 `node scripts/geography/build-ground-context.ts`，规则及数量见 [地面展示范围](../../docs/design/public-areas/ground.md)。

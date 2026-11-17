@@ -16,8 +16,8 @@ magick -background white build/geography/elevated-plan.svg build/geography/eleva
 
 输出 SVG、PNG、GeoJSON、JSON 核对报告到 `build/geography/`。当前 15 组、34 段线位；未定位项不绘制。桥宽 6–7 m 为可视化估计，尚非桥面精确多边形。大丸前庭为参考楼层图的示意轮廓；不能以色带相接作为导航连边，也不在跨地面道路处建立步行交点。
 
-OSM 线位适用 ODbL，保留原 way 链接。参考图所依据的公共平台轮廓、图像和衍生几何不因此取得 OSM 许可；授权待核实，当前用于内部校对。源文件不修改，详情见 `docs/elevated-projection-audit.md`。
+OSM 线位适用 ODbL，保留原 way 链接。参考图所依据的公共平台轮廓、图像和衍生几何不因此取得 OSM 许可；授权待核实，当前用于内部校对。源文件不修改，详情见 `docs/design/public-areas/elevated-projection.md`。
 
-阶段四维护见 [公共连廊装配记录](../../../docs/stage-four-decks.md)。运行 `node scripts/geography/build-elevated.ts` 重建 34 段原始步行轴线，再运行 `node scripts/geography/review-stage-four.ts` 检查实际装配。Yodobashi 外环由独立公共面持有，原轴线不重复生成桥面。
+阶段四维护见 [公共连廊装配记录](../../../docs/design/public-areas/elevated.md)。运行 `node scripts/geography/build-elevated.ts` 重建 34 段原始步行轴线，再运行 `node scripts/geography/review-stage-four.ts` 检查实际装配。Yodobashi 外环由独立公共面持有，原轴线不重复生成桥面。
 
 Inogate 新桥的人工参考拟合单独保存在 `inogate.json`，由 `west-decks/inogate.ts` 接入 H5，包含两条路径及两端平面宿主；不伪装成额外 OSM way。原始轴线预览仍只画 34 段，完整组装请运行 review-stage-four。具体端点、宽度、统一展示标高及待核对门位见阶段四记录。

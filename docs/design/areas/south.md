@@ -1,0 +1,22 @@
+# 南侧区域：阪神、地下街与南侧三站
+
+## 参考资料
+
+区域轮廓依据[地下地区图](../../../references/district/underground-walkway-map.pdf)黄色开挖面，并与地面道路控制点配准。站内分别依据[阪神](../../../references/stations/hanshin-umeda/station-guide.pdf)、[西梅田](../../../references/stations/nishi-umeda/station-guide.pdf)、[东梅田](../../../references/stations/higashi-umeda/station-guide.pdf)、[北新地](../../../references/stations/kitashinchi/station-guide.pdf)资料；地区图不能单独证明所有设施和门位。
+
+## 区域关系
+
+- 阪神位于百货前道路地下，B2 东口主出口朝东，宽两段式阶梯居中、扶梯分列两侧；B1 西半付费区闸机位于东西端，中部保留朝南公共通路。
+- 阪神南侧接第一生命互通、DIAMOR 和西梅田。第一生命曲面节点与沿途凹凸来自开挖面，不能用等宽折线桥替代。
+- 西梅田付费站厅、站台偏西，公共通路主要位于东侧；南端有南改札。轨道北端尽头，只向南延伸。
+- 北新地北侧东西闸机接公共网；南侧保留具体出口落台，不补未经确认的连续站厅。JR 东西线下穿四桥线，共归 B2 不代表同深。
+- DIAMOR、站前大楼间通路、曾根地下道和 Whity／东梅田按既有网络衔接，不能按最近点穿越建筑或付费区。
+- 地下建筑占位在街区／公共面孔洞内，减去通路及站体。E-ma、Hilton West、MARU 使用独立地下图边界，其余地上宿主不自动代表地下可通行范围。
+
+## 归属与拟合边界
+
+`data/geography/underground/` 保留源图、道路锚点及投影；[投影核对](../public-areas/underground-projection.md)说明配准方法。Crost、阪神—西梅田、第一生命、DIAMOR、北新地和外围公共面由 `src/infrastructure/public-areas/south-diamor/` 管理；Whity／东梅田由 `whity/` 管理。共享 B1 面及九个所有者见[地下装配](../public-areas/underground.md)。
+
+道路配准用于相对位置，允许米级展示误差，不是测量。管理窗口不能改变原图开挖边界；平面接触、分量和最短间距不能证明入口、层高或无障碍通行。
+
+JP 下沉广场至 Garden Avenue 主网的接口、西梅田短升降落台、北新地南侧出口高差及第一酒店独立占位仍待核对，统一见 [Roadmap](../../spatial-refactor-roadmap.md)。修改时沿地下重建链检查孔洞、付费边界及接口共面，不为消除诊断间距添加无依据通路。

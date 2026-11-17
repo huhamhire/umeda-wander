@@ -1,0 +1,13 @@
+# 数据来源与核查
+
+| 入口 | 职责 |
+| --- | --- |
+| [来源与版权审计](./source-credits-audit.md) | 实际发布素材、开放许可、混合几何及待授权事项 |
+| [参考资料与模型来源评估](./reference-evaluation.md) | 已有调查、来源适用范围及未采用方案；具体采用结果以区域设计和来源配置为准 |
+| [设施迁移审计](./facility-migration-audit.md) | 冻结旧设施基线、明确替代关系及现役逐项覆盖 |
+| [原始资料索引](../../references/README.md) | 分类文件、catalog、SHA-256、直接核对事实 |
+| [地理数据说明](../../data/geography/README.md) | OSM、源图投影及各类可重建资源 |
+
+运行时来源展示集中在 `src/infrastructure/source-credits.ts`；UI 文案使用 `src/infrastructure/i18n/zh-CN/credits.json`。源码许可证、程序依赖许可证、OSM／PLATEAU 许可和参考图改编授权分别维护，不能相互覆盖。
+
+本轮文档治理不引入新模型或新授权，也不重新核实所有外部链接。已有调查及核验日期保留其语境；原始参考文件与 catalog 内容不改写，待确认事项不会因为移文档而变成已确认。

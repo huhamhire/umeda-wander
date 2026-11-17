@@ -26,8 +26,8 @@
 ## 校验入口
 
 - `node scripts/geography/review-stage-three.ts`：核心区总图、北／南局部图、接口与建筑接触报告，输出在 `build/geography/`。
-- `node --test tests/stage-three-underground.test.ts`：分区保形、孔洞、付费区避让、改札接缝、设备开口和内部编号。
-- 详细状态、来源和未确认部位见 [阶段三记录](../../../docs/stage-three-underground.md)。
+- `node --test tests/public-areas/stage-three-underground.test.ts`：分区保形、孔洞、付费区避让、改札接缝、设备开口和内部编号。
+- 详细状态、来源和未确认部位见 [阶段三记录](../../../docs/design/public-areas/underground.md)。
 
 纯 OSM 数据下载与 PDF 派生几何分开。原图的改编／公开使用授权仍待核实；没有因拆分板块而变更许可。
 
@@ -35,4 +35,4 @@
 
 `elevated-blocks.ts` 登记 `north-decks/`、`south-decks/`、`west-decks/`，`deck-access.ts` 维护公共上下设备。北侧与南侧分别使用 `district-north-deck`（8）和 `district-south-deck`（4），均归 2F 探索。`assemblePublicDecks` 合并路口并避让既有站厅／付费区／天井；`deck-boundaries.ts` 控制外缘栏杆留口；`deck-interface-bindings.ts` 仅处理已指定的建筑接入对象。`deck-buildings.ts` 声明二层目的建筑占位，复用 `application/building-occupancy.ts` 并避让公共桥面；不增加商场内部可通行区。不要恢复建筑外壳中的 Yodobashi 回廊副本。
 
-运行 `node scripts/geography/review-stage-four.ts` 或 `node --test tests/stage-four-decks.test.ts` 检查。来源、设备及未定位新桥见 [阶段四记录](../../../docs/stage-four-decks.md)。
+运行 `node scripts/geography/review-stage-four.ts` 或 `node --test tests/public-areas/stage-four-decks.test.ts` 检查。来源、设备及未定位新桥见 [阶段四记录](../../../docs/design/public-areas/elevated.md)。

@@ -1,6 +1,6 @@
 # 地下公共空间轮廓投影
 
-当前已接入地理 H5；下文初期“未接入”是当时阶段记录。现役公共板块、占位与待核对范围见 [阶段三](../../../docs/stage-three-underground.md)。
+当前已接入地理 H5；下文初期“未接入”是当时阶段记录。现役公共板块、占位与待核对范围见 [阶段三](../../../docs/design/public-areas/underground.md)。
 
 ## 独立地下街区占位
 
@@ -42,7 +42,7 @@ magick -background white build/geography/underground-plan.svg build/geography/un
 
 ## 来源与使用边界
 
-OSM 地面数据适用其自身 ODbL 许可。地下轮廓属于对用户提供地图的直接几何提取，不能作为 OSM 数据署名或仅标为视觉参考。源图再发布／衍生几何授权尚待核实，目前用于内部设计核对。资料年代、层级限制及 JR 证据见 `docs/underground-projection-audit.md`。
+OSM 地面数据适用其自身 ODbL 许可。地下轮廓属于对用户提供地图的直接几何提取，不能作为 OSM 数据署名或仅标为视觉参考。源图再发布／衍生几何授权尚待核实，目前用于内部设计核对。资料年代、层级限制及 JR 证据见 `docs/design/public-areas/underground-projection.md`。
 
 ## 道路与站厅局部对齐（2026-11-16）
 

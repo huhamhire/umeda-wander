@@ -1,18 +1,27 @@
-# 大阪梅田立体交互地图：方案文档
+# 文档索引
 
-地理版本已接入七站样板、地下公共区域和主要二层连廊。运行方式见根目录 [README](../README.md)。早期方案文档保留设计背景，当前范围与待核对事项以 Roadmap 为准。
+七站地理样板、地下公共网和主要二层连廊已接入。模型及连接包含人工拟合，不能用于现场导航。运行方式见[项目 README](../README.md)，当前状态与待办统一见 [Roadmap](./spatial-refactor-roadmap.md)。
 
-已确定使用 TypeScript 编写应用代码，`src/` 存放源码，`dist/` 存放构建产物，最终入口为 `dist/index.html`。
+| 要处理的内容 | 入口 |
+| --- | --- |
+| JR 中央区、北侧、南侧的跨板块关系 | [区域设计与参考](./design/README.md) |
+| 车站构内布局、设备、改札与本站证据 | [七站设计](./design/stations/README.md) |
+| 地面遮盖、地下开挖网络、2F 连廊 | [公共空间](./design/public-areas/README.md) |
+| 裙楼、塔楼、建筑造型及公共接入 | [建筑设计](./design/buildings/README.md) |
+| 架构、代码风格、国际化、验证和文档维护 | [开发文档](./development/README.md) |
+| 资料版本、授权、来源评估与设施迁移核对 | [数据与来源](./data/README.md) |
 
-- [空间重构 Roadmap](./spatial-refactor-roadmap.md)：四阶段已接入的成果、剩余细节，以及独立板块与公共能力的维护边界。
-- [阶段二校准记录](./stage-two-calibration.md)：独立车站目录、米制包络对照、迁移范围及建筑高度重建要求。
-- [可行性与实现方案](./feasibility.md)：产品范围、视觉与交互、渲染路线、地图数据、HTML 入口与资源交付、阶段验收。
-- [参考资料与社区项目评估](./references-and-community.md)：本地素材检查、外部资料、建模项目对比与验证清单。
-- [JR 大阪站布局整理记录](./jr-osaka-layout.md)：中央改札/夹层的楼层归属、六组地面站台、梅北地下站台与西口连接关系，以及数据简化边界。
-- [地下网络投影核对](./underground-projection-audit.md)：基于地面坐标的地下公共包络、车站留位及已确认／待核实楼层；[数据维护说明](../data/geography/underground/README.md)。
-- [2F 连廊投影核对](./elevated-projection-audit.md)：北侧、南侧、西侧公共连廊与地面路网的首轮对照；[数据维护说明](../data/geography/elevated/README.md)。
+```text
+docs/
+├── README.md
+├── spatial-refactor-roadmap.md   # 当前状态与剩余任务
+├── design/
+│   ├── areas/                   # JR 中央区、北侧、南侧
+│   ├── stations/                # 七站构内依据与简化边界
+│   ├── public-areas/            # 地面、地下及二层公共网
+│   └── buildings/               # 商业体量、外观与接入
+├── development/                 # 架构、编码、国际化、验证与文档规范
+└── data/                        # 来源评估、版权和迁移审计
+```
 
-## 开发与维护规范
-
-- [代码风格与样式目录](./code-style.md)
-- [国际化文案维护](./i18n.md)
+原始参考资料保留在 [references](../references/README.md)，版本、来源和事实集中于 [catalog.json](../references/catalog.json)。旧方案、旧坐标参数和已结束的迁移流水不再单独归档，需要时查 Git 历史。现行文档区分资料事实、实现拟合及待确认事项，维护方式见[文档规范](./development/documentation.md)。

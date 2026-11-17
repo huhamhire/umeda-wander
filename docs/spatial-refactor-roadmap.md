@@ -7,11 +7,11 @@
 | 阶段 | 状态 | 维护记录 |
 | --- | --- | --- |
 | 一：道路与建筑平面 | 已完成，后续按扩展范围裁剪 | [地理数据](../data/geography/README.md) |
-| 二：七站校准与建筑 | 工程项完成，继续处理局部反馈 | [车站校准](./stage-two-calibration.md)、[模块组装](./station-composition.md) |
-| 三：地下公共网 | 主网及首批设备已装配，门位／高差待核对 | [地下装配](./stage-three-underground.md) |
-| 四：2F 连廊 | 北／南／西及 Inogate 新桥已装配，端点为参考拟合 | [连廊装配](./stage-four-decks.md) |
+| 二：七站校准与建筑 | 工程项完成，继续处理局部反馈 | [车站校准](./design/stations/README.md)、[模块组装](./development/architecture.md) |
+| 三：地下公共网 | 主网及首批设备已装配，门位／高差待核对 | [地下装配](./design/public-areas/underground.md) |
+| 四：2F 连廊 | 北／南／西及 Inogate 新桥已装配，端点为参考拟合 | [连廊装配](./design/public-areas/elevated.md) |
 
-已完成的参数、检查和实现细节留在上述记录中，不再逐项列作 roadmap 任务。Inogate 新桥及外围地面收边分别见[连廊记录](./stage-four-decks.md)与[地面展示范围](./ground-context.md)。
+已完成的参数、检查和实现细节留在上述记录中，不再逐项列作 roadmap 任务。Inogate 新桥及外围地面收边分别见[连廊记录](./design/public-areas/elevated.md)与[地面展示范围](./design/public-areas/ground.md)。
 
 ## 维护原则
 
@@ -19,7 +19,7 @@
 - 各站、商业体及公共区域独立维护，通过稳定接口组装；同一公共空间只有一个几何所有者。共享能力按 DDD 语义归层，不集中塞入 utils。
 - 物理标高、探索层归组和展示变换分开；同高公共接缝共面，平面交叉不等于互通。
 - 地面路网独立显隐；地下占位避让通路，2F 分支和建筑门口不得被栏杆／外壳封住。
-- 原始参考资料不覆盖。直接事实、人工拟合与示意设计分开记录；未确认接口不以最近点补线，来源许可见[来源审计](./source-credits-audit.md)。
+- 原始参考资料不覆盖。直接事实、人工拟合与示意设计分开记录；未确认接口不以最近点补线，来源许可见[来源审计](./data/source-credits-audit.md)。
 - 旧版总图已退役，对照查 Git 历史和独立设施基线；局部改动同步检查设备、开口、围栏、轨道、设施目录和取景。
 
 ## 目录结构
@@ -73,17 +73,22 @@ umeda-h5/
 │   ├── tooling/                  # 开发规范与源码依赖边界
 │   └── fixtures/                 # 共享事实／迁移基线
 ├── scripts/                      # 构建、服务、提取与离线复核
-├── docs/                         # 校准、来源及维护记录
+├── docs/
+│   ├── design/                   # 按区域／车站／公共空间／建筑维护设计依据
+│   ├── development/              # 架构、风格、国际化、验证与文档规范
+│   └── data/                     # 来源、授权与设施迁移审计
 └── references/                   # 分类原始资料及 catalog.json 事实索引
 ```
 
-页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./legacy-retirement.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
+页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./data/facility-migration-audit.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
 
-工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案迁到七个中文领域词库，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./code-style.md)和[国际化规划](./i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
+工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案迁到七个中文领域词库，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
+
+文档索引见 [docs/README](./README.md)。旧方案、旧坐标参数及已完成迁移流水已删除，历史查 Git；仍有价值的事实、边界和待确认项归入现行区域文档，不保留 archive 副本。维护约定见[文档规范](./development/documentation.md)。
 
 ## 剩余细节
 
-建筑白模、JR 屋顶及阪急 1F 通廊校对见 [建筑模型校对](./building-model-calibration.md)，E-ma／Hilton West 地下占位修订与 MARU 曲线轮廓见 [地下装配记录](./stage-three-underground.md)。已落地内容不再列为待实现；外围蓝天大厦仍为可选地标候选。
+建筑白模、JR 屋顶及阪急 1F 通廊校对见 [建筑模型校对](./design/buildings/model-calibration.md)，E-ma／Hilton West 地下占位修订与 MARU 曲线轮廓见 [地下装配记录](./design/public-areas/underground.md)。已落地内容不再列为待实现；外围蓝天大厦仍为可选地标候选。
 
 设施迁移已完成逐项覆盖校对；Grand Front 南侧广场的两处扶梯和宽楼梯已补入公共 B1／1F 板块，设备位置和标高仍为参考拟合。阪急站台采用更明确的浅栗红铺装，线路色带保留。原始资料已分类到 [references](../references/README.md)，核对事实和人工拟合分别维护。
 

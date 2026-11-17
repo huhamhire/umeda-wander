@@ -13,37 +13,39 @@
 
 ## 工作约定
 
+- 文档按 `docs/design/`（区域、车站、公共空间、建筑）、`docs/development/`（开发规范）和 `docs/data/`（来源审计）维护，入口为 `docs/README.md`。当前任务统一写 Roadmap；事实、人工拟合和待核实项分开。已失效方案与迁移流水查 Git，不保留 archive 副本；删除前先转移唯一的有效依据。文档移动同步更新所有链接及维护入口，原始 references 不随文档治理删除。规范见 `docs/development/documentation.md`。
+
 - B1 街区占位可以独立于地上 OSM 实体。E-ma／Hilton West／MARU 使用 `data/geography/underground/basement-outlines.json` 的源图边界，由 `south-diamor/basement-outlines.ts` 适配；原始路径、SHA-256 和绘图对象在 `basement-source.json`。道路配准变化后须运行 `build-basement-outlines.ts`、`build-ground-context.ts` 和阶段三核查。边界接触和核查报告的最短间距均不证明门洞，不可据此补最近点通道。
 
 - 阪急百货 1F 内庭／公共通廊在 `buildings/hankyu-dept/concourse.ts` 独立维护，复用拱门、暖色橱窗和地坪模型；接入 `district-ground`，不依赖归档坐标。外壳按通廊高度裁开，南北挑高同时避让两组 2F 展示标高的占位楼板，东西通廊上层保留。地面关闭时同步隐藏。阪神上部裙楼先合并为单一包络，再承接退台塔楼；`BuildingVolume.surface` 明确材质角色，不以悬空基底推断为塔楼。
 
-- 建筑白模校对见 `docs/building-model-calibration.md`。`data/geography/buildings/plateau-profiles.json` 只含已核对的阪急 LOD2 分层屋面，包版本 2025、选中建筑 surveyYear=2017；阪神／JP 重建体量不能套用旧模型。阪神地面退让与跨道路上部裙楼分开，JP 保持连续塔身。三番街共用站体宿主，不另画 2F 占位；公共站厅外壳裁口由 `station-building-openings.ts` 维护。浅色建筑主题在 `models/building-palette.ts`，地下公共颜色不随线路更改。JR 地理屋顶按独立 `jr-roof.json` 的约 180×100 米及 LOD0／1 包络拟合，斜面仍是示意，旧屋顶参数不混用。
+- 建筑白模校对见 `docs/design/buildings/model-calibration.md`。`data/geography/buildings/plateau-profiles.json` 只含已核对的阪急 LOD2 分层屋面，包版本 2025、选中建筑 surveyYear=2017；阪神／JP 重建体量不能套用旧模型。阪神地面退让与跨道路上部裙楼分开，JP 保持连续塔身。三番街共用站体宿主，不另画 2F 占位；公共站厅外壳裁口由 `station-building-openings.ts` 维护。浅色建筑主题在 `models/building-palette.ts`，地下公共颜色不随线路更改。JR 地理屋顶按独立 `jr-roof.json` 的约 180×100 米及 LOD0／1 包络拟合，斜面仍是示意，旧屋顶参数不混用。
 
-- 地面展示使用 `data/geography/display-context.json`，原始 OSM／地下公共面不裁掉。修改站体、公共网、高架或宿主清单后运行 `node scripts/geography/build-ground-context.ts`，再构建页面。`context-policy.json` 维护外围参照余量；同一源道路从首次进入到最后离开范围之间保留连续走线，同名／同 ref 分段只按原始共用顶点接续，只裁外围端头，不补无来源捷径。无关普通建筑占位剔除，核心站体、地下宿主与连廊目的地保留；维护记录见 `docs/ground-context.md`。
+- 地面展示使用 `data/geography/display-context.json`，原始 OSM／地下公共面不裁掉。修改站体、公共网、高架或宿主清单后运行 `node scripts/geography/build-ground-context.ts`，再构建页面。`context-policy.json` 维护外围参照余量；同一源道路从首次进入到最后离开范围之间保留连续走线，同名／同 ref 分段只按原始共用顶点接续，只裁外围端头，不补无来源捷径。无关普通建筑占位剔除，核心站体、地下宿主与连廊目的地保留；维护记录见 `docs/design/public-areas/ground.md`。
 - 公共二层桥面采用 `elevatedPublicColor` 暖赭色，与浅色商业占位区分；细浅栏杆和既有区域灰化规则保留。`west-decks/inogate.ts` 是独立第四个高架板块，资源为 `data/geography/elevated/inogate.json`；新桥连接 Inogate 西端与 Grand Green 南馆，端点、宽度和标高为参考拟合，不误接 Grand Front 或梅北付费站台。
 
-- 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北／南／西板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源与未定位新桥见 `docs/stage-four-decks.md`。
+- 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北／南／西板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源与未定位新桥见 `docs/design/public-areas/elevated.md`。
 
-- 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/stage-three-underground.md`。
+- 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/design/public-areas/underground.md`。
 
 - 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，阶段三地下公共板块与阶段四主要 2F 连廊已接入，地下门位、局部高差和未定位新桥仍待核对。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
-- 源码风格参考本地 nstarter service-express 模板，规范见 `docs/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
+- 源码风格参考本地 nstarter service-express 模板，规范见 `docs/development/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
 - 注释统一使用英文。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc；关键算法、坐标框架、人工估计和副作用补必要说明，不生成复述代码的模板注释。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 使用已有 TypeScript 解析器检查基本规则，不安装 nstarter／ESLint 依赖。格式整理与行为变更分别校对。
 - CSS 按 `src/styles/index.css`、`foundations/` 和 `components/` 维护，响应式规则放在所属组件中；每条属性独占一行。`scripts/styles.ts` 使用现有 esbuild 合并为 `dist/styles.css`，目前无需 Sass，不把新覆盖不断堆到入口末尾。
-- 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 只分界面、车站、建筑、公共区域、设施、线路、版权七个领域文件；目前只维护中文，不实际翻译日文／英文。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/i18n.md`。
-- 当前源码入口与目录职责见 roadmap 的 tree。旧坐标总图、专属商业模块和旧校准脚本已退役，`deprecated/` 目录已移除；历史对照查 Git `b2a3da6` 与 `docs/legacy-retirement.md`，不恢复第二个运行入口。清理代码须先迁移有价值的回归；仍被现役站模复用的局部数据不按旧文件年龄删除。
+- 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 只分界面、车站、建筑、公共区域、设施、线路、版权七个领域文件；目前只维护中文，不实际翻译日文／英文。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/development/i18n.md`。
+- 当前源码入口与目录职责见 roadmap 的 tree。旧坐标总图、专属商业模块和旧校准脚本已退役，`deprecated/` 目录已移除；历史对照查 Git `b2a3da6` 与 `docs/data/facility-migration-audit.md`，不恢复第二个运行入口。清理代码须先迁移有价值的回归；仍被现役站模复用的局部数据不按旧文件年龄删除。
 - 设施迁移基线固定在 `tests/fixtures/legacy-facilities.json`，检查命令为 `node scripts/geography/audit-facility-migration.ts`；改名设备需登记明确替代关系，不以增加总数抵消遗漏，也不自动覆盖基线。旧测试依赖已清除，源码、脚本及测试均不能重新导入已退役模块。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
 - TypeScript 配置启用严格类型检查；地图实体、楼层、设施和通行图使用明确类型。类型检查与构建分别验证。
 - 修改 `src/` 中的源码，通过构建生成 `dist/`；不要直接维护或提交生成产物。
 - 按 DDD 边界拆分：`src/domain/` 定义地图模型与导航规则；`src/application/` 协调使用场景；`src/infrastructure/` 提供数据来源；`src/presentation/` 实现渲染和界面；`src/utils/` 只放无领域语义的通用工具。领域层不能依赖 Three.js、DOM 或基础设施。
-- 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`district/geographic-stations.ts` 登记并创建地理站模，`compose-station-maps.ts` 纯组装，`district/geographic-map.ts` 为 H5 数据入口。JR 特殊层名适配在 `stations/jr-osaka/index.ts`，不要在总图重复罗列本站数组。旧版登记与总图已移除，对照使用 Git 历史；维护入口见 `docs/station-composition.md`。
+- 每站以领域 `StationMap` 独立交付布局、设施、本站路线及轨道；`district/geographic-stations.ts` 登记并创建地理站模，`compose-station-maps.ts` 纯组装，`district/geographic-map.ts` 为 H5 数据入口。JR 特殊层名适配在 `stations/jr-osaka/index.ts`，不要在总图重复罗列本站数组。旧版登记与总图已移除，对照使用 Git 历史；维护入口见 `docs/development/architecture.md`。
 - 当前地理 H5 使用 `district/geographic-map.ts`。B1 公共面由 `shared-underground.ts` 单独持有，构内图局部前庭经 `public-areas/station-frontages/` 合并，不重复画本站 public 楼板。`StationPublicInterface` 与 `public-interface-bindings.ts` 校验实际门户标高和落脚面，不因绑定而新增跨站路线。设备坡度修正使用 `calibrate-equipment.ts`，固定站厅／夹层端，调整实际站台端，节点与已有设施锚点同步。
 - 测试统一放在根目录 `tests/`，按 stations、public-areas、geography、buildings、navigation、presentation、tooling 领域维护，共享基线放 fixtures；`npm test` 递归收集各领域测试，移动后同步更新引用及文档命令。避免为简单逻辑引入不必要的仓储、工厂或服务层。参数、对象及数组分隔符内侧不填充空行，语义段落之间最多一行空行；模板字符串中的空白按数据保留。
 - 当前设施位置与路线为明确标注的示意数据，不能描述成已核验现场导航。参考图事实、人工推断和样板设计要分别记录。
-- 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录十个兼容转发已删除，调用方直接引用实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/jr-osaka-layout.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
+- 车站入口统一位于 `src/infrastructure/stations/<station-id>/index.ts`，原根目录十个兼容转发已删除，调用方直接引用实际模块。JR 布局数据在 `src/infrastructure/stations/jr-osaka/layout.ts`，来源页码与简化边界见 `docs/design/stations/jr-osaka.md`。中央改札属于地上 1F，M2F 是夹层；梅北地下口为 B1F，地下 21–24 番线为 B2F，不要混为同层。
 - 梅北的北侧 B1F 闸外地下公共通路与西口的 B2F 闸内连接通道分开建模；通过梅北改札前不得将公共通路标成付费通路。
 - 扶梯与电梯使用 `src/presentation/vertical-connection-model.ts`；直梯井道当前宽 3 场景单位，轿厢与门框按井道宽度同步调整，开口共用 `elevatorShaftWidth`；楼板开口由应用层规划、呈现层做真实多边形裁剪，新增设施时同步检查落点与孔洞。改札围栏和闸机共用付费区边界，不要只改颜色或用实体楼板覆盖孔洞。
 - 与站台相连的设施保留 `platformId`，电梯门向、井道与孔洞共用该站台坐标框架。同一付费区边界可有多组闸机，围栏留口需合并计算。
@@ -61,14 +63,14 @@
 - 现役商业轮廓由 `buildings/` 及 `data/geography/` 维护，公共通路由 `public-areas/` 维护；旧商业总图已退役。领域模型为 `CommercialBuilding` / `PublicPassage`，呈现位于对应商业体块/公共通路模型。只画轮廓和外部入口，门户必须落在轮廓边缘；不添加商场内部路线或寻路边。资料来源用 `district` 并附直接链接，不伪造 JR PDF 页码；OSM 原始投影轮廓与展示拟合分开记录。B1 通路不得穿过车站付费区。
 - 地下公共通路不设护栏和立柱；站外高架连桥保留护栏。围墙和桥边护栏按同高公共通路全宽避让，包含 T 形交汇，不仅检查命名入口。
 - 闸外公共通路与公共楼板共用米色语义，地上用 `publicAreaColor`，地下用更深的 `undergroundPublicColor` 以区分页面背景，不使用站台蓝色；运营者付费区主题独立保留。中央口南端 67/68/69 朝南下行到 Crost B1，大丸侧小半层从左右台阶接回中央通道，不能改成中间整幅宽梯，也不能与付费 M2F 混淆。
-- 具体连接优先采用对应构内图；缺少明确依据的候选只记录在 `docs/commercial-connections.md`，不渲染、不补最短捷径。北侧梅北公共通路按 JR 第 6 页绕 LUCUA 1100 北侧。
-- `references/district/station-area-orientation.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/area-map-revision.md`。
+- 具体连接优先采用对应构内图；缺少明确依据的候选只记录在 `docs/design/buildings/README.md`，不渲染、不补最短捷径。北侧梅北公共通路按 JR 第 6 页绕 LUCUA 1100 北侧。
+- `references/district/station-area-orientation.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/design/buildings/README.md`。
 - 阪急 Grand Building 使用独立轮廓，不能合并进百货实体。已核对的 1F 南北/东西公共通廊是商业内部不展开规则的明确例外；`CommercialConcourse` 只表达公共空间，不展开店铺。南北挑高裁孔与东西通廊上方 2F 通道分别处理，造型由 `commercial-concourse-model.ts` 生成，商业裁孔同步避让外墙与压顶。
-- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口按 B1→地面→Deck 分段，B2 东口的连续公共斜行通路裁 B1 开口；坡度不代表实测。现役闸外接驳归公共板块，旧阪神地区连接已退役，不补跨站寻路边。来源边界见 `docs/hanshin-umeda-layout.md`。
+- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口按 B1→地面→Deck 分段，B2 东口的连续公共斜行通路裁 B1 开口；坡度不代表实测。现役闸外接驳归公共板块，旧阪神地区连接已退役，不补跨站寻路边。来源边界见 `docs/design/stations/hanshin-umeda.md`。
 - 北中庭 2/3、47/48 共用 `AtriumVoid` 开放天井，由 `atrium-openings.ts` 裁剪上层；南侧 15/16 斜向接公共区域，再经 50/T 接大丸 2F 前侧。组合地图的 `south-deck` 归 2F 探索，按南侧较低相邻层展示，原 JR 数据保留建筑楼层名称。
 - 地图标签被实际不透明楼板、商业体块或屋顶遮挡时隐藏；真实孔洞保留视线，玻璃与隐藏楼层不遮挡。便利店统一短标签 7-Eleven，设施页“便利店”可分别定位。设施页只保留分类、名称定位和图例，不显示参考图页码及设施说明详情；来源与注释继续保留在数据和文档中。
 - 阪急原图拟合与历史偏移在 `district-placement.ts`，现役定位在 `stations/hankyu-umeda/geographic.ts`；站体、平台、落点、连廊和轨道共用比例，层高不缩放。向南调整时同时检查 JR 东侧本线曲率与道床净距，不能靠把整站向北推远解决比例问题。
-- 站外短段轨道使用独立 `RailApproach` 图，不能加入步行 `RouteEdge`。站台轨道与延伸线共用 `platformRail` 计算端点；并线节点共用切向，公共尾段只画一次。地理轨道在 `geography/runtime-rails.ts`，JR 走廊约束在 `stations/jr-osaka/rail-corridors.ts`；旧 `rail-approaches.ts` 已归档，渲染在 `rail-approach-model.ts`，取景包络包含尾段与标记。
+- 站外短段轨道使用独立 `RailApproach` 图，不能加入步行 `RouteEdge`。站台轨道与延伸线共用 `platformRail` 计算端点；并线节点共用切向，公共尾段只画一次。地理轨道在 `geography/runtime-rails.ts`，JR 走廊约束在 `stations/jr-osaka/rail-corridors.ts`；旧 `rail-approaches.ts` 已退役，历史查 Git，渲染在 `rail-approach-model.ts`，取景包络包含尾段与标记。
 - 地理投影锚点与示意展示偏移分开记录；阪急沿本站北向增加展示净距，M16 向地理东侧调整以避开示意 JR 站体，不得将展示偏移解释为测量位置。JR–M16 下端须从 Metro 的 JR 闸外接口推导，随站体位置同步；中间层不承担直接到 JR 的闸内换乘。调整位置或轨道尾段时运行跨站道床净距检查。梅北 21–24 番线两端短段继承 B2F 斜向，不推断地下配线。
 - 阪急三线横向顺序按地图保持东侧京都线、西侧神户线；局部参考布局用 `acrossSign: -1` 映射，JR 接口仍留在西侧。三组站台出站后各汇成独立双线并行北行，不能直接画成梅田站口三向远距离分叉。
 - 阪急三组轨道末端只标京都线、宝冢线、神户线，不重复标注共同的下一站。
@@ -85,9 +87,9 @@
 
 ## 验证与交付
 
-- 来源展示集中于 `src/infrastructure/source-credits.ts`。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。版权弹窗使用原生 dialog，入口与可见 OSM 署名合并为文本链接，焦点在打开／关闭时正确转移；详细核查见 `docs/source-credits-audit.md`。
+- 来源展示集中于 `src/infrastructure/source-credits.ts`。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。版权弹窗使用原生 dialog，入口与可见 OSM 署名合并为文本链接，焦点在打开／关闭时正确转移；详细核查见 `docs/data/source-credits-audit.md`。
 
-- 地下公共空间采用面状布局，与二层天桥区分：现役合并在 `application/shared-underground.ts`；旧地区示例已退役；`application/underground-space.ts` 的纯几何能力保留独立夹具回归。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/underground-space-plan.md`。
+- 地下公共空间采用面状布局，与二层天桥区分：现役合并在 `application/shared-underground.ts`；旧地区示例已退役；`application/underground-space.ts` 的纯几何能力保留独立夹具回归。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/design/public-areas/underground.md`。
 
 - 按实际改动运行相关检查。尚无可用测试或构建命令时，明确说明已检查的内容和未验证的部分。
 - 应用界面建立后，界面改动需检查移动端布局、资源加载及基本交互。
@@ -106,13 +108,13 @@
 - Grand Front 南北馆及 Tower A/B/C 使用独立 OSM 轮廓，和 Yodobashi 西侧道路相邻；JR 北侧中庭连廊在共用分支处分向南馆与 Yodobashi，南北馆之间保留已确认的 2F 公共贯通关系。
 - `CommercialBuilding.volumes` 表示压缩高度的塔楼外形，`podiumHeight` 表示按完整商业轮廓构建的裙楼高度；塔楼落在裙楼屋面，二层公共连接从裙楼下部留空，均不是实测楼高；`commercial-massing-model.ts` 负责造型，总览显示、选层隐藏上部体量，完整取景包络保持稳定。
 - 阪急百货与大丸的外观同样只在总览显示，`department-massing-details.ts` 绘制层带、窗格及大丸南侧“大阪駅”立面标识；大丸上方长条酒店体量的两处屋顶内庭用 `volumes.courtyards` 真正裁空。上部轮廓与压缩高度参考用户照片示意，不新增可通行楼层。
-- 阪神百货和 Twin Towers South 是同一综合体；现役 `buildings/hanshin-dept/` 独立维护 L 形裙楼及东侧办公塔楼，原始 OSM 轮廓保留在地理快照。现役公共板块维护 B1/1F 公共接入，旧商业及连接模块已退役，二层连桥须落到百货墙面；外观细节在 `hanshin-massing-details.ts`，同样服从“显示建筑轮廓”开关与选层隐藏规则。来源与示意尺寸见 `docs/hanshin-commercial-building.md`。
-- JP Tower／KITTE 是旧大阪中央邮便局地块的现有综合体，建筑位于 `buildings/jp-tower/`，现役接入归公共板块，旧 JP 总图与连接已退役；下沉广场连接 B1/1F/2F，地下经 Garden Avenue 接西梅田闸外。JR 南侧二层弧形退避在 `stations/jr-osaka/south-forecourt.ts`，真实裁空须同时作用于商业楼板。新增目录 `references/connections/` 用于详细连接核对，Inogate 西端新连桥不能误接成 LUCUA 连桥或地下站台；范围见 `docs/jp-tower-and-walkway-review.md`。
+- 阪神百货和 Twin Towers South 是同一综合体；现役 `buildings/hanshin-dept/` 独立维护 L 形裙楼及东侧办公塔楼，原始 OSM 轮廓保留在地理快照。现役公共板块维护 B1/1F 公共接入，旧商业及连接模块已退役，二层连桥须落到百货墙面；外观细节在 `hanshin-massing-details.ts`，同样服从“显示建筑轮廓”开关与选层隐藏规则。来源与示意尺寸见 `docs/design/buildings/hanshin-dept.md`。
+- JP Tower／KITTE 是旧大阪中央邮便局地块的现有综合体，建筑位于 `buildings/jp-tower/`，现役接入归公共板块，旧 JP 总图与连接已退役；下沉广场连接 B1/1F/2F，地下经 Garden Avenue 接西梅田闸外。JR 南侧二层弧形退避在 `stations/jr-osaka/south-forecourt.ts`，真实裁空须同时作用于商业楼板。新增目录 `references/connections/` 用于详细连接核对，Inogate 西端新连桥不能误接成 LUCUA 连桥或地下站台；范围见 `docs/design/buildings/jp-tower.md`。
 - 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部 UMEDA 品牌与底部版权。
 - 梅北北端延伸向 Grand Front 西侧道路地下收转，不能穿入南北馆轮廓。修改站台长度时同步检查延伸线和商业体相对位置。
 - 南侧阪神／西梅田／东梅田／北新地的相对布局使用 `projectSouthReference` 共用步行图校准，以阪神为展示锚点；保留各站原始地理锚点，不恢复彼此独立的南移补丁。南侧建筑占位只画 B1 区域轮廓，`FloorArea.labelStyle: floor` 将文字平贴楼板，不生成悬浮标签。
 - 西梅田北端是尽头，仅南端延伸；北新地东西两端延伸，JR 东西线在四桥线下方通过。北新地站台物理 y=-24、stackIndex=-2，仍归 B2 探索；8 单位高差是展示值，不是实测净空。公共地下网络不加入跨站 `RouteEdge`。
-- JR 北侧中庭 B1 公区与 LUCUA、梅北北侧公共通路及 M16 北改札外分别衔接，不把它延伸成到南侧 Crost 的未核验捷径。站台比例及待确认数据见 `docs/platform-proportions.md`。
+- JR 北侧中庭 B1 公区与 LUCUA、梅北北侧公共通路及 M16 北改札外分别衔接，不把它延伸成到南侧 Crost 的未核验捷径。站台比例及待确认数据见 `docs/design/stations/README.md`。
 
 - Yodobashi 与阪急 RESPIRE 酒店作为同一商业综合体建模；酒店塔楼使用独立 OSM 部件，不能与新阪急酒店混淆。二层 `perimeterGallery` 外圈是公共回廊，内层轮廓才是裙楼墙体，原有连桥接外环，墙体与竖向立面不得封住回廊。
 

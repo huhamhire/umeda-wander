@@ -46,7 +46,7 @@ python scripts/geography/extract-plateau-buildings.py
 node scripts/geography/build-building-profiles.ts
 ```
 
-下载需要网络；原始发布版本、测量年代及适用限制见 `docs/building-model-calibration.md`，缓存中的公开文件不代表其几何可用于所有现状建筑。
+下载需要网络；原始发布版本、测量年代及适用限制见 `docs/design/buildings/model-calibration.md`，缓存中的公开文件不代表其几何可用于所有现状建筑。
 
 ## 脚本保留核对
 
