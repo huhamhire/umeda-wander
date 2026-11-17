@@ -1,6 +1,6 @@
 # 梅田地区方位图校对与阪急公共通廊
 
-本轮依据用户补充的 `references/Umeda-Area-Map.webp` 和 1F 通廊照片，校对方位关系。原图署名 OsakaStation.com，未注明日期，图中仍有 Osaka North Redevelopment Area 等旧标注；它不是测量底图，也不用于推断现有建筑是否存在、具体营业情况或全部地下出入口。原参考文件保持不变。
+本轮依据用户补充的 `references/district/station-area-orientation.webp` 和 1F 通廊照片，校对方位关系。原图署名 OsakaStation.com，未注明日期，图中仍有 Osaka North Redevelopment Area 等旧标注；它不是测量底图，也不用于推断现有建筑是否存在、具体营业情况或全部地下出入口。原参考文件保持不变。
 
 ## 御堂筋线位置
 

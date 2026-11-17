@@ -4,7 +4,7 @@
 
 ## 维护入口
 
-- `src/infrastructure/stations/<station-id>/index.ts`：七站独立入口，登记仍在 `station-maps.ts`。
+- `src/infrastructure/stations/<station-id>/index.ts`：七站独立入口，现役由 `district/geographic-stations.ts` 登记。
 - JR 的 `layout.ts`、`upper-links.ts`、`south-forecourt.ts`：原有布局、上层连接及南侧前庭。原根目录文件只作兼容转发，避免现有公共区和测试引用失效。
 - `src/infrastructure/stations/{jr-osaka,hankyu-umeda,metro-umeda}/calibration.ts`：试点各自的校准依据和待核对项。
 - `src/infrastructure/geography/`：地理坐标框架、OSM 快照适配；不包含具体车站的内部设施。
@@ -15,15 +15,7 @@
 
 ## 本批对照与发现
 
-运行：
-
-```powershell
-node scripts/geography/render-plan.ts
-node scripts/geography/render-station-calibration.ts
-magick build/geography/station-calibration.svg build/geography/station-calibration.png
-```
-
-输出 `station-calibration.svg` 和 `station-calibration.json`。蓝色为 OSM 建筑面，M16 单独标记为近似留位；红虚线为旧场景楼板投回地理基底。保留旧偏移以显示误差，而不是将其偷偷消除。
+本节为首轮校准的历史发现。旧 `render-station-calibration.ts` 与旧坐标入口已退役；当前对照使用 `node scripts/geography/render-station-interiors.ts`，地下对照加 `--underground`。历史投回图可查 Git，不保留第二套运行时。
 
 阪急旧模型向道路东侧超出建筑边界，JR 的站厅及周边地面也存在明显越界。需要分别校准站台端点、站厅与公共接口，不能用建筑包络直接等比压缩全部模型。JR OSM 站房面不是全部站台；梅北必须单独处理。M16 只有规划留位，尚缺平台端点依据，不能把留位宽度当成岛式站台宽度。
 
@@ -147,7 +139,7 @@ npm.cmd run build
 - 大屋顶北边相对 26 m 基准提高到 48 m，与现有北侧零售裙楼顶对齐，南边约 34 m，继续保持北高南低。
 - JP Tower 塔楼由外围占地的裁剪形改为内部矩形板楼，避免把地块尖角拉成塔楼；范围仍为参考形体估计。大丸酒店沿站房轴向布置，补两处屋顶庭院及南立面“大阪駅 / OSAKA STATION”标识。阪急百货塔楼采用南侧凸形切角轮廓，Grand Building 保持独立。主要体量已恢复，Yodobashi 外环回廊与细部立面继续后续校准。
 
-离线建筑形体：`node scripts/geography/render-building-details.ts` → `build/geography/building-details.svg`。图中每座建筑独立缩放，仅核对形体；不替代地区总览的比例验收。
+离线建筑形体：`node scripts/geography/render-building-details.ts` → `build/geography/building-details.png`。图中每座建筑独立缩放，仅核对形体；不替代地区总览的比例验收。转换中间图在运行结束后自动清理。
 
 ### 轨道过渡修正与西梅田位置复核
 

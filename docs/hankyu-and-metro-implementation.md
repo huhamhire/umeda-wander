@@ -6,7 +6,7 @@
 
 ## 资料与范围
 
-阪急以本地 `references/umeda.svg` 为依据。重新将 SVG 中累计的 CSS 规则展开到临时预览，检查了 1F、2F、3F 的图形与标签；原 SVG 未改动。御堂筋线以 `references/M16_梅田_構内図_1.pdf` 为依据，重新渲染检查其单页展开图。
+阪急以本地 `references/stations/hankyu-umeda/station-guide.svg` 为依据。重新将 SVG 中累计的 CSS 规则展开到临时预览，检查了 1F、2F、3F 的图形与标签；原 SVG 未改动。御堂筋线以 `references/stations/metro-umeda/station-guide.pdf` 为依据，重新渲染检查其单页展开图。
 
 | 站点 | 当前首版内容 | 未覆盖 |
 | --- | --- | --- |

@@ -56,6 +56,16 @@ export const sourceCredits: SourceCredits = {
     { name: '阪神大阪梅田站布局整理', use: 'B1／B2 平面、东西出口、两段式主阶梯及南出口竖向连接几何。', links: [hanshin], attribution: '资料发布者：阪神電気鉄道株式会社', status: pending },
     { name: 'Osaka Metro 三站布局整理', use: '御堂筋线梅田、谷町线东梅田、四桥线西梅田的站厅、站台及出入口几何。', links: metro, attribution: '资料发布者：大阪市高速電気軌道株式会社（Osaka Metro）', status: pending },
     { name: '地区步行图与连廊资料整理', use: '异形地下公共面及孔洞、第一生命互通、M16 改札外接驳、建筑地下占位裁剪，以及 E-ma／Hilton West／MARU 的源图街区填充边界；地面展示范围筛选、2F 公共桥面、开放前庭、公共设备、建筑门口裁口、JP Tower 接入与 Inogate—Grand Green 2F 连接几何。PDF 街区轮廓及 OSM／PDF 混合裁剪结果不包含在纯 OSM 下载中。', links: [city, cityRoute, umedaMap, jp, umekita], attribution: '资料发布者包括大阪市、日本邮便、UMEDA CONNECT、JR 西日本；周边图注明以大阪地下街 Whity 导览数据为基础，原图及派生用途授权待核实', status: pending },
+    {
+      name: 'Grand Front 梅北广场楼层图',
+      use: 'JR 侧下沉广场 1F–B1 的两处扶梯、宽楼梯及公共落台相对位置；尺寸和标高为拟合，不包括商铺内部布局。',
+      links: [
+        link('梅北广场 1F 图', 'https://www.gfo-sc.jp/information/floor/umekita/1f/'),
+        link('梅北广场 B1 图', 'https://www.gfo-sc.jp/information/floor/umekita/b1f/'),
+      ],
+      attribution: '资料发布者：GRAND FRONT OSAKA SHOPS & RESTAURANTS；仅整理设备关系，未将原图作为网页贴图发布',
+      status: pending,
+    },
     { name: '程序化建筑外观与设施模型', use: '阪神跨道路裙楼／办公塔楼、JP Tower 连续主体与冠部、屋顶、扶梯、电梯井、围栏及 Canvas 标牌；PLATEAU 派生体量单列。没有引入照片贴图或外部图标文件。', links: [
         link('阪神：日本设计项目说明', 'https://www.nihonsekkei.co.jp/projects/18825/'),
         link('JP Tower：业主建筑介绍', 'https://www.jp-re.japanpost.jp/properties/jptower-osaka.html'),
@@ -66,7 +76,7 @@ export const sourceCredits: SourceCredits = {
   references: [
     { name: '铁路与地铁构内图', use: '核对七站楼层、出入口、番线与竖向设施连接；本地文件与线上版本可能不同。', links: [jr, kitashinchi, hankyu, hanshin, ...metro], attribution: 'JR 西日本、阪急电铁、阪神电铁、Osaka Metro' },
     { name: '大阪市步行与无障碍资料', use: '核对站外地下路径、建筑接入及楼层转换。', links: [city, cityRoute], attribution: '大阪市' },
-    { name: 'JP Tower 与阪急公共通廊资料', use: '核对 JP Tower 的 2F 连桥、B1 Garden Avenue 及阪急百货 1F 公共通廊。', links: [jp, link('阪急公共通廊说明', 'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf')], attribution: '日本邮便等联合发布者、阪急电铁' },
+    { name: 'JP Tower 与阪急公共通廊资料', use: '核对 JP Tower 的 2F 连桥、B1 Garden Avenue、下沉广场 B1–1F 楼梯与 B1–2F 直梯，以及阪急百货 1F 公共通廊。', links: [jp, link('阪急公共通廊说明', 'https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf')], attribution: '日本邮便等联合发布者、阪急电铁' },
     { name: '商业设施与建筑介绍', use: '核对大丸、LUCUA、Grand Front 的外部接入，以及阪神大楼和 RESPIRE 酒店外部形态。', links: [
         link('大丸梅田店交通', 'https://www.daimaru.co.jp/umedamise/access.html'), link('LUCUA 交通', 'https://www.lucua.jp/access/'), link('Grand Front 交通', 'https://www.gfo-ad.jp/access.html'),
         link('日本设计：大阪梅田 Twin Towers South', 'https://www.nihonsekkei.co.jp/projects/18825/'), link('阪急 RESPIRE 大阪', 'https://www.hankyu-hotel.com/hotel/respire/osaka/info/')

@@ -1,4 +1,4 @@
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {existsSync, mkdirSync, unlinkSync, writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {build} from 'esbuild';
@@ -11,10 +11,26 @@ import {geographicBuildings} from '../../src/infrastructure/buildings/index.ts';
 import {buildGeographicBuilding} from '../../src/presentation/models/geographic-building-model.ts';
 import {buildGeographicContext} from '../../src/presentation/geographic-context.ts';
 
-mkdirSync('build/geography',{recursive:true});
-await build({entryPoints:['src/presentation/map-scene.ts'],bundle:true,platform:'node',format:'esm',packages:'external',outfile:'build/geography/profile-map-scene.mjs'});
-const {MapScene}=await import(pathToFileURL(resolve('build/geography/profile-map-scene.mjs')).href);
-const start=performance.now(),scene=Object.create(MapScene.prototype);
+mkdirSync('build/geography', {recursive: true});
+const bundle = 'build/geography/profile-map-scene.mjs';
+let SceneConstructor: typeof import('../../src/presentation/map-scene.ts').MapScene;
+try {
+  await build({
+    entryPoints: ['src/presentation/map-scene.ts'],
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    packages: 'external',
+    outfile: bundle,
+  });
+  ({MapScene: SceneConstructor} = await import(pathToFileURL(resolve(bundle)).href));
+} finally {
+  if (existsSync(bundle)) {
+    unlinkSync(bundle);
+  }
+}
+const start = performance.now();
+const scene = Object.create(SceneConstructor.prototype);
 const openings=[...planFloorOpenings(layout.connections,levels,layout.platforms),...planAtriumOpenings(layout.atria??[])];
 Object.assign(scene,{layout,levels,facilities,openings,gateBoundaries:planGateBoundaries(facilities,layout.areas),
  scene:new T.Scene(),base:new T.Group(),roof:new T.Group(),groups:new Map(),materials:new Map(),

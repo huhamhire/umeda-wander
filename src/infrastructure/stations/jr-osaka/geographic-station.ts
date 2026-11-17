@@ -11,7 +11,12 @@ export function createGeographicJr(){
   applySouthEntrance(ground,southBuilding.entrance!);
   const west=westWalkway(ground,underground);
   const jr={...ground,levels:[...ground.levels,...underground.levels],
-    facilities:[...ground.facilities,...underground.facilities],nodes:[...new Map([...ground.nodes,...underground.nodes,...west.nodes].map(n=>[n.id,n])).values()],
+    facilities: [
+      ...ground.facilities.filter(f => !west.facilities.some(p => p.id === f.id)),
+      ...underground.facilities,
+      ...west.facilities,
+    ],
+    nodes:[...new Map([...ground.nodes,...underground.nodes,...west.nodes].map(n=>[n.id,n])).values()],
     edges:[...ground.edges,...underground.edges],layout:{...ground.layout,
       platforms:[...ground.layout.platforms,...underground.layout.platforms],
       areas:[...ground.layout.areas,...underground.layout.areas,...west.areas],

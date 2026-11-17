@@ -39,7 +39,7 @@
 
 ## 来源与可重建结果
 
-- `references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf` p1 右图：高架系统、商业接入及公共直梯关系。文件名年份不证明发布版本。
+- `references/district/elevated-walkways-2026.pdf` p1 右图：高架系统、商业接入及公共直梯关系。文件名年份不证明发布版本。
 - `osaka-station-city-2f.png`、`osaka-station-city-3f.png`，以及 JR 构内图 p2–5：北中庭、南侧前庭、50/T 与不同去向的设备。
 - `jr-west-umekita-decks.pdf` p1／4：梅北步道及 Inogate 新桥的不同目标。
 - 仓库 OSM 经地面统一原点投影；只摘取已登记的高架步行线，不重新采集在线数据。
@@ -68,5 +68,7 @@ OSM 原始轴线及估计宽度随 OSM 下载提供；公共平台、建筑裁�
 Inogate 新桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-decks` 板块。JR 发布资料第 1 页位置图、第 4 页两端及楼层说明，与两份本地 2F 图、OSM Inogate／Grand Green 南馆 Gate Tower 外围轮廓联合拟合：从 JR 北侧 2F 公共面接 Inogate 前沿，再从西端朝西北接南馆。它与更北面的 LUCUA—Green Place 连桥保持独立，不误接 Grand Front 或梅北付费站台。
 
 两端坐标、7 m 桥宽及北侧统一展示标高仍是参考拟合，不是实测门位；两处宿主只显示 2F 平面占位，无商场内部路线、上部建筑或新增跨站 RouteEdge。公共面避让占位、孔洞、同高楼板和付费区，已检查 JR 至目标处的连续公共分量；入口栏杆按声明的门户留口。新桥的细部门口和实际标高继续纳入人工复核。
+
+旧版设施清单复核另补回 `umeda-deck-north-stairs`，依据 JR 南侧／东侧 1F 图，将外围步道桥北端阶梯拟合到 `bridge-north` 的轴线；地面端使用既有 JR `south-public`，桥上端参与公共桥面合并和真实开口。现有公共连廊设备为 10 组。JP 的 B1 下段由地下板块持有，和 `public-jp-deck-lift` 连续；74 号南侧东扶梯由本站新入口组替代，不重复建模。
 
 本批验证：239 项测试、类型检查、构建与差异检查通过。新增检查覆盖 Inogate 至 JR／目标公共分量、宿主避让、地面覆盖范围、道路中段和同名分段接续、真实孔洞。已查看更新后的西侧及地面范围离线图；未操作真实浏览器或手机。

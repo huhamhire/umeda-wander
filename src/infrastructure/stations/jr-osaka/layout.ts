@@ -3,7 +3,7 @@ import { undergroundRotationRad, undergroundSketchCorrectionRad } from '../../st
 import { refineUpperLevelLinks } from './upper-links.ts';
 import type { Evidence, Facility, FloorArea, Level, Platform, RouteNode, RouteEdge, StationLayout, VerticalConnection } from '../../../domain/map/model.ts';
 
-// Source: references/station_osaka.pdf, current as of 2026-01-14.
+// Source: references/stations/jr-osaka/station-guide.pdf, current as of 2026-01-14.
 // Level/name/diagram references are checked; all X/Z and heights remain schematic.
 const source = (pages: number[], detail: string): Evidence => ({ pages, detail });
 export const levels: Level[] = [

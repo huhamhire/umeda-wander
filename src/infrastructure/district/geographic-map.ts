@@ -16,6 +16,8 @@ import {completeFacilityDirectory} from '../facility-directory.ts';
 import plan from '../../../data/geography/runtime-plan.json' with {type:'json'};
 import {createElevatedBlocks} from '../public-areas/elevated-blocks.ts';
 import {createDeckAccess} from '../public-areas/deck-access.ts';
+import {createJpBasementAccess} from '../public-areas/south-diamor/jp-access.ts';
+import {createGrandFrontPlazaAccess} from '../public-areas/north-atrium/grand-front-plaza-access.ts';
 import {elevatedLevels,elevatedWidthEstimates} from '../public-areas/elevated-source.ts';
 import {assemblePublicDecks} from '../../application/public-deck-assembly.ts';
 import {deckBuildingOpenings,equipmentBuildingOpenings} from '../../application/deck-interface-bindings.ts';
@@ -33,7 +35,14 @@ import {
 const stationMaps=createGeographicStations();
 export const publicInterfaces=stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages=stationFrontages(stationMaps);
-export const publicAccess=createNorthPublicAccess(publicInterfaces);
+export const deckAccess = createDeckAccess();
+const northAccess = createNorthPublicAccess(publicInterfaces);
+export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
+export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
+export const publicAccess = {
+  connections: [...northAccess.connections, ...jpAccess.connections, ...grandFrontPlazaAccess.connections],
+  areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas],
+};
 const patchFloors=undergroundPatches.map(p=>({id:p.id,level:'district-underground' as const,name:p.name,kind:'public' as const,
  ...p.region,blockId:p.blockId,evidence:p.evidence,label:false}));
 const shared=assembleSharedUnderground(stationMaps,plan.underground as MultiPolygon,[...publicFrontages,...patchFloors,...publicAccess.areas.filter(a=>a.level==='district-underground')]);
@@ -42,7 +51,6 @@ export const undergroundPublicAreas=undergroundBlocks.flatMap(b=>b.areas);
 export const basements=buildBasementOccupancies(basementOccupancies,undergroundPublicAreas,
  shared.stations.flatMap(s=>s.layout.areas.filter(a=>a.kind!=='public'&&s.levels.find(l=>l.id===a.level)?.y===-8)));
 export const elevated=createElevatedBlocks(shared.stations);
-export const deckAccess=createDeckAccess();
 const assemblyLevels=[...shared.stations.flatMap(s=>s.levels),...elevatedLevels,publicGroundLevel];
 // Equipment pads join their block before union; a floor is never drawn twice at a junction.
 for(const b of elevated.blocks)b.regions.push(...deckAccess.areas.filter(a=>a.level===b.level&&a.blockId===b.id));

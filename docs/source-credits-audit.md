@@ -19,14 +19,14 @@
 
 | 原始资料路径 | 在用结果与用途 | 待核实事项 |
 | --- | --- | --- |
-| `references/station_osaka.pdf`、`references/北新地.pdf` | `jr-osaka-map.ts`、`jr-osaka-upper-links.ts`、`kitashinchi-map.ts`：楼板、设备与层间关系 | JR 构内图的几何整理、改编及公开使用依据 |
-| `references/umeda.svg` | `stations/hankyu-umeda/index.ts`：阪急站台、站厅、设备布局 | SVG 的原发布页、版本与改编授权；在线官方英文 PDF 仅作补充，不假装是该 SVG 的原文件 |
-| `references/hanshin-umeda.pdf` | `stations/hanshin-umeda/index.ts`：阪神 B1/B2 与出口竖向连接 | 阪神构内图适用于本用途的许可／授权 |
-| `references/M16_梅田_構内図_1.pdf`、`T20_東梅田_構内図.pdf`、`Y11_西梅田_構内図.pdf` | `stations/metro-umeda/index.ts`、`stations/higashi-umeda/index.ts`、`stations/nishi-umeda/index.ts`：三站构内几何 | Osaka Metro 图表的整理改编依据 |
-| `references/梅田周边地区通道.pdf`、`references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf` | `west-district-links.ts`、`south-walkway-plan.ts`、`southern-underground.ts`：DIAMOR、建筑占位、第一生命互通 | 周边图已识别为 UMEDA CONNECT 2024-02 系列，并找到发布方站点的同系列繁体版；本地简体文件是否为同一版、底层 Whity 图数据的改编条款仍需核实，不能套用大阪市其他资料的许可 |
-| `references/Umeda Walkway Maps/osaka-station-city-2f.png`、`osaka-station-city-3f.png`、`osaka-station-city-map-legend.png` | `jr-south-forecourt.ts` 与大丸前庭、竖向连接整理 | 原图发布地址、截图或图层的改编许可 |
-| `references/Umeda Walkway Maps/jr-west-umekita-decks.pdf`、`grand-green-osaka-south-2f.png`、`jambase-2f-deck-route.jpg`、`jambase-access-overview.png` | 北侧连桥关系核对；Grand Green 目标区域未全部建模 | 各文件的原发布地址与后续几何使用依据，不能从目录名推定共同许可 |
-| `references/Umeda-Area-Map.webp` | 地铁相对位置、阪急街区与外围轮廓校准 | 原发布页、作者、允许改编的依据 |
+| `references/stations/jr-osaka/station-guide.pdf`、`references/stations/kitashinchi/station-guide.pdf` | `jr-osaka-map.ts`、`jr-osaka-upper-links.ts`、`kitashinchi-map.ts`：楼板、设备与层间关系 | JR 构内图的几何整理、改编及公开使用依据 |
+| `references/stations/hankyu-umeda/station-guide.svg` | `stations/hankyu-umeda/index.ts`：阪急站台、站厅、设备布局 | SVG 的原发布页、版本与改编授权；在线官方英文 PDF 仅作补充，不假装是该 SVG 的原文件 |
+| `references/stations/hanshin-umeda/station-guide.pdf` | `stations/hanshin-umeda/index.ts`：阪神 B1/B2 与出口竖向连接 | 阪神构内图适用于本用途的许可／授权 |
+| `references/stations/metro-umeda/station-guide.pdf`、`T20_東梅田_構内図.pdf`、`Y11_西梅田_構内図.pdf` | `stations/metro-umeda/index.ts`、`stations/higashi-umeda/index.ts`、`stations/nishi-umeda/index.ts`：三站构内几何 | Osaka Metro 图表的整理改编依据 |
+| `references/district/underground-walkway-map.pdf`、`references/district/elevated-walkways-2026.pdf` | `west-district-links.ts`、`south-walkway-plan.ts`、`southern-underground.ts`：DIAMOR、建筑占位、第一生命互通 | 周边图已识别为 UMEDA CONNECT 2024-02 系列，并找到发布方站点的同系列繁体版；本地简体文件是否为同一版、底层 Whity 图数据的改编条款仍需核实，不能套用大阪市其他资料的许可 |
+| `references/connections/osaka-station-city/2f-map.png`、`osaka-station-city-3f.png`、`osaka-station-city-map-legend.png` | `jr-south-forecourt.ts` 与大丸前庭、竖向连接整理 | 原图发布地址、截图或图层的改编许可 |
+| `references/connections/grand-green-osaka/jr-umekita-decks.pdf`、`grand-green-osaka-south-2f.png`、`jambase-2f-deck-route.jpg`、`jambase-access-overview.png` | 北侧连桥关系核对；Grand Green 目标区域未全部建模 | 各文件的原发布地址与后续几何使用依据，不能从目录名推定共同许可 |
+| `references/district/station-area-orientation.webp` | 地铁相对位置、阪急街区与外围轮廓校准 | 原发布页、作者、允许改编的依据 |
 | 会话上传的 Google 地图／卫星图及建筑外景截图（没有稳定仓库原文件路径） | `commercial-district.ts`、建筑外观呈现模块及连廊显示拟合 | 截图原始出处、摄影者和允许派生使用的授权；没有发布照片贴图或宣称获得 Google 授权 |
 | 日本邮便 JP Tower 连桥 PDF、阪急通廊说明、日本设计／设施官网图文 | `jp-tower-links.ts`、`hanshin-commercial-building.ts`、建筑造型与外部通廊整理 | 发布页已核对；仍未确认适用于本项目改编的明确授权 |
 
@@ -48,7 +48,11 @@
 
 ## PLATEAU 建筑补充
 
-地下街区占位另有 `data/geography/underground/basement-source.json`／`basement-outlines.json`，分别保存 E-ma、Hilton West、MARU 的 PDF 原始边界及投影结果，用于 H5 B1 占位填充。来源为 `references/梅田周边地区通道.pdf`，哈希及绘图对象可追溯；几何整理、改编和公开使用授权仍待核实。该部分不属于 OSM 或 PLATEAU 许可，不包含在纯 OSM 数据下载中。
+地下街区占位另有 `data/geography/underground/basement-source.json`／`basement-outlines.json`，分别保存 E-ma、Hilton West、MARU 的 PDF 原始边界及投影结果，用于 H5 B1 占位填充。来源为 `references/district/underground-walkway-map.pdf`，哈希及绘图对象可追溯；几何整理、改编和公开使用授权仍待核实。该部分不属于 OSM 或 PLATEAU 许可，不包含在纯 OSM 数据下载中。
+
+设施迁移校对恢复 `public-areas/south-diamor/jp-access.ts`：日本邮便连桥说明第 2 页直接确认下沉广场 B1–1F 外部阶梯及 B1–2F 电梯；`deck-access.ts` 的步道桥北端楼梯依据 JR 南侧 1F 图。仅核对了存在性及层间关系，位置、尺寸为人工拟合；仍适用原有改编／公开使用授权待确认状态，不新增许可推断。已核对的原始文件归档到 `references/commercial/`，未作为页面图片发布。
+
+Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽楼梯的拓扑及方位核对，单列在运行时数据与素材来源中；几何改编及公开使用授权待确认。原图保存在 `references/commercial/grand-front/`。全部本地资料按车站、地区、接驳及商业体分类，稳定 ID、原名、SHA-256、核对用途及待确认事项集中于 `references/catalog.json`；文件来源可追溯与获得授权是两个独立事项。
 
 阪急 1F 公共通廊现役几何在 `src/infrastructure/buildings/hankyu-dept/concourse.ts`，拱门及橱窗程序模型在 `src/presentation/commercial-concourse-model.ts`；依据官方通廊说明和既有用户照片拟合，原始素材未嵌入页面。已单列数据条目，几何改编、外观参考及公开使用授权仍待核实，不能归入 PLATEAU 或 OSM 的许可。
 

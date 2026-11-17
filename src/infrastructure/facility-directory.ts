@@ -10,6 +10,7 @@ export function completeFacilityDirectory(existing:Facility[],connections:Vertic
     if(id.startsWith('public-north'))return '北中庭';
     if(id.startsWith('public-umekita'))return '梅北闸外';
     if(id.startsWith('public-jp'))return 'JP Tower 连廊';
+    if(id.startsWith('grand-front-plaza'))return 'Grand Front 南侧下沉广场';
     if(id.startsWith('public-south'))return '南侧步道桥';
     if(id.startsWith('jp-garden'))return 'JP Tower 下沉广场';
     if(id.startsWith('district-jr-metro'))return 'JR—御堂筋线通路';

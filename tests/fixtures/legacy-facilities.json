@@ -1,0 +1,5521 @@
+{
+  "provenance": {
+    "commit": "b2a3da6",
+    "date": "2026-11-17",
+    "note": "Frozen inventory of the deprecated composed map, including locally shared station modules at this revision. Coordinates are intentionally excluded. Renamed public equipment is checked by explicit migration mappings.",
+    "directoryCount": 476
+  },
+  "stations": [
+    {
+      "id": "jr-osaka",
+      "facilities": [
+        {
+          "id": "west-gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-001"
+        },
+        {
+          "id": "umekita-gate",
+          "kind": "gate",
+          "level": "underground-hall",
+          "code": "JR-002"
+        },
+        {
+          "id": "umekita-platform",
+          "kind": "entrance",
+          "level": "underground-platform",
+          "code": "JR-003"
+        },
+        {
+          "id": "umekita-link",
+          "kind": "entrance",
+          "level": "underground-platform",
+          "code": "JR-004"
+        },
+        {
+          "id": "entry",
+          "kind": "entrance",
+          "level": "concourse",
+          "code": "JR-005"
+        },
+        {
+          "id": "gate-central-north",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-006"
+        },
+        {
+          "id": "gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-007"
+        },
+        {
+          "id": "sakurabashi-gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-008"
+        },
+        {
+          "id": "eki-gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-009"
+        },
+        {
+          "id": "midosuji-gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-010"
+        },
+        {
+          "id": "south-gate",
+          "kind": "gate",
+          "level": "concourse",
+          "code": "JR-011"
+        },
+        {
+          "id": "machines-central",
+          "kind": "ticket-machine",
+          "level": "concourse",
+          "code": "JR-012"
+        },
+        {
+          "id": "machines-sakura",
+          "kind": "ticket-machine",
+          "level": "concourse",
+          "code": "JR-013"
+        },
+        {
+          "id": "machines-west",
+          "kind": "ticket-machine",
+          "level": "concourse",
+          "code": "JR-014"
+        },
+        {
+          "id": "machines-midosuji",
+          "kind": "ticket-machine",
+          "level": "concourse",
+          "code": "JR-015"
+        },
+        {
+          "id": "machines-bridge",
+          "kind": "ticket-machine",
+          "level": "bridge",
+          "code": "JR-016"
+        },
+        {
+          "id": "machines-umekita",
+          "kind": "ticket-machine",
+          "level": "underground-hall",
+          "code": "JR-017"
+        },
+        {
+          "id": "daimaru-steps",
+          "kind": "stairs",
+          "level": "concourse",
+          "code": "JR-018"
+        },
+        {
+          "id": "daimaru-entry",
+          "kind": "entrance",
+          "level": "concourse",
+          "code": "JR-019"
+        },
+        {
+          "id": "ticket",
+          "kind": "ticket",
+          "level": "concourse",
+          "code": "JR-020"
+        },
+        {
+          "id": "information",
+          "kind": "information",
+          "level": "concourse",
+          "code": "JR-021"
+        },
+        {
+          "id": "escalator",
+          "kind": "escalator",
+          "level": "concourse",
+          "code": "JR-022"
+        },
+        {
+          "id": "lift",
+          "kind": "elevator",
+          "level": "concourse",
+          "code": "JR-023"
+        },
+        {
+          "id": "mezz-central",
+          "kind": "stairs",
+          "level": "mezzanine",
+          "code": "JR-024"
+        },
+        {
+          "id": "mezz-sakura",
+          "kind": "stairs",
+          "level": "mezzanine",
+          "code": "JR-025"
+        },
+        {
+          "id": "platform",
+          "kind": "entrance",
+          "level": "platform",
+          "code": "JR-026"
+        },
+        {
+          "id": "bridge",
+          "kind": "gate",
+          "level": "bridge",
+          "code": "JR-027"
+        },
+        {
+          "id": "store-central",
+          "kind": "convenience-store",
+          "level": "concourse",
+          "code": "JR-028"
+        },
+        {
+          "id": "store-bridge",
+          "kind": "convenience-store",
+          "level": "bridge",
+          "code": "JR-029"
+        },
+        {
+          "id": "walkway-ab-poi",
+          "kind": "elevator",
+          "level": "concourse",
+          "code": "JR-030"
+        },
+        {
+          "id": "walkway-ac-poi",
+          "kind": "elevator",
+          "level": "underground-hall",
+          "code": "JR-031"
+        },
+        {
+          "id": "umekita-94-poi",
+          "kind": "escalator",
+          "level": "underground-hall",
+          "code": "JR-032"
+        },
+        {
+          "id": "umekita-96-poi",
+          "kind": "escalator",
+          "level": "underground-hall",
+          "code": "JR-033"
+        },
+        {
+          "id": "sakura-access-51",
+          "kind": "stairs",
+          "level": "concourse",
+          "code": "JR-034"
+        },
+        {
+          "id": "south-bridge-access",
+          "kind": "entrance",
+          "level": "bridge",
+          "code": "JR-035"
+        },
+        {
+          "id": "south-building-3f-entry",
+          "kind": "entrance",
+          "level": "platform",
+          "code": "JR-036"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "p11",
+          "level": "platform",
+          "tracks": [
+            11
+          ]
+        },
+        {
+          "id": "p9-10",
+          "level": "platform",
+          "tracks": [
+            9,
+            10
+          ]
+        },
+        {
+          "id": "p7-8",
+          "level": "platform",
+          "tracks": [
+            7,
+            8
+          ]
+        },
+        {
+          "id": "p5-6",
+          "level": "platform",
+          "tracks": [
+            5,
+            6
+          ]
+        },
+        {
+          "id": "p3-4",
+          "level": "platform",
+          "tracks": [
+            3,
+            4
+          ]
+        },
+        {
+          "id": "p1-2",
+          "level": "platform",
+          "tracks": [
+            1,
+            2
+          ]
+        },
+        {
+          "id": "p21-22",
+          "level": "underground-platform",
+          "tracks": [
+            21,
+            22
+          ]
+        },
+        {
+          "id": "p23-24",
+          "level": "underground-platform",
+          "tracks": [
+            23,
+            24
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hankyu-umeda",
+      "facilities": [
+        {
+          "id": "hankyu-umeda-gate-3f",
+          "kind": "gate",
+          "level": "hankyu-platform",
+          "code": "HK-001"
+        },
+        {
+          "id": "hankyu-umeda-gate-central",
+          "kind": "gate",
+          "level": "hankyu-hall",
+          "code": "HK-002"
+        },
+        {
+          "id": "hankyu-umeda-gate-chaya",
+          "kind": "gate",
+          "level": "hankyu-hall",
+          "code": "HK-003"
+        },
+        {
+          "id": "hankyu-umeda-machines-2f",
+          "kind": "ticket-machine",
+          "level": "hankyu-hall",
+          "code": "HK-004"
+        },
+        {
+          "id": "hankyu-umeda-machines-3f",
+          "kind": "ticket-machine",
+          "level": "hankyu-platform",
+          "code": "HK-005"
+        },
+        {
+          "id": "hankyu-umeda-entry",
+          "kind": "entrance",
+          "level": "hankyu-ground",
+          "code": "HK-006"
+        },
+        {
+          "id": "hankyu-umeda-escalator",
+          "kind": "escalator",
+          "level": "hankyu-hall",
+          "code": "HK-007"
+        },
+        {
+          "id": "hankyu-umeda-lift",
+          "kind": "elevator",
+          "level": "hankyu-hall",
+          "code": "HK-008"
+        },
+        {
+          "id": "hankyu-umeda-kyoto-platform",
+          "kind": "entrance",
+          "level": "hankyu-platform",
+          "code": "HK-009"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "hankyu-umeda-platform-1",
+          "level": "hankyu-platform",
+          "tracks": [
+            1
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-2",
+          "level": "hankyu-platform",
+          "tracks": [
+            2
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-3",
+          "level": "hankyu-platform",
+          "tracks": [
+            3
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-4",
+          "level": "hankyu-platform",
+          "tracks": [
+            4
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-5",
+          "level": "hankyu-platform",
+          "tracks": [
+            5
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-6",
+          "level": "hankyu-platform",
+          "tracks": [
+            6
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-7",
+          "level": "hankyu-platform",
+          "tracks": [
+            7
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-8",
+          "level": "hankyu-platform",
+          "tracks": [
+            8
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-9",
+          "level": "hankyu-platform",
+          "tracks": [
+            9
+          ]
+        },
+        {
+          "id": "hankyu-umeda-platform-10",
+          "level": "hankyu-platform",
+          "tracks": []
+        }
+      ]
+    },
+    {
+      "id": "metro-umeda",
+      "facilities": [
+        {
+          "id": "metro-umeda-north-gate",
+          "kind": "gate",
+          "level": "metro-hall",
+          "code": "M16-001"
+        },
+        {
+          "id": "metro-umeda-east-gate",
+          "kind": "gate",
+          "level": "metro-hall",
+          "code": "M16-002"
+        },
+        {
+          "id": "metro-umeda-west-gate",
+          "kind": "gate",
+          "level": "metro-hall",
+          "code": "M16-003"
+        },
+        {
+          "id": "metro-umeda-south-gate",
+          "kind": "gate",
+          "level": "metro-hall",
+          "code": "M16-004"
+        },
+        {
+          "id": "metro-umeda-north-machines",
+          "kind": "ticket-machine",
+          "level": "metro-hall",
+          "code": "M16-005"
+        },
+        {
+          "id": "metro-umeda-south-machines",
+          "kind": "ticket-machine",
+          "level": "metro-hall",
+          "code": "M16-006"
+        },
+        {
+          "id": "metro-umeda-platform-1",
+          "kind": "entrance",
+          "level": "metro-platform",
+          "code": "M16-007"
+        },
+        {
+          "id": "metro-umeda-platform-2",
+          "kind": "entrance",
+          "level": "metro-platform",
+          "code": "M16-008"
+        },
+        {
+          "id": "metro-umeda-lift",
+          "kind": "elevator",
+          "level": "metro-intermediate",
+          "code": "M16-009"
+        },
+        {
+          "id": "metro-umeda-stairs",
+          "kind": "stairs",
+          "level": "metro-platform",
+          "code": "M16-010"
+        },
+        {
+          "id": "metro-umeda-escalator",
+          "kind": "escalator",
+          "level": "metro-intermediate",
+          "code": "M16-011"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "metro-umeda-island",
+          "level": "metro-platform",
+          "tracks": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hanshin-umeda",
+      "facilities": [
+        {
+          "id": "hanshin-umeda-west-gate",
+          "kind": "gate",
+          "level": "hanshin-hall",
+          "code": "HS-001"
+        },
+        {
+          "id": "hanshin-umeda-department-gate",
+          "kind": "gate",
+          "level": "hanshin-hall",
+          "code": "HS-002"
+        },
+        {
+          "id": "hanshin-umeda-east-gate",
+          "kind": "gate",
+          "level": "hanshin-platform",
+          "code": "HS-003"
+        },
+        {
+          "id": "hanshin-umeda-west-machines",
+          "kind": "ticket-machine",
+          "level": "hanshin-hall",
+          "code": "HS-004"
+        },
+        {
+          "id": "hanshin-umeda-department-machines",
+          "kind": "ticket-machine",
+          "level": "hanshin-hall",
+          "code": "HS-005"
+        },
+        {
+          "id": "hanshin-umeda-east-machines",
+          "kind": "ticket-machine",
+          "level": "hanshin-platform",
+          "code": "HS-006"
+        },
+        {
+          "id": "hanshin-umeda-ticket",
+          "kind": "ticket",
+          "level": "hanshin-platform",
+          "code": "HS-007"
+        },
+        {
+          "id": "hanshin-umeda-office",
+          "kind": "information",
+          "level": "hanshin-hall",
+          "code": "HS-008"
+        },
+        {
+          "id": "hanshin-umeda-west-entry",
+          "kind": "entrance",
+          "level": "hanshin-hall",
+          "code": "HS-009"
+        },
+        {
+          "id": "hanshin-umeda-south-entry",
+          "kind": "entrance",
+          "level": "hanshin-platform",
+          "code": "HS-010"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "hanshin-umeda-platform-12",
+          "level": "hanshin-platform",
+          "tracks": [
+            1,
+            2
+          ]
+        },
+        {
+          "id": "hanshin-umeda-alighting-23",
+          "level": "hanshin-platform",
+          "tracks": []
+        },
+        {
+          "id": "hanshin-umeda-platform-34",
+          "level": "hanshin-platform",
+          "tracks": [
+            3,
+            4
+          ]
+        },
+        {
+          "id": "hanshin-umeda-alighting-4",
+          "level": "hanshin-platform",
+          "tracks": []
+        }
+      ]
+    },
+    {
+      "id": "higashi-umeda",
+      "facilities": [
+        {
+          "id": "higashi-umeda-north-east-gate",
+          "kind": "gate",
+          "level": "t20-hall",
+          "code": "T20-001"
+        },
+        {
+          "id": "higashi-umeda-north-east-machines",
+          "kind": "ticket-machine",
+          "level": "t20-hall",
+          "code": "T20-002"
+        },
+        {
+          "id": "higashi-umeda-north-west-gate",
+          "kind": "gate",
+          "level": "t20-hall",
+          "code": "T20-003"
+        },
+        {
+          "id": "higashi-umeda-north-west-machines",
+          "kind": "ticket-machine",
+          "level": "t20-hall",
+          "code": "T20-004"
+        },
+        {
+          "id": "higashi-umeda-middle-west-gate",
+          "kind": "gate",
+          "level": "t20-hall",
+          "code": "T20-005"
+        },
+        {
+          "id": "higashi-umeda-middle-west-machines",
+          "kind": "ticket-machine",
+          "level": "t20-hall",
+          "code": "T20-006"
+        },
+        {
+          "id": "higashi-umeda-south-gate",
+          "kind": "gate",
+          "level": "t20-hall",
+          "code": "T20-007"
+        },
+        {
+          "id": "higashi-umeda-south-machines",
+          "kind": "ticket-machine",
+          "level": "t20-hall",
+          "code": "T20-008"
+        },
+        {
+          "id": "higashi-umeda-office",
+          "kind": "information",
+          "level": "t20-hall",
+          "code": "T20-009"
+        },
+        {
+          "id": "higashi-umeda-exit-1",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-010"
+        },
+        {
+          "id": "higashi-umeda-exit-2",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-011"
+        },
+        {
+          "id": "higashi-umeda-exit-3",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-012"
+        },
+        {
+          "id": "higashi-umeda-exit-4",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-013"
+        },
+        {
+          "id": "higashi-umeda-exit-6",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-014"
+        },
+        {
+          "id": "higashi-umeda-exit-7",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-015"
+        },
+        {
+          "id": "higashi-umeda-exit-8",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-016"
+        },
+        {
+          "id": "higashi-umeda-exit-9",
+          "kind": "entrance",
+          "level": "t20-hall",
+          "code": "T20-017"
+        },
+        {
+          "id": "higashi-umeda-ticket",
+          "kind": "ticket",
+          "level": "t20-hall",
+          "code": "T20-018"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "higashi-umeda-platform-1",
+          "level": "t20-platform",
+          "tracks": [
+            1
+          ]
+        },
+        {
+          "id": "higashi-umeda-platform-2",
+          "level": "t20-platform",
+          "tracks": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nishi-umeda",
+      "facilities": [
+        {
+          "id": "nishi-umeda-north-gate",
+          "kind": "gate",
+          "level": "y11-hall",
+          "code": "Y11-001"
+        },
+        {
+          "id": "nishi-umeda-north-machines",
+          "kind": "ticket-machine",
+          "level": "y11-hall",
+          "code": "Y11-002"
+        },
+        {
+          "id": "nishi-umeda-middle-gate",
+          "kind": "gate",
+          "level": "y11-hall",
+          "code": "Y11-003"
+        },
+        {
+          "id": "nishi-umeda-middle-machines",
+          "kind": "ticket-machine",
+          "level": "y11-hall",
+          "code": "Y11-004"
+        },
+        {
+          "id": "nishi-umeda-south-gate",
+          "kind": "gate",
+          "level": "y11-hall",
+          "code": "Y11-005"
+        },
+        {
+          "id": "nishi-umeda-south-machines",
+          "kind": "ticket-machine",
+          "level": "y11-hall",
+          "code": "Y11-006"
+        },
+        {
+          "id": "nishi-umeda-office",
+          "kind": "information",
+          "level": "y11-hall",
+          "code": "Y11-007"
+        },
+        {
+          "id": "nishi-umeda-ticket",
+          "kind": "ticket",
+          "level": "y11-hall",
+          "code": "Y11-008"
+        },
+        {
+          "id": "nishi-umeda-hydraulic",
+          "kind": "elevator",
+          "level": "y11-hall",
+          "code": "Y11-009"
+        },
+        {
+          "id": "nishi-umeda-exit-2",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-010"
+        },
+        {
+          "id": "nishi-umeda-exit-6",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-011"
+        },
+        {
+          "id": "nishi-umeda-exit-9",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-012"
+        },
+        {
+          "id": "nishi-umeda-exit-10",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-013"
+        },
+        {
+          "id": "nishi-umeda-exit-3",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-014"
+        },
+        {
+          "id": "nishi-umeda-exit-4-A",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-015"
+        },
+        {
+          "id": "nishi-umeda-exit-4-B",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-016"
+        },
+        {
+          "id": "nishi-umeda-exit-7-A",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-017"
+        },
+        {
+          "id": "nishi-umeda-exit-7-B",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-018"
+        },
+        {
+          "id": "nishi-umeda-exit-8",
+          "kind": "entrance",
+          "level": "y11-hall",
+          "code": "Y11-019"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "nishi-umeda-island",
+          "level": "y11-platform",
+          "tracks": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kitashinchi",
+      "facilities": [
+        {
+          "id": "kitashinchi-west-gate",
+          "kind": "gate",
+          "level": "kitashinchi-hall",
+          "code": "KS-001"
+        },
+        {
+          "id": "kitashinchi-west-machines",
+          "kind": "ticket-machine",
+          "level": "kitashinchi-hall",
+          "code": "KS-002"
+        },
+        {
+          "id": "kitashinchi-east-gate",
+          "kind": "gate",
+          "level": "kitashinchi-hall",
+          "code": "KS-003"
+        },
+        {
+          "id": "kitashinchi-east-machines",
+          "kind": "ticket-machine",
+          "level": "kitashinchi-hall",
+          "code": "KS-004"
+        },
+        {
+          "id": "kitashinchi-ticket",
+          "kind": "ticket",
+          "level": "kitashinchi-hall",
+          "code": "KS-005"
+        },
+        {
+          "id": "kitashinchi-office",
+          "kind": "information",
+          "level": "kitashinchi-hall",
+          "code": "KS-006"
+        },
+        {
+          "id": "kitashinchi-exit-11-4",
+          "kind": "entrance",
+          "level": "kitashinchi-hall",
+          "code": "KS-007"
+        },
+        {
+          "id": "kitashinchi-exit-11-5",
+          "kind": "entrance",
+          "level": "kitashinchi-hall",
+          "code": "KS-008"
+        },
+        {
+          "id": "kitashinchi-exit-11-21",
+          "kind": "entrance",
+          "level": "kitashinchi-hall",
+          "code": "KS-009"
+        },
+        {
+          "id": "kitashinchi-exit-11-23",
+          "kind": "entrance",
+          "level": "kitashinchi-hall",
+          "code": "KS-010"
+        },
+        {
+          "id": "kitashinchi-exit-11-41",
+          "kind": "entrance",
+          "level": "kitashinchi-hall",
+          "code": "KS-011"
+        }
+      ],
+      "platforms": [
+        {
+          "id": "kitashinchi-island",
+          "level": "kitashinchi-platform",
+          "tracks": [
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "central-34",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "lift-m",
+      "kind": "elevator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "central-53",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "mezzanine",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p11",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p11",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p9-10",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p7-8",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p5-6",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p3-4",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-p1-2",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "west-p11",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p11",
+      "lanes": 1
+    },
+    {
+      "id": "west-p9-10",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "west-p7-8",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "west-p5-6",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "west-p3-4",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "west-p1-2",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "west-92",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "underground-platform",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-93",
+      "kind": "escalator",
+      "from": "underground-platform",
+      "to": "underground-hall",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-95",
+      "kind": "escalator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p21-22",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-97",
+      "kind": "escalator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p23-24",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-ad",
+      "kind": "elevator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p21-22",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-ae",
+      "kind": "elevator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p23-24",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-94",
+      "kind": "escalator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p21-22",
+      "lanes": 1
+    },
+    {
+      "id": "umekita-96",
+      "kind": "escalator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "platformId": "p23-24",
+      "lanes": 1
+    },
+    {
+      "id": "walkway-ab",
+      "kind": "elevator",
+      "from": "concourse",
+      "to": "underground-platform",
+      "lanes": 1
+    },
+    {
+      "id": "walkway-ac",
+      "kind": "elevator",
+      "from": "underground-hall",
+      "to": "underground-platform",
+      "lanes": 1
+    },
+    {
+      "id": "central-32",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "central-33",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "central-35",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "midosuji-36",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 2
+    },
+    {
+      "id": "midosuji-37",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "midosuji-38",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 2
+    },
+    {
+      "id": "midosuji-39",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "midosuji-40",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 2
+    },
+    {
+      "id": "midosuji-41",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "midosuji-42",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 2
+    },
+    {
+      "id": "midosuji-43",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-west-5",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-west-7",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-west-9",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-west-11",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "bridge-west-13",
+      "kind": "escalator",
+      "from": "bridge",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "north-47",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "lanes": 1
+    },
+    {
+      "id": "north-48",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "lanes": 1
+    },
+    {
+      "id": "carillon-49",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "platform",
+      "lanes": 1
+    },
+    {
+      "id": "central-daimaru-steps",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "concourse",
+      "lanes": 1
+    },
+    {
+      "id": "central-daimaru-east-steps",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "concourse",
+      "lanes": 1
+    },
+    {
+      "id": "central-stairs-52",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "mezzanine",
+      "lanes": 1
+    },
+    {
+      "id": "central-stairs-54",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "mezzanine",
+      "lanes": 1
+    },
+    {
+      "id": "central-55",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "mezzanine",
+      "lanes": 1
+    },
+    {
+      "id": "crost-67",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "underground-hall",
+      "lanes": 1
+    },
+    {
+      "id": "crost-stairs-68",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "underground-hall",
+      "lanes": 1
+    },
+    {
+      "id": "crost-stairs-69",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "underground-hall",
+      "lanes": 1
+    },
+    {
+      "id": "sakura-stairs-51",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "mezzanine",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-17",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p11",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-20",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-22",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-24",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-26",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-27",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-29",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-21",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p9-10",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-23",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p7-8",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-25",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p5-6",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-stairs-28",
+      "kind": "stairs",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p3-4",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-escalator-18",
+      "kind": "escalator",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p11",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-escalator-19",
+      "kind": "escalator",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p11",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-escalator-30",
+      "kind": "escalator",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "mezz-escalator-31",
+      "kind": "escalator",
+      "from": "mezzanine",
+      "to": "platform",
+      "platformId": "p1-2",
+      "lanes": 1
+    },
+    {
+      "id": "north-2",
+      "kind": "escalator",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "north-2-stairs",
+      "kind": "stairs",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "north-3",
+      "kind": "escalator",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "south-15",
+      "kind": "escalator",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "south-stairs-16",
+      "kind": "stairs",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "south-lift-i",
+      "kind": "elevator",
+      "from": "platform",
+      "to": "bridge",
+      "lanes": 1
+    },
+    {
+      "id": "south-building-50",
+      "kind": "escalator",
+      "from": "south-deck",
+      "to": "platform",
+      "lanes": 1
+    },
+    {
+      "id": "south-lift-t",
+      "kind": "elevator",
+      "from": "south-deck",
+      "to": "platform",
+      "lanes": 1
+    },
+    {
+      "id": "south-building-61",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 2
+    },
+    {
+      "id": "south-lift-u",
+      "kind": "elevator",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-1",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-1",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-lift-1",
+      "kind": "elevator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-2",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-2",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-3",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-3",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-3",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-3",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-4",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-4",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-4",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-4",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-5",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-5",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-5",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-5",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-6",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-6",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-6",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-6",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-7",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-7",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-7",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-7",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-8",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-8",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-8",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-8",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-central-bank-9",
+      "kind": "escalator",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-9",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-chaya-bank-9",
+      "kind": "stairs",
+      "from": "hankyu-hall",
+      "to": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-9",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-public-lift",
+      "kind": "elevator",
+      "from": "hankyu-ground",
+      "to": "hankyu-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-public-rise",
+      "kind": "escalator",
+      "from": "hankyu-ground",
+      "to": "hankyu-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hankyu-umeda-direct-1f-3f",
+      "kind": "escalator",
+      "from": "hankyu-ground",
+      "to": "hankyu-platform",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-A",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-A",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-C",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-C",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-E",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-E",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-F",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-F",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-H",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-H",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-bank-J",
+      "kind": "stairs",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-rise-J",
+      "kind": "escalator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-lift-north",
+      "kind": "elevator",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-lift-south",
+      "kind": "elevator",
+      "from": "metro-platform",
+      "to": "metro-intermediate",
+      "platformId": "metro-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "metro-umeda-hall-lift",
+      "kind": "elevator",
+      "from": "metro-intermediate",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-12-escalator",
+      "kind": "escalator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-12",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-12-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-12",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-12-lift",
+      "kind": "elevator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-12",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-34-escalator",
+      "kind": "escalator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-34",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-34-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-34",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-platform-34-lift",
+      "kind": "elevator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-platform-34",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-alighting-23-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-alighting-23",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-hanshin-umeda-alighting-4-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "platformId": "hanshin-umeda-alighting-4",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-east-public-escalators",
+      "kind": "escalator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "lanes": 2
+    },
+    {
+      "id": "hanshin-umeda-east-public-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-public-escalator",
+      "kind": "escalator",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-public-stairs",
+      "kind": "stairs",
+      "from": "hanshin-platform",
+      "to": "hanshin-hall",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-lift-b1-ground",
+      "kind": "elevator",
+      "from": "hanshin-hall",
+      "to": "hanshin-ground",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-lift-ground-deck",
+      "kind": "elevator",
+      "from": "hanshin-ground",
+      "to": "hanshin-deck",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-ground-stairs",
+      "kind": "stairs",
+      "from": "hanshin-hall",
+      "to": "hanshin-ground",
+      "lanes": 1
+    },
+    {
+      "id": "hanshin-umeda-south-ground-escalator",
+      "kind": "escalator",
+      "from": "hanshin-hall",
+      "to": "hanshin-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-north-east-stairs",
+      "kind": "stairs",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-north-west-stairs",
+      "kind": "stairs",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-middle-west-stairs",
+      "kind": "stairs",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-south-stairs",
+      "kind": "stairs",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-middle-west-escalator",
+      "kind": "escalator",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-south-escalator",
+      "kind": "escalator",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-south-lift",
+      "kind": "elevator",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-1",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-middle-west-lift",
+      "kind": "elevator",
+      "from": "t20-platform",
+      "to": "t20-hall",
+      "platformId": "higashi-umeda-platform-2",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-1-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-2-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-3-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-4-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-6-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-7-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-8-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-exit-9-stairs",
+      "kind": "stairs",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "higashi-umeda-street-lift",
+      "kind": "elevator",
+      "from": "t20-hall",
+      "to": "t20-ground",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-north-stairs",
+      "kind": "stairs",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-middle-stairs",
+      "kind": "stairs",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-south-stairs",
+      "kind": "stairs",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-north-escalator",
+      "kind": "escalator",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-south-escalator",
+      "kind": "escalator",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-platform-lift",
+      "kind": "elevator",
+      "from": "y11-platform",
+      "to": "y11-hall",
+      "platformId": "nishi-umeda-island",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-street-lift",
+      "kind": "elevator",
+      "from": "y11-hall",
+      "to": "y11-ground",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-hydraulic-lift",
+      "kind": "elevator",
+      "from": "y11-hall",
+      "to": "y11-hall",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-exit-2-stairs",
+      "kind": "stairs",
+      "from": "y11-hall",
+      "to": "y11-ground",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-exit-6-stairs",
+      "kind": "stairs",
+      "from": "y11-hall",
+      "to": "y11-ground",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-exit-9-stairs",
+      "kind": "stairs",
+      "from": "y11-hall",
+      "to": "y11-ground",
+      "lanes": 1
+    },
+    {
+      "id": "nishi-umeda-exit-10-stairs",
+      "kind": "stairs",
+      "from": "y11-hall",
+      "to": "y11-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-west-escalators",
+      "kind": "escalator",
+      "from": "kitashinchi-platform",
+      "to": "kitashinchi-hall",
+      "platformId": "kitashinchi-island",
+      "lanes": 2
+    },
+    {
+      "id": "kitashinchi-west-inner-escalators",
+      "kind": "escalator",
+      "from": "kitashinchi-platform",
+      "to": "kitashinchi-hall",
+      "platformId": "kitashinchi-island",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-east-escalators",
+      "kind": "escalator",
+      "from": "kitashinchi-platform",
+      "to": "kitashinchi-hall",
+      "platformId": "kitashinchi-island",
+      "lanes": 2
+    },
+    {
+      "id": "kitashinchi-platform-lift",
+      "kind": "elevator",
+      "from": "kitashinchi-platform",
+      "to": "kitashinchi-hall",
+      "platformId": "kitashinchi-island",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-street-lift",
+      "kind": "elevator",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-exit-11-4-stairs",
+      "kind": "stairs",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-exit-11-5-stairs",
+      "kind": "stairs",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-exit-11-21-stairs",
+      "kind": "stairs",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-exit-11-23-stairs",
+      "kind": "stairs",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "kitashinchi-exit-11-41-stairs",
+      "kind": "stairs",
+      "from": "kitashinchi-hall",
+      "to": "kitashinchi-ground",
+      "lanes": 1
+    },
+    {
+      "id": "district-jr-metro-stairs",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "metro-hall",
+      "lanes": 1
+    },
+    {
+      "id": "umeda-deck-north-stairs",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 1
+    },
+    {
+      "id": "south-building-74",
+      "kind": "escalator",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 2
+    },
+    {
+      "id": "jp-garden-b1-ground-stairs",
+      "kind": "stairs",
+      "from": "underground-hall",
+      "to": "concourse",
+      "lanes": 1
+    },
+    {
+      "id": "jp-garden-ground-deck-stairs",
+      "kind": "stairs",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 1
+    },
+    {
+      "id": "jp-garden-lift-0",
+      "kind": "elevator",
+      "from": "underground-hall",
+      "to": "concourse",
+      "lanes": 1
+    },
+    {
+      "id": "jp-garden-lift-1",
+      "kind": "elevator",
+      "from": "concourse",
+      "to": "south-deck",
+      "lanes": 1
+    }
+  ],
+  "directory": [
+    {
+      "id": "west-gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-001"
+    },
+    {
+      "id": "umekita-gate",
+      "kind": "gate",
+      "level": "underground-hall",
+      "code": "JR-002"
+    },
+    {
+      "id": "umekita-platform",
+      "kind": "platform",
+      "level": "underground-platform",
+      "platformId": "p21-22",
+      "code": "JR-003"
+    },
+    {
+      "id": "umekita-link",
+      "kind": "entrance",
+      "level": "underground-platform",
+      "code": "JR-004"
+    },
+    {
+      "id": "entry",
+      "kind": "entrance",
+      "level": "concourse",
+      "code": "JR-005"
+    },
+    {
+      "id": "gate-central-north",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-006"
+    },
+    {
+      "id": "gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-007"
+    },
+    {
+      "id": "sakurabashi-gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-008"
+    },
+    {
+      "id": "eki-gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-009"
+    },
+    {
+      "id": "midosuji-gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-010"
+    },
+    {
+      "id": "south-gate",
+      "kind": "gate",
+      "level": "concourse",
+      "code": "JR-011"
+    },
+    {
+      "id": "machines-central",
+      "kind": "ticket-machine",
+      "level": "concourse",
+      "code": "JR-012"
+    },
+    {
+      "id": "machines-sakura",
+      "kind": "ticket-machine",
+      "level": "concourse",
+      "code": "JR-013"
+    },
+    {
+      "id": "machines-west",
+      "kind": "ticket-machine",
+      "level": "concourse",
+      "code": "JR-014"
+    },
+    {
+      "id": "machines-midosuji",
+      "kind": "ticket-machine",
+      "level": "concourse",
+      "code": "JR-015"
+    },
+    {
+      "id": "machines-bridge",
+      "kind": "ticket-machine",
+      "level": "bridge",
+      "code": "JR-016"
+    },
+    {
+      "id": "machines-umekita",
+      "kind": "ticket-machine",
+      "level": "underground-hall",
+      "code": "JR-017"
+    },
+    {
+      "id": "daimaru-steps",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-daimaru-steps",
+      "code": "JR-018"
+    },
+    {
+      "id": "daimaru-entry",
+      "kind": "entrance",
+      "level": "concourse",
+      "code": "JR-019"
+    },
+    {
+      "id": "ticket",
+      "kind": "ticket",
+      "level": "concourse",
+      "code": "JR-020"
+    },
+    {
+      "id": "information",
+      "kind": "information",
+      "level": "concourse",
+      "code": "JR-021"
+    },
+    {
+      "id": "escalator",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "central-34",
+      "code": "JR-022"
+    },
+    {
+      "id": "lift",
+      "kind": "elevator",
+      "level": "concourse",
+      "connectionId": "lift-m",
+      "code": "JR-023"
+    },
+    {
+      "id": "mezz-central",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "code": "JR-024"
+    },
+    {
+      "id": "mezz-sakura",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "code": "JR-025"
+    },
+    {
+      "id": "platform",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p5-6",
+      "code": "JR-026"
+    },
+    {
+      "id": "bridge",
+      "kind": "gate",
+      "level": "bridge",
+      "code": "JR-027"
+    },
+    {
+      "id": "store-central",
+      "kind": "convenience-store",
+      "level": "concourse",
+      "code": "JR-028"
+    },
+    {
+      "id": "store-bridge",
+      "kind": "convenience-store",
+      "level": "bridge",
+      "code": "JR-029"
+    },
+    {
+      "id": "walkway-ab-poi",
+      "kind": "elevator",
+      "level": "concourse",
+      "connectionId": "walkway-ab",
+      "code": "JR-030"
+    },
+    {
+      "id": "walkway-ac-poi",
+      "kind": "elevator",
+      "level": "underground-hall",
+      "connectionId": "walkway-ac",
+      "code": "JR-031"
+    },
+    {
+      "id": "umekita-94-poi",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "umekita-94",
+      "code": "JR-032"
+    },
+    {
+      "id": "umekita-96-poi",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "umekita-96",
+      "code": "JR-033"
+    },
+    {
+      "id": "sakura-access-51",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "sakura-stairs-51",
+      "code": "JR-034"
+    },
+    {
+      "id": "south-bridge-access",
+      "kind": "entrance",
+      "level": "bridge",
+      "code": "JR-035"
+    },
+    {
+      "id": "south-building-3f-entry",
+      "kind": "entrance",
+      "level": "platform",
+      "code": "JR-036"
+    },
+    {
+      "id": "hankyu-umeda-gate-3f",
+      "kind": "gate",
+      "level": "hankyu-platform",
+      "code": "HK-001"
+    },
+    {
+      "id": "hankyu-umeda-gate-central",
+      "kind": "gate",
+      "level": "hankyu-hall",
+      "code": "HK-002"
+    },
+    {
+      "id": "hankyu-umeda-gate-chaya",
+      "kind": "gate",
+      "level": "hankyu-hall",
+      "code": "HK-003"
+    },
+    {
+      "id": "hankyu-umeda-machines-2f",
+      "kind": "ticket-machine",
+      "level": "hankyu-hall",
+      "code": "HK-004"
+    },
+    {
+      "id": "hankyu-umeda-machines-3f",
+      "kind": "ticket-machine",
+      "level": "hankyu-platform",
+      "code": "HK-005"
+    },
+    {
+      "id": "hankyu-umeda-entry",
+      "kind": "entrance",
+      "level": "hankyu-ground",
+      "code": "HK-006"
+    },
+    {
+      "id": "hankyu-umeda-escalator",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-1",
+      "code": "HK-007"
+    },
+    {
+      "id": "hankyu-umeda-lift",
+      "kind": "elevator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-lift-1",
+      "code": "HK-008"
+    },
+    {
+      "id": "hankyu-umeda-kyoto-platform",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-1",
+      "code": "HK-009"
+    },
+    {
+      "id": "metro-umeda-north-gate",
+      "kind": "gate",
+      "level": "metro-hall",
+      "code": "M16-001"
+    },
+    {
+      "id": "metro-umeda-east-gate",
+      "kind": "gate",
+      "level": "metro-hall",
+      "code": "M16-002"
+    },
+    {
+      "id": "metro-umeda-west-gate",
+      "kind": "gate",
+      "level": "metro-hall",
+      "code": "M16-003"
+    },
+    {
+      "id": "metro-umeda-south-gate",
+      "kind": "gate",
+      "level": "metro-hall",
+      "code": "M16-004"
+    },
+    {
+      "id": "metro-umeda-north-machines",
+      "kind": "ticket-machine",
+      "level": "metro-hall",
+      "code": "M16-005"
+    },
+    {
+      "id": "metro-umeda-south-machines",
+      "kind": "ticket-machine",
+      "level": "metro-hall",
+      "code": "M16-006"
+    },
+    {
+      "id": "metro-umeda-platform-1",
+      "kind": "platform",
+      "level": "metro-platform",
+      "platformId": "metro-umeda-island",
+      "code": "M16-007"
+    },
+    {
+      "id": "metro-umeda-platform-2",
+      "kind": "platform",
+      "level": "metro-platform",
+      "platformId": "metro-umeda-island",
+      "code": "M16-008"
+    },
+    {
+      "id": "metro-umeda-lift",
+      "kind": "elevator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-hall-lift",
+      "code": "M16-009"
+    },
+    {
+      "id": "metro-umeda-stairs",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-A",
+      "code": "M16-010"
+    },
+    {
+      "id": "metro-umeda-escalator",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "code": "M16-011"
+    },
+    {
+      "id": "hanshin-umeda-west-gate",
+      "kind": "gate",
+      "level": "hanshin-hall",
+      "code": "HS-001"
+    },
+    {
+      "id": "hanshin-umeda-department-gate",
+      "kind": "gate",
+      "level": "hanshin-hall",
+      "code": "HS-002"
+    },
+    {
+      "id": "hanshin-umeda-east-gate",
+      "kind": "gate",
+      "level": "hanshin-platform",
+      "code": "HS-003"
+    },
+    {
+      "id": "hanshin-umeda-west-machines",
+      "kind": "ticket-machine",
+      "level": "hanshin-hall",
+      "code": "HS-004"
+    },
+    {
+      "id": "hanshin-umeda-department-machines",
+      "kind": "ticket-machine",
+      "level": "hanshin-hall",
+      "code": "HS-005"
+    },
+    {
+      "id": "hanshin-umeda-east-machines",
+      "kind": "ticket-machine",
+      "level": "hanshin-platform",
+      "code": "HS-006"
+    },
+    {
+      "id": "hanshin-umeda-ticket",
+      "kind": "ticket",
+      "level": "hanshin-platform",
+      "code": "HS-007"
+    },
+    {
+      "id": "hanshin-umeda-office",
+      "kind": "information",
+      "level": "hanshin-hall",
+      "code": "HS-008"
+    },
+    {
+      "id": "hanshin-umeda-west-entry",
+      "kind": "entrance",
+      "level": "hanshin-hall",
+      "code": "HS-009"
+    },
+    {
+      "id": "hanshin-umeda-south-entry",
+      "kind": "entrance",
+      "level": "hanshin-platform",
+      "code": "HS-010"
+    },
+    {
+      "id": "higashi-umeda-north-east-gate",
+      "kind": "gate",
+      "level": "t20-hall",
+      "code": "T20-001"
+    },
+    {
+      "id": "higashi-umeda-north-east-machines",
+      "kind": "ticket-machine",
+      "level": "t20-hall",
+      "code": "T20-002"
+    },
+    {
+      "id": "higashi-umeda-north-west-gate",
+      "kind": "gate",
+      "level": "t20-hall",
+      "code": "T20-003"
+    },
+    {
+      "id": "higashi-umeda-north-west-machines",
+      "kind": "ticket-machine",
+      "level": "t20-hall",
+      "code": "T20-004"
+    },
+    {
+      "id": "higashi-umeda-middle-west-gate",
+      "kind": "gate",
+      "level": "t20-hall",
+      "code": "T20-005"
+    },
+    {
+      "id": "higashi-umeda-middle-west-machines",
+      "kind": "ticket-machine",
+      "level": "t20-hall",
+      "code": "T20-006"
+    },
+    {
+      "id": "higashi-umeda-south-gate",
+      "kind": "gate",
+      "level": "t20-hall",
+      "code": "T20-007"
+    },
+    {
+      "id": "higashi-umeda-south-machines",
+      "kind": "ticket-machine",
+      "level": "t20-hall",
+      "code": "T20-008"
+    },
+    {
+      "id": "higashi-umeda-office",
+      "kind": "information",
+      "level": "t20-hall",
+      "code": "T20-009"
+    },
+    {
+      "id": "higashi-umeda-exit-1",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-010"
+    },
+    {
+      "id": "higashi-umeda-exit-2",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-011"
+    },
+    {
+      "id": "higashi-umeda-exit-3",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-012"
+    },
+    {
+      "id": "higashi-umeda-exit-4",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-013"
+    },
+    {
+      "id": "higashi-umeda-exit-6",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-014"
+    },
+    {
+      "id": "higashi-umeda-exit-7",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-015"
+    },
+    {
+      "id": "higashi-umeda-exit-8",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-016"
+    },
+    {
+      "id": "higashi-umeda-exit-9",
+      "kind": "entrance",
+      "level": "t20-hall",
+      "code": "T20-017"
+    },
+    {
+      "id": "higashi-umeda-ticket",
+      "kind": "ticket",
+      "level": "t20-hall",
+      "code": "T20-018"
+    },
+    {
+      "id": "nishi-umeda-north-gate",
+      "kind": "gate",
+      "level": "y11-hall",
+      "code": "Y11-001"
+    },
+    {
+      "id": "nishi-umeda-north-machines",
+      "kind": "ticket-machine",
+      "level": "y11-hall",
+      "code": "Y11-002"
+    },
+    {
+      "id": "nishi-umeda-middle-gate",
+      "kind": "gate",
+      "level": "y11-hall",
+      "code": "Y11-003"
+    },
+    {
+      "id": "nishi-umeda-middle-machines",
+      "kind": "ticket-machine",
+      "level": "y11-hall",
+      "code": "Y11-004"
+    },
+    {
+      "id": "nishi-umeda-south-gate",
+      "kind": "gate",
+      "level": "y11-hall",
+      "code": "Y11-005"
+    },
+    {
+      "id": "nishi-umeda-south-machines",
+      "kind": "ticket-machine",
+      "level": "y11-hall",
+      "code": "Y11-006"
+    },
+    {
+      "id": "nishi-umeda-office",
+      "kind": "information",
+      "level": "y11-hall",
+      "code": "Y11-007"
+    },
+    {
+      "id": "nishi-umeda-ticket",
+      "kind": "ticket",
+      "level": "y11-hall",
+      "code": "Y11-008"
+    },
+    {
+      "id": "nishi-umeda-hydraulic",
+      "kind": "elevator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-hydraulic-lift",
+      "code": "Y11-009"
+    },
+    {
+      "id": "nishi-umeda-exit-2",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-010"
+    },
+    {
+      "id": "nishi-umeda-exit-6",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-011"
+    },
+    {
+      "id": "nishi-umeda-exit-9",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-012"
+    },
+    {
+      "id": "nishi-umeda-exit-10",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-013"
+    },
+    {
+      "id": "nishi-umeda-exit-3",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-014"
+    },
+    {
+      "id": "nishi-umeda-exit-4-A",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-015"
+    },
+    {
+      "id": "nishi-umeda-exit-4-B",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-016"
+    },
+    {
+      "id": "nishi-umeda-exit-7-A",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-017"
+    },
+    {
+      "id": "nishi-umeda-exit-7-B",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-018"
+    },
+    {
+      "id": "nishi-umeda-exit-8",
+      "kind": "entrance",
+      "level": "y11-hall",
+      "code": "Y11-019"
+    },
+    {
+      "id": "kitashinchi-west-gate",
+      "kind": "gate",
+      "level": "kitashinchi-hall",
+      "code": "KS-001"
+    },
+    {
+      "id": "kitashinchi-west-machines",
+      "kind": "ticket-machine",
+      "level": "kitashinchi-hall",
+      "code": "KS-002"
+    },
+    {
+      "id": "kitashinchi-east-gate",
+      "kind": "gate",
+      "level": "kitashinchi-hall",
+      "code": "KS-003"
+    },
+    {
+      "id": "kitashinchi-east-machines",
+      "kind": "ticket-machine",
+      "level": "kitashinchi-hall",
+      "code": "KS-004"
+    },
+    {
+      "id": "kitashinchi-ticket",
+      "kind": "ticket",
+      "level": "kitashinchi-hall",
+      "code": "KS-005"
+    },
+    {
+      "id": "kitashinchi-office",
+      "kind": "information",
+      "level": "kitashinchi-hall",
+      "code": "KS-006"
+    },
+    {
+      "id": "kitashinchi-exit-11-4",
+      "kind": "entrance",
+      "level": "kitashinchi-hall",
+      "code": "KS-007"
+    },
+    {
+      "id": "kitashinchi-exit-11-5",
+      "kind": "entrance",
+      "level": "kitashinchi-hall",
+      "code": "KS-008"
+    },
+    {
+      "id": "kitashinchi-exit-11-21",
+      "kind": "entrance",
+      "level": "kitashinchi-hall",
+      "code": "KS-009"
+    },
+    {
+      "id": "kitashinchi-exit-11-23",
+      "kind": "entrance",
+      "level": "kitashinchi-hall",
+      "code": "KS-010"
+    },
+    {
+      "id": "kitashinchi-exit-11-41",
+      "kind": "entrance",
+      "level": "kitashinchi-hall",
+      "code": "KS-011"
+    },
+    {
+      "id": "connection-central-34-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "central-34",
+      "code": "JR-037"
+    },
+    {
+      "id": "connection-lift-m-to",
+      "kind": "elevator",
+      "level": "platform",
+      "connectionId": "lift-m",
+      "code": "JR-038"
+    },
+    {
+      "id": "connection-central-53-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-53",
+      "code": "JR-039"
+    },
+    {
+      "id": "connection-central-53-to",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "central-53",
+      "code": "JR-040"
+    },
+    {
+      "id": "connection-bridge-p11-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p11",
+      "code": "JR-041"
+    },
+    {
+      "id": "connection-bridge-p11-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p11",
+      "code": "JR-042"
+    },
+    {
+      "id": "connection-bridge-p9-10-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p9-10",
+      "code": "JR-043"
+    },
+    {
+      "id": "connection-bridge-p9-10-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p9-10",
+      "code": "JR-044"
+    },
+    {
+      "id": "connection-bridge-p7-8-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p7-8",
+      "code": "JR-045"
+    },
+    {
+      "id": "connection-bridge-p7-8-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p7-8",
+      "code": "JR-046"
+    },
+    {
+      "id": "connection-bridge-p5-6-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p5-6",
+      "code": "JR-047"
+    },
+    {
+      "id": "connection-bridge-p5-6-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p5-6",
+      "code": "JR-048"
+    },
+    {
+      "id": "connection-bridge-p3-4-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p3-4",
+      "code": "JR-049"
+    },
+    {
+      "id": "connection-bridge-p3-4-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p3-4",
+      "code": "JR-050"
+    },
+    {
+      "id": "connection-bridge-p1-2-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-p1-2",
+      "code": "JR-051"
+    },
+    {
+      "id": "connection-bridge-p1-2-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-p1-2",
+      "code": "JR-052"
+    },
+    {
+      "id": "connection-west-p11-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p11",
+      "code": "JR-053"
+    },
+    {
+      "id": "connection-west-p11-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p11",
+      "code": "JR-054"
+    },
+    {
+      "id": "connection-west-p9-10-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p9-10",
+      "code": "JR-055"
+    },
+    {
+      "id": "connection-west-p9-10-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p9-10",
+      "code": "JR-056"
+    },
+    {
+      "id": "connection-west-p7-8-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p7-8",
+      "code": "JR-057"
+    },
+    {
+      "id": "connection-west-p7-8-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p7-8",
+      "code": "JR-058"
+    },
+    {
+      "id": "connection-west-p5-6-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p5-6",
+      "code": "JR-059"
+    },
+    {
+      "id": "connection-west-p5-6-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p5-6",
+      "code": "JR-060"
+    },
+    {
+      "id": "connection-west-p3-4-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p3-4",
+      "code": "JR-061"
+    },
+    {
+      "id": "connection-west-p3-4-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p3-4",
+      "code": "JR-062"
+    },
+    {
+      "id": "connection-west-p1-2-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-p1-2",
+      "code": "JR-063"
+    },
+    {
+      "id": "connection-west-p1-2-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "west-p1-2",
+      "code": "JR-064"
+    },
+    {
+      "id": "connection-west-92-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "west-92",
+      "code": "JR-065"
+    },
+    {
+      "id": "connection-west-92-to",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "west-92",
+      "code": "JR-066"
+    },
+    {
+      "id": "connection-umekita-93-from",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "umekita-93",
+      "code": "JR-067"
+    },
+    {
+      "id": "connection-umekita-93-to",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "umekita-93",
+      "code": "JR-068"
+    },
+    {
+      "id": "connection-umekita-95-from",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "umekita-95",
+      "code": "JR-069"
+    },
+    {
+      "id": "connection-umekita-95-to",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "umekita-95",
+      "code": "JR-070"
+    },
+    {
+      "id": "connection-umekita-97-from",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "umekita-97",
+      "code": "JR-071"
+    },
+    {
+      "id": "connection-umekita-97-to",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "umekita-97",
+      "code": "JR-072"
+    },
+    {
+      "id": "connection-umekita-ad-from",
+      "kind": "elevator",
+      "level": "underground-hall",
+      "connectionId": "umekita-ad",
+      "code": "JR-073"
+    },
+    {
+      "id": "connection-umekita-ad-to",
+      "kind": "elevator",
+      "level": "underground-platform",
+      "connectionId": "umekita-ad",
+      "code": "JR-074"
+    },
+    {
+      "id": "connection-umekita-ae-from",
+      "kind": "elevator",
+      "level": "underground-hall",
+      "connectionId": "umekita-ae",
+      "code": "JR-075"
+    },
+    {
+      "id": "connection-umekita-ae-to",
+      "kind": "elevator",
+      "level": "underground-platform",
+      "connectionId": "umekita-ae",
+      "code": "JR-076"
+    },
+    {
+      "id": "connection-umekita-94-to",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "umekita-94",
+      "code": "JR-077"
+    },
+    {
+      "id": "connection-umekita-96-to",
+      "kind": "escalator",
+      "level": "underground-platform",
+      "connectionId": "umekita-96",
+      "code": "JR-078"
+    },
+    {
+      "id": "connection-walkway-ab-to",
+      "kind": "elevator",
+      "level": "underground-platform",
+      "connectionId": "walkway-ab",
+      "code": "JR-079"
+    },
+    {
+      "id": "connection-walkway-ac-to",
+      "kind": "elevator",
+      "level": "underground-platform",
+      "connectionId": "walkway-ac",
+      "code": "JR-080"
+    },
+    {
+      "id": "connection-central-32-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "central-32",
+      "code": "JR-081"
+    },
+    {
+      "id": "connection-central-32-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "central-32",
+      "code": "JR-082"
+    },
+    {
+      "id": "connection-central-33-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "central-33",
+      "code": "JR-083"
+    },
+    {
+      "id": "connection-central-33-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "central-33",
+      "code": "JR-084"
+    },
+    {
+      "id": "connection-central-35-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "central-35",
+      "code": "JR-085"
+    },
+    {
+      "id": "connection-central-35-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "central-35",
+      "code": "JR-086"
+    },
+    {
+      "id": "connection-midosuji-36-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-36",
+      "code": "JR-087"
+    },
+    {
+      "id": "connection-midosuji-36-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-36",
+      "code": "JR-088"
+    },
+    {
+      "id": "connection-midosuji-37-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-37",
+      "code": "JR-089"
+    },
+    {
+      "id": "connection-midosuji-37-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-37",
+      "code": "JR-090"
+    },
+    {
+      "id": "connection-midosuji-38-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-38",
+      "code": "JR-091"
+    },
+    {
+      "id": "connection-midosuji-38-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-38",
+      "code": "JR-092"
+    },
+    {
+      "id": "connection-midosuji-39-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-39",
+      "code": "JR-093"
+    },
+    {
+      "id": "connection-midosuji-39-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-39",
+      "code": "JR-094"
+    },
+    {
+      "id": "connection-midosuji-40-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-40",
+      "code": "JR-095"
+    },
+    {
+      "id": "connection-midosuji-40-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-40",
+      "code": "JR-096"
+    },
+    {
+      "id": "connection-midosuji-41-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-41",
+      "code": "JR-097"
+    },
+    {
+      "id": "connection-midosuji-41-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-41",
+      "code": "JR-098"
+    },
+    {
+      "id": "connection-midosuji-42-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-42",
+      "code": "JR-099"
+    },
+    {
+      "id": "connection-midosuji-42-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-42",
+      "code": "JR-100"
+    },
+    {
+      "id": "connection-midosuji-43-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "midosuji-43",
+      "code": "JR-101"
+    },
+    {
+      "id": "connection-midosuji-43-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "midosuji-43",
+      "code": "JR-102"
+    },
+    {
+      "id": "connection-bridge-west-5-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-west-5",
+      "code": "JR-103"
+    },
+    {
+      "id": "connection-bridge-west-5-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-west-5",
+      "code": "JR-104"
+    },
+    {
+      "id": "connection-bridge-west-7-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-west-7",
+      "code": "JR-105"
+    },
+    {
+      "id": "connection-bridge-west-7-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-west-7",
+      "code": "JR-106"
+    },
+    {
+      "id": "connection-bridge-west-9-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-west-9",
+      "code": "JR-107"
+    },
+    {
+      "id": "connection-bridge-west-9-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-west-9",
+      "code": "JR-108"
+    },
+    {
+      "id": "connection-bridge-west-11-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-west-11",
+      "code": "JR-109"
+    },
+    {
+      "id": "connection-bridge-west-11-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-west-11",
+      "code": "JR-110"
+    },
+    {
+      "id": "connection-bridge-west-13-from",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "bridge-west-13",
+      "code": "JR-111"
+    },
+    {
+      "id": "connection-bridge-west-13-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "bridge-west-13",
+      "code": "JR-112"
+    },
+    {
+      "id": "connection-north-47-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "north-47",
+      "code": "JR-113"
+    },
+    {
+      "id": "connection-north-47-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "north-47",
+      "code": "JR-114"
+    },
+    {
+      "id": "connection-north-48-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "north-48",
+      "code": "JR-115"
+    },
+    {
+      "id": "connection-north-48-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "north-48",
+      "code": "JR-116"
+    },
+    {
+      "id": "connection-carillon-49-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "carillon-49",
+      "code": "JR-117"
+    },
+    {
+      "id": "connection-carillon-49-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "carillon-49",
+      "code": "JR-118"
+    },
+    {
+      "id": "connection-central-daimaru-steps-to",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-daimaru-steps",
+      "code": "JR-119"
+    },
+    {
+      "id": "connection-central-daimaru-east-steps-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-daimaru-east-steps",
+      "code": "JR-194"
+    },
+    {
+      "id": "connection-central-daimaru-east-steps-to",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-daimaru-east-steps",
+      "code": "JR-195"
+    },
+    {
+      "id": "connection-central-stairs-52-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-stairs-52",
+      "code": "JR-120"
+    },
+    {
+      "id": "connection-central-stairs-52-to",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "central-stairs-52",
+      "code": "JR-121"
+    },
+    {
+      "id": "connection-central-stairs-54-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "central-stairs-54",
+      "code": "JR-122"
+    },
+    {
+      "id": "connection-central-stairs-54-to",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "central-stairs-54",
+      "code": "JR-123"
+    },
+    {
+      "id": "connection-central-55-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "central-55",
+      "code": "JR-124"
+    },
+    {
+      "id": "connection-central-55-to",
+      "kind": "escalator",
+      "level": "mezzanine",
+      "connectionId": "central-55",
+      "code": "JR-125"
+    },
+    {
+      "id": "connection-crost-67-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "crost-67",
+      "code": "JR-126"
+    },
+    {
+      "id": "connection-crost-67-to",
+      "kind": "escalator",
+      "level": "underground-hall",
+      "connectionId": "crost-67",
+      "code": "JR-127"
+    },
+    {
+      "id": "connection-crost-stairs-68-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "crost-stairs-68",
+      "code": "JR-128"
+    },
+    {
+      "id": "connection-crost-stairs-68-to",
+      "kind": "stairs",
+      "level": "underground-hall",
+      "connectionId": "crost-stairs-68",
+      "code": "JR-129"
+    },
+    {
+      "id": "connection-crost-stairs-69-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "crost-stairs-69",
+      "code": "JR-130"
+    },
+    {
+      "id": "connection-crost-stairs-69-to",
+      "kind": "stairs",
+      "level": "underground-hall",
+      "connectionId": "crost-stairs-69",
+      "code": "JR-131"
+    },
+    {
+      "id": "connection-sakura-stairs-51-to",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "sakura-stairs-51",
+      "code": "JR-132"
+    },
+    {
+      "id": "connection-mezz-stairs-17-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-17",
+      "code": "JR-133"
+    },
+    {
+      "id": "connection-mezz-stairs-17-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-17",
+      "code": "JR-134"
+    },
+    {
+      "id": "connection-mezz-stairs-20-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-20",
+      "code": "JR-135"
+    },
+    {
+      "id": "connection-mezz-stairs-20-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-20",
+      "code": "JR-136"
+    },
+    {
+      "id": "connection-mezz-stairs-22-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-22",
+      "code": "JR-137"
+    },
+    {
+      "id": "connection-mezz-stairs-22-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-22",
+      "code": "JR-138"
+    },
+    {
+      "id": "connection-mezz-stairs-24-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-24",
+      "code": "JR-139"
+    },
+    {
+      "id": "connection-mezz-stairs-24-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-24",
+      "code": "JR-140"
+    },
+    {
+      "id": "connection-mezz-stairs-26-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-26",
+      "code": "JR-141"
+    },
+    {
+      "id": "connection-mezz-stairs-26-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-26",
+      "code": "JR-142"
+    },
+    {
+      "id": "connection-mezz-stairs-27-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-27",
+      "code": "JR-143"
+    },
+    {
+      "id": "connection-mezz-stairs-27-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-27",
+      "code": "JR-144"
+    },
+    {
+      "id": "connection-mezz-stairs-29-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-29",
+      "code": "JR-145"
+    },
+    {
+      "id": "connection-mezz-stairs-29-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-29",
+      "code": "JR-146"
+    },
+    {
+      "id": "connection-mezz-stairs-21-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-21",
+      "code": "JR-147"
+    },
+    {
+      "id": "connection-mezz-stairs-21-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-21",
+      "code": "JR-148"
+    },
+    {
+      "id": "connection-mezz-stairs-23-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-23",
+      "code": "JR-149"
+    },
+    {
+      "id": "connection-mezz-stairs-23-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-23",
+      "code": "JR-150"
+    },
+    {
+      "id": "connection-mezz-stairs-25-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-25",
+      "code": "JR-151"
+    },
+    {
+      "id": "connection-mezz-stairs-25-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-25",
+      "code": "JR-152"
+    },
+    {
+      "id": "connection-mezz-stairs-28-from",
+      "kind": "stairs",
+      "level": "mezzanine",
+      "connectionId": "mezz-stairs-28",
+      "code": "JR-153"
+    },
+    {
+      "id": "connection-mezz-stairs-28-to",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "mezz-stairs-28",
+      "code": "JR-154"
+    },
+    {
+      "id": "connection-mezz-escalator-18-from",
+      "kind": "escalator",
+      "level": "mezzanine",
+      "connectionId": "mezz-escalator-18",
+      "code": "JR-155"
+    },
+    {
+      "id": "connection-mezz-escalator-18-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "mezz-escalator-18",
+      "code": "JR-156"
+    },
+    {
+      "id": "connection-mezz-escalator-19-from",
+      "kind": "escalator",
+      "level": "mezzanine",
+      "connectionId": "mezz-escalator-19",
+      "code": "JR-157"
+    },
+    {
+      "id": "connection-mezz-escalator-19-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "mezz-escalator-19",
+      "code": "JR-158"
+    },
+    {
+      "id": "connection-mezz-escalator-30-from",
+      "kind": "escalator",
+      "level": "mezzanine",
+      "connectionId": "mezz-escalator-30",
+      "code": "JR-159"
+    },
+    {
+      "id": "connection-mezz-escalator-30-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "mezz-escalator-30",
+      "code": "JR-160"
+    },
+    {
+      "id": "connection-mezz-escalator-31-from",
+      "kind": "escalator",
+      "level": "mezzanine",
+      "connectionId": "mezz-escalator-31",
+      "code": "JR-161"
+    },
+    {
+      "id": "connection-mezz-escalator-31-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "mezz-escalator-31",
+      "code": "JR-162"
+    },
+    {
+      "id": "connection-north-2-from",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "north-2",
+      "code": "JR-163"
+    },
+    {
+      "id": "connection-north-2-to",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "north-2",
+      "code": "JR-164"
+    },
+    {
+      "id": "connection-north-2-stairs-from",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "north-2-stairs",
+      "code": "JR-165"
+    },
+    {
+      "id": "connection-north-2-stairs-to",
+      "kind": "stairs",
+      "level": "bridge",
+      "connectionId": "north-2-stairs",
+      "code": "JR-166"
+    },
+    {
+      "id": "connection-north-3-from",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "north-3",
+      "code": "JR-167"
+    },
+    {
+      "id": "connection-north-3-to",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "north-3",
+      "code": "JR-168"
+    },
+    {
+      "id": "connection-south-15-from",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "south-15",
+      "code": "JR-169"
+    },
+    {
+      "id": "connection-south-15-to",
+      "kind": "escalator",
+      "level": "bridge",
+      "connectionId": "south-15",
+      "code": "JR-170"
+    },
+    {
+      "id": "connection-south-stairs-16-from",
+      "kind": "stairs",
+      "level": "platform",
+      "connectionId": "south-stairs-16",
+      "code": "JR-171"
+    },
+    {
+      "id": "connection-south-stairs-16-to",
+      "kind": "stairs",
+      "level": "bridge",
+      "connectionId": "south-stairs-16",
+      "code": "JR-172"
+    },
+    {
+      "id": "connection-south-lift-i-from",
+      "kind": "elevator",
+      "level": "platform",
+      "connectionId": "south-lift-i",
+      "code": "JR-173"
+    },
+    {
+      "id": "connection-south-lift-i-to",
+      "kind": "elevator",
+      "level": "bridge",
+      "connectionId": "south-lift-i",
+      "code": "JR-174"
+    },
+    {
+      "id": "connection-south-building-50-from",
+      "kind": "escalator",
+      "level": "south-deck",
+      "connectionId": "south-building-50",
+      "code": "JR-175"
+    },
+    {
+      "id": "connection-south-building-50-to",
+      "kind": "escalator",
+      "level": "platform",
+      "connectionId": "south-building-50",
+      "code": "JR-176"
+    },
+    {
+      "id": "connection-south-lift-t-from",
+      "kind": "elevator",
+      "level": "south-deck",
+      "connectionId": "south-lift-t",
+      "code": "JR-177"
+    },
+    {
+      "id": "connection-south-lift-t-to",
+      "kind": "elevator",
+      "level": "platform",
+      "connectionId": "south-lift-t",
+      "code": "JR-178"
+    },
+    {
+      "id": "connection-south-building-61-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "south-building-61",
+      "code": "JR-179"
+    },
+    {
+      "id": "connection-south-building-61-to",
+      "kind": "escalator",
+      "level": "south-deck",
+      "connectionId": "south-building-61",
+      "code": "JR-180"
+    },
+    {
+      "id": "connection-south-lift-u-from",
+      "kind": "elevator",
+      "level": "concourse",
+      "connectionId": "south-lift-u",
+      "code": "JR-181"
+    },
+    {
+      "id": "connection-south-lift-u-to",
+      "kind": "elevator",
+      "level": "south-deck",
+      "connectionId": "south-lift-u",
+      "code": "JR-182"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-1-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-1",
+      "code": "HK-010"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-1-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-1",
+      "code": "HK-011"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-1-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-1",
+      "code": "HK-012"
+    },
+    {
+      "id": "connection-hankyu-umeda-lift-1-to",
+      "kind": "elevator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-lift-1",
+      "code": "HK-013"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-2-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-2",
+      "code": "HK-014"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-2-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-2",
+      "code": "HK-015"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-2-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-2",
+      "code": "HK-016"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-2-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-2",
+      "code": "HK-017"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-3-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-3",
+      "code": "HK-018"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-3-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-3",
+      "code": "HK-019"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-3-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-3",
+      "code": "HK-020"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-3-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-3",
+      "code": "HK-021"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-4-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-4",
+      "code": "HK-022"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-4-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-4",
+      "code": "HK-023"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-4-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-4",
+      "code": "HK-024"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-4-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-4",
+      "code": "HK-025"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-5-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-5",
+      "code": "HK-026"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-5-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-5",
+      "code": "HK-027"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-5-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-5",
+      "code": "HK-028"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-5-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-5",
+      "code": "HK-029"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-6-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-6",
+      "code": "HK-030"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-6-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-6",
+      "code": "HK-031"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-6-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-6",
+      "code": "HK-032"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-6-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-6",
+      "code": "HK-033"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-7-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-7",
+      "code": "HK-034"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-7-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-7",
+      "code": "HK-035"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-7-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-7",
+      "code": "HK-036"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-7-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-7",
+      "code": "HK-037"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-8-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-8",
+      "code": "HK-038"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-8-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-8",
+      "code": "HK-039"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-8-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-8",
+      "code": "HK-040"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-8-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-8",
+      "code": "HK-041"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-9-from",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-central-bank-9",
+      "code": "HK-042"
+    },
+    {
+      "id": "connection-hankyu-umeda-central-bank-9-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-central-bank-9",
+      "code": "HK-043"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-9-from",
+      "kind": "stairs",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-chaya-bank-9",
+      "code": "HK-044"
+    },
+    {
+      "id": "connection-hankyu-umeda-chaya-bank-9-to",
+      "kind": "stairs",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-chaya-bank-9",
+      "code": "HK-045"
+    },
+    {
+      "id": "connection-hankyu-umeda-public-lift-from",
+      "kind": "elevator",
+      "level": "hankyu-ground",
+      "connectionId": "hankyu-umeda-public-lift",
+      "code": "HK-046"
+    },
+    {
+      "id": "connection-hankyu-umeda-public-lift-to",
+      "kind": "elevator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-public-lift",
+      "code": "HK-047"
+    },
+    {
+      "id": "connection-hankyu-umeda-public-rise-from",
+      "kind": "escalator",
+      "level": "hankyu-ground",
+      "connectionId": "hankyu-umeda-public-rise",
+      "code": "HK-048"
+    },
+    {
+      "id": "connection-hankyu-umeda-public-rise-to",
+      "kind": "escalator",
+      "level": "hankyu-hall",
+      "connectionId": "hankyu-umeda-public-rise",
+      "code": "HK-049"
+    },
+    {
+      "id": "connection-hankyu-umeda-direct-1f-3f-from",
+      "kind": "escalator",
+      "level": "hankyu-ground",
+      "connectionId": "hankyu-umeda-direct-1f-3f",
+      "code": "HK-050"
+    },
+    {
+      "id": "connection-hankyu-umeda-direct-1f-3f-to",
+      "kind": "escalator",
+      "level": "hankyu-platform",
+      "connectionId": "hankyu-umeda-direct-1f-3f",
+      "code": "HK-051"
+    },
+    {
+      "id": "connection-metro-umeda-bank-A-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-A",
+      "code": "M16-012"
+    },
+    {
+      "id": "connection-metro-umeda-rise-A-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-A",
+      "code": "M16-013"
+    },
+    {
+      "id": "connection-metro-umeda-rise-A-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-A",
+      "code": "M16-014"
+    },
+    {
+      "id": "connection-metro-umeda-bank-C-from",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-C",
+      "code": "M16-015"
+    },
+    {
+      "id": "connection-metro-umeda-bank-C-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-C",
+      "code": "M16-016"
+    },
+    {
+      "id": "connection-metro-umeda-rise-C-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-C",
+      "code": "M16-017"
+    },
+    {
+      "id": "connection-metro-umeda-rise-C-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-C",
+      "code": "M16-018"
+    },
+    {
+      "id": "connection-metro-umeda-bank-E-from",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-E",
+      "code": "M16-019"
+    },
+    {
+      "id": "connection-metro-umeda-bank-E-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-E",
+      "code": "M16-020"
+    },
+    {
+      "id": "connection-metro-umeda-rise-E-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-E",
+      "code": "M16-021"
+    },
+    {
+      "id": "connection-metro-umeda-rise-E-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-E",
+      "code": "M16-022"
+    },
+    {
+      "id": "connection-metro-umeda-bank-F-from",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-F",
+      "code": "M16-023"
+    },
+    {
+      "id": "connection-metro-umeda-bank-F-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-F",
+      "code": "M16-024"
+    },
+    {
+      "id": "connection-metro-umeda-rise-F-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-F",
+      "code": "M16-025"
+    },
+    {
+      "id": "connection-metro-umeda-rise-F-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-F",
+      "code": "M16-026"
+    },
+    {
+      "id": "connection-metro-umeda-bank-H-from",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-H",
+      "code": "M16-027"
+    },
+    {
+      "id": "connection-metro-umeda-bank-H-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-H",
+      "code": "M16-028"
+    },
+    {
+      "id": "connection-metro-umeda-rise-H-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-H",
+      "code": "M16-029"
+    },
+    {
+      "id": "connection-metro-umeda-rise-H-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-H",
+      "code": "M16-030"
+    },
+    {
+      "id": "connection-metro-umeda-bank-J-from",
+      "kind": "stairs",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-bank-J",
+      "code": "M16-031"
+    },
+    {
+      "id": "connection-metro-umeda-bank-J-to",
+      "kind": "stairs",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-bank-J",
+      "code": "M16-032"
+    },
+    {
+      "id": "connection-metro-umeda-rise-J-from",
+      "kind": "escalator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-rise-J",
+      "code": "M16-033"
+    },
+    {
+      "id": "connection-metro-umeda-rise-J-to",
+      "kind": "escalator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-rise-J",
+      "code": "M16-034"
+    },
+    {
+      "id": "connection-metro-umeda-lift-north-from",
+      "kind": "elevator",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-lift-north",
+      "code": "M16-035"
+    },
+    {
+      "id": "connection-metro-umeda-lift-north-to",
+      "kind": "elevator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-lift-north",
+      "code": "M16-036"
+    },
+    {
+      "id": "connection-metro-umeda-lift-south-from",
+      "kind": "elevator",
+      "level": "metro-platform",
+      "connectionId": "metro-umeda-lift-south",
+      "code": "M16-037"
+    },
+    {
+      "id": "connection-metro-umeda-lift-south-to",
+      "kind": "elevator",
+      "level": "metro-intermediate",
+      "connectionId": "metro-umeda-lift-south",
+      "code": "M16-038"
+    },
+    {
+      "id": "connection-metro-umeda-hall-lift-to",
+      "kind": "elevator",
+      "level": "metro-hall",
+      "connectionId": "metro-umeda-hall-lift",
+      "code": "M16-039"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-escalator-from",
+      "kind": "escalator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-escalator",
+      "code": "HS-011"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-escalator-to",
+      "kind": "escalator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-escalator",
+      "code": "HS-012"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-stairs",
+      "code": "HS-013"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-stairs",
+      "code": "HS-014"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-lift-from",
+      "kind": "elevator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-lift",
+      "code": "HS-015"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-12-lift-to",
+      "kind": "elevator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-12-lift",
+      "code": "HS-016"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-escalator-from",
+      "kind": "escalator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-escalator",
+      "code": "HS-017"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-escalator-to",
+      "kind": "escalator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-escalator",
+      "code": "HS-018"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-stairs",
+      "code": "HS-019"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-stairs",
+      "code": "HS-020"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-lift-from",
+      "kind": "elevator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-lift",
+      "code": "HS-021"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-platform-34-lift-to",
+      "kind": "elevator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-platform-34-lift",
+      "code": "HS-022"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-alighting-23-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-alighting-23-stairs",
+      "code": "HS-023"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-alighting-23-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-alighting-23-stairs",
+      "code": "HS-024"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-alighting-4-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-hanshin-umeda-alighting-4-stairs",
+      "code": "HS-025"
+    },
+    {
+      "id": "connection-hanshin-umeda-hanshin-umeda-alighting-4-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-hanshin-umeda-alighting-4-stairs",
+      "code": "HS-026"
+    },
+    {
+      "id": "connection-hanshin-umeda-east-public-escalators-from",
+      "kind": "escalator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-east-public-escalators",
+      "code": "HS-038"
+    },
+    {
+      "id": "connection-hanshin-umeda-east-public-escalators-to",
+      "kind": "escalator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-east-public-escalators",
+      "code": "HS-039"
+    },
+    {
+      "id": "connection-hanshin-umeda-east-public-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-east-public-stairs",
+      "code": "HS-040"
+    },
+    {
+      "id": "connection-hanshin-umeda-east-public-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-east-public-stairs",
+      "code": "HS-041"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-public-escalator-from",
+      "kind": "escalator",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-south-public-escalator",
+      "code": "HS-042"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-public-escalator-to",
+      "kind": "escalator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-south-public-escalator",
+      "code": "HS-043"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-public-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-platform",
+      "connectionId": "hanshin-umeda-south-public-stairs",
+      "code": "HS-044"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-public-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-south-public-stairs",
+      "code": "HS-045"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-lift-b1-ground-from",
+      "kind": "elevator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-south-lift-b1-ground",
+      "code": "HS-027"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-lift-b1-ground-to",
+      "kind": "elevator",
+      "level": "hanshin-ground",
+      "connectionId": "hanshin-umeda-south-lift-ground-deck",
+      "code": "HS-028"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-lift-ground-deck-to",
+      "kind": "elevator",
+      "level": "hanshin-deck",
+      "connectionId": "hanshin-umeda-south-lift-ground-deck",
+      "code": "HS-029"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-ground-stairs-from",
+      "kind": "stairs",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-south-ground-stairs",
+      "code": "HS-030"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-ground-stairs-to",
+      "kind": "stairs",
+      "level": "hanshin-ground",
+      "connectionId": "hanshin-umeda-south-ground-stairs",
+      "code": "HS-031"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-ground-escalator-from",
+      "kind": "escalator",
+      "level": "hanshin-hall",
+      "connectionId": "hanshin-umeda-south-ground-escalator",
+      "code": "HS-032"
+    },
+    {
+      "id": "connection-hanshin-umeda-south-ground-escalator-to",
+      "kind": "escalator",
+      "level": "hanshin-ground",
+      "connectionId": "hanshin-umeda-south-ground-escalator",
+      "code": "HS-033"
+    },
+    {
+      "id": "connection-higashi-umeda-north-east-stairs-from",
+      "kind": "stairs",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-north-east-stairs",
+      "code": "T20-019"
+    },
+    {
+      "id": "connection-higashi-umeda-north-east-stairs-to",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-north-east-stairs",
+      "code": "T20-020"
+    },
+    {
+      "id": "connection-higashi-umeda-north-west-stairs-from",
+      "kind": "stairs",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-north-west-stairs",
+      "code": "T20-021"
+    },
+    {
+      "id": "connection-higashi-umeda-north-west-stairs-to",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-north-west-stairs",
+      "code": "T20-022"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-stairs-from",
+      "kind": "stairs",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-middle-west-stairs",
+      "code": "T20-023"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-stairs-to",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-middle-west-stairs",
+      "code": "T20-024"
+    },
+    {
+      "id": "connection-higashi-umeda-south-stairs-from",
+      "kind": "stairs",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-south-stairs",
+      "code": "T20-025"
+    },
+    {
+      "id": "connection-higashi-umeda-south-stairs-to",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-south-stairs",
+      "code": "T20-026"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-escalator-from",
+      "kind": "escalator",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-middle-west-escalator",
+      "code": "T20-027"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-escalator-to",
+      "kind": "escalator",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-middle-west-escalator",
+      "code": "T20-028"
+    },
+    {
+      "id": "connection-higashi-umeda-south-escalator-from",
+      "kind": "escalator",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-south-escalator",
+      "code": "T20-029"
+    },
+    {
+      "id": "connection-higashi-umeda-south-escalator-to",
+      "kind": "escalator",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-south-escalator",
+      "code": "T20-030"
+    },
+    {
+      "id": "connection-higashi-umeda-south-lift-from",
+      "kind": "elevator",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-south-lift",
+      "code": "T20-031"
+    },
+    {
+      "id": "connection-higashi-umeda-south-lift-to",
+      "kind": "elevator",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-south-lift",
+      "code": "T20-032"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-lift-from",
+      "kind": "elevator",
+      "level": "t20-platform",
+      "connectionId": "higashi-umeda-middle-west-lift",
+      "code": "T20-033"
+    },
+    {
+      "id": "connection-higashi-umeda-middle-west-lift-to",
+      "kind": "elevator",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-middle-west-lift",
+      "code": "T20-034"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-1-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-1-stairs",
+      "code": "T20-035"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-1-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-1-stairs",
+      "code": "T20-036"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-2-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-2-stairs",
+      "code": "T20-037"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-2-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-2-stairs",
+      "code": "T20-038"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-3-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-3-stairs",
+      "code": "T20-039"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-3-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-3-stairs",
+      "code": "T20-040"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-4-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-4-stairs",
+      "code": "T20-041"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-4-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-4-stairs",
+      "code": "T20-042"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-6-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-6-stairs",
+      "code": "T20-043"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-6-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-6-stairs",
+      "code": "T20-044"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-7-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-7-stairs",
+      "code": "T20-045"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-7-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-7-stairs",
+      "code": "T20-046"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-8-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-8-stairs",
+      "code": "T20-047"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-8-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-8-stairs",
+      "code": "T20-048"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-9-stairs-from",
+      "kind": "stairs",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-exit-9-stairs",
+      "code": "T20-049"
+    },
+    {
+      "id": "connection-higashi-umeda-exit-9-stairs-to",
+      "kind": "stairs",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-exit-9-stairs",
+      "code": "T20-050"
+    },
+    {
+      "id": "connection-higashi-umeda-street-lift-from",
+      "kind": "elevator",
+      "level": "t20-hall",
+      "connectionId": "higashi-umeda-street-lift",
+      "code": "T20-051"
+    },
+    {
+      "id": "connection-higashi-umeda-street-lift-to",
+      "kind": "elevator",
+      "level": "t20-ground",
+      "connectionId": "higashi-umeda-street-lift",
+      "code": "T20-052"
+    },
+    {
+      "id": "connection-nishi-umeda-north-stairs-from",
+      "kind": "stairs",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-north-stairs",
+      "code": "Y11-020"
+    },
+    {
+      "id": "connection-nishi-umeda-north-stairs-to",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-north-stairs",
+      "code": "Y11-021"
+    },
+    {
+      "id": "connection-nishi-umeda-middle-stairs-from",
+      "kind": "stairs",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-middle-stairs",
+      "code": "Y11-022"
+    },
+    {
+      "id": "connection-nishi-umeda-middle-stairs-to",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-middle-stairs",
+      "code": "Y11-023"
+    },
+    {
+      "id": "connection-nishi-umeda-south-stairs-from",
+      "kind": "stairs",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-south-stairs",
+      "code": "Y11-024"
+    },
+    {
+      "id": "connection-nishi-umeda-south-stairs-to",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-south-stairs",
+      "code": "Y11-025"
+    },
+    {
+      "id": "connection-nishi-umeda-north-escalator-from",
+      "kind": "escalator",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-north-escalator",
+      "code": "Y11-042"
+    },
+    {
+      "id": "connection-nishi-umeda-north-escalator-to",
+      "kind": "escalator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-north-escalator",
+      "code": "Y11-043"
+    },
+    {
+      "id": "connection-nishi-umeda-south-escalator-from",
+      "kind": "escalator",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-south-escalator",
+      "code": "Y11-026"
+    },
+    {
+      "id": "connection-nishi-umeda-south-escalator-to",
+      "kind": "escalator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-south-escalator",
+      "code": "Y11-027"
+    },
+    {
+      "id": "connection-nishi-umeda-platform-lift-from",
+      "kind": "elevator",
+      "level": "y11-platform",
+      "connectionId": "nishi-umeda-platform-lift",
+      "code": "Y11-028"
+    },
+    {
+      "id": "connection-nishi-umeda-platform-lift-to",
+      "kind": "elevator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-platform-lift",
+      "code": "Y11-029"
+    },
+    {
+      "id": "connection-nishi-umeda-street-lift-from",
+      "kind": "elevator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-street-lift",
+      "code": "Y11-030"
+    },
+    {
+      "id": "connection-nishi-umeda-street-lift-to",
+      "kind": "elevator",
+      "level": "y11-ground",
+      "connectionId": "nishi-umeda-street-lift",
+      "code": "Y11-031"
+    },
+    {
+      "id": "connection-nishi-umeda-hydraulic-lift-to",
+      "kind": "elevator",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-hydraulic-lift",
+      "code": "Y11-032"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-2-stairs-from",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-exit-2-stairs",
+      "code": "Y11-033"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-2-stairs-to",
+      "kind": "stairs",
+      "level": "y11-ground",
+      "connectionId": "nishi-umeda-exit-2-stairs",
+      "code": "Y11-034"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-6-stairs-from",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-exit-6-stairs",
+      "code": "Y11-035"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-6-stairs-to",
+      "kind": "stairs",
+      "level": "y11-ground",
+      "connectionId": "nishi-umeda-exit-6-stairs",
+      "code": "Y11-036"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-9-stairs-from",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-exit-9-stairs",
+      "code": "Y11-037"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-9-stairs-to",
+      "kind": "stairs",
+      "level": "y11-ground",
+      "connectionId": "nishi-umeda-exit-9-stairs",
+      "code": "Y11-038"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-10-stairs-from",
+      "kind": "stairs",
+      "level": "y11-hall",
+      "connectionId": "nishi-umeda-exit-10-stairs",
+      "code": "Y11-039"
+    },
+    {
+      "id": "connection-nishi-umeda-exit-10-stairs-to",
+      "kind": "stairs",
+      "level": "y11-ground",
+      "connectionId": "nishi-umeda-exit-10-stairs",
+      "code": "Y11-040"
+    },
+    {
+      "id": "connection-kitashinchi-west-escalators-from",
+      "kind": "escalator",
+      "level": "kitashinchi-platform",
+      "connectionId": "kitashinchi-west-escalators",
+      "code": "KS-012"
+    },
+    {
+      "id": "connection-kitashinchi-west-escalators-to",
+      "kind": "escalator",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-west-escalators",
+      "code": "KS-013"
+    },
+    {
+      "id": "connection-kitashinchi-west-inner-escalators-from",
+      "kind": "escalator",
+      "level": "kitashinchi-platform",
+      "connectionId": "kitashinchi-west-inner-escalators",
+      "code": "KS-014"
+    },
+    {
+      "id": "connection-kitashinchi-west-inner-escalators-to",
+      "kind": "escalator",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-west-inner-escalators",
+      "code": "KS-015"
+    },
+    {
+      "id": "connection-kitashinchi-east-escalators-from",
+      "kind": "escalator",
+      "level": "kitashinchi-platform",
+      "connectionId": "kitashinchi-east-escalators",
+      "code": "KS-016"
+    },
+    {
+      "id": "connection-kitashinchi-east-escalators-to",
+      "kind": "escalator",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-east-escalators",
+      "code": "KS-017"
+    },
+    {
+      "id": "connection-kitashinchi-platform-lift-from",
+      "kind": "elevator",
+      "level": "kitashinchi-platform",
+      "connectionId": "kitashinchi-platform-lift",
+      "code": "KS-018"
+    },
+    {
+      "id": "connection-kitashinchi-platform-lift-to",
+      "kind": "elevator",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-platform-lift",
+      "code": "KS-019"
+    },
+    {
+      "id": "connection-kitashinchi-street-lift-from",
+      "kind": "elevator",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-street-lift",
+      "code": "KS-020"
+    },
+    {
+      "id": "connection-kitashinchi-street-lift-to",
+      "kind": "elevator",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-street-lift",
+      "code": "KS-021"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-4-stairs-from",
+      "kind": "stairs",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-exit-11-4-stairs",
+      "code": "KS-022"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-4-stairs-to",
+      "kind": "stairs",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-exit-11-4-stairs",
+      "code": "KS-023"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-5-stairs-from",
+      "kind": "stairs",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-exit-11-5-stairs",
+      "code": "KS-024"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-5-stairs-to",
+      "kind": "stairs",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-exit-11-5-stairs",
+      "code": "KS-025"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-21-stairs-from",
+      "kind": "stairs",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-exit-11-21-stairs",
+      "code": "KS-026"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-21-stairs-to",
+      "kind": "stairs",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-exit-11-21-stairs",
+      "code": "KS-027"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-23-stairs-from",
+      "kind": "stairs",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-exit-11-23-stairs",
+      "code": "KS-028"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-23-stairs-to",
+      "kind": "stairs",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-exit-11-23-stairs",
+      "code": "KS-029"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-41-stairs-from",
+      "kind": "stairs",
+      "level": "kitashinchi-hall",
+      "connectionId": "kitashinchi-exit-11-41-stairs",
+      "code": "KS-030"
+    },
+    {
+      "id": "connection-kitashinchi-exit-11-41-stairs-to",
+      "kind": "stairs",
+      "level": "kitashinchi-ground",
+      "connectionId": "kitashinchi-exit-11-41-stairs",
+      "code": "KS-031"
+    },
+    {
+      "id": "connection-district-jr-metro-stairs-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "district-jr-metro-stairs",
+      "code": "JR-183"
+    },
+    {
+      "id": "connection-district-jr-metro-stairs-to",
+      "kind": "stairs",
+      "level": "metro-hall",
+      "connectionId": "district-jr-metro-stairs",
+      "code": "M16-040"
+    },
+    {
+      "id": "connection-umeda-deck-north-stairs-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "umeda-deck-north-stairs",
+      "code": "JR-184"
+    },
+    {
+      "id": "connection-umeda-deck-north-stairs-to",
+      "kind": "stairs",
+      "level": "south-deck",
+      "connectionId": "umeda-deck-north-stairs",
+      "code": "JR-185"
+    },
+    {
+      "id": "connection-south-building-74-from",
+      "kind": "escalator",
+      "level": "concourse",
+      "connectionId": "south-building-74",
+      "code": "JR-186"
+    },
+    {
+      "id": "connection-south-building-74-to",
+      "kind": "escalator",
+      "level": "south-deck",
+      "connectionId": "south-building-74",
+      "code": "JR-187"
+    },
+    {
+      "id": "connection-jp-garden-b1-ground-stairs-from",
+      "kind": "stairs",
+      "level": "underground-hall",
+      "connectionId": "jp-garden-b1-ground-stairs",
+      "code": "JR-196"
+    },
+    {
+      "id": "connection-jp-garden-b1-ground-stairs-to",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "jp-garden-b1-ground-stairs",
+      "code": "JR-197"
+    },
+    {
+      "id": "connection-jp-garden-ground-deck-stairs-from",
+      "kind": "stairs",
+      "level": "concourse",
+      "connectionId": "jp-garden-ground-deck-stairs",
+      "code": "JR-198"
+    },
+    {
+      "id": "connection-jp-garden-ground-deck-stairs-to",
+      "kind": "stairs",
+      "level": "south-deck",
+      "connectionId": "jp-garden-ground-deck-stairs",
+      "code": "JR-199"
+    },
+    {
+      "id": "connection-jp-garden-lift-0-from",
+      "kind": "elevator",
+      "level": "underground-hall",
+      "connectionId": "jp-garden-lift-0",
+      "code": "JR-200"
+    },
+    {
+      "id": "connection-jp-garden-lift-0-to",
+      "kind": "elevator",
+      "level": "concourse",
+      "connectionId": "jp-garden-lift-1",
+      "code": "JR-201"
+    },
+    {
+      "id": "connection-jp-garden-lift-1-to",
+      "kind": "elevator",
+      "level": "south-deck",
+      "connectionId": "jp-garden-lift-1",
+      "code": "JR-202"
+    },
+    {
+      "id": "platform-p11",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p11",
+      "code": "JR-188"
+    },
+    {
+      "id": "platform-p9-10",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p9-10",
+      "code": "JR-189"
+    },
+    {
+      "id": "platform-p7-8",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p7-8",
+      "code": "JR-190"
+    },
+    {
+      "id": "platform-p3-4",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p3-4",
+      "code": "JR-191"
+    },
+    {
+      "id": "platform-p1-2",
+      "kind": "platform",
+      "level": "platform",
+      "platformId": "p1-2",
+      "code": "JR-192"
+    },
+    {
+      "id": "platform-p23-24",
+      "kind": "platform",
+      "level": "underground-platform",
+      "platformId": "p23-24",
+      "code": "JR-193"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-2",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-2",
+      "code": "HK-052"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-3",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-3",
+      "code": "HK-053"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-4",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-4",
+      "code": "HK-054"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-5",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-5",
+      "code": "HK-055"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-6",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-6",
+      "code": "HK-056"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-7",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-7",
+      "code": "HK-057"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-8",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-8",
+      "code": "HK-058"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-9",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-9",
+      "code": "HK-059"
+    },
+    {
+      "id": "platform-hankyu-umeda-platform-10",
+      "kind": "platform",
+      "level": "hankyu-platform",
+      "platformId": "hankyu-umeda-platform-10",
+      "code": "HK-060"
+    },
+    {
+      "id": "platform-hanshin-umeda-platform-12",
+      "kind": "platform",
+      "level": "hanshin-platform",
+      "platformId": "hanshin-umeda-platform-12",
+      "code": "HS-034"
+    },
+    {
+      "id": "platform-hanshin-umeda-alighting-23",
+      "kind": "platform",
+      "level": "hanshin-platform",
+      "platformId": "hanshin-umeda-alighting-23",
+      "code": "HS-035"
+    },
+    {
+      "id": "platform-hanshin-umeda-platform-34",
+      "kind": "platform",
+      "level": "hanshin-platform",
+      "platformId": "hanshin-umeda-platform-34",
+      "code": "HS-036"
+    },
+    {
+      "id": "platform-hanshin-umeda-alighting-4",
+      "kind": "platform",
+      "level": "hanshin-platform",
+      "platformId": "hanshin-umeda-alighting-4",
+      "code": "HS-037"
+    },
+    {
+      "id": "platform-higashi-umeda-platform-1",
+      "kind": "platform",
+      "level": "t20-platform",
+      "platformId": "higashi-umeda-platform-1",
+      "code": "T20-053"
+    },
+    {
+      "id": "platform-higashi-umeda-platform-2",
+      "kind": "platform",
+      "level": "t20-platform",
+      "platformId": "higashi-umeda-platform-2",
+      "code": "T20-054"
+    },
+    {
+      "id": "platform-nishi-umeda-island",
+      "kind": "platform",
+      "level": "y11-platform",
+      "platformId": "nishi-umeda-island",
+      "code": "Y11-041"
+    },
+    {
+      "id": "platform-kitashinchi-island",
+      "kind": "platform",
+      "level": "kitashinchi-platform",
+      "platformId": "kitashinchi-island",
+      "code": "KS-032"
+    }
+  ]
+}

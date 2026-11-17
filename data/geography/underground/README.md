@@ -8,7 +8,7 @@
 
 只在源 PDF 改变时重新运行 `extract-basement-outlines.py`；绘图对象序号依赖已记录 SHA-256，文件不符时中止而非沿用旧编号。道路控制点调整后运行 `node scripts/geography/build-basement-outlines.ts`，随后重建地面展示并运行阶段三核查。PDF 黄色公共面和新占位共用离线 `pdf_vectors.py` 采样，不修改原始 references。
 
-当前以 `references/梅田周边地区通道.pdf` 第 1 页黄色区域的**原始矢量填充**为轮廓底稿，不再使用中心线加宽或简化多边形代替地区网络。
+当前以 `references/district/underground-walkway-map.pdf` 第 1 页黄色区域的**原始矢量填充**为轮廓底稿，不再使用中心线加宽或简化多边形代替地区网络。
 
 ## 数据与生成
 

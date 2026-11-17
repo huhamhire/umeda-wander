@@ -2,7 +2,7 @@
 
 ## 参考事实
 
-主要依据 `references/Y11_西梅田_構内図.pdf` 第 1 页，对应 [Osaka Metro 构内图](https://subway.osakametro.co.jp/station_guide/station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)。区域公共连接辅以用户的 `梅田周边地区通道.pdf`（图上日期 2024-02）。原始参考资料不改写、不提交。
+主要依据 `references/stations/nishi-umeda/station-guide.pdf` 第 1 页，对应 [Osaka Metro 构内图](https://subway.osakametro.co.jp/station_guide/station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)。区域公共连接辅以用户的 `梅田周边地区通道.pdf`（图上日期 2024-02）。原始参考资料不改写、不提交。
 
 - B2 是北端尽头的 1/2 番线岛式站台，两条轨道朝南延续，方向为本町、难波、住之江公园。
 - B1 为北、中、南三组改札及公共通路。北改札仅出站，中改札仅进站；此方向约束同时保留在站内示意路线中。

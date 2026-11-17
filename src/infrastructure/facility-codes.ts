@@ -514,4 +514,10 @@ export const facilityCodes:Record<string,string>={
   'connection-public-jp-deck-stairs-to':'PUB-028',
   'connection-public-jp-deck-lift-from':'PUB-029',
   'connection-public-jp-deck-lift-to':'PUB-030',
+  'connection-grand-front-plaza-jr-west-escalator-from':'PUB-031',
+  'connection-grand-front-plaza-jr-west-escalator-to':'PUB-032',
+  'connection-grand-front-plaza-jr-east-escalator-from':'PUB-033',
+  'connection-grand-front-plaza-jr-east-escalator-to':'PUB-034',
+  'connection-grand-front-plaza-sunken-stairs-from':'PUB-035',
+  'connection-grand-front-plaza-sunken-stairs-to':'PUB-036',
 };

@@ -1,20 +1,20 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 import clipping from 'polygon-clipping';
 import * as T from 'three';
-import { elevated, elevatedAreas, deckBuildingAreas, deckAccess, exteriorOpenings, layout, levels, edges } from '../src/infrastructure/district/geographic-map.ts';
-import { createGeographicStations } from '../src/infrastructure/district/geographic-stations.ts';
-import { geographicBuildings } from '../src/infrastructure/buildings/index.ts';
-import { pointInPolygon } from '../src/domain/map/geometry.ts';
-import { explorationElevation } from '../src/application/exploration-level.ts';
-import { displayElevation } from '../src/application/display-elevation.ts';
-import { deckBoundarySegments } from '../src/application/deck-boundaries.ts';
+import ways from '../data/geography/elevated/ways.json' with { type: 'json' };
 import { planFloorOpenings } from '../src/application/connection-openings.ts';
+import { deckBoundarySegments } from '../src/application/deck-boundaries.ts';
+import { displayElevation } from '../src/application/display-elevation.ts';
+import { explorationElevation } from '../src/application/exploration-level.ts';
+import { pointInPolygon } from '../src/domain/map/geometry.ts';
+import type { FloorArea, PlanRegion, Point2 } from '../src/domain/map/model.ts';
+import { geographicBuildings } from '../src/infrastructure/buildings/index.ts';
+import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, layout, levels } from '../src/infrastructure/district/geographic-map.ts';
+import { createGeographicStations } from '../src/infrastructure/district/geographic-stations.ts';
+import { pendingDecks } from '../src/infrastructure/public-areas/elevated-source.ts';
 import { buildFloorGeometry } from '../src/presentation/floor-geometry.ts';
 import { buildGeographicBuilding } from '../src/presentation/models/geographic-building-model.ts';
-import { pendingDecks } from '../src/infrastructure/public-areas/elevated-source.ts';
-import ways from '../data/geography/elevated/ways.json' with { type: 'json' };
-import type { PlanRegion, Point2, FloorArea } from '../src/domain/map/model.ts';
 const geometry = (a: PlanRegion) => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
   number,
   number
@@ -73,7 +73,7 @@ test('commercial 2F context is occupancy only and cannot cover walking faces or 
 });
 test('new public deck equipment has supported landings and real holes through every same-height overlapping slab', () => {
   const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-  assert.equal(deckAccess.connections.length, 9);
+  assert.equal(deckAccess.connections.length, 10);
   for (const c of deckAccess.connections) {
     assert.ok(c.blockId && c.evidence.source === 'district');
     for (const n of [c.from, c.to])

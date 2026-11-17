@@ -20,7 +20,7 @@
 
 ## 本次校准范围
 
-以 `references/梅田周边地区通道.pdf` 和 `references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf` 的地下图为依据，先处理阪神、西梅田、北新地、东梅田之间的 DIAMOR／Whity 网络，包括第一生命弧形互通、圆形节点、中央与斜向街区路口及沿线建筑接口。
+以 `references/district/underground-walkway-map.pdf` 和 `references/district/elevated-walkways-2026.pdf` 的地下图为依据，先处理阪神、西梅田、北新地、东梅田之间的 DIAMOR／Whity 网络，包括第一生命弧形互通、圆形节点、中央与斜向街区路口及沿线建筑接口。
 
 当前改用 `projectWalkwayReference`：以原 PDF 的历史渲染 `build/west-district-review/walkways-1.png` 为索引（该临时渲染现已清理，可由原 PDF 重建），裁剪 `(385,340,400,400)` 并放大 2.5 倍，在 1000px 平面手工简化主要黄色公共区域。阪神锚点 `(310,303)`、西梅田 `(116,640)`、北新地 `(480,885)`、东梅田 `(765,365)` 共用一个投影；保留 OSM 地理锚点，显示偏移单独记录。临时渲染不作为运行时资源发布。
 

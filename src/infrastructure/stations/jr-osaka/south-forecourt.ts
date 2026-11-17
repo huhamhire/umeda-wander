@@ -1,6 +1,6 @@
 import type {AtriumVoid,Evidence,FloorArea} from '../../../domain/map/model.ts';
 
-const evidence:Evidence={source:'district',pages:[1],detail:'references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf p1 shows South Gate upper public deck. Cross-checked with JR station PDF pp4–5 and user facade photo: curved setback over the central entrance, flanking 1F-to-2F escalators. Arc and dimensions schematic, no surveyed radius.'};
+const evidence:Evidence={source:'district',pages:[1],detail:'references/district/elevated-walkways-2026.pdf p1 shows South Gate upper public deck. Cross-checked with JR station PDF pp4–5 and user facade photo: curved setback over the central entrance, flanking 1F-to-2F escalators. Arc and dimensions schematic, no surveyed radius.'};
 // Open to the south rather than an enclosed rectangular escalator shaft.
 const arc=Array.from({length:25},(_,i)=>{
   const x=-10+i*20/24;return {x,z:64+8*(x/10)**2};

@@ -9,13 +9,13 @@ import {platformPoint,platformOutline} from '../../domain/map/geometry.ts';
 import {stationPublicInterfaces} from '../../application/station-public-interfaces.ts';
 import type {StationId} from '../../domain/map/model.ts';
 const references:Record<StationId,string[]>={
-  'jr-osaka':['references/station_osaka.pdf','data/geography/umeda-osm.xml'],
-  'hankyu-umeda':['references/umeda.svg','data/geography/umeda-osm.xml'],
-  'metro-umeda':['references/M16_梅田_構内図_1.pdf','references/梅田周边地区通道.pdf'],
-  'hanshin-umeda':['references/hanshin-umeda.pdf','references/梅田周边地区通道.pdf'],
-  'higashi-umeda':['references/T20_東梅田_構内図.pdf','references/梅田周边地区通道.pdf'],
-  'nishi-umeda':['references/Y11_西梅田_構内図.pdf','references/梅田周边地区通道.pdf'],
-  'kitashinchi':['references/北新地.pdf','references/梅田周边地区通道.pdf'],
+  'jr-osaka':['references/stations/jr-osaka/station-guide.pdf','data/geography/umeda-osm.xml'],
+  'hankyu-umeda':['references/stations/hankyu-umeda/station-guide.svg','data/geography/umeda-osm.xml'],
+  'metro-umeda':['references/stations/metro-umeda/station-guide.pdf','references/district/underground-walkway-map.pdf'],
+  'hanshin-umeda':['references/stations/hanshin-umeda/station-guide.pdf','references/district/underground-walkway-map.pdf'],
+  'higashi-umeda':['references/stations/higashi-umeda/station-guide.pdf','references/district/underground-walkway-map.pdf'],
+  'nishi-umeda':['references/stations/nishi-umeda/station-guide.pdf','references/district/underground-walkway-map.pdf'],
+  'kitashinchi':['references/stations/kitashinchi/station-guide.pdf','references/district/underground-walkway-map.pdf'],
 };
 
 /** Phase-two pilot only. Assembly does not infer walkable links from overlapping plans. */

@@ -35,6 +35,6 @@ H5 使用地理米制总图，车站、商业建筑及公共区域按独立板�
 
 ## 旧坐标对照
 
-旧总图、商业轮廓和连接生成器已移到根目录 [deprecated/](../deprecated/README.md)。旧回归与 `render-station-calibration.ts` 仍可引用归档；现役 src 不依赖该目录。
+旧总图、商业轮廓和连接生成器已完成设施迁移校对并删除，空的 `deprecated/` 目录也已移除。需要历史对照时查 Git 版本 `b2a3da6`，处理清单见 [旧坐标总图退役](./legacy-retirement.md)。
 
-原十个兼容转发入口已删除，直接导入 `stations/<id>/` 中的实际模块。历史文档中的 `umeda-map.ts`、`station-maps.ts`、`district-map-parts.ts` 等旧总图路径对应 deprecated/infrastructure，不再是页面数据入口。归档与现役代码一起参加类型检查。
+原十个兼容转发入口已删除，直接导入 `stations/<id>/` 中的实际模块。历史文档中的 `umeda-map.ts`、`station-maps.ts`、`district-map-parts.ts` 等路径不再是页面数据入口。测试与脚本已改用现役地理站模，旧设施清单冻结为独立 JSON 夹具，避免删除旧实现后失去逐项校对依据。

@@ -8,7 +8,7 @@
         1347368424,
         1388246368
       ],
-      "source": "references/Umeda Walkway Maps/osaka-station-city-2f.png",
+      "source": "references/connections/osaka-station-city/2f-map.png",
       "displayLevel": "2F",
       "widthMetres": 7,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -20,7 +20,7 @@
       "ways": [
         1313936486
       ],
-      "source": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=1",
+      "source": "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=1",
       "displayLevel": "2F",
       "widthMetres": 7,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -30,7 +30,7 @@
       "id": "inogate-grand-green-review",
       "name": "Inogate—Grand Green 新桥",
       "ways": [],
-      "source": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=4",
+      "source": "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=4",
       "displayLevel": "2F",
       "widthMetres": 7,
       "geometryEvidence": "位置图及两端二层图与 OSM 宿主轮廓联合拟合；几何见 inogate.json，不推定为测量端点",

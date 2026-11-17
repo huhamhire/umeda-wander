@@ -9,7 +9,7 @@ export const elevatedLevels: Level[] = [
   { id: 'district-south-deck', label: '2F', name: '南侧公共连廊', y: 4, stackIndex: 1, description: '大丸前庭、阪急阪神步道桥与 JP Tower；探索层归 2F。' },
 ];
 export const deckEvidence: Evidence = { source: 'district', pages: [1], urls: ['https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf'],
-  detail: 'references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf p1 right elevated plan, station-city 2F/3F images and operator plans. OSM walking axes retained; deck widths, landings and heights estimated. Reference-derived geometry permission pending.' };
+  detail: 'references/district/elevated-walkways-2026.pdf p1 right elevated plan, station-city 2F/3F images and operator plans. OSM walking axes retained; deck widths, landings and heights estimated. Reference-derived geometry permission pending.' };
 const project = ([lon, lat]: number[]): Point2 => ({ x: (lon! - 135.491) * 111320 * Math.cos(34.708 * Math.PI / 180), z: (34.708 - lat!) * 111320 });
 const configs = [north, south, west].flatMap(c => c.links);
 export const elevatedWidthEstimates = configs.filter(l => l.ways.length).map(l => ({ id: l.id, ways: l.ways, widthMetres: l.widthMetres, basis: 'illustrative' }));

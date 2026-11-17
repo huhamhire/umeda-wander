@@ -2,7 +2,7 @@
 
 ## 来源与确认范围
 
-主要依据用户新增的 `references/T20_東梅田_構内図.pdf`，共 1 页；对应 [Osaka Metro 官方构内图](https://subway.osakametro.co.jp/station_guide/station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)及[站点页](https://subway.osakametro.co.jp/station_guide/T/t20/index.php)。新实体统一使用 `Evidence.source: tanimachi`，不能记作 M16 或 JR 参考图。
+主要依据用户新增的 `references/stations/higashi-umeda/station-guide.pdf`，共 1 页；对应 [Osaka Metro 官方构内图](https://subway.osakametro.co.jp/station_guide/station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)及[站点页](https://subway.osakametro.co.jp/station_guide/T/t20/index.php)。新实体统一使用 `Evidence.source: tanimachi`，不能记作 M16 或 JR 参考图。
 
 参考图明确：两座侧式站台，中央为两条轨道；1 番线往天满桥、天王寺、八尾南，2 番线往都岛、大日。四组改札为北东、北西、中西、南；1 番线的电梯接南改札，2 番线电梯接中西改札。按用户此前约定，6/7 号口及相关电梯的临时关闭信息不应用到静态模型。参考图展示的出口为 1、2、3、4、6、7、8、9，不补不存在于图中的 5 号口。
 

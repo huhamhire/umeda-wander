@@ -20,7 +20,7 @@
 - 物理标高、探索层归组和展示变换分开；同高公共接缝共面，平面交叉不等于互通。
 - 地面路网独立显隐；地下占位避让通路，2F 分支和建筑门口不得被栏杆／外壳封住。
 - 原始参考资料不覆盖。直接事实、人工拟合与示意设计分开记录；未确认接口不以最近点补线，来源许可见[来源审计](./source-credits-audit.md)。
-- 旧版只保留对照价值，现役模块不依赖 deprecated；局部改动同步检查设备、开口、围栏、轨道、设施目录和取景。
+- 旧版总图已退役，对照查 Git 历史和独立设施基线；局部改动同步检查设备、开口、围栏、轨道、设施目录和取景。
 
 ## 目录结构
 
@@ -62,21 +62,21 @@ umeda-h5/
 │   ├── index.html                # 单入口模板
 │   └── styles.css
 ├── data/geography/               # 地面、地下、轨道与 2F 可重建资源
-├── deprecated/                   # 旧坐标总图／连接数据，仅对照与回归
-│   └── infrastructure/
 ├── tests/                        # 独立测试目录
 ├── scripts/                      # 构建、服务、提取与离线复核
 ├── docs/                         # 校准、来源及维护记录
-└── references/                   # 原始参考资料
+└── references/                   # 分类原始资料及 catalog.json 事实索引
 ```
 
-页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧入口归档范围见 [deprecated 说明](../deprecated/README.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
+页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./legacy-retirement.md)。公共 DOM 组件目前直接放在 presentation，按复杂度再拆目录。
 
 ## 剩余细节
 
 建筑白模、JR 屋顶及阪急 1F 通廊校对见 [建筑模型校对](./building-model-calibration.md)，E-ma／Hilton West 地下占位修订与 MARU 曲线轮廓见 [地下装配记录](./stage-three-underground.md)。已落地内容不再列为待实现；外围蓝天大厦仍为可选地标候选。
 
-1. **地下门位**：JP Tower 与现有公共面仍有约 10.6 m 图上间距，需用具体接入图核对；E-ma、Hilton West 的 B1 占位已按同一地下图投影贴合公共面，具体门洞仍未核验。间距不表示应补一条直线通道。
+设施迁移已完成逐项覆盖校对；Grand Front 南侧广场的两处扶梯和宽楼梯已补入公共 B1／1F 板块，设备位置和标高仍为参考拟合。阪急站台采用更明确的浅栗红铺装，线路色带保留。原始资料已分类到 [references](../references/README.md)，核对事实和人工拟合分别维护。
+
+1. **地下门位**：JP 下沉广场的楼梯及连续直梯已按官方剖面补齐，Garden Avenue 与地区主网的具体接入仍待平面资料定位；局部落台和建筑接触不等于接上主网。E-ma、Hilton West 的 B1 占位已按同一地下图投影贴合公共面，具体门洞仍未核验。
 2. **独立出口与高差**：核对北新地南侧出口、西梅田短升降落台及其地区接入，保留缺少资料的边界。
 3. **地下占位**：继续核对第一酒店等未登记街区；源图中与街道／站前大楼连在一起的复合描边，不能直接当成独立酒店外轮廓。保持公共开挖面及孔洞，地上轮廓与 B1 街区边界分别维护。
 4. **局部净空**：按反馈复核桥宽、阪急西侧公共前沿、设备大小、商业门口和轨道收束。轨道以校准站台和行车区域为依据，不强制吸附 OSM 逐线坐标。

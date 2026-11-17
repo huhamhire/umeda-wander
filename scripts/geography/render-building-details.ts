@@ -1,4 +1,5 @@
-import {mkdirSync, writeFileSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, readdirSync, rmdirSync, unlinkSync, writeFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import * as T from 'three';
 import {geographicBuildings} from '../../src/infrastructure/buildings/index.ts';
@@ -117,9 +118,21 @@ for (const [panel, id] of ids.entries()) {
 }
 mkdirSync('build/geography', {recursive: true});
 const path = 'build/geography/' + output;
-writeFileSync(path + '.ppm', Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), rgb]));
-execFileSync('magick', [path + '.ppm', path + '-base.png']);
-writeFileSync(path + '.svg', `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${labels.join('')}</g></svg>`);
-execFileSync('magick', ['-background', 'none', path + '.svg', path + '-labels.png']);
-execFileSync('magick', [path + '-base.png', path + '-labels.png', '-composite', path + '.png']);
+const scratch = mkdtempSync('build/geography/.building-preview-');
+try {
+  const pixels = join(scratch, 'pixels.ppm');
+  const base = join(scratch, 'base.png');
+  const text = join(scratch, 'labels.svg');
+  const overlay = join(scratch, 'labels.png');
+  writeFileSync(pixels, Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), rgb]));
+  execFileSync('magick', [pixels, base]);
+  writeFileSync(text, `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><g font-family="Microsoft YaHei,sans-serif" font-size="18" fill="#31524d">${labels.join('')}</g></svg>`);
+  execFileSync('magick', ['-background', 'none', text, overlay]);
+  execFileSync('magick', [base, overlay, '-composite', path + '.png']);
+} finally {
+  for (const name of readdirSync(scratch)) {
+    unlinkSync(join(scratch, name));
+  }
+  rmdirSync(scratch);
+}
 console.log('Wrote actual-mesh ' + output + '.png');

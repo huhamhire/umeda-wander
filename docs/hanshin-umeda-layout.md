@@ -2,7 +2,7 @@
 
 ## 已有资料
 
-用户补充 `references/hanshin-umeda.pdf`，共 1 页，图上注明“2025 年 12 月 24 日現在”。对照[阪神官方构内图](https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf)使用；参考文件不改写、不纳入提交。已作为第四座车站加入同一场景，源码位于 `hanshin-umeda-map.ts`，跨站闸外连接位于 `hanshin-district-links.ts`。
+用户补充 `references/stations/hanshin-umeda/station-guide.pdf`，共 1 页，图上注明“2025 年 12 月 24 日現在”。对照[阪神官方构内图](https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf)使用；参考文件不改写、不纳入提交。已作为第四座车站加入同一场景，源码位于 `hanshin-umeda-map.ts`，跨站闸外连接位于 `hanshin-district-links.ts`。
 
 ## 已确认的楼层与接口
 

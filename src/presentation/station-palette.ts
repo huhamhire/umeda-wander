@@ -7,7 +7,7 @@ export const undergroundPublicColor = 0xd3c4a4;
 /** Operator identity accents; public, commercial and service areas keep shared semantics. */
 export const stationPalettes = {
   'jr-osaka': { paid: 0xd7e1ea, gate: 0x8198aa, gateTop: 0xb1c5d6, platform: 0xbdcfdd, fence: 0x8097a7 },
-  'hankyu-umeda': { paid: 0xe6d4d8, gate: 0xb78d98, gateTop: 0xd7bcc4, platform: 0xd8ced1, fence: 0xb2949d },
+  'hankyu-umeda': { paid: 0xe6d4d8, gate: 0xb78d98, gateTop: 0xd7bcc4, platform: 0xe6cbd1, fence: 0xb2949d },
   'metro-umeda': { paid: 0xead8d5, gate: 0xb68c87, gateTop: 0xd8b5ad, platform: 0xe0c9c4, fence: 0xb2918b },
   'hanshin-umeda': { paid: 0xcbdfe8, gate: 0x7999a7, gateTop: 0xa9c7d6, platform: 0xbad0dc, fence: 0x7696a4 },
   'higashi-umeda': { paid: 0xe1d7e8, gate: 0x9b87a7, gateTop: 0xc4afd1, platform: 0xc5bdce, fence: 0x9b87a7 },

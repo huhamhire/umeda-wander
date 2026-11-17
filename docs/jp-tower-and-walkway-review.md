@@ -2,7 +2,7 @@
 
 ## 使用资料
 
-- 用户新增 `references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf` 第 1 页：左图地下网络、DIAMOR 圆形广场与弯曲分支，右图二层步道及上下层关系。文件名作为资料标识，不据此推定每个节点均于 2026 年实测。
+- 用户新增 `references/district/elevated-walkways-2026.pdf` 第 1 页：左图地下网络、DIAMOR 圆形广场与弯曲分支，右图二层步道及上下层关系。文件名作为资料标识，不据此推定每个节点均于 2026 年实测。
 - 同目录 `jr-west-umekita-decks.pdf` 共 8 页：JR 西日本 2025-02-19 发布，主要核对第 1、3、4 页。第 4 页新连桥是 Inogate 大阪西端至 Grand Green 南馆，不是已有 LUCUA 1100 西侧连桥，不能混成一条线。
 - [日本邮便 2023-10-27 发布的连桥资料](https://www.post.japanpost.jp/notification/productinformation/2023/1027_01_01.pdf)第 2 页：南门大楼二层连桥、JP Tower 东南下沉广场、B1 Garden Avenue，以及 1F 往 JR 西口的通道。
 - [JP Tower 官方介绍](https://www.jp-re.japanpost.jp/sp/osaka/)确认地下接入周边车站的关系；不按早期发布资料的建设状态显示关闭或预留。

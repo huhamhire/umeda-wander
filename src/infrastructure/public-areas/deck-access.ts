@@ -17,6 +17,19 @@ export function createDeckAccess(){
     add('public-south-lift-'+ref,'south-decks','district-south-deck',{x:x!,z:z!});
   add('public-jp-deck-stairs','south-decks','district-south-deck',{x:337.7,z:811},{x:331.7,z:815},'stairs');
   add('public-jp-deck-lift','south-decks','district-south-deck',{x:342,z:808.4});
+  // JR south/east 1F plan: the stair at the north end of the perimeter bridge.
+  add('umeda-deck-north-stairs','south-decks','district-south-deck',{x:614.5,z:596},{x:605,z:591},'stairs');
+  const northStair = connections.find(c => c.id === 'umeda-deck-north-stairs')!;
+  northStair.width = 2.6;
+  northStair.evidence = {
+    ...northStair.evidence,
+    pages: [5],
+    urls: [...northStair.evidence.urls ?? [], 'https://www.westjr.co.jp/global/en/timetable/pdf/station_osaka.pdf'],
+    detail: 'JR south/east 1F plan shows a stair to the perimeter pedestrian bridge north landing. Location fitted to the calibrated bridge-north axis; width and rise estimated.',
+  };
+  // Its ground end already rests on JR's south-public face; do not overlay it.
+  const redundantLanding = areas.findIndex(a => a.id === northStair.from.id + ':landing');
+  areas.splice(redundantLanding, 1);
   return {connections,areas,buildingEquipment:[
     {connectionId:'public-jp-deck-stairs',buildingId:'jp-tower'},
     {connectionId:'public-south-lift-9',buildingId:'hankyu-dept'},

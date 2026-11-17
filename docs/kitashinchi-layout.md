@@ -2,7 +2,7 @@
 
 ## 资料与结构
 
-主要依据用户新增 `references/北新地.pdf` 第 1 页，图上日期为 2026-10-02；[JR 官方站图入口](https://eki.jr-odekake.net/premises?id=0612303)。地区关系采用 `references/梅田周边地区通道.pdf` 第 1 页，图上日期 2024-02。施工或临时扶梯停用按用户约定忽略。
+主要依据用户新增 `references/stations/kitashinchi/station-guide.pdf` 第 1 页，图上日期为 2026-10-02；[JR 官方站图入口](https://eki.jr-odekake.net/premises?id=0612303)。地区关系采用 `references/district/underground-walkway-map.pdf` 第 1 页，图上日期 2024-02。施工或临时扶梯停用按用户约定忽略。
 
 北新地采用 B2 双线岛式站台、B1 东西改札及公共通路、地面出入口小型落台。1 番线京桥／四条畷／松井山手方向，2 番线尼崎／宝塚／三之宫方向。表达西侧及东侧的主要扶梯、站台电梯、地面电梯、绿色窗口、指定券售票机、站务室和图中 11-4、11-5、11-21、11-23、11-41 出口去向；局部坡道归并至公共层，临时设备状态不参与模型。
 

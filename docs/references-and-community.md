@@ -4,7 +4,7 @@
 
 ## 1. 本地资料检查
 
-### JR：`references/station_osaka.pdf`
+### JR：`references/stations/jr-osaka/station-guide.pdf`
 
 - 文件约 0.81 MB，共 8 页；标题为 `Osaka Station Map`，作者元数据为 West Japan Railway Company。
 - 第 1 页有完整立体分层总览和设施图例，标注资料时点为 2026-01-14。
@@ -19,9 +19,9 @@
 
 ### Osaka Metro：新增 M16 梅田站资料
 
-用户新增 `references/M16_梅田_構内図_1.pdf`，1 页，已提取文本并渲染检查。御堂筋线站台、四组改札、站内中间层与选取竖向设施已作为首版接入页面；跨站换乘与完整无障碍路线未完成。具体证据边界见 [M16 接入评估](./midosuji-umeda-layout.md)及[实现记录](./hankyu-and-metro-implementation.md)。
+用户新增 `references/stations/metro-umeda/station-guide.pdf`，1 页，已提取文本并渲染检查。御堂筋线站台、四组改札、站内中间层与选取竖向设施已作为首版接入页面；跨站换乘与完整无障碍路线未完成。具体证据边界见 [M16 接入评估](./midosuji-umeda-layout.md)及[实现记录](./hankyu-and-metro-implementation.md)。
 
-### 阪急：`references/umeda.svg`
+### 阪急：`references/stations/hankyu-umeda/station-guide.svg`
 
 - 文件约 2.53 MB，`viewBox="0 0 1389.41 1385.41"`，为 Illustrator 导出的矢量图。
 - XML 中包含约 1,727 个 path、1,219 个 polygon、446 条 line、74 个 rect，但只有 2 个 text 元素；大量文字已转成轮廓。统计是结构盘点，不是地图实体数。

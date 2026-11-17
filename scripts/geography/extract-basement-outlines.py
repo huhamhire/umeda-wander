@@ -5,7 +5,7 @@ from pathlib import Path
 import pymupdf
 from pdf_vectors import closed_drawing_rings
 
-source = Path('references/梅田周边地区通道.pdf')
+source = Path('references/district/underground-walkway-map.pdf')
 sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
 yellow = json.loads(Path('data/geography/underground/pdf-outline.json').read_text('utf-8'))
 if sha256 != yellow['sha256']:

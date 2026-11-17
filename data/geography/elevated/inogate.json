@@ -78,10 +78,10 @@
     }
   ],
   "sources": [
-    "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=1",
-    "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf#page=4",
-    "references/Umeda Walkway Maps/osaka-station-city-2f.png",
-    "references/Umeda Walkway Maps/grand-green-osaka-south-2f.png"
+    "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=1",
+    "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=4",
+    "references/connections/osaka-station-city/2f-map.png",
+    "references/connections/grand-green-osaka/south-building-2f.png"
   ],
   "certainty": "reference-fit",
   "note": "目标与楼层来自参考图；前沿、门位、桥宽及统一展示标高为人工拟合，不是测量端点。只显示公共连接和宿主平面占位，不展开商业内部。"

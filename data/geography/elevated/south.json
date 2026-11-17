@@ -7,7 +7,7 @@
       "ways": [
         1305504565
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -19,7 +19,7 @@
       "ways": [
         336421843
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -31,7 +31,7 @@
       "ways": [
         496684915
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -44,7 +44,7 @@
         496684904,
         496684911
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -58,7 +58,7 @@
         610936153,
         1316299602
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",
@@ -71,7 +71,7 @@
         610936151,
         610936152
       ],
-      "source": "references/Umeda Walkway Maps/umeda-elevated-walkways-2026.pdf#page=1（右侧高架图）",
+      "source": "references/district/elevated-walkways-2026.pdf#page=1（右侧高架图）",
       "displayLevel": "2F",
       "widthMetres": 6,
       "geometryEvidence": "OSM 线位；桥面宽度为示意",

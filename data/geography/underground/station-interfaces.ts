@@ -3,7 +3,7 @@ import type {Point} from './network.ts';
 /** Reference-map footprint; station PDF supplies topology/level, not survey geometry. */
 export const kitashinchiInterface={
  station:'kitashinchi',
- source:'references/北新地.pdf',page:1,
+ source:'references/stations/kitashinchi/station-guide.pdf',page:1,
  footprint:[[397,613],[560,623],[560,648],[397,638]] as Point[],
  publicBand:[[397,613],[560,623],[560,634],[397,624]] as Point[],
  label:[475,645] as Point,

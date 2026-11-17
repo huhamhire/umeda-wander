@@ -64,7 +64,7 @@ export function sourceProjection(){
   return Array.from({length:count},(_,j)=>project([p[0]+(q[0]-p[0])*j/count,p[1]+(q[1]-p[1])*j/count]));
  });
  const parts:NetworkPart[]=source.paths.map((path,i)=>({
-  id:`pdf-public-space-${i}`,name:'地区图地下公共空间',block:'district-reference',source:'references/梅田周边地区通道.pdf',page:1,evidence:'underground-level-unresolved',sections:[],
+  id:`pdf-public-space-${i}`,name:'地区图地下公共空间',block:'district-reference',source:'references/district/underground-walkway-map.pdf',page:1,evidence:'underground-level-unresolved',sections:[],
   polygons:compoundPolygons(path.rings).map(p=>p.map(projectRing)),label:[-100,-100],
   note:'直接提取 PDF 黄色填充的原始矢量边界；保留凹凸、曲线及孔洞。仿射配准为示意，不代表实测开挖线或全部属于 B1。'
  }));

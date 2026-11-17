@@ -7,7 +7,7 @@ from pathlib import Path
 import pymupdf
 from pdf_vectors import closed_drawing_rings
 
-source = Path('references/梅田周边地区通道.pdf')
+source = Path('references/district/underground-walkway-map.pdf')
 page = pymupdf.open(source)[0]
 paths = []
 for index, drawing in enumerate(page.get_drawings()):
