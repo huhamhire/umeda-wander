@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 import xml.etree.ElementTree as E
-r=E.parse('data/geography/umeda-osm.xml').getroot()
+r=E.parse('references/district/osm/umeda-2026-11-16.xml').getroot()
 nodes={n.attrib['id']:[float(n.attrib['lon']),float(n.attrib['lat'])] for n in r.findall('node')}
 features=[]
 for w in r.findall('way'):

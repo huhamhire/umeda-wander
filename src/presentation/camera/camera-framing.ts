@@ -65,46 +65,6 @@ export function cameraEnvelope(
             }
         }
     }
-    if (!state.focusStation) {
-        for (const building of layout.buildings ?? []) {
-            for (const floor of building.floors) {
-                for (const p of building.outline) {
-                    points.push(new T.Vector3(p.x, elevation(floor.level) + (floor.elevationOffset ?? 0) + 3, p.z));
-                }
-            }
-        }
-    }
-    if (!state.focusStation) {
-        for (const building of layout.buildings ?? []) {
-            if (building.podiumHeight) {
-                for (const p of building.outline) {
-                    points.push(new T.Vector3(p.x, elevation('platform') + building.podiumHeight + 0.5, p.z));
-                }
-            }
-        }
-    }
-    if (!state.focusStation) {
-        for (const building of layout.buildings ?? []) {
-            for (const volume of building.volumes ?? []) {
-                for (const p of volume.outline) {
-                    points.push(new T.Vector3(
-                        p.x,
-                        elevation('platform') + volume.height + (building.podiumHeight ? building.podiumHeight + 3 : 2.5),
-                        p.z
-                    ));
-                }
-            }
-        }
-    }
-    if (!state.focusStation) {
-        for (const building of layout.buildings ?? []) {
-            for (const part of building.podiumParts ?? []) {
-                for (const p of part.outline) {
-                    points.push(new T.Vector3(p.x, elevation('platform') + part.height + 0.5, p.z));
-                }
-            }
-        }
-    }
     for (const passage of layout.passages ?? []) {
         if (state.focusStation && !passage.points.some(p => p.station === state.focusStation)) {
             continue;

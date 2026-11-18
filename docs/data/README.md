@@ -4,7 +4,6 @@
 | --- | --- |
 | [来源与版权审计](./source-credits-audit.md) | 实际发布素材、开放许可、混合几何及待授权事项 |
 | [参考资料与模型来源评估](./reference-evaluation.md) | 已有调查、来源适用范围及未采用方案；具体采用结果以区域设计和来源配置为准 |
-| [设施迁移审计](./facility-migration-audit.md) | 冻结旧设施基线、明确替代关系及现役逐项覆盖 |
 | [原始资料索引](../../references/README.md) | 分类文件、catalog、SHA-256、直接核对事实 |
 | [地理数据说明](../../data/geography/README.md) | OSM、源图投影及各类可重建资源 |
 

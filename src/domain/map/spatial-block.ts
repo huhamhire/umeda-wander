@@ -24,22 +24,6 @@ export interface GeographicFrame {
     origin: GeoPoint;
 }
 
-export interface SpatialEnvelope {
-    id: string;
-    role: 'building' | 'platform-reservation';
-    outline: Point2[];
-    holes: Point2[][];
-    source: string;
-    certainty: 'source-geometry' | 'approximate';
-}
-
-export interface StationCalibration {
-    station: StationId;
-    status: 'envelope-review' | 'interior-review' | 'accepted';
-    envelopes: SpatialEnvelope[];
-    notes: string[];
-}
-
 /**
  * Project longitude and latitude into district metres with east as x and south as z.
  */

@@ -98,6 +98,12 @@ test(
             { x: 0, z: 0 }
         );
         assert.ok(!own.some(a => contains(a, center)));
+        assert.equal(g.y, 8);
+        assert.ok(g.innerOutline.every(p => pointInPolygon(p, g.outline)));
+        const edge = g.outline[0]!;
+        const inner = g.innerOutline[0]!;
+        const p = { x: (edge.x + inner.x) / 2, z: (edge.z + inner.z) / 2 };
+        assert.ok(!pointInPolygon(p, b.volumes[0]!.outline), 'podium blocks the gallery');
     }
 );
 test(

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bindSidebarTabs } from '../../src/presentation/components/sidebar-tabs.ts';
@@ -46,5 +47,18 @@ test(
             assert(buttons[to]!.focused);
             assert.deepEqual(panels.map(p => p.hidden), panels.map((_, i) => i !== to));
         }
+    }
+);
+
+test(
+    'two navigation tabs share station focusing through the facility station dropdown',
+    () => {
+        const html = readFileSync(new URL('../../src/index.html', import.meta.url), 'utf8');
+        assert(!html.includes('station-picker'));
+        assert(!html.includes('data-route='));
+        assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m => m[1]), ['tab-layers', 'tab-facilities']);
+        assert.equal([...html.matchAll(/id="facility-station"/g)].length, 1);
+        assert(!html.includes('panel-stations'));
+        assert(!html.includes('data-focus='));
     }
 );

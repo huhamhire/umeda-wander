@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import polygonClipping from 'polygon-clipping';
-import { surfaceRailwayPlan } from '../../src/infrastructure/geography/railway-plan.ts';
+import { surfaceRailwayPlan } from '../../scripts/geography/railway-plan.ts';
 import { createGeographicHankyu } from '../../src/infrastructure/stations/hankyu-umeda/geographic.ts';
 import { passageOutline } from '../../src/domain/map/geometry.ts';
 import type { Point2 } from '../../src/domain/map/model.ts';

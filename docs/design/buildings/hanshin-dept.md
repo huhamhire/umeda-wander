@@ -13,7 +13,7 @@
 
 现役入口为 `src/infrastructure/buildings/hanshin-dept/`。地面 L 形裙楼保留道路退让，上部只补内凹退让附近的窄跨路连接，不能用全局矩形撑出临街弧线。塔楼按用户俯视图标出的长条方向独立构造四个直角，约 96×42 米，沿西南—东北轴线落在裙楼屋面；不能直接裁剪曲面裙楼得到尖角塔楼，也不能将其画成东侧的小方块。尺寸和落位为参考拟合，未作为实测数据。North 是另一侧阪急百货综合体，不在阪神上方补第二座塔。
 
-`src/presentation/models/buildings/hanshin-massing-details.ts` 保留浅色立面和层带，架空裙楼显式使用裙楼材质，不能因基底高于零而被误判为塔身。不增加街边树木或店铺内部。
+`src/presentation/models/buildings/geographic-building-model.ts` 保留浅色立面和层带，架空裙楼显式使用裙楼材质，不能因基底高于零而被误判为塔身。不增加街边树木或店铺内部。
 
 ## 步行连接与显示
 

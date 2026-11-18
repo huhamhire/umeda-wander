@@ -5,6 +5,7 @@ import catalog from '../../references/catalog.json' with { type: 'json' };
 
 const root = resolve('references');
 const ids = new Set<string>();
+const hashes = new Map<string, string>();
 for (const item of catalog.items) {
     const target = resolve(root, item.path);
     if (!target.startsWith(root + sep) || !existsSync(target)) {
@@ -19,6 +20,11 @@ for (const item of catalog.items) {
     if (hash !== item.sha256 || bytes.length !== item.bytes) {
         throw new Error('Reference changed; review the source/version before updating its record: ' + item.path);
     }
+    const duplicate = hashes.get(hash);
+    if (duplicate) {
+        throw new Error(`Duplicate reference bytes: ${duplicate} and ${item.path}`);
+    }
+    hashes.set(hash, item.path);
     for (const url of item.sourceUrls) {
         if (new URL(url).protocol !== 'https:') {
             throw new Error('Expected public HTTPS source: ' + item.path);

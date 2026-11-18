@@ -14,7 +14,7 @@
 
 - `pdf-outline.json`：6 个黄色填充对象、41 条闭合边界。记录源文件 SHA-256、页号、PDF 坐标和绘图对象序号；主对象包含 1,357 条原始绘图指令。保留全部直线顶点，三次曲线每段采样 24 次；不做平滑或简化。
 - `reference-controls.json`：南侧站前四栋大楼、北侧 Grand Front 南北馆／Yodobashi／阪急站的控制点。原图中心点为人工判读，目标为 OSM 建筑面积重心。
-- `network.ts`：保留此前人工示意的语义审查记录和车站留位；当前渲染不再使用这些人工公共通道几何。
+- `network.ts`：维护离线校对图中的车站留位及不纳入 B1 公共网的连接说明。实际公共轮廓由 PDF 投影数据生成。
 - `scripts/geography/extract-underground-outline.py`：用 PyMuPDF 读取原始矢量，按主图黄色填充筛选，排除底部图例。依赖只用于离线提取，不进入网页。
 - `scripts/geography/reference-projection.ts`：复合路径的外环／孔洞整理、南北分区仿射配准。在 PDF y=300～440 点之间平滑过渡，长边先细分以避免跨区折线失真。
 - `scripts/geography/render-underground-plan.ts`：地面底图叠加、SVG／GeoJSON 与控制点残差导出。

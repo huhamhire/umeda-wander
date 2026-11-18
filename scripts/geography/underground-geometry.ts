@@ -7,10 +7,6 @@ export function envelope(part: NetworkPart): MultiPolygon {
     if (part.polygons) {
         return polygonClipping.union(part.polygons);
     }
-    if (part.outline) {
-        const ring = [...part.outline, part.outline[0]!];
-        return polygonClipping.union([ring]);
-    }
     const pieces: Polygon[] = [];
     for (const [i, a] of part.sections.entries()) {
         const ring: Point[] = Array.from(
@@ -44,13 +40,6 @@ export function envelope(part: NetworkPart): MultiPolygon {
         throw new Error(`Empty envelope: ${part.id}`);
     }
     return polygonClipping.union(pieces[0]!, ...pieces.slice(1));
-}
-
-/**
- * Subtract independent station reservations from the public excavation without mutating source outlines.
- */
-export function reserveStationSpace(area: MultiPolygon, stations: MultiPolygon[]): MultiPolygon {
-    return stations.length ? polygonClipping.difference(area, ...stations) : area;
 }
 
 /**

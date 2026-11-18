@@ -380,6 +380,91 @@
       "limitations": "可支持图示拓扑及相对关系；米制坐标、宽度、标高与外观简化须在实现文档另列，不能据此声称现场导航已核验。",
       "permission": "几何改编、原图再发布或其他派生用途的授权待核实；公开下载和本地归档不表示取得许可。",
       "formerPath": "references/Y11_西梅田_構内図.pdf"
+    },
+    {
+      "id": "district-osm-umeda-2026-11-16",
+      "path": "district/osm/umeda-2026-11-16.xml",
+      "sha256": "1856fcad354dbf6bb8964a23004a22e13d7bee5df948ddaa30593a66c65e4aa4",
+      "bytes": 9585792,
+      "publisher": "OpenStreetMap contributors",
+      "sourceUrls": [
+        "https://api.openstreetmap.org/api/0.6/map?bbox=135.491,34.697,135.502,34.708"
+      ],
+      "checkedAt": "2026-11-18",
+      "verification": "recorded-osm-snapshot",
+      "factsUsed": [
+        "地面路网、建筑、铁路及地铁提取使用的同一份官方 API 快照。"
+      ],
+      "limitations": "对象版本与坐标以源快照为准。室内布局与站台端拟合另有来源。",
+      "permission": "ODbL 1.0，保留 © OpenStreetMap contributors 署名。"
+    },
+    {
+      "id": "district-osaka-station-accessibility-2024-04",
+      "path": "district/osaka-station-accessibility-2024-04.pdf",
+      "sha256": "2140b941c5b39362fbf302ea2dae3e31f071cca02207f37778d1744c13de698d",
+      "bytes": 2580102,
+      "publisher": "大阪市",
+      "sourceUrls": [
+        "https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf"
+      ],
+      "checkedAt": "2026-11-18",
+      "verification": "official-pdf-title-edition-and-content-matched",
+      "factsUsed": [
+        "大阪站周边 2024 年 4 月版的出口、无障碍设施和步行层级，可作为已存构内图的补充。"
+      ],
+      "limitations": "已对照线上文件标题与图面内容。当地设施名称和状态以较新的构内图为准。",
+      "permission": "几何改编及原图再发布授权待核实。"
+    },
+    {
+      "id": "district-plateau-2025-52350349",
+      "path": "district/plateau-2025/52350349_bldg_6697_op.gml",
+      "sha256": "1d4238ea5923cf0cc34dde79cfe4d64ec8d96e3d2593bec2fab28a5fb34f7175",
+      "bytes": 27580155,
+      "publisher": "Project PLATEAU（国土交通省／大阪市）",
+      "sourceUrls": [
+        "https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025"
+      ],
+      "checkedAt": "2026-11-18",
+      "verification": "recorded-citygml-hash-verified",
+      "factsUsed": [
+        "提取阪急分层屋面和 JR 大阪站建筑轮廓。"
+      ],
+      "limitations": "发行版为 2025，部分建筑测绘年份较早；模型适用范围见建筑校对文档。",
+      "permission": "CC BY 4.0，保留 PLATEAU 署名。"
+    },
+    {
+      "id": "district-plateau-2025-52350359",
+      "path": "district/plateau-2025/52350359_bldg_6697_op.gml",
+      "sha256": "012a3916b91035e66609ddf95ad299a7b691d6101347c125ab1e1e301b94cfab",
+      "bytes": 27669883,
+      "publisher": "Project PLATEAU（国土交通省／大阪市）",
+      "sourceUrls": [
+        "https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025"
+      ],
+      "checkedAt": "2026-11-18",
+      "verification": "recorded-citygml-hash-verified",
+      "factsUsed": [
+        "相邻的独立网格，作为可追溯的补充资料保存。"
+      ],
+      "limitations": "现行屋面提取只读取 52350349。",
+      "permission": "CC BY 4.0，保留 PLATEAU 署名。"
+    },
+    {
+      "id": "district-plateau-2025-package-readme",
+      "path": "district/plateau-2025/README.md",
+      "sha256": "09513f2f43ae7310a8b0d3c117cf3a4aeac429e6326cef9e369c09bab07f060c",
+      "bytes": 5776,
+      "publisher": "Project PLATEAU（国土交通省／大阪市）",
+      "sourceUrls": [
+        "https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025"
+      ],
+      "checkedAt": "2026-11-18",
+      "verification": "recorded-package-readme-hash-verified",
+      "factsUsed": [
+        "原包的数据版本、内容和许可选项。"
+      ],
+      "limitations": "适用于该官方数据包。",
+      "permission": "CC BY 4.0，保留 PLATEAU 署名。"
     }
   ]
 }

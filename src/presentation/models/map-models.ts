@@ -9,14 +9,10 @@ import type { GateBoundary } from '../../application/connections/gate-boundaries
 import { buildFloorGeometry } from './floor-geometry.ts';
 import { VerticalConnectionModel } from './stations/vertical-connection-model.ts';
 import { setRegionOwner } from '../appearance/layer-appearance.ts';
-import { roofHeightAt, geographicRoofHeightAt, roofPlan, geographicRoofPlan, geographicRoofPoint } from './stations/roof-profile.ts';
+import { geographicRoofHeightAt, geographicRoofPlan, geographicRoofPoint } from './stations/roof-profile.ts';
 import { stationPalettes } from '../appearance/station-palette.ts';
-import { stationPlinthParts } from './stations/station-plinth.ts';
 import { buildRailApproachModel } from './stations/rail-approach-model.ts';
 import { platformRail } from '../../domain/map/rail-geometry.ts';
-import { buildCommercialFloor } from './buildings/commercial-building-model.ts';
-import { buildCommercialMassing } from './buildings/commercial-massing-model.ts';
-import { PublicPassageModel } from './public-areas/public-passage-model.ts';
 import { planAtriumOpenings } from '../../application/connections/atrium-openings.ts';
 import { buildAtriumRailing } from './public-areas/atrium-model.ts';
 import { buildCommercialConcourse } from './buildings/commercial-concourse-model.ts';
@@ -38,12 +34,9 @@ export interface MapModelOptions {
 
 /** Construct map geometry once; expose owned groups for exploration updates and offline inspection. */
 export class MapModels {
-    readonly base = new T.Group();
     readonly roof = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
-    readonly commercialMassing: T.Group[] = [];
     readonly geographicBuildingFloors: T.Group[] = [];
-    readonly publicPassages: PublicPassageModel[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
     readonly canopies: T.Group[] = [];
     readonly pickables: T.Object3D[] = [];
@@ -90,18 +83,6 @@ export class MapModels {
      * Assemble slabs, platforms, public areas, equipment and labels with independent level and region ownership.
      */
     private buildStation(): void {
-        const base = this.base;
-        this.scene.add(base);
-        for (const { geometry, color } of (this.layout.geographic ? [] : stationPlinthParts(this.openings))) {
-            if (!geometry.getAttribute('position')) {
-                continue;
-            }
-            const mesh = new T.Mesh(geometry, this.primitives.material(color));
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            base.add(mesh);
-            mesh.userData.labelOccluder = true;
-        }
         for (const level of this.levels) {
             const group = setRegionOwner(new T.Group(), level.station ?? 'jr-osaka');
             this.groups.set(level.id, group);
@@ -110,44 +91,9 @@ export class MapModels {
         for (const hall of this.layout.concourses ?? []) {
             const model = setRegionOwner(buildCommercialConcourse(hall, this.layout.concourses), null);
             this.groups.get(hall.level)!.add(model);
-            if (this.layout.geographic) {
-                this.geographicBuildingFloors.push(model);
-            }
-        }
-        const publicContext = { areas: this.layout.areas, levels: this.levels, passages: this.layout.passages ?? [] };
-        for (const building of this.layout.buildings ?? []) {
-            if (building.podiumHeight || building.volumes?.length) {
-                const model = setRegionOwner(buildCommercialMassing(building, publicContext), null);
-                this.groups.get('platform')!.add(model);
-                this.commercialMassing.push(model);
-            }
-        }
-        for (const building of this.layout.buildings ?? []) {
-            for (const floor of building.floors) {
-                this.groups.get(floor.level)!.add(setRegionOwner(
-                    buildCommercialFloor(building, floor, this.layout.passages ?? [], publicContext, this.openings),
-                    null
-                ));
-                const x = building.outline.reduce((s, p) => s + p.x, 0) / building.outline.length;
-                const z = building.outline.reduce((s, p) => s + p.z, 0) / building.outline.length;
-                this.label(
-                    `${building.name} · ${floor.name}`,
-                    x,
-                    3 + (floor.elevationOffset ?? 0),
-                    z,
-                    floor.level,
-                    false,
-                    true,
-                    null
-                );
-            }
+            this.geographicBuildingFloors.push(model);
         }
         for (const passage of this.layout.passages ?? []) {
-            if (!passage.surfaceId) {
-                const model = new PublicPassageModel(passage, publicContext);
-                this.publicPassages.push(model);
-                this.scene.add(model.group);
-            }
             if (passage.kind === 'underground' || (passage.kind === 'deck' && !passage.label)) {
                 continue;
             }
@@ -433,24 +379,16 @@ export class MapModels {
             this.connectors.push(model);
             this.scene.add(model.group);
         }
-        if (!this.layout.geographic) {
-            this.label(messageText('stations.jrOsaka.labels.centralGate'), -9, 3.5, 4, 'concourse', false, true);
-        }
-        if (!this.layout.geographic) {
-            this.label(messageText('stations.jrOsaka.labels.bridgeGate'), -3, 3.5, 4, 'bridge');
-        }
         this.buildRoof();
-        if (this.layout.geographic) {
-            this.roof.position.set(geographicRoofPlan.center.x, 0, geographicRoofPlan.center.z);
-            this.roof.rotation.y = -geographicRoofPlan.angle;
-            this.roof.scale.set(geographicRoofPlan.width / 126, 1, geographicRoofPlan.depth / 72);
-            for (const label of this.labels.filter(l => l.roof)) {
-                const point = geographicRoofPoint(label.position.x, label.position.z);
-                label.position.x = point.x;
-                label.position.z = point.z;
-            }
+        this.roof.position.set(geographicRoofPlan.center.x, 0, geographicRoofPlan.center.z);
+        this.roof.rotation.y = -geographicRoofPlan.angle;
+        this.roof.scale.set(geographicRoofPlan.width / 126, 1, geographicRoofPlan.depth / 72);
+        for (const label of this.labels.filter(l => l.roof)) {
+            const point = geographicRoofPoint(label.position.x, label.position.z);
+            label.position.x = point.x;
+            label.position.z = point.z;
         }
-        for (const group of [base, ...this.groups.values(), this.roof]) {
+        for (const group of [...this.groups.values(), this.roof]) {
             this.primitives.batchStaticMeshes(group);
         }
         for (const facility of this.facilities) {
@@ -560,14 +498,11 @@ export class MapModels {
      * Build the north-high station roof, skylights and trusses for overview-only display.
      */
     private buildRoof(): void {
-        this.roof.scale.x = roofPlan.width / 126;
-        this.roof.position.x = roofPlan.centerX;
-        const slope = this.layout.geographic ? geographicRoofHeightAt : roofHeightAt;
         // Low-poly roof profile: shallow curved slope, separate strips for the skylights.
         for (let x = -63; x < 63; x += 6) {
             for (let z = -36; z < 36; z += 6) {
-                const a = slope(z);
-                const b = slope(z + 6);
+                const a = geographicRoofHeightAt(z);
+                const b = geographicRoofHeightAt(z + 6);
                 const vertices = new Float32Array([
                     x,
                     a,
@@ -602,31 +537,31 @@ export class MapModels {
         }
         for (const x of [-63, 63]) {
             for (let z = -36; z < 36; z += 6) {
-                this.primitives.beam(this.roof, new T.Vector3(x, slope(z), z), new T.Vector3(x, slope(z + 6), z + 6), 0.65, colors.white);
+                this.primitives.beam(this.roof, new T.Vector3(x, geographicRoofHeightAt(z), z), new T.Vector3(x, geographicRoofHeightAt(z + 6), z + 6), 0.65, colors.white);
             }
         }
         for (const z of [-36, 36]) {
-            this.primitives.box(this.roof, 0, slope(z), z, 127, 0.85, 0.8, colors.white);
+            this.primitives.box(this.roof, 0, geographicRoofHeightAt(z), z, 127, 0.85, 0.8, colors.white);
             // Triangular steel truss below the roof edge.
             this.primitives.beam(
                 this.roof,
-                new T.Vector3(-63, slope(z) - 3, z),
-                new T.Vector3(63, slope(z) - 3, z),
+                new T.Vector3(-63, geographicRoofHeightAt(z) - 3, z),
+                new T.Vector3(63, geographicRoofHeightAt(z) - 3, z),
                 0.23,
                 colors.steel
             );
             for (let x = -63; x < 63; x += 9) {
                 this.primitives.beam(
                     this.roof,
-                    new T.Vector3(x, slope(z) - 3, z),
-                    new T.Vector3(x + 4.5, slope(z) - 0.5, z),
+                    new T.Vector3(x, geographicRoofHeightAt(z) - 3, z),
+                    new T.Vector3(x + 4.5, geographicRoofHeightAt(z) - 0.5, z),
                     0.13,
                     colors.steel
                 );
                 this.primitives.beam(
                     this.roof,
-                    new T.Vector3(x + 4.5, slope(z) - 0.5, z),
-                    new T.Vector3(x + 9, slope(z) - 3, z),
+                    new T.Vector3(x + 4.5, geographicRoofHeightAt(z) - 0.5, z),
+                    new T.Vector3(x + 9, geographicRoofHeightAt(z) - 3, z),
                     0.13,
                     colors.steel
                 );
@@ -634,8 +569,8 @@ export class MapModels {
         }
         this.label(
             messageText('stations.jrOsaka.name'),
-            this.layout.geographic ? 0 : roofPlan.centerX,
-            this.layout.geographic ? geographicRoofHeightAt(0) + 1.5 : 13,
+            0,
+            geographicRoofHeightAt(0) + 1.5,
             0,
             undefined,
             true,

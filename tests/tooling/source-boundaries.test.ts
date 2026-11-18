@@ -11,14 +11,21 @@ function sources(dir: string): string[] {
     });
 }
 test(
-    'source, tests and scripts cannot reintroduce the retired comparison map',
+    'web source imports prepared data and keeps raw references and offline tools out of its dependency graph',
     () => {
         const archive = path.resolve('deprecated') + path.sep;
+        const offline = ['references', 'scripts', 'build', 'tests'].map(dir => path.resolve(dir) + path.sep);
         for (const file of ['src', 'tests', 'scripts'].flatMap(sources)) {
             const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
             const check = (specifier: ts.StringLiteralLike) => {
                 const target = path.resolve(path.dirname(file), specifier.text);
                 assert.ok(!target.startsWith(archive), `${file} imports archived data: ${specifier.text}`);
+                if (file.startsWith('src' + path.sep)) {
+                    assert.ok(
+                        !offline.some(directory => target.startsWith(directory)),
+                        `${file} imports a non-runtime resource: ${specifier.text}`
+                    );
+                }
             };
             function visit(node: ts.Node): void {
                 if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {

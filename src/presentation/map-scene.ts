@@ -13,7 +13,6 @@ import { displayElevation } from '../application/exploration/display-elevation.t
 import { viewLayerRole } from '../application/exploration/view-layer.ts';
 import { LayerAppearance } from './appearance/layer-appearance.ts';
 import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts';
-import { roofPlan } from './models/stations/roof-profile.ts';
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
 import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope } from './camera/camera-framing.ts';
@@ -29,8 +28,7 @@ export class MapScene {
     private renderer: T.WebGLRenderer;
     private scene = new T.Scene();
     private camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 6000);
-    private ground?: T.Mesh;
-    private context?: ReturnType<typeof buildGeographicContext>;
+    private context: ReturnType<typeof buildGeographicContext>;
     private roadsVisible = true;
     private geographicExteriors = new T.Group();
     /**
@@ -111,12 +109,6 @@ export class MapScene {
         sun.shadow.bias = -0.001;
         sun.shadow.normalBias = 0.12;
         this.scene.add(sun);
-        const ground = new T.Mesh(new T.PlaneGeometry(142, 130), new T.ShadowMaterial({ opacity: 0.075, depthWrite: false }));
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -4;
-        ground.receiveShadow = true;
-        this.scene.add(ground);
-        this.ground = ground;
         this.models = new MapModels({
             scene: this.scene,
             levels: this.levels,
@@ -125,21 +117,18 @@ export class MapScene {
             maxAnisotropy: this.renderer.capabilities.getMaxAnisotropy()
         });
         this.labels = new SceneLabels(labelHost, this.models.labels);
-        if (layout.geographic) {
-            this.context = buildGeographicContext(this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline));
-            this.scene.add(this.context.roads, this.context.buildings);
-            this.ground!.visible = false;
-            for (const building of geographicBuildings) {
-                const model = buildGeographicBuilding(building, this.layout.exteriorOpenings);
-                this.geographicExteriors.add(model);
-            }
-            this.scene.add(this.geographicExteriors);
-            this.geographicExteriors.traverse(o => {
-                if (o.userData.labelOccluder) {
-                    this.labelOccluders.push(o);
-                }
-            });
+        this.context = buildGeographicContext(this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline));
+        this.scene.add(this.context.roads, this.context.buildings);
+        for (const building of geographicBuildings) {
+            const model = buildGeographicBuilding(building, this.layout.exteriorOpenings);
+            this.geographicExteriors.add(model);
         }
+        this.scene.add(this.geographicExteriors);
+        this.geographicExteriors.traverse(o => {
+            if (o.userData.labelOccluder) {
+                this.labelOccluders.push(o);
+            }
+        });
         this.scene.add(this.models.roof, this.routeModel.group, this.selected);
         this.scene.traverse(object => {
             if (object.userData.labelOccluder) {
@@ -385,19 +374,6 @@ export class MapScene {
             group.visible = role !== 'hidden';
             this.appearance.apply(group, role === 'context', this.state.focusStation);
         }
-        const baseRole = viewLayerRole(this.levels, this.state, 'concourse');
-        for (const passage of this.models.publicPassages) {
-            passage.update(
-                id => this.levelY(id),
-                id => viewLayerRole(this.levels, this.state, id),
-                this.state.focusStation
-            );
-        }
-        this.models.base.visible = baseRole !== 'hidden';
-        this.appearance.apply(this.models.base, baseRole === 'context', this.state.focusStation, 'jr-osaka');
-        if (this.ground) {
-            this.ground.visible = !this.layout.geographic && this.models.base.visible;
-        }
         const fullShafts = visibleElevatorConnections(this.layout.connections, this.levels, this.state.level);
         for (const connector of this.models.connectors) {
             const fullShaft = fullShafts.has(connector.connection.id);
@@ -419,20 +395,15 @@ export class MapScene {
                 owner
             );
         }
-        if (this.context) {
-            const above = this.state.level === 'all' || this.levels.find(l => l.id === this.state.level)!.y >= 0;
-            this.context.roads.visible = this.roadsVisible && above;
-            this.context.buildings.visible = this.roadsVisible && above;
-            for (const floor of this.models.geographicBuildingFloors) {
-                floor.visible = this.roadsVisible && above;
-            }
-            this.geographicExteriors.visible = this.roadsVisible && this.state.roof && this.state.level === 'all';
-            this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
+        const above = this.state.level === 'all' || this.levels.find(l => l.id === this.state.level)!.y >= 0;
+        this.context.roads.visible = this.roadsVisible && above;
+        this.context.buildings.visible = this.roadsVisible && above;
+        for (const floor of this.models.geographicBuildingFloors) {
+            floor.visible = this.roadsVisible && above;
         }
+        this.geographicExteriors.visible = this.roadsVisible && this.state.roof && this.state.level === 'all';
+        this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
         this.models.roof.position.y = 26 + this.displayedExplode * 56;
-        for (const model of this.models.commercialMassing) {
-            model.visible = this.state.roof && this.state.level === 'all';
-        }
         this.models.roof.visible = this.state.roof && this.state.level === 'all';
         for (const canopy of this.models.canopies) {
             canopy.visible = this.state.roof;
@@ -455,14 +426,7 @@ export class MapScene {
         const aspect = this.width / Math.max(1, this.height);
         const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
         const envelope = cameraEnvelope(this.layout, this.levels, this.state, id => this.levelY(id));
-        if (!this.layout.geographic && (!this.state.focusStation || this.state.focusStation === 'jr-osaka')) {
-            for (const x of [roofPlan.centerX - roofPlan.width / 2 - 1, roofPlan.centerX + roofPlan.width / 2 + 1]) {
-                for (const z of [-37, 37]) {
-                    envelope.push(new T.Vector3(x, this.models.roof.position.y + 14, z));
-                }
-            }
-        }
-        if (this.layout.geographic && !this.state.focusStation) {
+        if (!this.state.focusStation) {
             for (const b of geographicBuildings) {
                 if (b.wheel) {
                     envelope.push(new T.Vector3(b.wheel.center.x, b.wheel.centerHeight + b.wheel.radius + 2, b.wheel.center.z));
@@ -526,7 +490,7 @@ export class MapScene {
         this.camera.right = span * aspect / 2;
         this.camera.top = span / 2;
         this.camera.bottom = -span / 2;
-        this.camera.position.copy(center).addScaledVector(cameraOffset, this.layout.geographic ? 6 : 1);
+        this.camera.position.copy(center).addScaledVector(cameraOffset, 6);
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
         this.camera.updateMatrixWorld();

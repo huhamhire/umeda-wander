@@ -1,8 +1,10 @@
+import { MapSession } from '../../src/application/map-session.ts';
+import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import type { StationId } from '../../src/domain/map/model.ts';
-import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { cameraEnvelope } from '../../src/presentation/camera/camera-framing.ts';
 test(
     'floor cuts retain an identical camera envelope within each station focus',
@@ -20,6 +22,7 @@ test(
             for (const explode of [0, 0.48, 1]) {
                 const elevation = (id: typeof levels[number]['id']) => displayElevation(levels, id, explode);
                 const all = cameraEnvelope(layout, levels, { level: 'all', focusStation: station }, elevation).map(p => p.toArray());
+                assert.ok(all.length > 0, station ?? 'district');
                 for (const level of levels) {
                     assert.deepEqual(
                         cameraEnvelope(layout, levels, { level: level.id, focusStation: station }, elevation).map(p => p.toArray()),
@@ -28,5 +31,49 @@ test(
                 }
             }
         }
+    }
+);
+
+test(
+    'station focus changes framing and applies the station’s default floor selection',
+    () => {
+        const session = new MapSession(edges);
+        const initialExplode = session.state.explode;
+        const all = cameraEnvelope(layout, levels, session.state, id => displayElevation(levels, id, initialExplode));
+        for (const station of ['jr-osaka', 'hankyu-umeda', 'metro-umeda'] as const) {
+            session.focusStation(station);
+            assert.equal(session.state.explode, initialExplode);
+            if (station === 'metro-umeda') {
+                assert.equal(session.state.level, 'metro-hall');
+                assert.equal(viewLayerRole(levels, session.state, 'metro-hall'), 'current');
+                assert.equal(viewLayerRole(levels, session.state, 'metro-intermediate'), 'current');
+                assert.equal(viewLayerRole(levels, session.state, 'metro-platform'), 'context');
+                assert.equal(viewLayerRole(levels, session.state, 'hankyu-platform'), 'hidden');
+            }
+            else {
+                assert.equal(session.state.level, 'all');
+                for (const level of levels) {
+                    assert.equal(viewLayerRole(levels, session.state, level.id), 'normal');
+                }
+            }
+            const focused = cameraEnvelope(layout, levels, session.state, id => displayElevation(levels, id, initialExplode));
+            assert(focused.length > 0 && focused.length < all.length);
+            assert(focused.every(p => p.toArray().every(Number.isFinite)));
+        }
+        session.focusStation(null);
+        assert.equal(
+            cameraEnvelope(layout, levels, session.state, id => displayElevation(levels, id, initialExplode)).length,
+            all.length
+        );
+    }
+);
+test(
+    'underground layer focus preserves lower structures across the shared district',
+    () => {
+        assert.equal(
+            viewLayerRole(levels, { level: 'metro-hall', focusStation: 'metro-umeda' }, 'underground-platform'),
+            'context'
+        );
+        assert.equal(viewLayerRole(levels, { level: 'metro-hall' }, 'hankyu-platform'), 'hidden');
     }
 );

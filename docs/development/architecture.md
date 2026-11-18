@@ -18,6 +18,8 @@ H5 使用地理米制总图，车站、商业建筑及公共区域按独立板�
 
 公共地下与高架所有者见 [公共板块说明](../../src/infrastructure/public-areas/README.md)。M16 前庭已接入共享地下公共面；Yodobashi 外环由公共 2F 板块持有，不属于建筑外壳副本。
 
+网页源码从 `data/geography/` 读取准备好的模型资源。原始快照和构内图由 `references/` 归档，提取、离线校准报告及核查脚本集中在 `scripts/geography/`。站体在场景中的组装和设备位置校准仍属运行时逻辑。
+
 ## 共享规则
 
 应用层按 stations、public-areas、connections、exploration、i18n 归组，保留 map-session 状态入口，见[应用层说明](../../src/application/README.md)。呈现层按 camera、labels、appearance、components 和模型对象归组，见[呈现层说明](../../src/presentation/README.md)。不添加旧路径转发或聚合所有导出的 barrel。
@@ -39,6 +41,5 @@ MapScene 协调镜头、状态和生命周期；MapModels 构造网格并输出�
 
 ## 旧坐标对照
 
-旧总图、商业轮廓和连接生成器已完成设施迁移校对并删除，空的 `deprecated/` 目录也已移除。需要历史对照时查 Git 版本 `b2a3da6`，处理清单见 [设施迁移审计](../data/facility-migration-audit.md)。
 
 原十个兼容转发入口已删除，直接导入 `stations/<id>/` 中的实际模块。历史文档中的 `umeda-map.ts`、`station-maps.ts`、`district-map-parts.ts` 等路径不再是页面数据入口。测试与脚本已改用现役地理站模，旧设施清单冻结为独立 JSON 夹具，避免删除旧实现后失去逐项校对依据。

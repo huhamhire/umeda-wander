@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { isRegionMuted } from '../../src/application/exploration/region-focus.ts';
 import { LayerAppearance, setRegionOwner } from '../../src/presentation/appearance/layer-appearance.ts';
-import { PublicPassageModel } from '../../src/presentation/models/public-areas/public-passage-model.ts';
 test(
     'station focus mutes other owners and district models without changing shared originals',
     () => {
@@ -55,39 +54,5 @@ test(
         assert(!isRegionMuted(null, null));
         assert(!isRegionMuted('jr-osaka', 'jr-osaka'));
         assert(isRegionMuted('jr-osaka', null));
-    }
-);
-test(
-    'inter-station passage appearance updates on focus alone and restores at overview',
-    () => {
-        const p = new PublicPassageModel({
-            id: 'shared',
-            name: 'shared',
-            kind: 'deck',
-            width: 4,
-            evidence: { pages: [], detail: 'test' },
-            points: [
-                {
-                    x: 0,
-                    z: 0,
-                    level: 'platform',
-                    station: 'jr-osaka'
-                },
-                {
-                    x: 10,
-                    z: 0,
-                    level: 'hankyu-hall',
-                    station: 'hankyu-umeda'
-                }
-            ]
-        });
-        p.update(() => 8, () => 'current');
-        const floor = p.group.getObjectByName('passage-floor') as T.Mesh;
-        const material = floor.material;
-        p.update(() => 8, () => 'current', 'jr-osaka');
-        assert.notEqual(floor.material, material);
-        assert(p.group.visible);
-        p.update(() => 8, () => 'current', null);
-        assert.equal(floor.material, material);
     }
 );

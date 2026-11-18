@@ -51,16 +51,3 @@ test('JR platform escalators keep their hall landing and a compact flight after 
         assert(run <= rise / Math.tan(31 * Math.PI / 180) + .1, c.id + ' remains too shallow');
     }
 });
-
-test('Hanshin east main exit rises eastward with flanking escalators and a wide split stair', () => {
-    const station = createGeographicStation('hanshin-umeda');
-    const stair = station.layout.connections.find(c => c.id.endsWith('east-public-stairs'))!;
-    const escalator = station.layout.connections.find(c => c.id.endsWith('east-public-escalators'))!;
-    const gate = station.facilities.find(f => f.id.endsWith('east-gate'))!;
-    assert(stair.to.x > stair.from.x + 10);
-    assert(Math.abs(stair.to.z - stair.from.z) < stair.to.x - stair.from.x);
-    assert(gate.x < stair.from.x - 10);
-    assert.equal(escalator.lanes, 2);
-    assert.equal(stair.width, 6);
-    assert(stair.stairLandingLength! > 2);
-});

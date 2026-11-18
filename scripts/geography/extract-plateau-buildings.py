@@ -14,7 +14,7 @@ SELECTED = {
     "bldg_765a3b67-2a33-4a5b-a1d4-0a07feee45d6": "hankyu-office",
     "bldg_8e4695fb-0c30-41d2-bd5e-37f2b10c467e": "sanbangai-station",
 }
-root = ET.parse("build/geography/plateau-2025/52350349_bldg_6697_op.gml").getroot()
+root = ET.parse("references/district/plateau-2025/52350349_bldg_6697_op.gml").getroot()
 result = []
 for building in root.findall(".//b:Building", NS):
     identifier = building.attrib["{" + NS["g"] + "}id"]
@@ -38,6 +38,7 @@ for building in root.findall(".//b:Building", NS):
     result.append({"id": SELECTED[identifier], "gmlId": identifier, "surveyYear": survey, "roofs": roofs})
 if len(result) != len(SELECTED):
     raise ValueError("Missing source buildings")
+Path("build/geography").mkdir(parents=True, exist_ok=True)
 Path("build/geography/plateau-roofs.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 print([(r["id"], len(r["roofs"]), r["surveyYear"]) for r in result])
 

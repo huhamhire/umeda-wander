@@ -2,7 +2,7 @@ import { platformOutline, platformPoint } from '../../src/domain/map/geometry.ts
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import type { Point2 } from '../../src/domain/map/model.ts';
-import { surfaceRailwayPlan } from '../../src/infrastructure/geography/railway-plan.ts';
+import { surfaceRailwayPlan } from './railway-plan.ts';
 
 const underground = process.argv.includes('--underground');
 const stations = createGeographicStations();

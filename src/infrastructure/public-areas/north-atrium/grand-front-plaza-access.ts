@@ -8,7 +8,7 @@ export const grandFrontPlazaEvidence: Evidence = {
         'https://www.gfo-sc.jp/information/floor/umekita/1f/',
         'https://www.gfo-sc.jp/information/floor/umekita/b1f/',
     ],
-    detail: 'Official Umekita Plaza 1F/B1 diagrams show the JR-facing escalators and southeast sunken stair beside the Osaka Station connecting passage. Local copies: references/commercial/grand-front/umekita-plaza-1f.jpg and umekita-plaza-b1.jpg. North points right in those diagrams. Positions fitted to the South Building outline, widths and 8 m display rise estimated; no shop layout or routing edges inferred.',
+    detail: 'Official Umekita Plaza 1F/B1 diagrams show the JR-facing escalators and southeast sunken stair beside the Osaka Station connecting passage. North points right in those diagrams. Positions fitted to the South Building outline, widths and 8 m display rise estimated; no shop layout or routing edges inferred.',
 };
 /** JR-facing plaza equipment, separate from the station atrium banks 75/76. */
 export function createGrandFrontPlazaAccess() {

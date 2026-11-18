@@ -74,7 +74,7 @@ function label(text: string, x: number, y: number) {
 for (const part of [...spaces, ...stationParts]) {
     const reservation = part.evidence === 'station-reservation';
     const geometry = envelope(part);
-    const fill = reservation ? 'none' : part.evidence === 'explicit-b1' ? '#87b9ae' : '#e5c481';
+    const fill = reservation ? 'none' : '#e5c481';
     shapes.push(`<path d="${path(geometry)}" fill="${fill}" stroke="${reservation ? '#78879b' : '#ab915c'}" stroke-width="0.8" ${reservation ? 'stroke-dasharray="4 3"' : ''} fill-rule="evenodd"><title>${esc(part.name + '：' + part.note)}</title></path>`);
     if (reservation) {
         label(part.name, ...part.label);
@@ -86,7 +86,7 @@ for (const part of [...spaces, ...stationParts]) {
             name: part.name,
             block: part.block,
             kind: reservation ? 'station-reservation' : 'public-envelope',
-            level: part.evidence === 'explicit-b1' ? 'B1' : null,
+            level: null,
             levelEvidence: part.evidence,
             geometryEvidence: part.polygons ? 'pdf-vector-fill-regional-fit' : 'manual-fit-to-ground-baseline',
             source: part.source,
@@ -163,7 +163,6 @@ writeFileSync(
             publicEnvelopes: spaces.length,
             localAnchors: reference.roadControls.length,
             sharedStationInterfaces: 1,
-            explicitB1: spaces.filter(p => p.evidence === 'explicit-b1').length,
             undergroundLevelUnresolved: spaces.filter(p => p.evidence === 'underground-level-unresolved').length,
             stationReservations: stationReservations.length,
             excludedConnections,

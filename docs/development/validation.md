@@ -28,7 +28,7 @@ git diff --check
 
 站模离线入口为 `review-stage-two.ts`，地下和二层为 `review-stage-three.ts`、`review-stage-four.ts`，位于 `scripts/geography/`；重建顺序由[脚本说明](../../scripts/geography/README.md)和对应[数据说明](../../data/geography/README.md)确定。产物写入忽略的 `build/`，网页由构建写入 `dist/`，均不直接维护或提交。
 
-设施迁移使用 `node scripts/geography/audit-facility-migration.ts`，原始资料校验使用 `node scripts/geography/audit-references.ts`。哈希一致只证明本地版本未变化，不证明授权或外部网址仍可访问。
+原始资料校验使用 `node scripts/geography/audit-references.ts`。哈希一致只证明本地版本未变化，不证明授权或外部网址仍可访问。
 
 ## 真实交互与交付边界
 

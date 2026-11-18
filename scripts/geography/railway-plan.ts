@@ -1,10 +1,14 @@
-import { messageText } from '../i18n/index.ts';
-import { toGeographicPlan } from '../../domain/map/spatial-block.ts';
-import { geographicFrame } from './frame.ts';
-import type { OsmPlanFeature } from './osm-envelope.ts';
+import { messageText } from '../../src/infrastructure/i18n/index.ts';
+import { toGeographicPlan } from '../../src/domain/map/spatial-block.ts';
+import { geographicFrame } from '../../src/infrastructure/geography/frame.ts';
+interface OsmRailFeature {
+    id: string;
+    tags: Record<string, string>;
+    coordinates: number[][];
+}
 
 /** Separate physical rail reference; never converted to a pedestrian route. */
-export function surfaceRailwayPlan(features: OsmPlanFeature[]) {
+export function surfaceRailwayPlan(features: OsmRailFeature[]) {
     return features.filter(f => f.tags.railway === 'rail' && Number(f.tags.layer ?? 0) >= 0 &&
         (!f.tags.tunnel || f.tags.tunnel === 'no' || f.tags.tunnel === 'building_passage'))
         .map(f => ({

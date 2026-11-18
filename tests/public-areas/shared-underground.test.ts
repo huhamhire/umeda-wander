@@ -128,3 +128,16 @@ test(
         }
     }
 );
+
+test(
+    'JR retains three Central Court to Crost flights separately from the paid west link',
+    () => {
+        for (const id of ['crost-67', 'crost-stairs-68', 'crost-stairs-69']) {
+            const c = layout.connections.find(c => c.id === id);
+            assert.ok(c, id);
+            assert.deepEqual(new Set([c.from.level, c.to.level]), new Set(['concourse', 'underground-hall']));
+            const lower = c.from.level === 'underground-hall' ? c.from : c.to;
+            assert.ok(layout.areas.some(a => a.level === 'district-underground' && pointInPolygon(lower, a.outline)));
+        }
+    }
+);

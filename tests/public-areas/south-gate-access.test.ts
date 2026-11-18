@@ -4,6 +4,8 @@ import * as T from 'three';
 import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 test(
@@ -15,6 +17,8 @@ test(
             assert.equal(bank.lanes, 2);
             assert.equal(bank.from.level, 'concourse');
             assert.equal(bank.to.level, 'south-deck');
+            const deck = layout.areas.find(a => a.id === 'south-entrance-deck')!;
+            assert.ok(pointInPolygon(bank.to, deck.outline), id + ' misses the upper deck');
             for (const lane of connectionLanes(bank)) {
                 const p = { x: lane.to.x + (lane.from.x - lane.to.x) * .25, z: lane.to.z + (lane.from.z - lane.to.z) * .25 };
                 const floors = layout.areas.filter(a => levels.find(l => l.id === a.level)!.y === 4 &&
@@ -34,5 +38,20 @@ test(
                 }
             }
         }
+    }
+);
+
+test(
+    'South Gate portal remains open below its sign',
+    () => {
+        const b = geographicBuildings.find(b => b.id === 'daimaru')!;
+        const e = b.entrance!;
+        const c = Math.cos(e.angle);
+        const s = Math.sin(e.angle);
+        const model = buildGeographicBuilding(b);
+        model.updateMatrixWorld(true);
+        const start = new T.Vector3(e.center.x + c * 5 - s * 8, 8, e.center.z + s * 5 + c * 8);
+        const ray = new T.Raycaster(start, new T.Vector3(s, 0, -c), 0, 18);
+        assert.equal(ray.intersectObject(model, true).length, 0, 'solid facade closes the portal');
     }
 );

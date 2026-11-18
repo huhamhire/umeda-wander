@@ -28,7 +28,7 @@ export const deckEvidence: Evidence = {
     source: 'district',
     pages: [1],
     urls: ['https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda02-3%28202404%29.pdf'],
-    detail: 'references/district/elevated-walkways-2026.pdf p1 right elevated plan, station-city 2F/3F images and operator plans. OSM walking axes retained; deck widths, landings and heights estimated. Reference-derived geometry permission pending.'
+    detail: 'Umeda elevated walkway reference, page 1 right elevated plan, station-city 2F/3F images and operator plans. OSM walking axes retained; deck widths, landings and heights estimated. Reference-derived geometry permission pending.'
 };
 /**
  * Project source longitude and latitude into the shared district metre frame, with east x and south z.

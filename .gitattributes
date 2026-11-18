@@ -6,6 +6,10 @@
 
 # Reference documents and editable design assets.
 *.pdf filter=lfs diff=lfs merge=lfs -text
+references/district/plateau-2025/*.gml filter=lfs diff=lfs merge=lfs -text
+# Preserve the upstream README's CRLF and Markdown line breaks for its recorded hash.
+references/district/plateau-2025/README.md -text -whitespace
+references/district/osm/*.xml -text
 *.psd filter=lfs diff=lfs merge=lfs -text
 *.psb filter=lfs diff=lfs merge=lfs -text
 *.ai filter=lfs diff=lfs merge=lfs -text

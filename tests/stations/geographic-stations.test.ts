@@ -5,6 +5,9 @@ import { axisPlacement } from '../../src/domain/map/axis-calibration.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { hankyuStation } from '../../src/infrastructure/stations/hankyu-umeda/index.ts';
 import { metroAxis } from '../../src/infrastructure/stations/metro-umeda/geographic.ts';
+import { fromGeographicPlan, toGeographicPlan } from '../../src/domain/map/spatial-block.ts';
+import { geographicFrame } from '../../src/infrastructure/geography/frame.ts';
+
 test(
     'axis calibration rejects collapsed axes and maps local origin correctly',
     () => {
@@ -14,7 +17,7 @@ test(
     }
 );
 test(
-    'geographic generation leaves legacy data unchanged and produces independent instances',
+    'geographic generation leaves station input data unchanged and produces independent instances',
     () => {
         const before = JSON.stringify(hankyuStation);
         const a = createGeographicStations();
@@ -59,5 +62,16 @@ test(
                 assert.ok(Math.abs(across) <= p.width / 2 + 1e-5, `${c.id} outside platform width`);
             }
         }
+    }
+);
+
+test(
+    'geographic plan has east/south axes and reversible metres',
+    () => {
+        const p = { lat: 34.7022133, lon: 135.4955732 };
+        const q = toGeographicPlan(p, geographicFrame);
+        assert.ok(q.x > 0 && q.z > 0);
+        const restored = fromGeographicPlan(q, geographicFrame);
+        assert.ok(Math.abs(restored.lat - p.lat) < 1e-10 && Math.abs(restored.lon - p.lon) < 1e-10);
     }
 );

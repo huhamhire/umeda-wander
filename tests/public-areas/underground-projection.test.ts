@@ -3,11 +3,11 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import polygonClipping from 'polygon-clipping';
-import { publicSpaces, stationReservations } from '../../data/geography/underground/network.ts';
+import { stationReservations } from '../../data/geography/underground/network.ts';
 import { kitashinchiInterface } from '../../data/geography/underground/station-interfaces.ts';
 import { closestOnLine, localRoadFit } from '../../scripts/geography/local-road-fit.ts';
 import { compoundPolygons, fitReference, sourceProjection } from '../../scripts/geography/reference-projection.ts';
-import { areaOf, envelope, reserveStationSpace } from '../../scripts/geography/underground-geometry.ts';
+import { areaOf, envelope } from '../../scripts/geography/underground-geometry.ts';
 test(
     'local road fit aligns explicit anchors and leaves distant geometry untouched',
     () => {
@@ -107,25 +107,15 @@ test(
     }
 );
 test(
-    'projected public spaces preserve station reservations and provenance',
+    'offline station reservations retain valid shapes and source metadata',
     () => {
-        const stations = stationReservations.map(envelope);
         const ids = new Set<string>();
-        for (const part of [...publicSpaces, ...stationReservations]) {
+        for (const part of stationReservations) {
             assert.ok(!ids.has(part.id));
             ids.add(part.id);
             assert.ok(part.source && part.page > 0 && part.note);
             assert.ok(part.sections.every(p => p.every(Number.isFinite) && p[2] > 0));
-            const geometry = envelope(part);
-            assert.ok(areaOf(geometry) > 0);
-            if (part.evidence === 'station-reservation') {
-                continue;
-            }
-            const clipped = reserveStationSpace(geometry, stations);
-            assert.ok(areaOf(clipped) > 0, part.id);
-            for (const station of stations) {
-                assert.ok(areaOf(polygonClipping.intersection(clipped, station)) < 1e-6, part.id);
-            }
+            assert.ok(areaOf(envelope(part)) > 0);
         }
     }
 );
@@ -186,14 +176,5 @@ test(
         ][];
         const geometry = compoundPolygons([square(5), square(1), square(3)]);
         assert.equal(areaOf(geometry), 100 - 36 + 4);
-    }
-);
-test(
-    'JR north and south B1 do not create an underground central concourse',
-    () => {
-        const north = envelope(publicSpaces.find(p => p.id === 'jr-north-b1')!);
-        const south = envelope(publicSpaces.find(p => p.id === 'jr-south-b1')!);
-        assert.equal(areaOf(polygonClipping.intersection(north, south)), 0);
-        assert.ok(publicSpaces.filter(p => p.evidence === 'explicit-b1').every(p => p.source === 'references/stations/jr-osaka/station-guide.pdf' && p.page === 6));
     }
 );

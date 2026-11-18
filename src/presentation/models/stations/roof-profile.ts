@@ -1,14 +1,5 @@
 import roof from '../../../../data/geography/buildings/jr-roof.json' with { type: 'json' };
 
-/** Roof relief in scene units: station north side is -Z, south side is +Z. */
-export const roofPlan = { centerX: -6, width: 88 };
-/**
- * Evaluate the illustrative roof profile while retaining the north-high, south-low slope.
- */
-export function roofHeightAt(z: number): number {
-    return 2.5 + (36 - z) * 0.15 + Math.cos(z / 72 * Math.PI) * 1.5;
-}
-
 export const geographicRoofPlan = roof;
 /** Relative to the 26 m scene base; LOD1 does not supply the sloping surface. */
 export function geographicRoofHeightAt(z: number): number {

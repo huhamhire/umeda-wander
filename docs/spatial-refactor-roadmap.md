@@ -20,7 +20,7 @@
 - 物理标高、探索层归组和展示变换分开；同高公共接缝共面，平面交叉不等于互通。
 - 地面路网独立显隐；地下占位避让通路，2F 分支和建筑门口不得被栏杆／外壳封住。
 - 原始参考资料不覆盖。直接事实、人工拟合与示意设计分开记录；未确认接口不以最近点补线，来源许可见[来源审计](./data/source-credits-audit.md)。
-- 旧版总图已退役，对照查 Git 历史和独立设施基线；局部改动同步检查设备、开口、围栏、轨道、设施目录和取景。
+- 局部改动同步检查现役设备、开口、围栏、轨道、设施目录和取景。
 
 ## 目录结构
 
@@ -74,16 +74,15 @@ umeda-h5/
 │   ├── main.ts                   # 应用与 DOM 事件绑定
 │   ├── index.html                # 单入口模板
 │   └── styles/                   # 基础样式及品牌／地图／导览／版权组件
-├── data/geography/               # 地面、地下、轨道与 2F 可重建资源
+├── data/geography/               # 正式派生资源与可复现的地理配置
 ├── tests/
 │   ├── stations/                 # 本站布局、设备与跨站组装
 │   ├── public-areas/             # 地下公共空间、天井与二层连廊
 │   ├── geography/                # 坐标、路网、轨道与运行时地理数据
 │   ├── buildings/                # 商业体量、外观及建筑设备
-│   ├── navigation/               # 本站寻路、设施筛选与迁移基线核对
+│   ├── navigation/               # 本站寻路、设施筛选与目录校对
 │   ├── presentation/             # 镜头、交互、可见性与界面资源
-│   ├── tooling/                  # 开发规范与源码依赖边界
-│   └── fixtures/                 # 共享事实／迁移基线
+│   └── tooling/                  # 开发规范与源码依赖边界
 ├── scripts/                      # 构建、服务、提取与离线复核
 ├── docs/
 │   ├── design/                   # 按区域／车站／公共空间／建筑维护设计依据
@@ -92,7 +91,7 @@ umeda-h5/
 └── references/                   # 分类原始资料及 catalog.json 事实索引
 ```
 
-页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./data/facility-migration-audit.md)。应用与呈现能力已按职责归组，见[应用层说明](../src/application/README.md)和[呈现层说明](../src/presentation/README.md)。
+页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)。应用与呈现能力已按职责归组，见[应用层说明](../src/application/README.md)和[呈现层说明](../src/presentation/README.md)。
 
 工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案维护在六个中文领域词库，版权正文改为独立内容资源，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
 

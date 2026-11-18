@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { composeStationMaps } from '../../src/application/stations/compose-station-maps.ts';
 import type { StationLayout } from '../../src/domain/map/model.ts';
-import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
+import { createGeographicStation, createGeographicStations, geographicStationIds } from '../../src/infrastructure/district/geographic-stations.ts';
 
 const empty: StationLayout = { areas: [], platforms: [], connections: [] };
 const stationMaps = createGeographicStations();
@@ -21,7 +21,13 @@ const districtMapParts: StationLayout = {
 test(
     'each station composes independently without district data or foreign route nodes',
     () => {
-        for (const station of stationMaps) {
+        assert.equal(stationMaps.length, 7);
+        assert.equal(new Set(stationMaps.map(station => station.id)).size, 7);
+        for (const [index, station] of stationMaps.entries()) {
+            assert.deepEqual(station, createGeographicStation(geographicStationIds[index]!));
+            assert.ok(station.levels.every(level => level.station === station.id));
+            assert.equal(new Set(station.levels.map(level => level.id)).size, station.levels.length);
+            assert.equal(new Set(station.nodes.map(node => node.id)).size, station.nodes.length);
             const before = JSON.stringify(station);
             const map = composeStationMaps([station], empty);
             assert.equal(map.stations.length, 1);
@@ -30,6 +36,16 @@ test(
             const nodeIds = new Set(map.nodes.map(n => n.id));
             for (const item of [...map.layout.areas, ...map.layout.platforms, ...map.sourceFacilities, ...map.nodes]) {
                 assert(levelIds.has(item.level), `${station.id}: foreign level ${item.level}`);
+            }
+            const canonicalNodes = new Map(station.nodes.map(node => [node.id, node]));
+            for (const connection of station.layout.connections) {
+                for (const endpoint of [connection.from, connection.to]) {
+                    assert.ok(levelIds.has(endpoint.level), connection.id);
+                    const canonical = canonicalNodes.get(endpoint.id);
+                    if (canonical) {
+                        assert.deepEqual(endpoint, canonical, connection.id + ' stale node');
+                    }
+                }
             }
             for (const edge of map.edges) {
                 assert(nodeIds.has(edge.from) && nodeIds.has(edge.to));

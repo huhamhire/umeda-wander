@@ -55,7 +55,7 @@ node scripts/geography/build-ground-context.ts
 node scripts/geography/render-building-details.ts
 ```
 
-原包按 HTTP Range 只取压缩目录及指定 GML／README，缓存在忽略的 `build/`；不下载照片贴图。现役只导入小型 `plateau-profiles.json` 和 `jr-roof.json`。离线校对现在使用 H5 实际网格和 CPU 深度缓冲，替代旧的面片画家排序，避免错误的悬空观感；仍不替代浏览器光照与触控验收。
+原包按 HTTP Range 只取压缩目录及指定 GML／README，已核对的网格和原包说明归档在 `references/district/plateau-2025/`。现役只导入小型 `plateau-profiles.json` 和 `jr-roof.json`。离线校对现在使用 H5 实际网格和 CPU 深度缓冲，替代旧的面片画家排序，避免错误的悬空观感；仍不替代浏览器光照与触控验收。
 
 ## 可选外围地标
 

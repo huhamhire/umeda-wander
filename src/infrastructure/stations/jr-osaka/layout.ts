@@ -3,7 +3,7 @@ import { passageOutline, joinedPassageOutlines, platformLocalPoint, rotatePoint 
 import { undergroundRotationRad, undergroundSketchCorrectionRad } from '../../station-orientation.ts';
 import { refineUpperLevelLinks } from './upper-links.ts';
 import type { Evidence, Facility, FloorArea, Level, Platform, RouteNode, RouteEdge, StationLayout, VerticalConnection } from '../../../domain/map/model.ts';
-// Source: references/stations/jr-osaka/station-guide.pdf, current as of 2026-01-14.
+// Source: JR West Osaka Station guide, current as of 2026-01-14.
 // Level/name/diagram references are checked; all X/Z and heights remain schematic.
 /**
  * Record JR reference pages and interpretation limits without presenting fitted coordinates as surveyed facts.

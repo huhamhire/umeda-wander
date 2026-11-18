@@ -1,34 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import clipping from 'polygon-clipping';
-import { auditFacilityMigration } from '../../scripts/geography/facility-migration.ts';
 import { visibleElevatorConnections } from '../../src/application/connections/elevator-visibility.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { facilities, jpAccess, layout, levels, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
-import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
+
 test(
-    'the geographic directory retains every legacy candidate, flight and platform by ID or reviewed replacement',
-    () => {
-        const report = auditFacilityMigration(layout, facilities, facilityCodes);
-        assert.deepEqual(report.issues, []);
-        assert.equal(report.previous.facilities, 476);
-        assert.equal(report.previous.connections, 177);
-        assert.ok(report.current.facilities >= report.previous.facilities);
-    }
-);
-test(
-    'migration audit detects lost models, missing POIs and stale landing coordinates',
-    () => {
-        const lost = { ...layout, connections: layout.connections.filter(c => c.id !== 'walkway-ac') };
-        assert.ok(auditFacilityMigration(lost, facilities, facilityCodes).issues.includes('Missing connection: walkway-ac'));
-        const missing = facilities.filter(f => f.id !== 'umekita-link');
-        assert.ok(auditFacilityMigration(layout, missing, facilityCodes).issues.includes('Missing authored facility: umekita-link'));
-        const stale = facilities.map(f => f.id === 'walkway-ab-poi' ? { ...f, x: f.x + 10 } : f);
-        assert.ok(auditFacilityMigration(layout, stale, facilityCodes).issues.some(i => i.includes('misses actual landing: walkway-ab-poi')));
-    }
-);
-test(
-    'restored JP public lift segments share a vertical shaft without inventing the Garden Avenue join',
+    'JP public lift segments share a vertical shaft without inventing the Garden Avenue join',
     () => {
         const lower = layout.connections.find(c => c.id === 'jp-garden-lift-0')!;
         const upper = layout.connections.find(c => c.id === 'public-jp-deck-lift')!;

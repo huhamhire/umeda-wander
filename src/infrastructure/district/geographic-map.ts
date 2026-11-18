@@ -146,7 +146,6 @@ export const publicInterfaceBindings = bindPublicInterfaces(publicInterfaces.fil
 export const removedPublicAreas = shared.removed;
 export const layout = {
     ...composed.layout,
-    geographic: true,
     areas: composed.layout.areas.map(area => ({ ...area, name: resolveMessage(area.name) })),
     passages: composed.layout.passages?.map(passage => ({
         ...passage,

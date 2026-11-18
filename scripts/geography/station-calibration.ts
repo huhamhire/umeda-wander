@@ -1,17 +1,11 @@
-import type { StationCalibration } from '../../domain/map/spatial-block.ts';
-import { osmBuildingEnvelopes } from '../geography/osm-envelope.ts';
-import type { OsmPlanFeature } from '../geography/osm-envelope.ts';
-import { jrCalibrationSource } from '../stations/jr-osaka/calibration.ts';
-import { hankyuCalibrationSource } from '../stations/hankyu-umeda/calibration.ts';
-import { metroCalibration } from '../stations/metro-umeda/calibration.ts';
-import { createGeographicStations } from './geographic-stations.ts';
-import { platformPoint, platformOutline } from '../../domain/map/geometry.ts';
-import { stationPublicInterfaces } from '../../application/stations/station-public-interfaces.ts';
-import type { StationId } from '../../domain/map/model.ts';
+import { stationPublicInterfaces } from '../../src/application/stations/station-public-interfaces.ts';
+import { platformOutline, platformPoint } from '../../src/domain/map/geometry.ts';
+import type { StationId } from '../../src/domain/map/model.ts';
+import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 
 const references: Record<StationId, string[]> = {
-    'jr-osaka': ['references/stations/jr-osaka/station-guide.pdf', 'data/geography/umeda-osm.xml'],
-    'hankyu-umeda': ['references/stations/hankyu-umeda/station-guide.svg', 'data/geography/umeda-osm.xml'],
+    'jr-osaka': ['references/stations/jr-osaka/station-guide.pdf', 'references/district/osm/umeda-2026-11-16.xml'],
+    'hankyu-umeda': ['references/stations/hankyu-umeda/station-guide.svg', 'references/district/osm/umeda-2026-11-16.xml'],
     'metro-umeda': [
         'references/stations/metro-umeda/station-guide.pdf',
         'references/district/underground-walkway-map.pdf'
@@ -33,16 +27,6 @@ const references: Record<StationId, string[]> = {
         'references/district/underground-walkway-map.pdf'
     ],
 };
-/** Phase-two pilot only. Assembly does not infer walkable links from overlapping plans. */
-export function createPilotCalibrations(features: OsmPlanFeature[]): StationCalibration[] {
-    return [jrCalibrationSource, hankyuCalibrationSource].map<StationCalibration>(c => ({
-        station: c.station,
-        status: 'envelope-review' as const,
-        envelopes: osmBuildingEnvelopes(features, c.buildingId),
-        notes: c.notes
-    }))
-        .concat([metroCalibration]);
-}
 
 /** Rebuildable seven-station record; dimensions describe our fit, not surveys. */
 export function createRuntimeCalibrations() {

@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import clipping from 'polygon-clipping';
-import { createRuntimeCalibrations } from '../../src/infrastructure/district/calibration-registry.ts';
+import { createRuntimeCalibrations } from './station-calibration.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { layout, publicInterfaces, publicInterfaceBindings, geographicPlan } from '../../src/infrastructure/district/geographic-map.ts';
 import { platformOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';

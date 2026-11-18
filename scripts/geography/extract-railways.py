@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-root = ET.parse('data/geography/umeda-osm.xml').getroot()
+root = ET.parse('references/district/osm/umeda-2026-11-16.xml').getroot()
 nodes = {n.attrib['id']: [float(n.attrib['lon']), float(n.attrib['lat'])]
          for n in root.findall('node')}
 features, missing = [], []
@@ -20,5 +20,6 @@ for way in root.findall('way'):
 target = Path('data/geography/railways')
 target.mkdir(parents=True, exist_ok=True)
 (target / 'features.json').write_text(json.dumps(features, ensure_ascii=False, indent=2), encoding='utf-8')
-(target / 'extraction-report.json').write_text(json.dumps({'features': len(features), 'missingNodeWays': missing}, indent=2), encoding='utf-8')
+Path('build/geography').mkdir(parents=True, exist_ok=True)
+Path('build/geography/railway-extraction-report.json').write_text(json.dumps({'features': len(features), 'missingNodeWays': missing}, indent=2), encoding='utf-8')
 print({'features': len(features), 'missingNodeWays': missing})

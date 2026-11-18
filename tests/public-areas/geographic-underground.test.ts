@@ -10,14 +10,14 @@ import { higashiStation } from '../../src/infrastructure/stations/higashi-umeda/
 import { nishiStation } from '../../src/infrastructure/stations/nishi-umeda/index.ts';
 import { kitashinchiStation } from '../../src/infrastructure/stations/kitashinchi/index.ts';
 test(
-    'seven geographic stations have unique IDs, no stale external Whity polygon, and preserve legacy data',
+    'seven geographic stations have unique IDs, no stale external Whity polygon, and preserve station input data',
     () => {
-        const legacy = [hanshinStation, higashiStation, nishiStation, kitashinchiStation];
-        const before = JSON.stringify(legacy);
+        const localStations = [hanshinStation, higashiStation, nishiStation, kitashinchiStation];
+        const before = JSON.stringify(localStations);
         const stations = createGeographicStations();
         assert.equal(stations.length, 7);
         assert.equal(new Set(stations.map(s => s.id)).size, 7);
-        assert.equal(JSON.stringify(legacy), before);
+        assert.equal(JSON.stringify(localStations), before);
         for (const s of stations) {
             assert.equal(new Set(s.levels.map(l => l.id)).size, s.levels.length);
             for (const a of s.layout.areas) {

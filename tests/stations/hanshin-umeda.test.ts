@@ -162,6 +162,8 @@ test(
             to.x < from.x && Math.abs(to.z - from.z) < 1e-6,
             'main exit extends beyond the east terminal, not toward its north side'
         );
+        assert.equal(stairs.width, 6);
+        assert.equal(lanes.length, 2);
         const offsets = lanes.map(l => platformLocalPoint(p, l.from).z - from.z);
         assert(offsets[0]! * offsets[1]! < 0 && Math.min(...offsets.map(Math.abs)) > stairs.width! / 2 + 1.15);
         const model = new VerticalConnectionModel(stairs, levels, layout.platforms);
@@ -174,6 +176,12 @@ test(
         }
         const gate = hanshinStation.facilities.find(f => f.id === 'hanshin-umeda-east-gate')!;
         assert.equal(gate.gateCount, 12);
+        const geographic = createGeographicStation('hanshin-umeda');
+        const mainStair = geographic.layout.connections.find(c => c.id === stairs.id)!;
+        const geographicGate = geographic.facilities.find(f => f.id === gate.id)!;
+        const eastwardRun = mainStair.to.x - mainStair.from.x;
+        assert(eastwardRun > 10 && Math.abs(mainStair.to.z - mainStair.from.z) < eastwardRun);
+        assert(geographicGate.x < mainStair.from.x - 10);
         const boundary = planGateBoundaries(hanshinStation.facilities, hanshinStation.layout.areas).find(b => b.gateId === gate.id)!;
         for (const fence of boundary.fences) {
             for (const end of [fence.from, fence.to]) {

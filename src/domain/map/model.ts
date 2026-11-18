@@ -132,13 +132,11 @@ export interface VerticalConnection {
 }
 
 export interface StationLayout {
-    geographic?: boolean;
     areas: FloorArea[];
     platforms: Platform[];
     connections: VerticalConnection[];
     railApproaches?: RailApproach[];
     guides?: PassageGuide[];
-    buildings?: CommercialBuilding[];
     passages?: PublicPassage[];
     atria?: AtriumVoid[];
     concourses?: CommercialConcourse[];
@@ -187,7 +185,6 @@ export interface StationMap {
     site?: StationSite;
 }
 
-export type CommercialBuildingId = 'hankyu-dept' | 'hankyu-grand' | 'hanshin-dept' | 'jp-tower' | 'daimaru' | 'lucua' | 'lucua-1100' | 'yodobashi' | 'grand-front-south' | 'grand-front-north';
 export interface CommercialConcourse {
     id: string;
     name: string;
@@ -202,39 +199,8 @@ export interface CommercialConcourse {
     evidence: Evidence;
 }
 
-export interface CommercialBuilding {
-    id: CommercialBuildingId;
-    name: string;
-    outline: Point2[];
-    floors: {
-        level: LevelId;
-        name: string;
-        elevationOffset?: number;
-    }[];
-    evidence: Evidence;
-    volumes?: {
-        name: string;
-        outline: Point2[];
-        courtyards?: Point2[][];
-        height: number;
-        evidence: Evidence;
-    }[];
-    podiumHeight?: number;
-    podiumParts?: {
-        name: string;
-        outline: Point2[];
-        height: number;
-        evidence: Evidence;
-    }[];
-    perimeterGallery?: {
-        level: LevelId;
-        innerOutline: Point2[];
-    };
-}
-
 export interface PassageEndpoint extends Point2 {
     level: LevelId;
-    buildingId?: CommercialBuildingId;
     station?: StationId;
     elevationOffset?: number;
     boundaryName?: string;
