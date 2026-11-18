@@ -48,14 +48,14 @@ export class MapScene {
             return;
         }
         this.roadsVisible = visible;
-        this.requestRender();
+        this.invalidateModels();
     }
     /** Apply the same night theme to ground, building and station model materials. */
     setDarkTheme(dark: boolean): void {
         this.renderer.toneMappingExposure = dark ? 0.68 : 1.35;
         setGeographicContextTheme(this.context, dark);
         this.appearance.setDarkTheme(dark);
-        this.requestRender();
+        this.invalidateModels();
     }
     private appearance = new LayerAppearance();
     private labelOccluders: T.Object3D[] = [];
@@ -63,6 +63,9 @@ export class MapScene {
     private state: MapViewState;
     private displayedExplode: number;
     private immediateExplode = false;
+    private modelsDirty = true;
+    private fitEnvelope?: T.Vector3[];
+    private orientationChanged = false;
     private manualView?: {
         center: T.Vector3;
         span: number;
@@ -84,6 +87,8 @@ export class MapScene {
     private selectionMarker = new SelectionMarker();
     private selected = this.selectionMarker.group;
     private activeFacility?: Facility;
+    /** Rebuild cached shadows and redraw after the renderer restores its WebGL context. */
+    private readonly restoreContext = () => this.invalidateModels();
     /**
      * Create the renderer, camera and layered scene; let the page entry present initialization failures.
      */
@@ -100,11 +105,14 @@ export class MapScene {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
         this.routeModel = new RouteModel(nodes);
+        this.scene.matrixWorldAutoUpdate = false;
         this.renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer.domElement.addEventListener('webglcontextrestored', this.restoreContext);
         this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
         this.renderer.setClearColor(0x000000, 0);
         this.renderer.outputColorSpace = T.SRGBColorSpace;
         this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.autoUpdate = false;
         this.renderer.shadowMap.type = T.PCFSoftShadowMap;
         this.renderer.toneMapping = T.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.35;
@@ -143,11 +151,6 @@ export class MapScene {
             this.geographicExteriors.add(model);
         }
         this.scene.add(this.geographicExteriors);
-        this.geographicExteriors.traverse(o => {
-            if (o.userData.labelOccluder) {
-                this.labelOccluders.push(o);
-            }
-        });
         this.scene.add(this.models.roof, this.routeModel.group, this.selected);
         this.scene.traverse(object => {
             if (object.userData.labelOccluder) {
@@ -155,7 +158,7 @@ export class MapScene {
             }
         });
         this.models.roof.traverse(object => {
-            if (object instanceof T.Mesh) {
+            if (object instanceof T.Mesh && !object.userData.labelOccluder) {
                 this.labelOccluders.push(object);
             }
         });
@@ -166,7 +169,7 @@ export class MapScene {
                     return false;
                 }
                 orbitAboutPoint(cameraOffset, this.manualView.center, pivot, dx, dy);
-                window.dispatchEvent(new Event('map-orientation'));
+                this.orientationChanged = true;
                 return true;
             },
             beginDrag: () => {
@@ -244,6 +247,7 @@ export class MapScene {
         this.disposed = true;
         this.gestures.dispose();
         this.labels.dispose();
+        this.renderer.domElement.removeEventListener('webglcontextrestored', this.restoreContext);
         this.appearance.dispose(this.scene);
         this.resizeObserver.disconnect();
         if (this.frame) {
@@ -287,37 +291,40 @@ export class MapScene {
     update(state: MapViewState, options: {
         immediateExplode?: boolean;
     } = {}): void {
+        this.modelsDirty ||= this.state.level !== state.level || this.state.focusStation !== state.focusStation ||
+            this.state.roof !== state.roof || this.state.route !== state.route;
         if (this.state.level !== state.level || this.state.focusStation !== state.focusStation || this.state.explode !== state.explode) {
             this.manualView = undefined;
         }
-        const routeChanged = this.state.route !== state.route;
         if (this.state.level !== state.level) {
             this.locatingFacility = false;
         }
         if (this.state.focusStation !== state.focusStation) {
             this.focusTransition = true;
+            this.fitEnvelope = undefined;
         }
         if (options.immediateExplode) {
             this.focusTransition = false;
         }
         this.state = { ...state };
         this.immediateExplode ||= options.immediateExplode === true;
-        if (routeChanged) {
-            this.routeModel.update(this.state.route, id => this.levelY(id));
-        }
         this.requestRender();
     }
     /**
      * Update the three-dimensional facility marker and start centring it in the usable viewport.
      */
-    select(facility: Facility): void {
+    selectById(id: string): void {
+        const facility = this.facilities.find(candidate => candidate.id === id);
+        if (!facility) {
+            return;
+        }
         this.manualView = undefined;
         this.gestures.cancelOrbit();
         this.activeFacility = facility;
         this.locatingFacility = true;
         this.focusTransition = true;
         this.selectionMarker.restart(performance.now());
-        this.requestRender();
+        this.invalidateModels();
     }
     /** Capture navigation intent and manual camera framing for a locale reload. */
     snapshotCamera(): MapCameraSnapshot {
@@ -344,7 +351,7 @@ export class MapScene {
         this.activeFacility = this.facilities.find(facility => facility.id === snapshot.facility);
         this.locatingFacility = snapshot.followFacility && this.activeFacility !== undefined;
         window.dispatchEvent(new Event('map-orientation'));
-        this.requestRender();
+        this.invalidateModels();
     }
     /**
      * Scale the orthographic view within the limits of the currently usable viewport.
@@ -373,8 +380,7 @@ export class MapScene {
         this.zoomValue = 1;
         this.pan.set(0, 0, 0);
         this.activeFacility = undefined;
-        this.selected.visible = false;
-        this.requestRender();
+        this.invalidateModels();
     }
     /**
      * Request reframing after panel resizing so focused facilities remain clear of floating navigation.
@@ -405,16 +411,26 @@ export class MapScene {
             this.frame = requestAnimationFrame(() => this.render());
         }
     }
+
+    /** Draw synchronously once so the page can report first-frame errors and end loading accurately. */
+    renderFirstFrame(): void {
+        cancelAnimationFrame(this.frame);
+        this.render();
+    }
+
+    /** Invalidate layered geometry and the fixed light's cached shadows. */
+    private invalidateModels(): void {
+        this.modelsDirty = true;
+        this.requestRender();
+    }
+
     /**
-     * Update camera motion, expanded levels, label occlusion and selection; schedule another frame only while animation continues.
+     * Synchronize layer geometry, materials and visibility when scene state changes.
      */
-    private render(): void {
-        this.frame = 0;
-        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const { value, animate } = advanceExplode(this.displayedExplode, this.state.explode, this.immediateExplode, reducedMotion);
-        const previousExplode = this.displayedExplode;
-        this.displayedExplode = value;
-        this.immediateExplode = false;
+    private updateModels(): void {
+        this.modelsDirty = false;
+        this.renderer.shadowMap.needsUpdate = true;
+        const levelY = (id: LevelId) => this.levelY(id);
         for (const [id, group] of this.models.groups) {
             group.position.y = this.levelY(id);
             const role = viewLayerRole(this.levels, this.state, id);
@@ -429,7 +445,7 @@ export class MapScene {
                 continue;
             }
             connector.group.visible = true;
-            connector.update(id => this.levelY(id), this.state.level, fullShaft);
+            connector.update(levelY, this.state.level, fullShaft);
             const { from, to } = connector.connection;
             const roles = [from, to].map(p => viewLayerRole(this.levels, this.state, p.level));
             const owners = [from, to].map(p => this.levels.find(l => l.id === p.level)!.station ?? 'jr-osaka');
@@ -457,10 +473,10 @@ export class MapScene {
             canopy.visible = this.state.roof;
         }
         this.appearance.apply(this.models.roof, false, this.state.focusStation, 'jr-osaka');
-        this.routeModel.group.visible = !!this.state.route;
-        if (previousExplode !== this.displayedExplode && this.state.route) {
-            this.routeModel.update(this.state.route, id => this.levelY(id));
+        if (this.state.route || this.routeModel.group.visible) {
+            this.routeModel.update(this.state.route, levelY);
         }
+        this.routeModel.group.visible = !!this.state.route;
         this.selected.visible = !!this.activeFacility && ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, this.activeFacility.level));
         if (this.activeFacility) {
             this.selected.position.set(
@@ -469,10 +485,15 @@ export class MapScene {
                 this.activeFacility.z
             );
         }
-        // Fit around the visible floor envelope; reserve side panels on desktop.
-        const mobile = this.width < 761;
-        const aspect = this.width / Math.max(1, this.height);
-        const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
+        // Camera movement does not change world transforms of the station or its context.
+        this.scene.updateMatrixWorld();
+    }
+
+    /** Retain the full framing envelope until regional focus or physical display elevations change. */
+    private framingPoints(): T.Vector3[] {
+        if (this.fitEnvelope) {
+            return this.fitEnvelope;
+        }
         const envelope = cameraEnvelope(this.layout, this.levels, this.state, id => this.levelY(id));
         if (!this.state.focusStation) {
             for (const b of geographicBuildings) {
@@ -486,26 +507,45 @@ export class MapScene {
                 }
             }
         }
+        this.fitEnvelope = envelope;
+        return envelope;
+    }
+
+    /** Fit the current view or reuse the frozen orbit span and centre verbatim. */
+    private cameraTarget(): { center: T.Vector3; span: number } {
+        if (this.manualView) {
+            return { center: this.manualView.center.clone(), span: this.manualView.span };
+        }
+        const mobile = this.width < 761;
+        const viewportHeight = Math.max(1, this.height);
+        const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
+        const envelope = this.framingPoints();
         const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
         const { right, up } = viewBasis();
-        const boundsX = envelope.map(point => point.clone().sub(center).dot(right));
-        const boundsY = envelope.map(point => point.clone().sub(center).dot(up));
-        const minX = Math.min(...boundsX);
-        const maxX = Math.max(...boundsX);
-        const minY = Math.min(...boundsY);
-        const maxY = Math.max(...boundsY);
+        const centerX = center.dot(right);
+        const centerY = center.dot(up);
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (const point of envelope) {
+            const x = point.dot(right) - centerX;
+            const y = point.dot(up) - centerY;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
         center.addScaledVector(right, (minX + maxX) / 2).addScaledVector(up, (minY + maxY) / 2).add(this.pan);
         const viewport = this.host.getBoundingClientRect();
         const sidebar = this.host.parentElement?.querySelector('.sidebar')?.getBoundingClientRect();
         const usable = facilityFocusRect(viewport, sidebar, mobile);
-        const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * this.height / usableWidth * 1.12);
-        if (!this.manualView) {
-            this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, this.height, usable.height);
-        }
+        const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * viewportHeight / Math.max(1, usableWidth) * 1.12);
+        this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
         this.zoomValue = T.MathUtils.clamp(this.zoomValue, this.minimumZoom, Math.max(16, this.minimumZoom * 16));
-        let span = baseSpan / this.zoomValue;
+        const span = baseSpan / this.zoomValue;
         if (!mobile) {
-            center.addScaledVector(right, -Math.min(150, this.width * 0.13) * span / this.height);
+            center.addScaledVector(right, -Math.min(150, this.width * 0.13) * span / viewportHeight);
         }
         else {
             center.copy(facilityCameraCenter(center, span, this.width, this.height, usable));
@@ -515,10 +555,30 @@ export class MapScene {
             this.pan.add(target.clone().sub(center));
             center.copy(target);
         }
-        if (this.manualView) {
-            center.copy(this.manualView.center);
-            span = this.manualView.span;
+        return { center, span };
+    }
+
+    /** Render camera motion independently of static geometry, shading and layer visibility. */
+    private render(): void {
+        this.frame = 0;
+        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const { value, animate } = advanceExplode(this.displayedExplode, this.state.explode, this.immediateExplode, reducedMotion);
+        this.immediateExplode = false;
+        if (value !== this.displayedExplode) {
+            this.displayedExplode = value;
+            this.fitEnvelope = undefined;
+            this.modelsDirty = true;
         }
+        if (this.modelsDirty) {
+            this.updateModels();
+        }
+        if (this.orientationChanged) {
+            this.orientationChanged = false;
+            window.dispatchEvent(new Event('map-orientation'));
+        }
+        const target = this.cameraTarget();
+        const { center } = target;
+        let span = target.span;
         this.targetCenter = center.clone();
         if (this.framing && this.focusTransition && !reducedMotion) {
             this.framing.center.lerp(center, 0.24);
@@ -533,7 +593,12 @@ export class MapScene {
             this.focusTransition = false;
         }
         this.framing = { center: center.clone(), span };
-        this.selectionMarker.update(performance.now(), reducedMotion, span / this.height);
+        const worldUnitsPerPixel = span / Math.max(1, this.height);
+        this.selectionMarker.update(performance.now(), reducedMotion, worldUnitsPerPixel);
+        if (this.selected.visible) {
+            this.selected.updateMatrixWorld();
+        }
+        const aspect = this.width / Math.max(1, this.height);
         this.camera.left = -span * aspect / 2;
         this.camera.right = span * aspect / 2;
         this.camera.top = span / 2;
@@ -541,21 +606,24 @@ export class MapScene {
         this.camera.position.copy(center).addScaledVector(cameraOffset, 6);
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
-        this.camera.updateMatrixWorld();
-        this.scene.updateMatrixWorld(true);
         this.renderer.render(this.scene, this.camera);
-        this.labels.update({
-            state: this.state,
-            levels: this.levels,
-            levelY: id => this.levelY(id),
-            camera: this.camera,
-            roof: this.models.roof,
-            rect: this.host.getBoundingClientRect(),
-            width: this.width,
-            height: this.height,
-            zoom: this.zoomValue,
-            occluders: this.labelOccluders
-        });
+        // Far views expose many more labels and occluders during a drag. Restore them when it ends.
+        const showLabels = !this.gestures.isMoving || worldUnitsPerPixel < 0.7;
+        this.labels.setVisible(showLabels);
+        if (showLabels) {
+            this.labels.update({
+                state: this.state,
+                levels: this.levels,
+                levelY: id => this.levelY(id),
+                camera: this.camera,
+                roof: this.models.roof,
+                rect: this.host.getBoundingClientRect(),
+                width: this.width,
+                height: this.height,
+                zoom: this.zoomValue,
+                occluders: this.labelOccluders
+            });
+        }
         if (animate || this.focusTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
         }

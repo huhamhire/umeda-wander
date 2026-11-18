@@ -8,6 +8,7 @@
   "ui.directions.north": "北側",
   "ui.directions.south": "南側",
   "ui.errors.initializationDetail": "マップを読み込めませんでした：{message}",
+  "ui.map.loading": "立体マップを読み込み中",
   "ui.errors.initializationTitle": "マップを初期化できませんでした",
   "ui.errors.unsupportedAdvice": "WebGL 2 対応ブラウザーをお使いください。施設一覧は引き続き利用できます。",
   "ui.errors.webglAdvice": "ブラウザーの WebGL 2 とハードウェアアクセラレーションの設定を確認してください。",

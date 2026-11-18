@@ -49,13 +49,22 @@ function setup(overrides: Partial<MapGestureActions> = {}) {
 }
 
 test('middle-button orbit freezes its pivot and never invokes pan, zoom or facility selection', () => {
-    const fixture = setup();
+    let redraws = 0;
+    const fixture = setup({
+        invalidate: () => {
+            redraws++;
+        }
+    });
     const { canvas, gestures, pivot, pans, zooms, selections, rotations } = fixture;
     try {
         const down = dispatch(canvas, 'pointerdown', { button: 1, buttons: 4, clientX: 10, clientY: 20 });
+        assert(!gestures.isMoving);
         pivot.set(99, 99, 99);
         dispatch(canvas, 'pointermove', { buttons: 4, clientX: 22, clientY: 27 });
+        assert(gestures.isMoving);
         dispatch(canvas, 'pointerup', { button: 1, buttons: 0, clientX: 22, clientY: 27 });
+        assert(!gestures.isMoving);
+        assert.equal(redraws, 2);
         assert(down.defaultPrevented);
         assert.deepEqual(rotations, [[1, 2, 3, 12, 7]]);
         assert.deepEqual(pans, []);
@@ -91,7 +100,9 @@ test('pinch and wheel zoom retain their scale factors, cancellation and disposal
     dispatch(canvas, 'pointerdown', { pointerId: 2, clientX: 10 });
     dispatch(canvas, 'pointermove', { pointerId: 1, clientX: -10 });
     dispatch(canvas, 'pointercancel', { pointerId: 1 });
+    assert(gestures.isMoving);
     dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 10 });
+    assert(!gestures.isMoving);
     const wheel = dispatch(canvas, 'wheel', { deltaY: 100 });
     assert(wheel.defaultPrevented);
     assert.deepEqual(zooms, [2, Math.exp(-0.1)]);

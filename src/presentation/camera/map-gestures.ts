@@ -18,6 +18,7 @@ export class MapGestures {
     private readonly pointers = new Map<number, { x: number; y: number }>();
     private down: { x: number; y: number } | null = null;
     private dragged = false;
+    private moving = false;
     private orbit?: { pointer: number; pivot: Vector3 };
 
     /** Bind one canvas and retain removable listeners for the lifetime of the map. */
@@ -33,12 +34,17 @@ export class MapGestures {
             this.pointers.delete(event.pointerId);
             this.dragged = true;
             this.down = null;
+            this.finishMovement();
         }, { signal });
         canvas.addEventListener('lostpointercapture', event => {
             this.pointers.delete(event.pointerId);
             if (this.orbit?.pointer === event.pointerId) {
                 this.cancelOrbit();
             }
+            if (!this.pointers.size) {
+                this.down = null;
+            }
+            this.finishMovement();
         }, { signal });
         canvas.addEventListener('auxclick', event => {
             if (event.button === 1) {
@@ -49,6 +55,11 @@ export class MapGestures {
             event.preventDefault();
             actions.zoom(Math.exp(-event.deltaY * 0.001));
         }, { passive: false, signal });
+    }
+
+    /** Report actual pointer movement so distant views can defer label placement until release. */
+    get isMoving(): boolean {
+        return this.moving;
     }
 
     /** Forget an active orbit after selecting a facility or resetting the view. */
@@ -95,6 +106,7 @@ export class MapGestures {
         }
         const deltaX = event.clientX - old.x;
         const deltaY = event.clientY - old.y;
+        this.moving ||= deltaX !== 0 || deltaY !== 0;
         const other = [...this.pointers].find(([id]) => id !== event.pointerId)?.[1];
         if (this.orbit?.pointer === event.pointerId && (event.buttons & 4) &&
             this.actions.rotate(this.orbit.pivot, deltaX, deltaY)) {
@@ -123,6 +135,15 @@ export class MapGestures {
         }
         if (!this.pointers.size) {
             this.down = null;
+        }
+        this.finishMovement();
+    }
+
+    /** Restore labels on the next frame when the last drag or pinch pointer leaves. */
+    private finishMovement(): void {
+        if (!this.pointers.size && this.moving) {
+            this.moving = false;
+            this.actions.invalidate();
         }
     }
 }

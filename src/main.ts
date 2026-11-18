@@ -1,12 +1,11 @@
 import { messageText } from './infrastructure/i18n/index.ts';
-import { facilities, levels, nodes, edges, layout, stations } from './infrastructure/district/geographic-map.ts';
-import type { Facility, FacilityKind, LevelId, StationId } from './domain/map/model.ts';
+import type { FacilityKind, LevelId, StationId } from './domain/map/model.ts';
+import type { FacilityOption, NavigationData } from './application/exploration/navigation-data.ts';
 import { MapSession, type MapViewState } from './application/map-session.ts';
-import { MapScene, type MapCameraSnapshot } from './presentation/map-scene.ts';
+import type { MapScene, MapCameraSnapshot } from './presentation/map-scene.ts';
 import { element } from './utils/dom.ts';
 import { bindSidebarTabs } from './presentation/components/sidebar-tabs.ts';
 import { stationPalettes } from './presentation/appearance/station-palette.ts';
-import { screenDirection } from './presentation/camera/view-orientation.ts';
 import { floorOptions } from './presentation/components/floor-options.ts';
 import { filterFacilities, facilityCategory } from './application/exploration/facility-filter.ts';
 import { facilityCodes } from './infrastructure/facility-codes.ts';
@@ -28,6 +27,7 @@ interface LanguageChangeView {
     roadsVisible: boolean;
     categoryScroll: number;
     camera?: MapCameraSnapshot;
+    pendingFacility?: string;
 }
 
 const languageChangeKey = 'umeda-language-change-view';
@@ -45,23 +45,30 @@ function takeLanguageChangeView(): LanguageChangeView | undefined {
 }
 
 mountLocalizedPage();
+const { facilities, levels, stations } = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
 bindCreditsDialog(
     element<HTMLDialogElement>('#credits-dialog'),
     element('#credits-open'),
     element<HTMLButtonElement>('#credits-close'),
     element('#credits-title')
 );
-const session = new MapSession(edges);
+let session = new MapSession([]);
 const restored = takeLanguageChangeView();
 if (restored) {
     session.state = restored.state;
 }
 let scene: MapScene | undefined;
+let savedCamera = restored?.camera;
+let pendingFacility = restored?.pendingFacility;
+let screenDirection: typeof import('./presentation/camera/view-orientation.ts').screenDirection | undefined;
 /**
  * Project geographic north onto the screen and update the compass needle and cardinal labels.
  */
-function updateCompass() {
-    const north = screenDirection(-Math.PI / 2);
+function updateCompass(): void {
+    const north = screenDirection?.(-Math.PI / 2);
+    if (!north) {
+        return;
+    }
     element('#compass-needle').setAttribute(
         'transform',
         `rotate(${Math.atan2(north.x, -north.y) * 180 / Math.PI} 30 30)`
@@ -71,7 +78,6 @@ function updateCompass() {
         element(`#${id}`).setAttribute('y', String(30 + north.y * 25 * sign));
     }
 }
-updateCompass();
 window.addEventListener('map-orientation', updateCompass);
 const roads = element<HTMLInputElement>('#roads');
 let groundPreference = restored?.roadsVisible ?? roads.checked;
@@ -119,7 +125,8 @@ function saveLanguageChangeView(): void {
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
         roadsVisible: groundPreference,
         categoryScroll: element('#poi-list').scrollLeft,
-        camera: scene?.snapshotCamera()
+        camera: scene?.snapshotCamera() ?? savedCamera,
+        pendingFacility
     };
     try {
         sessionStorage.setItem(languageChangeKey, JSON.stringify(snapshot));
@@ -252,7 +259,7 @@ function sync(): void {
 /**
  * Focus a facility and its floor without modifying the user’s manual filters.
  */
-function select(f: Facility): void {
+function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
     const owner = levels.find(l => l.id === f.level)!.station!;
     if (session.state.focusStation !== owner) {
         scene?.reset();
@@ -263,7 +270,12 @@ function select(f: Facility): void {
     facilityPicker.value = f.id;
     showSidebarTab(1);
     sync();
-    scene?.select(f);
+    if (scene) {
+        scene.selectById(f.id);
+    } else {
+        pendingFacility = f.id;
+        savedCamera = undefined;
+    }
 }
 for (const b of floorButtons) {
     b.addEventListener(
@@ -272,6 +284,7 @@ for (const b of floorButtons) {
             session.state.level = b.dataset.level as LevelId | 'all';
             facilityFilter.level = session.state.level;
             session.state.route = null;
+            pendingFacility = undefined;
             refreshFacilities();
             sync();
         }
@@ -281,6 +294,8 @@ facilityStation.addEventListener(
     'change',
     () => {
         facilityFilter.station = facilityStation.value === 'all' ? null : facilityStation.value as StationId;
+        pendingFacility = undefined;
+        savedCamera = undefined;
         session.focusStation(facilityFilter.station);
         if (facilityFilter.level !== 'all') {
             session.state.level = facilityFilter.level;
@@ -296,6 +311,7 @@ facilityFloor.addEventListener(
         facilityFilter.level = facilityFloor.value as LevelId | 'all';
         session.state.level = facilityFilter.level;
         session.state.route = null;
+        pendingFacility = undefined;
         refreshFacilities();
         sync();
     }
@@ -325,6 +341,8 @@ facilityPicker.addEventListener(
  * Reset exploration, camera and manual filters, then return to the floor tab.
  */
 function reset(): void {
+    pendingFacility = undefined;
+    savedCamera = undefined;
     session.reset();
     scene?.reset(true);
     Object.assign(facilityFilter, { station: null, level: 'all', kind: 'all' });
@@ -332,41 +350,15 @@ function reset(): void {
     showSidebarTab(0);
     sync();
 }
-element('#zoom-in').addEventListener('click', () => scene?.zoom(1.18));
-element('#zoom-out').addEventListener('click', () => scene?.zoom(1 / 1.18));
+const zoomIn = element<HTMLButtonElement>('#zoom-in');
+const zoomOut = element<HTMLButtonElement>('#zoom-out');
+zoomIn.addEventListener('click', () => scene?.zoom(1.18));
+zoomOut.addEventListener('click', () => scene?.zoom(1 / 1.18));
 element('#reset').addEventListener('click', reset);
 element('.brand').addEventListener('click', e => {
     e.preventDefault();
     reset();
 });
-try {
-    scene = new MapScene(
-        element('#viewport'),
-        element('#labels'),
-        levels,
-        facilities,
-        nodes,
-        layout,
-        session.state,
-        select
-    );
-    scene.setRoadsVisible(groundPreference);
-    scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
-    if (restored?.camera) {
-        scene.restoreCamera(restored.camera);
-    }
-}
-catch (error) {
-    console.error('Map initialization failed', error);
-    const fallback = element('#fallback');
-    fallback.hidden = false;
-    const message = error instanceof Error ? error.message : String(error);
-    const webgl = /WebGL|context creation|Error creating WebGL context/i.test(message);
-    fallback.querySelector('h2')!.textContent = webgl ? messageText('ui.errors.webglTitle') : messageText('ui.errors.initializationTitle');
-    fallback.querySelector('p')!.textContent = webgl ? messageText('ui.errors.webglAdvice') : messageText('ui.errors.initializationDetail', { message: message });
-    element('#viewport').replaceChildren();
-    element('#labels').replaceChildren();
-}
 refreshFacilities();
 if (restored) {
     if ([...facilityPicker.options].some(option => option.value === restored.facility)) {
@@ -376,3 +368,53 @@ if (restored) {
     element<HTMLSelectElement>('#language').focus({ preventScroll: true });
 }
 sync();
+
+/** Let the browser paint the navigation and loading state before evaluating the geographic map. */
+async function loadMap(): Promise<void> {
+    const viewport = element('#viewport');
+    const labels = element('#labels');
+    try {
+        await new Promise<void>(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => resolve());
+            });
+        });
+        const runtime = await import('./presentation/map-runtime.ts');
+        screenDirection = runtime.screenDirection;
+        const currentState = session.state;
+        session = new MapSession(runtime.edges);
+        session.state = currentState;
+        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, select);
+        scene.setRoadsVisible(groundPreference);
+        scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
+        if (pendingFacility) {
+            scene.selectById(pendingFacility);
+            pendingFacility = undefined;
+        } else if (savedCamera) {
+            scene.restoreCamera(savedCamera);
+        }
+        updateCompass();
+        scene.renderFirstFrame();
+        zoomIn.disabled = false;
+        zoomOut.disabled = false;
+    }
+    catch (error) {
+        console.error('Map initialization failed', error);
+        scene?.dispose();
+        scene = undefined;
+        const fallback = element('#fallback');
+        fallback.hidden = false;
+        const message = error instanceof Error ? error.message : String(error);
+        const webgl = /WebGL|context creation|Error creating WebGL context/i.test(message);
+        fallback.querySelector('h2')!.textContent = webgl ? messageText('ui.errors.webglTitle') : messageText('ui.errors.initializationTitle');
+        fallback.querySelector('p')!.textContent = webgl ? messageText('ui.errors.webglAdvice') : messageText('ui.errors.initializationDetail', { message });
+        viewport.replaceChildren();
+        labels.replaceChildren();
+    }
+    finally {
+        element('#map-loading').hidden = true;
+        viewport.setAttribute('aria-busy', 'false');
+    }
+}
+
+void loadMap();

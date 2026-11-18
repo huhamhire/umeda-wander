@@ -8,6 +8,7 @@
   "ui.directions.north": "北侧",
   "ui.directions.south": "南侧",
   "ui.errors.initializationDetail": "场景加载出现异常：{message}",
+  "ui.map.loading": "正在加载立体地图",
   "ui.errors.initializationTitle": "地图初始化失败",
   "ui.errors.unsupportedAdvice": "请使用支持 WebGL 2 的浏览器。仍可通过设施列表查看样板信息。",
   "ui.errors.webglAdvice": "请检查浏览器 WebGL 2 与硬件加速设置。",

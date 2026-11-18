@@ -34,17 +34,27 @@ export interface SceneLabelView {
 
 /** Own screen labels, their occlusion and collision ordering independently of scene geometry. */
 export class SceneLabels {
+    private readonly host: HTMLElement;
     private readonly labels: MapLabel[] = [];
     private readonly labelOcclusion = new LabelOcclusion();
 
     /** Create DOM labels from model-owned anchors without copying station layout logic. */
     constructor(host: HTMLElement, definitions: readonly SceneLabelDefinition[]) {
+        this.host = host;
         for (const definition of definitions) {
             const element = document.createElement('div');
             element.className = 'map-label' + (definition.emphasis ? ' emphasis' : '');
             element.textContent = definition.text;
             host.append(element);
             this.labels.push({ ...definition, element });
+        }
+    }
+
+    /** Hide or show the overlay as one layer without touching individual label styles. */
+    setVisible(visible: boolean): void {
+        const hidden = !visible;
+        if (this.host.hidden !== hidden) {
+            this.host.hidden = hidden;
         }
     }
 
@@ -65,7 +75,7 @@ export class SceneLabels {
         );
         const priority = (label: MapLabel) => Number(!labelMuted(label)) * 8 + Number(label.level && viewLayerRole(levels, state, label.level) === 'current') * 4 + Number(label.element.classList.contains('emphasis'));
         const orderedLabels = [...this.labels].sort((a, b) => priority(b) - priority(a));
-        const placements = orderedLabels.map(label => {
+        const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
             if (label.surface && !label.surface.visible) {
@@ -78,6 +88,10 @@ export class SceneLabels {
             if ((mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
+            if (!visible) {
+                label.element.hidden = true;
+                return [];
+            }
             const anchor = label.position.clone();
             anchor.y += label.roof ? roof.position.y : label.level ? levelY(label.level) : 0;
             const point = anchor.clone().project(camera);
@@ -86,35 +100,30 @@ export class SceneLabels {
                 visible = false;
             }
             label.element.hidden = !visible;
+            if (!visible) {
+                return [];
+            }
             const x = rect.left + (point.x + 1) * width / 2;
             const y = rect.top + (1 - point.y) * height / 2;
             label.element.style.left = `${x}px`;
             label.element.style.top = `${y}px`;
-            return {
+            return [{
                 label,
-                visible,
                 x,
                 y
-            };
+            }];
         });
         // Batch DOM writes and measurements, avoiding a forced layout for every label.
         const measured = placements.map(p => ({
             ...p,
-            w: p.visible ? p.label.element.offsetWidth : 0,
-            h: p.visible ? p.label.element.offsetHeight : 0
+            w: p.label.element.offsetWidth,
+            h: p.label.element.offsetHeight
         }));
-        for (const { label, visible, x, y, w, h } of measured) {
-            if (visible) {
-                const collides = occupied.some(other => Math.abs(x - other.x) < (w + other.w) / 2 + 5 && Math.abs(y - other.y) < (h + other.h) / 2 + 4);
-                label.element.hidden = collides;
-                if (!collides) {
-                    occupied.push({
-                        x,
-                        y,
-                        w,
-                        h
-                    });
-                }
+        for (const { label, x, y, w, h } of measured) {
+            const collides = occupied.some(other => Math.abs(x - other.x) < (w + other.w) / 2 + 5 && Math.abs(y - other.y) < (h + other.h) / 2 + 4);
+            label.element.hidden = collides;
+            if (!collides) {
+                occupied.push({ x, y, w, h });
             }
         }
     }

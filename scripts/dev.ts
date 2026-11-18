@@ -31,7 +31,8 @@ const server = createServer(async (req, res) => {
         '/styles.css': { file: 'styles.css', mime: 'text/css; charset=utf-8' },
         '/osm-derived-data.json': { file: 'osm-derived-data.json', mime: 'application/json; charset=utf-8' },
     };
-    const resource = files[path];
+    const chunk = /^\/chunks\/[a-z0-9_-]+\.js$/i.test(path);
+    const resource = chunk ? { file: path.slice(1), mime: files['/app.js']!.mime } : files[path];
     if (!resource) {
         res.writeHead(404).end();
         return;

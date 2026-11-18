@@ -11,15 +11,15 @@ export function facilityCategory(kind: FacilityKind): FacilityKind {
 /**
  * Filter by the manually selected station, exploration floor and category without changing map selection.
  */
-export function filterFacilities(
-    facilities: Facility[],
+export function filterFacilities<F extends Pick<Facility, 'level' | 'kind'>>(
+    facilities: readonly F[],
     levels: Level[],
     filter: {
         station: StationId | null;
         level: LevelId | 'all';
         kind: FacilityKind | 'all';
     }
-): Facility[] {
+): F[] {
     const selected = levels.find(l => l.id === filter.level);
     return facilities.filter(f => {
         const owner = levels.find(l => l.id === f.level)!;

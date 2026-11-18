@@ -32,7 +32,11 @@ export function renderHtmlMessages(template: string, locale: Locale = sourceLoca
 }
 
 /** Build one entry with a Chinese fallback and inert page fragments for the other locales. */
-export function renderLocalizedPage(template: string, credits: Record<Locale, string>): string {
+export function renderLocalizedPage(
+    template: string,
+    credits: Record<Locale, string>,
+    navigation?: Record<Locale, string>
+): string {
     const content = /    <!-- LOCALIZED CONTENT START -->\r?\n([\s\S]*?)    <!-- LOCALIZED CONTENT END -->/.exec(template);
     if (!content?.[1]) {
         throw new Error('Missing localized content markers');
@@ -40,9 +44,14 @@ export function renderLocalizedPage(template: string, credits: Record<Locale, st
     const pages: string[] = [];
     for (const locale of availableLocales) {
         const localized = renderHtmlMessages(content[1], locale);
-        const body = localized.replace(/^([ \t]*)<!-- SOURCE CREDITS -->\r?$/m, (_marker, indent: string) => {
-            return credits[locale].trimEnd().split(/\r?\n/).map(line => line ? indent + line : '').join('\n');
-        });
+        const body = localized
+            .replace(/^([ \t]*)<!-- SOURCE CREDITS -->\r?$/m, (_marker, indent: string) => {
+                return credits[locale].trimEnd().split(/\r?\n/).map(line => line ? indent + line : '').join('\n');
+            })
+            .replace('<!-- NAVIGATION DATA -->', () => {
+                const data = navigation?.[locale];
+                return data ? `<script id="navigation-data" type="application/json">${data.replaceAll('<', '\\u003c')}</script>` : '';
+            });
         if (locale === sourceLocale) {
             pages.push(body.trimEnd());
             continue;

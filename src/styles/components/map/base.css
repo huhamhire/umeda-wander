@@ -10,6 +10,44 @@
   height: 100%;
 }
 
+.map-loading {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transform: translateY(-50%);
+  color: var(--color-map-label-emphasis-text);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.map-loading[hidden] {
+  display: none;
+}
+
+.map-loading > span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-map-label-border);
+  border-top-color: currentColor;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .map-loading > span {
+    animation: map-loading-spin 800ms linear infinite;
+  }
+}
+
+@keyframes map-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 #labels {
   position: absolute;
   inset: 0;

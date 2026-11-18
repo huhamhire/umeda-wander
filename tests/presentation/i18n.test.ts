@@ -118,13 +118,21 @@ test('the single entry includes a translated shell and standalone credits for ea
         ja: readFileSync('src/content/source-credits.ja.html', 'utf8'),
         en: readFileSync('src/content/source-credits.en.html', 'utf8')
     };
-    const html = renderLocalizedPage(template, credits);
+    const navigation = {
+        'zh-CN': JSON.stringify({ name: '梅田' }),
+        ja: JSON.stringify({ name: '大阪梅田' }),
+        en: JSON.stringify({ name: 'Umeda </script>' })
+    };
+    const html = renderLocalizedPage(template, credits, navigation);
     assert(!html.includes('<!-- SOURCE CREDITS -->'));
     assert(!html.includes('{{'));
     for (const locale of ['ja', 'en'] as const) {
         const body = html.split(`<template data-page-locale="${locale}">`)[1]?.split('</template>')[0];
         assert(body?.includes(messageText('ui.heading.title', {}, locale)));
         assert(body?.includes(messageText('ui.preferences.language', {}, locale)));
+        assert(body?.includes(messageText('ui.map.loading', {}, locale)));
+        const embedded = body?.match(/<script id="navigation-data" type="application\/json">(.+?)<\/script>/)?.[1];
+        assert.deepEqual(JSON.parse(embedded!), JSON.parse(navigation[locale]));
         assert(body?.includes(credits[locale].split('\n')[1]!.trim()));
         assert.deepEqual(
             [...credits[locale].matchAll(/href="[^"]+"/g)].map(match => match[0]),

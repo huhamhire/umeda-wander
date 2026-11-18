@@ -2,6 +2,10 @@
   inset: 0;
 }
 
+.map-loading {
+  top: calc((100% - var(--navigation-height)) / 2);
+}
+
 .map-tools {
   right: 16px;
   bottom: 318px;

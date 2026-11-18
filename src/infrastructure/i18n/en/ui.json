@@ -8,6 +8,7 @@
   "ui.directions.north": "North side",
   "ui.directions.south": "South side",
   "ui.errors.initializationDetail": "The map could not load: {message}",
+  "ui.map.loading": "Loading the 3D map",
   "ui.errors.initializationTitle": "Map initialization failed",
   "ui.errors.unsupportedAdvice": "Use a browser with WebGL 2. You can still browse the facility list.",
   "ui.errors.webglAdvice": "Check your browser’s WebGL 2 and hardware acceleration settings.",

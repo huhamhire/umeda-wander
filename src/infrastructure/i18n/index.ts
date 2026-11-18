@@ -40,7 +40,8 @@ export function preferredLocale(saved: string | undefined, languages: readonly s
 /** Capture a page locale before station data resolves its labels during module evaluation. */
 function pageLocale(): Locale {
     if (typeof document === 'undefined') {
-        return sourceLocale;
+        const buildLocale = typeof process === 'undefined' ? undefined : process.env.UMEDA_BUILD_LOCALE;
+        return isLocale(buildLocale) ? buildLocale : sourceLocale;
     }
     const urlLocale = new URLSearchParams(location.search).get('lang') ?? undefined;
     if (isLocale(urlLocale)) {

@@ -66,8 +66,13 @@
         <h1>{{ui.heading.title}}</h1>
         <p>{{ui.heading.subtitle}}</p>
       </section>
-      <div id="viewport" role="region" aria-label="{{ui.map.accessibleDescription}}"></div>
+      <div id="viewport" role="region" aria-label="{{ui.map.accessibleDescription}}" aria-busy="true"></div>
       <div id="labels" aria-hidden="true"></div>
+      <div id="map-loading" class="map-loading" role="status">
+        <span aria-hidden="true"></span>
+        {{ui.map.loading}}
+      </div>
+      <!-- NAVIGATION DATA -->
       <div id="fallback" class="fallback" hidden>
         <h2>{{ui.errors.webglTitle}}</h2>
         <p>{{ui.errors.unsupportedAdvice}}</p>
@@ -144,8 +149,8 @@
       </aside>
 
       <nav class="map-tools panel" aria-label="{{ui.map.controls}}">
-        <button id="zoom-in" aria-label="{{ui.map.zoomIn}}">＋</button>
-        <button id="zoom-out" aria-label="{{ui.map.zoomOut}}">−</button>
+        <button id="zoom-in" aria-label="{{ui.map.zoomIn}}" disabled>＋</button>
+        <button id="zoom-out" aria-label="{{ui.map.zoomOut}}" disabled>−</button>
         <span></span>
         <button id="reset" aria-label="{{ui.map.reset}}">⌖</button>
       </nav>
