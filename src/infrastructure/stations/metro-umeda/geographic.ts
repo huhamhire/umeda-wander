@@ -10,7 +10,7 @@ export const metroAxis = {
     acrossScale: 1.4
 };
 /**
- * Create the Midosuji platforms, halls and intermediate level with a calibrated JR-side interface.
+ * Create the Midosuji Line (御堂筋線) platforms, halls and intermediate level with a calibrated JR-side interface.
  */
 export function createGeographicMetro() {
     return createStation(axisPlacement(metroAxis));

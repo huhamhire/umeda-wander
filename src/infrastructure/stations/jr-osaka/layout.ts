@@ -3,7 +3,7 @@ import { passageOutline, joinedPassageOutlines, platformLocalPoint, rotatePoint 
 import { undergroundRotationRad, undergroundSketchCorrectionRad } from '../../station-orientation.ts';
 import { refineUpperLevelLinks } from './upper-links.ts';
 import type { Evidence, Facility, FloorArea, Level, Platform, RouteNode, RouteEdge, StationLayout, VerticalConnection } from '../../../domain/map/model.ts';
-// Source: JR West Osaka Station guide, current as of 2026-01-14.
+// Source: JR West Osaka Station (大阪駅) guide, current as of 2026-01-14.
 // Level/name/diagram references are checked; all X/Z and heights remain schematic.
 /**
  * Record JR reference pages and interpretation limits without presenting fitted coordinates as surveyed facts.
@@ -1184,9 +1184,9 @@ export const edges: RouteEdge[] = [
 ];
 // Correct the whole underground station sketch, not just its visible platform slabs.
 // Keep the West Gate landing and North Gate B1F fixed; rebuild the paid passage
-// between that landing and the corrected Umekita landing after the transform.
+// between that landing and the corrected Umekita (うめきた) landing after the transform.
 const undergroundSketchOrigin = { x: -96, z: -102 };
-// Keep the West Gate–Umekita spine roughly perpendicular to the surface tracks.
+// Keep the West Gate–Umekita (うめきた) spine roughly perpendicular to the surface tracks.
 // Location/scale follow the supplied layout sketch; they are not surveyed coordinates.
 // Extend surface platforms westward while retaining the east-end gate alignment.
 for (const platform of platforms) {
@@ -1364,7 +1364,7 @@ const passageFacility = facilities.find(facility => facility.id === 'umekita-lin
 passageFacility.x = (passageStart.x + passageEnd.x) / 2;
 passageFacility.z = (passageStart.z + passageEnd.z) / 2;
 const join = nodes.find(node => node.id === 'public-join')!;
-// PDF B1F: the public Umekita approach skirts north of LUCUA 1100,
+// PDF B1F: the public Umekita (うめきた) approach skirts north of LUCUA 1100,
 // then turns south along the atrium side, rather than cutting through the store.
 const publicEntry = nodes.find(node => node.id === 'public-b1-entry')!;
 const publicTurn = nodes.find(node => node.id === 'public-b1-turn')!;

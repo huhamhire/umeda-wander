@@ -1,0 +1,91 @@
+/* Map swatches to interface roles. The root theme can override these roles. */
+:root {
+  /* Shared surfaces and controls */
+  --color-text: rgb(var(--palette-slate-75-rgb));
+  --color-accent: var(--palette-teal-275);
+  --color-divider: var(--palette-sage-300);
+  --color-paper: rgb(var(--palette-cream-75-rgb));
+  --color-page: var(--palette-cream-175);
+  --color-focus: var(--palette-amber-125);
+  --color-atlas-center: var(--palette-cream-125);
+  --color-atlas-edge: var(--palette-cream-200);
+  --color-subtle-text: var(--palette-moss-375);
+  --color-panel: rgb(var(--palette-cream-75-rgb) / 92.94%);
+  --color-panel-border: var(--palette-sage-350);
+  --color-panel-shadow: rgb(var(--palette-pine-225-rgb) / 6.27%);
+  --color-slider: var(--palette-pine-175);
+  --color-switch-off: var(--palette-sage-500);
+  --color-switch-knob: var(--palette-white);
+  --color-switch-on: var(--palette-pine-125);
+  --color-selection-background: var(--palette-sage-175);
+  --color-status-dot: var(--palette-pine-50);
+
+  /* Brand and header */
+  --color-brand-caption: var(--palette-moss-425);
+  --color-status-border: var(--palette-sage-475);
+  --color-status-text: var(--palette-teal-100);
+  --color-heading-eyebrow: var(--palette-teal-50);
+  --color-heading-caption: var(--palette-moss-300);
+
+  /* Map labels, compass and fallback */
+  --color-map-label-text: var(--palette-teal-175);
+  --color-map-label-background: rgb(var(--palette-cream-100-rgb) / 93.33%);
+  --color-map-label-border: var(--palette-sage-400);
+  --color-map-label-shadow: rgb(var(--palette-slate-75-rgb) / 3.14%);
+  --color-map-label-emphasis-text: var(--palette-teal-400);
+  --color-map-label-emphasis-background: rgb(var(--palette-sage-50-rgb) / 94.90%);
+  --color-map-label-hint: var(--palette-moss-75);
+  --color-map-label-context-text: var(--palette-moss-150);
+  --color-map-label-context-background: rgb(var(--palette-sage-125-rgb) / 85.10%);
+  --color-map-label-context-border: var(--palette-sage-375);
+  --color-orientation-text: var(--palette-moss-400);
+  --color-orientation-axis: var(--palette-pine-100);
+  --color-orientation-caption: var(--palette-moss-50);
+  --color-compass-north: var(--palette-teal-225);
+  --color-compass-south: var(--palette-moss-175);
+  --color-compass-arrow: var(--palette-pine-150);
+  --color-compass-line: var(--palette-moss-200);
+  --color-warning-background: var(--palette-amber-50);
+  --color-warning-border: var(--palette-amber-100);
+
+  /* Navigation and legend */
+  --color-floor-hover: var(--palette-sage-100);
+  --color-floor-active: var(--palette-teal-350);
+  --color-floor-caption: var(--palette-moss-125);
+  --color-floor-dot: var(--palette-sage-450);
+  --color-floor-dot-active: var(--palette-pine-75);
+  --color-controls-divider: var(--palette-sage-200);
+  --color-field-label: var(--palette-moss-450);
+  --color-facility-background: var(--palette-cream-150);
+  --color-facility-highlight: var(--palette-sage-150);
+  --color-facility-border: var(--palette-sage-525);
+  --color-facility-icon: var(--palette-teal-75);
+  --color-legend-text: var(--palette-moss-225);
+  --color-legend-public: var(--palette-amber-75);
+  --color-legend-paid: var(--palette-sage-575);
+  --color-legend-platform: var(--palette-slate-50);
+  --color-legend-paid-default: var(--palette-sage-550);
+  --color-level-description: var(--palette-moss-350);
+  --color-description-divider: var(--palette-sage-250);
+  --color-picker-label: var(--palette-moss-275);
+  --color-field-border: var(--palette-sage-325);
+  --color-field-background: var(--palette-sage-75);
+  --color-field-text: var(--palette-pine-200);
+  --color-tab-divider: var(--palette-sage-225);
+  --color-tab-text: var(--palette-moss-325);
+  --color-tab-active: var(--palette-teal-325);
+
+  /* Attribution and credits dialog */
+  --color-footer-text: var(--palette-moss-100);
+  --color-footer-link: var(--palette-moss-250);
+  --color-credits-link: var(--palette-teal-150);
+  --color-credits-link-hover: var(--palette-teal-375);
+  --color-credits-focus: var(--palette-teal-200);
+  --color-dialog-border: var(--palette-sage-425);
+  --color-dialog-shadow: rgb(var(--palette-teal-425-rgb) / 25.10%);
+  --color-dialog-backdrop: rgb(var(--palette-slate-100-rgb) / 40%);
+  --color-dialog-divider: var(--palette-sage-275);
+  --color-dialog-close: var(--palette-teal-250);
+  --color-credits-text: var(--palette-teal-125);
+  --color-credits-content-link: var(--palette-teal-300);
+}

@@ -9,7 +9,7 @@ export const higashiAxis = {
     acrossScale: 1
 };
 /**
- * Create Higashi-Umeda’s side platforms and their independent gate relationships on the calibrated axis.
+ * Create the side platforms of Higashi-Umeda (東梅田駅) and their independent gate relationships on the calibrated axis.
  */
 export function createGeographicHigashi() {
     return createStation(axisPlacement(higashiAxis), true);

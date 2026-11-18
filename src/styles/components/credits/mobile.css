@@ -1,0 +1,92 @@
+footer {
+  left: 18px;
+  right: 18px;
+  height: 36px;
+  font-size: 7px;
+  line-height: 1.6;
+}
+
+footer > span:last-child {
+  display: none;
+}
+
+footer {
+  gap: 8px;
+}
+
+footer > span {
+  max-width: 75%;
+}
+
+footer a {
+  font-size: 6px;
+  max-width: 25%;
+  text-align: right;
+}
+
+footer {
+  left: 12px;
+  right: 12px;
+  bottom: env(safe-area-inset-bottom,0px);
+  height: 30px;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+footer a {
+  font-size: 8px;
+}
+
+footer > span {
+  max-width: 70%;
+}
+
+footer a {
+  max-width: 28%;
+}
+
+.atlas footer {
+  left: max(12px,env(safe-area-inset-left,0px));
+  right: max(12px,env(safe-area-inset-right,0px));
+  bottom: calc(6px + env(safe-area-inset-bottom,0px));
+  justify-content: flex-end;
+  min-height: 44px;
+}
+
+.atlas footer .map-disclaimer {
+  display: none;
+}
+
+.map-credits {
+  display: block;
+  max-width: 100%;
+}
+
+.atlas footer .map-credits a {
+  font-size: 12px;
+  max-width: none;
+  white-space: normal;
+  text-align: right;
+}
+
+#credits-open {
+  font-size: 13px;
+}
+
+.credits-dialog {
+  width: calc(100% - 24px);
+  border-radius: 14px;
+}
+
+.credits-header {
+  padding: 12px 16px;
+}
+
+.credits-header h2 {
+  font-size: 18px;
+}
+
+.credits-content {
+  padding: 0 16px 20px;
+  font-size: 15px;
+}

@@ -1,6 +1,6 @@
 # 车站模块与地区组装
 
-H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。当前目录 tree、状态与剩余任务见[空间重构 Roadmap](../spatial-refactor-roadmap.md)。
+H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。目录结构见[项目 README](../../README.md#项目结构)，待核对事项见[空间重构 Roadmap](../spatial-refactor-roadmap.md)。
 
 ## 现役入口
 

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check:style": "node scripts/check-style.ts",
+    "check:style": "eslint \"{src,scripts,tests,data}/**/*.ts\" && stylelint \"src/**/*.css\"",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.ts",
     "dev": "node scripts/dev.ts",
@@ -15,9 +15,15 @@
     "three": "0.180.0"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "6.0.1",
+    "@stylistic/stylelint-plugin": "5.3.1",
     "@types/node": "24.10.0",
     "@types/three": "0.180.0",
+    "@typescript-eslint/parser": "8.73.0",
     "esbuild": "0.25.11",
+    "eslint": "10.15.0",
+    "eslint-plugin-jsdoc": "63.3.3",
+    "stylelint": "17.16.0",
     "typescript": "5.9.3"
   },
   "engines": {

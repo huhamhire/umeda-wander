@@ -6,7 +6,7 @@ import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
 import { jrAtriumPoint } from '../../stations/jr-osaka/geographic.ts';
 
 /**
- * Connect the north atrium, commercial galleries and Hankyu public interface while preserving block ownership.
+ * Connect the north atrium, commercial galleries and Hankyu (阪急) public interface while preserving block ownership.
  */
 export function northDecks(stations: StationMap[]): {
     blocks: DeckBlock[];

@@ -1,7 +1,9 @@
 # 样式维护
 
-入口为 `index.css`，构建时由 esbuild 合并成 `dist/styles.css`。共享变量和重置在 `foundations/`，品牌、地图控件、导览、版权分别在 `components/`；响应式规则就近放在所属组件中。
+入口为 `index.css`，构建时由 esbuild 合并成 `dist/styles.css`。共享布局和重置在 `foundations/`。品牌、地图、导览和版权在 `components/` 下各有目录。
 
-使用两空格缩进，每条属性独占一行。保持组件内规则顺序，新增规则前先修改对应声明，不在入口末尾叠加历史覆盖。跨组件只共享基础变量与明确的通用类，不借 Sass 嵌套放大选择器作用范围。
+`foundations/palette.css` 按色系维护基础色，`foundations/theme.css` 将基础色映射为界面用途，并为面板、标签、阴影和遮罩添加透明度。组件使用 `--color-*` 变量。扩展暗色主题时，在根元素上按主题设置对应的用途颜色。
 
-本次拆分保留现有交互与移动端尺寸；旧路线卡片相关样式随已移除的界面一并清理。完整开发规范见 [代码风格](../../docs/development/code-style.md)。
+各领域在自己的 `index.css` 引用通用样式和同级的 `mobile.css`。后者用于 760px 及以下的窄屏，其他媒体查询留在该领域的 `base.css`。
+
+使用两空格缩进，每条属性独占一行。新增规则前先检查所属领域的现有声明。[代码风格](../../docs/development/code-style.md)

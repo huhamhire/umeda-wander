@@ -1,0 +1,110 @@
+.topbar {
+  height: 76px;
+  padding: 0 19px;
+}
+
+.brand {
+  font-size: 15px;
+  gap: 9px;
+}
+
+.brand-mark {
+  width: 35px;
+  height: 35px;
+  font-size: 23px;
+  border-radius: 10px;
+}
+
+.brand small {
+  font-size: 8px;
+  letter-spacing: 1.3px;
+}
+
+.header-right {
+  gap: 0;
+}
+
+.edition {
+  display: none;
+}
+
+.local-badge {
+  font-size: 9px;
+  padding: 6px 9px;
+}
+
+.map-heading {
+  top: 98px;
+  left: 22px;
+}
+
+.eyebrow {
+  font-size: 8px;
+  margin-bottom: 8px;
+}
+
+.map-heading h1 {
+  font-size: 23px;
+}
+
+.map-heading > p:last-child {
+  font-size: 10px;
+  margin-top: 7px;
+}
+
+.topbar {
+  height: calc(64px + env(safe-area-inset-top,0px));
+  padding: env(safe-area-inset-top,0px) 16px 0;
+  gap: 10px;
+}
+
+.brand {
+  font-size: 14px;
+  gap: 8px;
+  min-width: 0;
+  letter-spacing: 1px;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 32px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.brand small {
+  font-size: 10px;
+  letter-spacing: .4px;
+  line-height: 1.5;
+}
+
+.local-badge {
+  font-size: 10px;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.map-heading {
+  display: none;
+}
+
+.map-heading .eyebrow {
+  display: none;
+}
+
+.map-heading > p:last-child {
+  display: none;
+}
+
+.map-heading h1 {
+  font-size: 18px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.brand-copy {
+  gap: 3px;
+}

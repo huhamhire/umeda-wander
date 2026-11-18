@@ -1,121 +1,18 @@
 # 梅田地图空间重构 Roadmap
 
-更新：2026-11-17。四阶段的主要工程装配已接入 H5；自动检查与离线平面复核已通过。地下门位、局部高差、连接净空及真实浏览器／手机验收仍有剩余项，尚未整体验收。
+这里记录仍需核对的空间与交互事项。目录结构见[项目 README](../README.md#项目结构)，区域依据见[设计文档索引](./README.md)。
 
-## 状态与维护入口
+## 空间待核对
 
-| 阶段 | 状态 | 维护记录 |
-| --- | --- | --- |
-| 一：道路与建筑平面 | 已完成，后续按扩展范围裁剪 | [地理数据](../data/geography/README.md) |
-| 二：七站校准与建筑 | 工程项完成，继续处理局部反馈 | [车站校准](./design/stations/README.md)、[模块组装](./development/architecture.md) |
-| 三：地下公共网 | 主网及首批设备已装配，门位／高差待核对 | [地下装配](./design/public-areas/underground.md) |
-| 四：2F 连廊 | 北／南／西及 Inogate 新桥已装配，端点为参考拟合 | [连廊装配](./design/public-areas/elevated.md) |
+- **地下门位**：依据平面资料确定 JP 下沉广场到 Garden Avenue 主网，以及 E-ma、Hilton West 的具体门洞。核对北新地南侧出口、西梅田短升降落台与公共网的连接及高差。[南侧区域](./design/areas/south.md)
+- **地下占位**：核对第一酒店等未登记街区的独立边界，保留源图公共开挖面及孔洞。[地下装配](./design/public-areas/underground.md)
+- **二层接口**复核阪急西侧公共前沿、连廊宽度与净空、商业门位、设备落点及 Inogate 连桥两端的实际标高。[北侧区域](./design/areas/north.md) · [二层连廊](./design/public-areas/elevated.md)
+- **JR 北中庭**：确认通往建筑 4F 的扶梯落点及上方公共区域，取得依据后补入。[JR 大阪站](./design/stations/jr-osaka.md)
+- **外围地标候选**：评估蓝天大厦的模型范围与距离对取景的影响。
 
-已完成的参数、检查和实现细节留在上述记录中，不再逐项列作 roadmap 任务。Inogate 新桥及外围地面收边分别见[连廊记录](./design/public-areas/elevated.md)与[地面展示范围](./design/public-areas/ground.md)。
+## 人工验收
 
-## 维护原则
+- 桌面浏览器检查总览与分层、遮挡、楼层聚焦、滑块、显示开关和设施定位。重点复核 JR 东侧轨道收束及阪神站务室周围楼板的可见性。[JR 大阪站](./design/stations/jr-osaka.md) · [阪神大阪梅田站](./design/stations/hanshin-umeda.md)
+- 手机检查触控、双指缩放、窄屏可读性，以及悬浮控件和安全区的避让。
 
-- 建筑、道路与车站包络共用米制基准，保持大致真实的比例和方位；设备可适度放大，不能改变接口或付费边界。
-- 各站、商业体及公共区域独立维护，通过稳定接口组装；同一公共空间只有一个几何所有者。共享能力按 DDD 语义归层，不集中塞入 utils。
-- 物理标高、探索层归组和展示变换分开；同高公共接缝共面，平面交叉不等于互通。
-- 地面路网独立显隐；地下占位避让通路，2F 分支和建筑门口不得被栏杆／外壳封住。
-- 原始参考资料不覆盖。直接事实、人工拟合与示意设计分开记录；未确认接口不以最近点补线，来源许可见[来源审计](./data/source-credits-audit.md)。
-- 局部改动同步检查现役设备、开口、围栏、轨道、设施目录和取景。
-
-## 目录结构
-
-以下列出当前维护目录，板块内按实际复杂度拆分，不创建空壳层级。
-
-```text
-umeda-h5/
-├── src/
-│   ├── domain/
-│   │   ├── map/                  # 坐标、楼层、板块、接口、几何与设施语义
-│   │   └── navigation/           # 本站通行规则
-│   ├── application/
-│   │   ├── map-session.ts        # 应用状态与用例入口
-│   │   ├── stations/            # 站模、包络及公共接口
-│   │   ├── public-areas/        # 地下／高架和占位装配
-│   │   ├── connections/         # 设备、开口及边界
-│   │   ├── exploration/         # 楼层、筛选与聚焦
-│   │   └── i18n/                # 消息格式化
-│   ├── infrastructure/
-│   │   ├── geography/            # 地图适配、来源与坐标基准
-│   │   ├── stations/             # 七站各有独立目录
-│   │   │   ├── jr-osaka/
-│   │   │   │   └── umekita/      # 梅北独立子区
-│   │   │   ├── hankyu-umeda/
-│   │   │   ├── metro-umeda/
-│   │   │   ├── hanshin-umeda/
-│   │   │   ├── higashi-umeda/
-│   │   │   ├── nishi-umeda/
-│   │   │   └── kitashinchi/
-│   │   ├── buildings/            # 各商业综合体独立目录
-│   │   ├── i18n/zh-CN/           # 六个领域的中文词条，日英尚未翻译
-│   │   ├── public-areas/
-│   │   │   ├── north-atrium/
-│   │   │   ├── metro-interchange/
-│   │   │   ├── south-diamor/
-│   │   │   ├── whity/
-│   │   │   ├── station-frontages/
-│   │   │   ├── north-decks/
-│   │   │   ├── south-decks/
-│   │   │   └── west-decks/
-│   │   └── district/             # 板块登记、地理总图入口
-│   ├── presentation/
-│   │   ├── map-scene.ts          # 场景协调及生命周期
-│   │   ├── camera/              # 取景、定位、旋转与手势
-│   │   ├── labels/              # 标签、遮挡和碰撞
-│   │   ├── appearance/          # 配色、灰化及缓动
-│   │   ├── components/          # 控件及定位标记
-│   │   └── models/              # 构造入口、几何及 buildings／stations／public-areas
-│   ├── content/                  # 整体维护的来源与版权正文
-│   ├── utils/                    # 无地图领域语义的通用工具
-│   ├── main.ts                   # 应用与 DOM 事件绑定
-│   ├── index.html                # 单入口模板
-│   └── styles/                   # 基础样式及品牌／地图／导览／版权组件
-├── data/geography/               # 正式派生资源与可复现的地理配置
-├── tests/
-│   ├── stations/                 # 本站布局、设备与跨站组装
-│   ├── public-areas/             # 地下公共空间、天井与二层连廊
-│   ├── geography/                # 坐标、路网、轨道与运行时地理数据
-│   ├── buildings/                # 商业体量、外观及建筑设备
-│   ├── navigation/               # 本站寻路、设施筛选与目录校对
-│   ├── presentation/             # 镜头、交互、可见性与界面资源
-│   └── tooling/                  # 开发规范与源码依赖边界
-├── scripts/                      # 构建、服务、提取与离线复核
-├── docs/
-│   ├── design/                   # 按区域／车站／公共空间／建筑维护设计依据
-│   ├── development/              # 架构、风格、国际化、验证与文档规范
-│   └── data/                     # 来源、授权与设施迁移审计
-└── references/                   # 分类原始资料及 catalog.json 事实索引
-```
-
-页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)。应用与呈现能力已按职责归组，见[应用层说明](../src/application/README.md)和[呈现层说明](../src/presentation/README.md)。
-
-工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案维护在六个中文领域词库，版权正文改为独立内容资源，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
-
-文档索引见 [docs/README](./README.md)。旧方案、旧坐标参数及已完成迁移流水已删除，历史查 Git；仍有价值的事实、边界和待确认项归入现行区域文档，不保留 archive 副本。维护约定见[文档规范](./development/documentation.md)。
-
-## 剩余细节
-
-建筑白模、JR 屋顶及阪急 1F 通廊校对见 [建筑模型校对](./design/buildings/model-calibration.md)，E-ma／Hilton West 地下占位修订与 MARU 曲线轮廓见 [地下装配记录](./design/public-areas/underground.md)。已落地内容不再列为待实现；外围蓝天大厦仍为可选地标候选。
-
-设施迁移已完成逐项覆盖校对；Grand Front 南侧广场的两处扶梯和宽楼梯已补入公共 B1／1F 板块，设备位置和标高仍为参考拟合。阪急站台采用更明确的浅栗红铺装，线路色带保留。原始资料已分类到 [references](../references/README.md)，核对事实和人工拟合分别维护。
-
-1. **地下门位**：JP 下沉广场的楼梯及连续直梯已按官方剖面补齐，Garden Avenue 与地区主网的具体接入仍待平面资料定位；局部落台和建筑接触不等于接上主网。E-ma、Hilton West 的 B1 占位已按同一地下图投影贴合公共面，具体门洞仍未核验。
-2. **独立出口与高差**：核对北新地南侧出口、西梅田短升降落台及其地区接入，保留缺少资料的边界。
-3. **地下占位**：继续核对第一酒店等未登记街区；源图中与街道／站前大楼连在一起的复合描边，不能直接当成独立酒店外轮廓。保持公共开挖面及孔洞，地上轮廓与 B1 街区边界分别维护。
-4. **局部净空**：按反馈复核桥宽、阪急西侧公共前沿、设备大小、商业门口和轨道收束。JR 站体横向包络、中庭及东侧六股缓变运行线已调整，参考拟合与北侧 4F 扶梯待补边界见 [JR 记录](./design/stations/jr-osaka.md)；轨道不强制吸附 OSM 逐线坐标。阪神站务室周围的 B1 连续楼板已补回并保留局部设备开口，真实视觉仍待复核，见 [阪神记录](./design/stations/hanshin-umeda.md)。
-5. **人工整体验收**：在用户浏览器／手机检查外观、遮挡、聚焦、滑块和触控。遵守不直接操作浏览器的约定，离线图与替身测试不代替 WebGL 实测。
-
-资料不足项单独保留，不阻止其他有依据的局部修订。未来仍可在独立板块内调整坐标与轮廓。
-
-## 每批检查与交付
-
-- 数据／几何：稳定 ID、归属、接缝、付费边界、孔洞、设备落点、轨道连续及上下关系。
-- 显示／交互：总览与分层、收拢／中间／最大展开（原上限的 1.5 倍）、路网／轮廓开关、聚焦灰化、设施筛选与完整跨层模型；展开百分比不展示。
-- 工程：类型检查、相关回归、构建及差异检查；离线图记录可重建命令。真实浏览器、手机和性能未实测的部分如实列明。
-- 交付说明修改范围、依据、验证和未确定项；未经明确要求不创建提交。
-
-当前不包括实时定位、正式跨站寻路、通行时间估算、店铺细节、实时施工状态及在线编辑器。
+验证方式见[开发验证规范](./development/validation.md)。真实浏览器及手机验收由用户手动操作。

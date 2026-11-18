@@ -3,7 +3,7 @@ import type { StationMap, Point2, RouteNode, VerticalConnection, FloorArea, Faci
 import { platformPoint, passageOutline } from '../../../../domain/map/geometry.ts';
 import { jrStation } from '../index.ts';
 
-/** Paid west link joins independently calibrated JR and Umekita frames. */
+/** Paid west link joins independently calibrated JR and Umekita (うめきた) frames. */
 export function westWalkway(ground: StationMap, umekita: StationMap) {
     const centroid = (points: Point2[]) => points.reduce(
         (s, p) => ({

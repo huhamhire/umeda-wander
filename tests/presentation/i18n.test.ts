@@ -56,8 +56,11 @@ test(
 test(
     'the built HTML resolves text and accessible labels without leaking message IDs',
     () => {
-        const html = renderHtmlMessages(readFileSync('src/index.html', 'utf8'));
+        const template = readFileSync('src/index.html', 'utf8');
+        assert(template.includes('<html lang="{{locale}}">'));
+        const html = renderHtmlMessages(template);
         assert(!html.includes('{{'));
+        assert(html.includes(`<html lang="${sourceLocale}">`));
         assert(html.includes('<title>车站漫游 · UMEDA STATION</title>'));
         assert(html.includes('aria-label="放大"'));
         assert(html.includes('数据来源与版权 · © OpenStreetMap contributors'));

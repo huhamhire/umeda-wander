@@ -1,6 +1,6 @@
 # 文档索引
 
-七站地理样板、地下公共网和主要二层连廊已接入。模型及连接包含人工拟合，不能用于现场导航。运行方式见[项目 README](../README.md)，当前状态与待办统一见 [Roadmap](./spatial-refactor-roadmap.md)。
+七站地理样板、地下公共网和主要二层连廊已接入。模型及连接包含人工拟合，不能用于现场导航。运行方式见[项目 README](../README.md)，待办与待验收项见 [Roadmap](./spatial-refactor-roadmap.md)。
 
 | 要处理的内容 | 入口 |
 | --- | --- |
@@ -14,7 +14,7 @@
 ```text
 docs/
 ├── README.md
-├── spatial-refactor-roadmap.md   # 当前状态与剩余任务
+├── spatial-refactor-roadmap.md   # 剩余任务与待验收项
 ├── design/
 │   ├── areas/                   # JR 中央区、北侧、南侧
 │   ├── stations/                # 七站构内依据与简化边界

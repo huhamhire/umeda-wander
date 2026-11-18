@@ -10,7 +10,7 @@ export const nishiAxis = {
     acrossScale: 1.35
 };
 /**
- * Create the west-aligned Nishi-Umeda station, including its north buffers and southern approach.
+ * Create the west-aligned Nishi-Umeda Station (西梅田駅), including its north buffers and southern approach.
  */
 export function createGeographicNishi() {
     const station = createStation(axisPlacement(nishiAxis), true);

@@ -1,6 +1,5 @@
-/* Order: common foundations, then independently maintained UI components. */
-@import "./foundations/base.css";
-@import "./components/chrome.css";
-@import "./components/map.css";
-@import "./components/navigation.css";
-@import "./components/credits.css";
+@import "./foundations/index.css";
+@import "./components/chrome/index.css";
+@import "./components/map/index.css";
+@import "./components/navigation/index.css";
+@import "./components/credits/index.css";

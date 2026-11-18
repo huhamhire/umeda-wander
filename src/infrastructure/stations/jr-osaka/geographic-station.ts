@@ -5,7 +5,7 @@ import { applyCrostAccess } from './crost-access.ts';
 import { applySouthEntrance } from './south-entrance.ts';
 import { building as southBuilding } from '../../buildings/daimaru/index.ts';
 
-/** Ground and Umekita keep independent frames, with explicit internal links. */
+/** Ground and Umekita (うめきた) keep independent frames, with explicit internal links. */
 export function createGeographicJr() {
     const ground = createGeographicJrGround();
     const underground = createGeographicUmekita();

@@ -10,7 +10,7 @@ export const hanshinAxis = {
     acrossScale: 0.9
 };
 /**
- * Create the Hanshin map and align paid boundaries, platform widths and public interfaces.
+ * Create the Hanshin (阪神) map and align paid boundaries, platform widths and public interfaces.
  */
 export function createGeographicHanshin() {
     const station = createStation(axisPlacement(hanshinAxis), true);

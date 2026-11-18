@@ -12,7 +12,7 @@ export const umekitaFit = {
     across: 1.17
 };
 /**
- * Create the bowed Umekita platforms and oblique concourse while preserving their separate underground levels.
+ * Create the bowed Umekita (うめきた) platforms and oblique concourse while preserving their separate underground levels.
  */
 export function createGeographicUmekita(): StationMap {
     const platforms = jrStation.layout.platforms.filter(p => p.level === 'underground-platform');

@@ -71,7 +71,7 @@ test(
             assert(attributes!.includes('rel="noopener noreferrer"'));
         }
         const template = renderHtmlMessages(readFileSync('src/index.html', 'utf8'));
-        assert.match(template, /id="credits-close"[^>]*aria-label="关闭数据来源与版权"><span aria-hidden="true">×<\/span><\/button>/);
+        assert.match(template, /id="credits-close"[^>]*aria-label="关闭数据来源与版权">\s*<span aria-hidden="true">×<\/span>\s*<\/button>/);
         assert(template.includes('<!-- SOURCE CREDITS -->'));
     }
 );
@@ -135,7 +135,7 @@ test(
         const css = await buildStyles();
         assert.match(html, /<dialog[^>]+aria-labelledby="credits-title"/);
         assert.match(html, /<h2 id="credits-title" tabindex="-1"/);
-        assert.match(html, /<a id="credits-open"[^>]+>数据来源与版权 · © OpenStreetMap contributors<\/a>/);
+        assert.match(html, /<a\s+id="credits-open"[^>]+>数据来源与版权 · © OpenStreetMap contributors<\/a>/);
         assert(
             !html.includes('href="https://www.openstreetmap.org/copyright"'),
             'no independent OSM link outside the dialog'

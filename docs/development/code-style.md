@@ -1,6 +1,6 @@
 # 代码风格与维护约定
 
-本项目参考本地 `nstarter-temlates/templates/service-express` 的 `.editorconfig`、`server/.eslintrc.js` 及 `nstarter-eslint-config/base.js`。采用模板的 TypeScript 四空格缩进，以及 `curly: all`、`max-statements-per-line: 1`、分号等基本可读性规则；不安装或复制整套 ESLint 依赖，也不迁入服务端框架相关规则。
+本项目沿用 nstarter 的 TypeScript 四空格缩进、单语句、大括号和分号约定。本地配置只启用本项目所需的 ESLint 与 Stylelint 规则。
 
 ## TypeScript
 
@@ -11,6 +11,7 @@
 - 语义段落之间最多保留一行空行；参数列表、对象或数组的开闭分隔符内侧不填充空行。模板字符串中的空白作为数据保留。
 - 命名函数、类方法、访问器、构造器及模块级函数变量提供英文 JSDoc，说明用途、输入约定、返回含义或副作用中真正重要的内容。已有明确类型不逐项重复成无信息量的 `@param`；短匿名回调不强制写模板注释。
 - 关键算法步骤、坐标框架、单位、来源与人工估计边界使用英文注释解释原因；不添加仅复述赋值动作的注释。
+- 注释中的罗马字地名、站名和线路名附日文原名，例如 `Kitashinchi (北新地駅)`。以正式日文表记为准。
 - 不把嵌套三元表达式当成控制流程。超过简单二选一时优先使用具名中间变量、分支或查表。
 - 保持现有 DDD 依赖方向。样式整理不顺带调整布局数值、设施身份、地理来源或算法行为。
 
@@ -25,29 +26,34 @@ npm test
 npm run build
 ```
 
-`check:style` 复用已锁定的 TypeScript 解析器，检查源码、脚本和测试的单行语句、分号、大括号、缩进、多余空行、换行及命名方法文档；测试替身不强制 JSDoc。多行字符串中的空白按数据保留。CSS 检查两空格及每行单条声明。
+`check:style` 通过 `eslint.config.js` 检查源码、脚本、测试和数据代码的单行语句、分号、大括号、缩进、连续空行、块边缘空行、行尾空白和换行。JSDoc 规则适用于源码、脚本和数据代码。`stylelint.config.js` 检查 CSS 的两空格缩进、声明换行和文件换行。
 
 测试按业务领域维护于根目录 `tests/`，目录职责见 [测试说明](../../tests/README.md)。`npm test` 递归收集所有领域的 `*.test.ts`，不能因移动文件漏跑。
 
-该检查是项目约定的可执行子集，不是完整 ESLint，也不会自动生成注释、翻译词条或重排领域代码。英文注释是否准确、复杂表达式是否易读仍需人工审查。
+代码审查继续核对参数列表、对象及数组边缘的单个空行、英文注释的准确性、日文地名标注和复杂表达式的可读性。HTML 缩进由 EditorConfig 和编辑器维护。
 
 ## 样式模块
 
-参考博客项目的 foundations／components 组织方式，当前使用原生 CSS，入口为 `src/styles/index.css`：
+样式使用原生 CSS。完整目录见[项目结构](../../README.md#项目结构)。
 
 ```text
 src/styles/
 ├── index.css
-├── foundations/base.css          # 变量、重置、共享表面和画布容器
+├── foundations/
+│   ├── index.css
+│   ├── palette.css               # 按色系维护基础色
+│   ├── theme.css                 # 界面用途及衍生颜色
+│   ├── base.css                  # 重置、共享表面及画布
+│   └── mobile.css
 └── components/
-    ├── chrome.css                # 品牌、顶部及页面标题
-    ├── map.css                   # 画布标签、缩放、方位及降级提示
-    ├── navigation.css            # 侧栏、楼层、设施筛选及图例
-    └── credits.css               # 底部署名、版权模态框
+    └── <领域>/
+        ├── index.css             # 本领域的样式入口
+        ├── base.css              # 通用样式和其他媒体查询
+        └── mobile.css            # 本领域的窄屏样式
 ```
 
-每个组件就近维护移动端、宽屏和减少动态效果规则。共享变量放 foundations，避免为了覆盖其他组件不断追加新规则。选择器和声明块正常换行，每条属性一行，媒体查询内继续缩进。
+各领域的 `index.css` 先加载通用样式，再用 `(max-width: 760px)` 加载同级的 `mobile.css`。宽屏和减少动态效果等规则留在所属领域的 `base.css`。选择器和声明块正常换行，每条属性一行，媒体查询内继续缩进。
 
-esbuild 在 `scripts/styles.ts` 合并本地 `@import`，仍只输出一个 `dist/styles.css`，开发服务器和部署资源路径不变。当前没有需要 Sass 才能完成的 mixin 或计算，先不增加编译器；以后若采用 Sass，保持这些领域边界及单一产物契约。
+组件引用 `foundations/theme.css` 中按用途命名的 `--color-*`。主题从 `palette.css` 取用基础色，在需要透明度时使用同一基础色的 RGB 通道。扩展暗色主题时，在根元素上按主题覆盖用途变量。地图图例的付费区动态颜色继续由车站配色提供，Three.js 场景材质由呈现层维护。
 
-已移除两 Tab 导览不再使用的旧路线卡片／路线开关样式。其余样式按组件保留原来的覆盖顺序；本批不重设计视觉或交互。
+`scripts/styles.ts` 通过 esbuild 合并本地 `@import`，输出 `dist/styles.css`。CSS 变量、媒体条件和领域拆分均由原生 CSS 支持。

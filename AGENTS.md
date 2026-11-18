@@ -33,10 +33,10 @@
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
 - 源码风格参考本地 nstarter service-express 模板，规范见 `docs/development/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
-- 注释统一使用英文。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc；关键算法、坐标框架、人工估计和副作用补必要说明，不生成复述代码的模板注释。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 使用已有 TypeScript 解析器检查基本规则，不安装 nstarter／ESLint 依赖。格式整理与行为变更分别校对。
-- CSS 按 `src/styles/index.css`、`foundations/` 和 `components/` 维护，响应式规则放在所属组件中；每条属性独占一行。`scripts/styles.ts` 使用现有 esbuild 合并为 `dist/styles.css`，目前无需 Sass，不把新覆盖不断堆到入口末尾。
+- 注释统一使用英文。罗马字地名、站名及线路名随注释注明日文原名。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc。关键算法、坐标框架、人工估计和副作用补必要说明。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 通过 ESLint 和 Stylelint 检查 TypeScript、CSS。格式整理与行为变更分别校对。
+- CSS 按 `src/styles/foundations/` 和 `components/<领域>/` 维护。各领域的 `index.css` 先引入通用样式，再为 760px 及以下的窄屏加载同级 `mobile.css`。`foundations/palette.css` 维护基础色板，`foundations/theme.css` 定义界面用途及衍生颜色供组件使用。每条属性独占一行，`scripts/styles.ts` 通过 esbuild 合并为 `dist/styles.css`。
 - 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 分界面、车站、建筑、公共区域、设施、线路六个领域文件；目前只维护中文，不实际翻译日文／英文。版权正文按用户约定在 `src/content/source-credits.zh-CN.html` 整体维护，不拆成词条；未来按语言维护整份资源。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/development/i18n.md`。
-- 当前源码入口与目录职责见 Roadmap。测试覆盖现役站模、设施目录、开口和公共接口，历史版本通过 Git 查阅。
+- 当前源码入口与目录职责见根 README 的项目结构。Roadmap 维护待办和待验收项。测试覆盖现役站模、设施目录、开口和公共接口，历史版本通过 Git 查阅。
 - 设施目录测试直接核对现役设备落点、站台及稳定编号。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
 - TypeScript 配置启用严格类型检查；地图实体、楼层、设施和通行图使用明确类型。类型检查与构建分别验证。

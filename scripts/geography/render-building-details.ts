@@ -108,10 +108,10 @@ for (const [panel, id] of ids.entries()) {
                 const q = project(p);
                 return { x: originX + (q.x - minX) * scale, y: originY + (q.y - minY) * scale, depth: q.depth };
             }) as [
-                    ReturnType<typeof project>,
-                    ReturnType<typeof project>,
-                    ReturnType<typeof project>
-                ];
+                ReturnType<typeof project>,
+                ReturnType<typeof project>,
+                ReturnType<typeof project>
+            ];
             const determinant = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
             if (Math.abs(determinant) < 1e-8) {
                 continue;

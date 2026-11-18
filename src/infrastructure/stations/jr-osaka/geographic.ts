@@ -30,7 +30,7 @@ export function jrAtriumPoint(p: Point2): Point2 {
     return jrGroundPoint({ x: p.x * .6 - 2.5, z: -49 + (p.z + 49) * .48 });
 }
 
-/** Ground-station review slice only. Umekita needs its own frame. */
+/** Ground-station review slice only. Umekita (うめきた) needs its own frame. */
 export function createGeographicJrGround(): StationMap {
     const { angle, along, across, eastSetback } = groundFrame;
     const point = jrGroundPoint;

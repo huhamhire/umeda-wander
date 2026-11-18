@@ -1,0 +1,113 @@
+#viewport {
+  inset: 0;
+}
+
+.map-tools {
+  right: 16px;
+  bottom: 318px;
+  flex-direction: column;
+  border-radius: 9px;
+}
+
+.map-tools > span {
+  display: none;
+}
+
+.map-tools button {
+  width: 28px;
+  height: 29px;
+  font-size: 19px;
+}
+
+.orientation {
+  left: 20px;
+  bottom: 325px;
+  font-size: 8px;
+}
+
+.axis {
+  font-size: 22px;
+}
+
+.fallback {
+  top: 40%;
+  left: 20px;
+  right: 20px;
+  padding: 15px;
+}
+
+.fallback h2 {
+  font-size: 13px;
+}
+
+.compass {
+  width: 45px;
+  height: 46px;
+}
+
+.compass b {
+  font-size: 7px;
+}
+
+.compass-line {
+  inset: 10px 2px;
+}
+
+.compass-line > i {
+  left: 7px;
+  top: 12px;
+  width: 24px;
+}
+
+.compass-line:before {
+  font-size: 15px;
+}
+
+.compass-line:after {
+  font-size: 15px;
+}
+
+.orientation {
+  gap: 6px;
+}
+
+.orientation small {
+  font-size: 6px;
+  max-width: 68px;
+  line-height: 1.5;
+}
+
+#viewport {
+  bottom: 355px;
+}
+
+.orientation {
+  bottom: 365px;
+}
+
+.map-tools {
+  bottom: 350px;
+}
+
+#viewport {
+  inset: 0;
+}
+
+.map-tools {
+  right: 12px;
+  bottom: calc(var(--navigation-bottom) + var(--navigation-height) + 10px);
+  flex-direction: row;
+  border-radius: 10px;
+  z-index: 4;
+}
+
+.map-tools button {
+  width: 44px;
+  height: 44px;
+  font-size: 23px;
+}
+
+.orientation {
+  left: 16px;
+  bottom: calc(var(--navigation-bottom) + var(--navigation-height) + 10px);
+}

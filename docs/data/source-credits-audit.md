@@ -42,7 +42,7 @@
 
 使用原生 `<dialog>.showModal()`，依赖浏览器的顶层模态与 inert 隔离；标题接收初始焦点，关闭按钮、Esc 和 cancel 均恢复入口焦点，Tab 首尾循环。手机入口包含 12px OSM 署名，触摸区域至少 44px，底部导览预留 58px 加安全区；对话框限制屏幕高度、内容独立滚动，关闭按钮在滚动区外。
 
-版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits.css`、`src/content/source-credits.zh-CN.html`、`src/presentation/components/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集，旧下载对照已退役；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
+版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits/`、`src/content/source-credits.zh-CN.html`、`src/presentation/components/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集，旧下载对照已退役；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
 
 自动化测试覆盖内容节顺序、空节省略、许可分离、下载数据边界、打开关闭与键盘焦点生命周期，以及窄屏样式约束。遵照既有“不直接操作浏览器”的要求，没有做真实浏览器／手机视口的视觉和原生模态验收；原生 inert、触摸滚动与关闭后地图手势仍需在浏览器实测，不能把测试替身称为该项实测通过。
 

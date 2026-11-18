@@ -2,7 +2,7 @@ import { messageText } from '../../i18n/index.ts';
 import type { PublicBlockDefinition } from '../../../domain/map/public-area.ts';
 import { box, districtUndergroundEvidence } from '../underground-source.ts';
 
-/** Covers LUCUA, Umekita public approach and Yodobashi; masks only divide ownership. */
+/** Covers LUCUA, Umekita (うめきた) public approach and Yodobashi (ヨドバシ梅田); masks only divide ownership. */
 export const northAtriumBlock: PublicBlockDefinition = {
     id: 'north-atrium-b1',
     name: messageText('publicAreas.northAtrium.entities.northAtriumB1.name'),

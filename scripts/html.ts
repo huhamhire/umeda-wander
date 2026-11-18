@@ -1,10 +1,13 @@
-import { isMessageKey, messageText } from '../src/infrastructure/i18n/index.ts';
+import { isMessageKey, messageText, sourceLocale } from '../src/infrastructure/i18n/index.ts';
 
-/** Resolve static template keys at build time and escape text for HTML and quoted attributes. */
+/** Set the catalog language and escape translated text for HTML and quoted attributes. */
 export function renderHtmlMessages(template: string): string {
     return template.replace(
         /\{\{([a-zA-Z][a-zA-Z0-9.]*)\}\}/g,
         (_token, key: string) => {
+            if (key === 'locale') {
+                return sourceLocale;
+            }
             if (!isMessageKey(key)) {
                 throw new Error(`Unknown HTML message key: ${key}`);
             }

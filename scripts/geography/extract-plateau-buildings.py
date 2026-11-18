@@ -1,7 +1,7 @@
 """Extract only LOD2 roof geometry, not unreliable LOD1 measuredHeight tags.
 
-The Osaka 2025 package still has 2017 survey geometry in these buildings.
-Hanshin South and JP Tower are deliberately excluded after redevelopment.
+The 2025 Osaka City (大阪市) package still has 2017 survey geometry in these buildings.
+Hanshin South (大阪梅田ツインタワーズ・サウス) and JP Tower are excluded after redevelopment.
 """
 import json
 import math

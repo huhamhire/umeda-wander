@@ -13,7 +13,7 @@ export function createIslandRailApproaches(platforms: Platform[], distances?: {
 }): RailApproach[] {
     const { approaches, make, node, segment } = railApproachDraft();
     // Island tracks converge to independent parallel running roads. Y11 ends at
-    // the north buffers; only its southern end continues. Kitashinchi runs through.
+    // the north buffers; only its southern end continues. Kitashinchi (北新地駅) runs through.
     for (const [level, id, station, name, color, side, endX] of [
         [
             'y11-platform',

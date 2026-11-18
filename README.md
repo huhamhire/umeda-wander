@@ -25,7 +25,7 @@ Windows PowerShell 若阻止执行 `npm.ps1`，将命令中的 `npm` 换成 `npm
 
 `Ctrl+Shift+B` 构建网页；“运行任务”中还提供风格检查、类型检查和测试入口。
 
-代码使用 TypeScript 四空格缩进、单行单语句和英文方法文档注释；`npm run check:style` 检查基本规则，无新增工具依赖。见[代码风格](./docs/development/code-style.md)。样式按基础／组件拆分，仍构建成单个 CSS；显示文案通过七个领域的中文 i18n 词条维护，日文与英文暂未翻译，见[国际化规划](./docs/development/i18n.md)。
+代码使用 TypeScript 四空格缩进、单行单语句和英文方法文档注释。`npm run check:style` 运行 ESLint 和 Stylelint。样式按组件领域维护，配色通过 CSS 变量共享，构建为一个 CSS 文件。显示文案使用中文领域词条。[代码风格](./docs/development/code-style.md) · [国际化规划](./docs/development/i18n.md)
 
 ## 交互范围
 
@@ -66,29 +66,93 @@ npm run build
 
 本轮已通过严格类型检查、构建及导航规则测试；未进行浏览器自动操作或视觉验收。后续先人工查看屋顶比例、展开遮挡、移动端可读性和路线显示，再推进精确地图数据。
 
-## 源码边界
+## 项目结构
 
 ```text
 umeda-h5/
 ├── src/
-│   ├── domain/             # 地图与导航语义，不依赖 DOM 或 Three.js
-│   ├── application/        # stations／public-areas／connections／exploration／i18n
-│   ├── infrastructure/     # 独立站点、商业体、公共板块及地理数据
-│   ├── presentation/       # 场景入口、camera／labels／appearance／components／models
-│   ├── utils/              # 通用工具
-│   ├── main.ts             # 应用组装与事件绑定
-│   ├── index.html          # 页面模板
-│   └── styles/              # foundations／components，单入口合并
-├── tests/                  # 按车站、公共区域、地理、建筑、导航及呈现分组，见 tests/README.md
-├── scripts/                # 构建、本地服务与离线复核
-├── data/                   # 地理快照及可重建资源
-├── dist/                   # 网页产物（忽略）
-├── docs/                   # 区域设计、开发规范和来源审计
-└── references/             # 分类原始资料及事实索引（保留）
+│   ├── domain/
+│   │   ├── map/                  # 坐标、楼层、板块、接口、几何与设施语义
+│   │   └── navigation/           # 本站通行规则
+│   ├── application/
+│   │   ├── map-session.ts        # 应用状态与用例入口
+│   │   ├── stations/            # 站模、包络及公共接口
+│   │   ├── public-areas/        # 地下／高架和占位装配
+│   │   ├── connections/         # 设备、开口及边界
+│   │   ├── exploration/         # 楼层、筛选与聚焦
+│   │   └── i18n/                # 消息格式化
+│   ├── infrastructure/
+│   │   ├── geography/            # 地图适配、来源与坐标基准
+│   │   ├── stations/             # 七站各有独立目录
+│   │   │   ├── jr-osaka/
+│   │   │   │   └── umekita/      # 梅北独立子区
+│   │   │   ├── hankyu-umeda/
+│   │   │   ├── metro-umeda/
+│   │   │   ├── hanshin-umeda/
+│   │   │   ├── higashi-umeda/
+│   │   │   ├── nishi-umeda/
+│   │   │   └── kitashinchi/
+│   │   ├── buildings/            # 各商业综合体独立目录
+│   │   ├── i18n/zh-CN/           # 中文领域词条
+│   │   ├── public-areas/
+│   │   │   ├── north-atrium/
+│   │   │   ├── metro-interchange/
+│   │   │   ├── south-diamor/
+│   │   │   ├── whity/
+│   │   │   ├── station-frontages/
+│   │   │   ├── north-decks/
+│   │   │   ├── south-decks/
+│   │   │   └── west-decks/
+│   │   └── district/             # 板块登记、地理总图入口
+│   ├── presentation/
+│   │   ├── map-scene.ts          # 场景协调及生命周期
+│   │   ├── camera/              # 取景、定位、旋转与手势
+│   │   ├── labels/              # 标签、遮挡和碰撞
+│   │   ├── appearance/          # 配色、灰化及缓动
+│   │   ├── components/          # 控件及定位标记
+│   │   └── models/              # 构造入口、几何及 buildings／stations／public-areas
+│   ├── content/                  # 整体维护的来源与版权正文
+│   ├── utils/                    # 无地图领域语义的通用工具
+│   ├── main.ts                   # 应用与 DOM 事件绑定
+│   ├── index.html                # 单入口模板
+│   └── styles/
+│       ├── index.css             # 样式构建入口
+│       ├── foundations/
+│       │   ├── index.css         # 基础主题与布局入口
+│       │   ├── palette.css       # 基础色板
+│       │   ├── theme.css         # 界面用途及衍生颜色
+│       │   ├── base.css          # 重置及共享布局
+│       │   └── mobile.css        # 窄屏共享布局
+│       └── components/
+│           ├── chrome/           # 品牌、顶部及页面标题
+│           ├── map/              # 地图控件及标签
+│           │   ├── index.css     # 加载本领域的通用样式及窄屏样式
+│           │   ├── base.css
+│           │   └── mobile.css    # 各组件在自己的目录内维护窄屏样式
+│           ├── navigation/       # 楼层、设施和图例
+│           └── credits/          # 署名及版权弹窗
+├── data/geography/               # 正式派生资源与可复现的地理配置
+├── tests/
+│   ├── stations/                 # 本站布局、设备与跨站组装
+│   ├── public-areas/             # 地下公共空间、天井与二层连廊
+│   ├── geography/                # 坐标、路网、轨道与运行时地理数据
+│   ├── buildings/                # 商业体量、外观及建筑设备
+│   ├── navigation/               # 本站寻路、设施筛选与目录校对
+│   ├── presentation/             # 镜头、交互、可见性与界面资源
+│   └── tooling/                  # 源码依赖边界
+├── scripts/                      # 构建及本地服务
+│   └── geography/                # 原始资料提取、数据生成及离线复核
+├── docs/
+│   ├── design/                   # 按区域／车站／公共空间／建筑维护设计依据
+│   ├── development/              # 架构、风格、国际化、验证与文档规范
+│   └── data/                     # 来源、授权和核查记录
+├── references/                   # 分类原始资料及 catalog.json 事实索引
+├── build/                        # 本地中间产物和核查结果
+└── dist/                         # 可部署网页
 ```
 
 遵循 DDD 的领域与技术依赖边界，不引入暂时用不到的仓储、事件总线或复杂框架。展开后的视觉高度只影响渲染，不参与路径代价计算。
 
-文档索引：[docs/README.md](./docs/README.md)，按区域设计、开发与数据来源查找；当前待办统一在 Roadmap，旧方案查 Git 历史。
+文档索引：[docs/README.md](./docs/README.md)，按区域设计、开发与数据来源查找；当前待办统一在 [Roadmap](./docs/spatial-refactor-roadmap.md)，旧方案查 Git 历史。
 
 布局依据与简化边界：[JR 大阪站布局整理记录](./docs/design/stations/jr-osaka.md)。

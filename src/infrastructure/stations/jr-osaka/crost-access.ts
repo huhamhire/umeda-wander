@@ -2,7 +2,7 @@ import type { StationMap } from '../../../domain/map/model.ts';
 import { jrStation } from './index.ts';
 import { jrGroundPoint } from './geographic.ts';
 
-/** Crost descends from Central Court, independently of the Umekita frame. */
+/** Crost descends from Central Court, independently of the Umekita (うめきた) frame. */
 export function applyCrostAccess(station: StationMap): void {
     const ids = new Set(['crost-67', 'crost-stairs-68', 'crost-stairs-69']);
     const connections = jrStation.layout.connections.filter(c => ids.has(c.id)).map(c => ({

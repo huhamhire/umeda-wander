@@ -1,0 +1,93 @@
+/* Opaque swatches. Keep RGB channels separate where theme colors use different opacities. */
+:root {
+  /* Cream and white */
+  --palette-white: #fff;
+  --palette-cream-75-rgb: 255 254 248;
+  --palette-cream-100-rgb: 255 254 243;
+  --palette-cream-125: #fcfaf1;
+  --palette-cream-150: #f5f5ed;
+  --palette-cream-175: #f3f1e9;
+  --palette-cream-200: #f1efe6;
+
+  /* Pale greens */
+  --palette-sage-50-rgb: 248 255 244;
+  --palette-sage-75: #f5f7ed;
+  --palette-sage-100: #f0f3e9;
+  --palette-sage-125-rgb: 238 240 229;
+  --palette-sage-150: #e9efe3;
+  --palette-sage-175: #e8eee2;
+  --palette-sage-200: #e8ebdf;
+  --palette-sage-225: #e6e9dd;
+  --palette-sage-250: #e6e9dc;
+  --palette-sage-275: #e1e6d9;
+  --palette-sage-300: #dfe3d9;
+  --palette-sage-325: #dce3d3;
+  --palette-sage-350: #dde2d6;
+  --palette-sage-375: #dce1d5;
+  --palette-sage-400: #dbe0d3;
+  --palette-sage-425: #d8dfd1;
+  --palette-sage-450: #d6ddcf;
+  --palette-sage-475: #d4dfd1;
+  --palette-sage-500: #cdd5c7;
+  --palette-sage-525: #bfceba;
+  --palette-sage-550: #bbd1bd;
+  --palette-sage-575: #b1cbb4;
+
+  /* Muted greens */
+  --palette-moss-50: #9aa28f;
+  --palette-moss-75: #95a193;
+  --palette-moss-100: #96a08d;
+  --palette-moss-125: #98a08e;
+  --palette-moss-150: #939d90;
+  --palette-moss-175: #8e9e8c;
+  --palette-moss-200: #91a78b;
+  --palette-moss-225: #8e9789;
+  --palette-moss-250: #8c9b82;
+  --palette-moss-275: #899581;
+  --palette-moss-300: #879185;
+  --palette-moss-325: #87927f;
+  --palette-moss-350: #85917e;
+  --palette-moss-375: #839187;
+  --palette-moss-400: #78917c;
+  --palette-moss-425: #78857c;
+  --palette-moss-450: #718174;
+
+  /* Green accents */
+  --palette-pine-50: #54876a;
+  --palette-pine-75: #5a8266;
+  --palette-pine-100: #597a65;
+  --palette-pine-125: #52765e;
+  --palette-pine-150: #537c66;
+  --palette-pine-175: #476d52;
+  --palette-pine-200: #496b58;
+  --palette-pine-225-rgb: 37 59 48;
+
+  /* Teal accents */
+  --palette-teal-50: #5c8475;
+  --palette-teal-75: #59786b;
+  --palette-teal-100: #4c7162;
+  --palette-teal-125: #52655c;
+  --palette-teal-150: #49665b;
+  --palette-teal-175: #4e635e;
+  --palette-teal-200: #36715e;
+  --palette-teal-225: #386857;
+  --palette-teal-250: #315f51;
+  --palette-teal-275: #23665d;
+  --palette-teal-300: #276251;
+  --palette-teal-325: #245e50;
+  --palette-teal-350: #235e51;
+  --palette-teal-375: #245e4e;
+  --palette-teal-400: #245d53;
+  --palette-teal-425-rgb: 32 58 51;
+
+  /* Slate and blue */
+  --palette-slate-50: #a2bdc8;
+  --palette-slate-75-rgb: 38 61 64;
+  --palette-slate-100-rgb: 37 61 66;
+
+  /* Amber */
+  --palette-amber-50: #fff9e9;
+  --palette-amber-75: #e2d5b7;
+  --palette-amber-100: #d9b881;
+  --palette-amber-125: #df8154;
+}

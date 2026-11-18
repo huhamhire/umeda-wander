@@ -10,7 +10,7 @@ export const kitashinchiAxis = {
     acrossScale: 1.4
 };
 /**
- * Create Kitashinchi on its east-west axis and keep its display platform below the Yotsubashi tracks.
+ * Create Kitashinchi (北新地駅) on its east-west axis, below the Yotsubashi Line (四つ橋線) tracks.
  */
 export function createGeographicKitashinchi() {
     const station = createStation(axisPlacement(kitashinchiAxis), true);

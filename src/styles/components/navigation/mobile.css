@@ -1,0 +1,309 @@
+.layers {
+  left: 16px;
+  right: 16px;
+  top: auto;
+  bottom: 175px;
+  width: auto;
+  padding: 7px;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  border-radius: 12px;
+}
+
+.layers > .section-heading {
+  display: none;
+}
+
+.floor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 2px;
+  margin: 0;
+  text-align: center;
+  font-size: 9px;
+  border-radius: 7px;
+}
+
+.floor-number {
+  font-size: 13px;
+}
+
+.floor small {
+  display: none;
+}
+
+.floor-dot {
+  display: none;
+}
+
+.layer-options {
+  grid-column: 1/-1;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 5px 5px 0;
+  padding: 12px 0 6px;
+}
+
+.layer-options > label:first-child {
+  font-size: 9px;
+  white-space: nowrap;
+  gap: 6px;
+}
+
+.layer-options input[type=range] {
+  width: 100%;
+  margin: 0;
+  flex: 1;
+  min-width: 30px;
+}
+
+.roof-option {
+  font-size: 12px;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.inspector {
+  top: 169px;
+  right: 14px;
+  left: auto;
+  width: 113px;
+  padding: 7px;
+  border-radius: 11px;
+}
+
+.inspector .section-heading {
+  display: none;
+}
+
+.legend {
+  display: none;
+}
+
+.poi-list {
+  gap: 4px;
+}
+
+.poi-list button {
+  font-size: 8px;
+  padding: 7px 2px;
+}
+
+.poi-list button span {
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.layers {
+  top: auto;
+  bottom: 195px;
+  max-height: none;
+  overflow: visible;
+  grid-template-columns: repeat(7,minmax(0,1fr));
+  padding: 6px;
+}
+
+.floor {
+  padding: 8px 0;
+  gap: 4px;
+  font-size: 7px;
+  min-width: 0;
+}
+
+.floor > span:nth-child(2) {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floor-number {
+  font-size: 11px;
+  width: auto;
+}
+
+.level-description {
+  grid-column: 1/-1;
+  font-size: 8px;
+  line-height: 1.5;
+  margin: 6px 5px 0;
+  padding-top: 6px;
+  min-height: 30px;
+}
+
+.layer-options {
+  margin-top: 5px;
+  padding: 7px 0 3px;
+}
+
+.layer-options input[type=range] {
+  margin: 0;
+}
+
+.inspector {
+  top: 169px;
+}
+
+.picker-label {
+  font-size: 7px;
+  margin-top: 9px;
+}
+
+#facility-picker {
+  padding: 6px 2px;
+}
+
+.sidebar {
+  left: 12px;
+  right: 12px;
+  top: auto;
+  bottom: var(--navigation-bottom);
+  width: auto;
+  max-height: 46dvh;
+  padding: 8px 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 14px;
+}
+
+.sidebar-tabs {
+  padding: 0 0 6px;
+  margin-bottom: 6px;
+  gap: 6px;
+}
+
+.sidebar-tabs button {
+  font-size: 14px;
+  min-height: 44px;
+  padding: 8px;
+}
+
+.sidebar .section-heading {
+  display: none;
+}
+
+#floor-list {
+  display: grid;
+  grid-template-columns: repeat(6,minmax(0,1fr));
+  gap: 3px;
+}
+
+.sidebar .floor {
+  padding: 8px 0;
+  min-height: 44px;
+  justify-content: center;
+  margin: 0;
+}
+
+.sidebar .floor-number {
+  font-size: 16px;
+  flex: none;
+  width: auto;
+  font-weight: 600;
+}
+
+.sidebar .floor > span:nth-child(2) {
+  display: none;
+}
+
+.sidebar .layer-options {
+  gap: 8px;
+}
+
+.sidebar .layer-options > label:first-child {
+  font-size: 12px !important;
+}
+
+.sidebar .roof-option {
+  font-size: 12px !important;
+}
+
+.sidebar .layer-options input[type=range] {
+  height: 28px;
+}
+
+.sidebar .poi-list {
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 6px;
+}
+
+.sidebar .poi-list button {
+  font-size: 14px;
+  min-height: 60px;
+  padding: 8px 3px;
+}
+
+.sidebar .poi-list button span {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.sidebar .legend {
+  display: flex;
+  margin-top: 10px;
+  font-size: 11px;
+}
+
+.sidebar .picker-label {
+  font-size: 13px;
+  margin: 12px 2px 7px;
+}
+
+#facility-picker {
+  padding: 9px 7px;
+}
+
+.inspector {
+  position: static;
+}
+
+.facility-filters label {
+  font-size: 13px;
+}
+
+.facility-filters select {
+  font-size: 16px;
+  min-height: 44px;
+}
+
+.sidebar .floor-heading {
+  padding: 0 2px 6px;
+  font-size: 13px;
+}
+
+.layer-toggles .roof-option {
+  min-height: 44px;
+}
+
+.sidebar .poi-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  padding: 3px 0 6px;
+}
+
+.sidebar .poi-list button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 76px;
+  min-height: 44px;
+  padding: 9px 12px;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.sidebar .poi-list button span {
+  display: inline;
+  font-size: 18px;
+  margin: 0;
+}

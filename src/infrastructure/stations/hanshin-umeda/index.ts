@@ -2,7 +2,7 @@ import { messageText } from '../../i18n/index.ts';
 import { stationDraft } from '../../station-draft.ts';
 import { districtPlacements } from '../../district-placement.ts';
 import { passageOutline } from '../../../domain/map/geometry.ts';
-// +X runs west toward Kobe; -X is the eastern terminal. Coordinates are a
+// +X runs west toward Kobe (神戸); -X is the eastern terminal. Coordinates are a
 // schematic fit of the user-supplied 2025-12-24 plan, not measured station metres.
 /**
  * Create this station’s local layout, facilities and evidence in the supplied frame without mutating other stations.
@@ -505,7 +505,7 @@ export function createStation(
         openings: [{ level: 'hanshin-hall', outline: passageOutline(point(-82, -27), point(-82, -35), 5) }],
         evidence: proof('Upper B1 opening for the public East Gate–South Exit slope')
     }];
-    // One preview entirely inside Hanshin; no invented inter-operator routing edge.
+    // One preview entirely inside Hanshin (阪神); no invented inter-operator routing edge.
     const entry = node('route-entry', 'hanshin-hall', 58, 0);
     const out = node('route-gate-out', 'hanshin-hall', 49, 0);
     const inside = node('route-gate-in', 'hanshin-hall', 42, 0);

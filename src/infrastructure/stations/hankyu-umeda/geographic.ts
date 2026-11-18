@@ -11,7 +11,7 @@ export const hankyuAxis = {
     acrossScale: 1.08
 };
 /**
- * Create the calibrated Hankyu map while preserving the three separate line groups.
+ * Create the calibrated Hankyu (阪急) map while preserving the three separate line groups.
  */
 export function createGeographicHankyu() {
     return createStation(axisPlacement(hankyuAxis));
