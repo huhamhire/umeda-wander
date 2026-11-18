@@ -5,10 +5,12 @@ import ts from 'typescript';
 import { formatMessage } from '../../src/application/i18n/format-message.ts';
 import { showAreaLabel } from '../../src/application/exploration/area-label-policy.ts';
 import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { availableLocales, messageText, sourceLocale } from '../../src/infrastructure/i18n/index.ts';
+import { availableLocales, messageText, preferredLocale, sourceLocale } from '../../src/infrastructure/i18n/index.ts';
 import { chineseMessages } from '../../src/infrastructure/i18n/zh-CN/index.ts';
+import { englishMessages } from '../../src/infrastructure/i18n/en/index.ts';
+import { japaneseMessages } from '../../src/infrastructure/i18n/ja/index.ts';
 import { osakaStationSign } from '../../src/infrastructure/buildings/daimaru/signage.ts';
-import { renderHtmlMessages } from '../../scripts/html.ts';
+import { renderHtmlMessages, renderLocalizedPage } from '../../scripts/html.ts';
 
 test(
     'Chinese domain catalogs have unique language-neutral keys and no empty messages',
@@ -40,9 +42,34 @@ test(
         }
         assert.equal(known.size, Object.keys(chineseMessages).length);
         assert.equal(sourceLocale, 'zh-CN');
-        assert.deepEqual(availableLocales, ['zh-CN']);
+        assert.deepEqual(availableLocales, ['zh-CN', 'ja', 'en']);
     }
 );
+
+test('locale preferences follow the saved choice, browser order, and Chinese fallback', () => {
+    assert.equal(preferredLocale('en', ['ja-JP', 'zh-TW']), 'en');
+    assert.equal(preferredLocale(undefined, ['fr-FR', 'ja-JP', 'en-US']), 'ja');
+    assert.equal(preferredLocale('unsupported', ['en-GB', 'ja']), 'en');
+    assert.equal(preferredLocale(undefined, ['zh-Hant-TW', 'en-US']), 'zh-CN');
+    assert.equal(preferredLocale(undefined, ['fr-FR']), 'zh-CN');
+});
+
+test('localized catalogs cover the same keys and named parameters', () => {
+    const keys = Object.keys(chineseMessages) as (keyof typeof chineseMessages)[];
+    for (const catalog of [englishMessages, japaneseMessages]) {
+        assert.deepEqual(Object.keys(catalog).sort(), [...keys].sort());
+        for (const key of keys) {
+            assert(catalog[key].trim(), key);
+            assert.deepEqual(
+                catalog[key].match(/\{\w+\}/g)?.sort(),
+                chineseMessages[key].match(/\{\w+\}/g)?.sort(),
+                key
+            );
+        }
+    }
+    assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'ja'), '21 番のりば');
+    assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'en'), 'Track 21');
+});
 
 test(
     'named parameters preserve zero and literal markup without recursively interpreting values',
@@ -52,6 +79,28 @@ test(
         assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }), '21 番线');
     }
 );
+
+test('the single entry includes a translated shell and standalone credits for each locale', () => {
+    const template = readFileSync('src/index.html', 'utf8');
+    const credits = {
+        'zh-CN': readFileSync('src/content/source-credits.zh-CN.html', 'utf8'),
+        ja: readFileSync('src/content/source-credits.ja.html', 'utf8'),
+        en: readFileSync('src/content/source-credits.en.html', 'utf8')
+    };
+    const html = renderLocalizedPage(template, credits);
+    assert(!html.includes('<!-- SOURCE CREDITS -->'));
+    assert(!html.includes('{{'));
+    for (const locale of ['ja', 'en'] as const) {
+        const body = html.split(`<template data-page-locale="${locale}">`)[1]?.split('</template>')[0];
+        assert(body?.includes(messageText('ui.heading.title', {}, locale)));
+        assert(body?.includes(messageText('ui.preferences.language', {}, locale)));
+        assert(body?.includes(credits[locale].split('\n')[1]!.trim()));
+        assert.deepEqual(
+            [...credits[locale].matchAll(/href="[^"]+"/g)].map(match => match[0]),
+            [...credits['zh-CN'].matchAll(/href="[^"]+"/g)].map(match => match[0])
+        );
+    }
+});
 
 test(
     'the built HTML resolves text and accessible labels without leaking message IDs',

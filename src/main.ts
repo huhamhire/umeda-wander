@@ -1,8 +1,8 @@
 import { messageText } from './infrastructure/i18n/index.ts';
 import { facilities, levels, nodes, edges, layout, stations } from './infrastructure/district/geographic-map.ts';
 import type { Facility, FacilityKind, LevelId, StationId } from './domain/map/model.ts';
-import { MapSession } from './application/map-session.ts';
-import { MapScene } from './presentation/map-scene.ts';
+import { MapSession, type MapViewState } from './application/map-session.ts';
+import { MapScene, type MapCameraSnapshot } from './presentation/map-scene.ts';
 import { element } from './utils/dom.ts';
 import { bindSidebarTabs } from './presentation/components/sidebar-tabs.ts';
 import { stationPalettes } from './presentation/appearance/station-palette.ts';
@@ -11,6 +11,39 @@ import { floorOptions } from './presentation/components/floor-options.ts';
 import { filterFacilities, facilityCategory } from './application/exploration/facility-filter.ts';
 import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
+import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
+
+interface FacilityFilters {
+    station: StationId | null;
+    level: LevelId | 'all';
+    kind: FacilityKind | 'all';
+}
+
+interface LanguageChangeView {
+    state: MapViewState;
+    filters: FacilityFilters;
+    facility: string;
+    facilityTab: boolean;
+    roadsVisible: boolean;
+    categoryScroll: number;
+    camera?: MapCameraSnapshot;
+}
+
+const languageChangeKey = 'umeda-language-change-view';
+
+/** Read the previous language's view once without starting a persistent map history. */
+function takeLanguageChangeView(): LanguageChangeView | undefined {
+    try {
+        const raw = sessionStorage.getItem(languageChangeKey);
+        sessionStorage.removeItem(languageChangeKey);
+        return raw ? JSON.parse(raw) as LanguageChangeView : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+
+mountLocalizedPage();
 bindCreditsDialog(
     element<HTMLDialogElement>('#credits-dialog'),
     element('#credits-open'),
@@ -18,6 +51,10 @@ bindCreditsDialog(
     element('#credits-title')
 );
 const session = new MapSession(edges);
+const restored = takeLanguageChangeView();
+if (restored) {
+    session.state = restored.state;
+}
 let scene: MapScene | undefined;
 /**
  * Project geographic north onto the screen and update the compass needle and cardinal labels.
@@ -35,20 +72,15 @@ function updateCompass() {
 }
 updateCompass();
 window.addEventListener('map-orientation', updateCompass);
-element<HTMLInputElement>('#roads').addEventListener(
-    'change',
-    event => scene?.setRoadsVisible((event.target as HTMLInputElement).checked)
-);
+const roads = element<HTMLInputElement>('#roads');
+roads.checked = restored?.roadsVisible ?? roads.checked;
+roads.addEventListener('change', () => scene?.setRoadsVisible(roads.checked));
 const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
 const facilityPicker = element<HTMLSelectElement>('#facility-picker');
 const facilityStation = element<HTMLSelectElement>('#facility-station');
 const facilityFloor = element<HTMLSelectElement>('#facility-floor');
-const facilityFilter: {
-    station: StationId | null;
-    level: LevelId | 'all';
-    kind: FacilityKind | 'all';
-} = { station: null, level: 'all', kind: 'all' };
+const facilityFilter: FacilityFilters = restored?.filters ?? { station: null, level: 'all', kind: 'all' };
 const floorList = element('#floor-list');
 const floors = floorOptions(levels);
 for (const level of [{ id: 'all', label: messageText('ui.floors.overview'), name: messageText('ui.floors.all') }, ...floors]) {
@@ -71,6 +103,28 @@ const showSidebarTab = bindSidebarTabs(
     [element<HTMLButtonElement>('#tab-layers'), element<HTMLButtonElement>('#tab-facilities')],
     [element('#panel-layers'), element('#panel-facilities')]
 );
+if (restored?.facilityTab) {
+    showSidebarTab(1);
+}
+/** Save only the current view so the locale reload can rebuild all names and labels in place. */
+function saveLanguageChangeView(): void {
+    const snapshot: LanguageChangeView = {
+        state: session.state,
+        filters: facilityFilter,
+        facility: facilityPicker.value,
+        facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
+        roadsVisible: roads.checked,
+        categoryScroll: element('#poi-list').scrollLeft,
+        camera: scene?.snapshotCamera()
+    };
+    try {
+        sessionStorage.setItem(languageChangeKey, JSON.stringify(snapshot));
+    }
+    catch {
+        // Storage restrictions should not prevent changing the language.
+    }
+}
+bindPagePreferences(saveLanguageChangeView, dark => scene?.setDarkTheme(dark));
 // Keep floating controls clear of every tab's actual height.
 const sidebar = element('.sidebar');
 const atlas = element('.atlas');
@@ -290,6 +344,11 @@ try {
         session.state,
         select
     );
+    scene.setRoadsVisible(roads.checked);
+    scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
+    if (restored?.camera) {
+        scene.restoreCamera(restored.camera);
+    }
 }
 catch (error) {
     console.error('Map initialization failed', error);
@@ -303,4 +362,11 @@ catch (error) {
     element('#labels').replaceChildren();
 }
 refreshFacilities();
+if (restored) {
+    if ([...facilityPicker.options].some(option => option.value === restored.facility)) {
+        facilityPicker.value = restored.facility;
+    }
+    element('#poi-list').scrollLeft = restored.categoryScroll;
+    element<HTMLSelectElement>('#language').focus({ preventScroll: true });
+}
 sync();

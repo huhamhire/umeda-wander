@@ -21,12 +21,7 @@
   padding: 8px 2px;
   margin: 0;
   text-align: center;
-  font-size: 9px;
   border-radius: 7px;
-}
-
-.floor-number {
-  font-size: 13px;
 }
 
 .floor small {
@@ -47,7 +42,6 @@
 }
 
 .layer-options > label:first-child {
-  font-size: 9px;
   white-space: nowrap;
   gap: 6px;
 }
@@ -57,12 +51,6 @@
   margin: 0;
   flex: 1;
   min-width: 30px;
-}
-
-.roof-option {
-  font-size: 12px;
-  gap: 6px;
-  white-space: nowrap;
 }
 
 .inspector {
@@ -87,7 +75,6 @@
 }
 
 .poi-list button {
-  font-size: 8px;
   padding: 7px 2px;
 }
 
@@ -108,7 +95,6 @@
 .floor {
   padding: 8px 0;
   gap: 4px;
-  font-size: 7px;
   min-width: 0;
 }
 
@@ -120,7 +106,6 @@
 }
 
 .floor-number {
-  font-size: 11px;
   width: auto;
 }
 
@@ -175,7 +160,6 @@
 }
 
 .sidebar-tabs button {
-  font-size: 14px;
   min-height: 44px;
   padding: 8px;
 }
@@ -198,7 +182,6 @@
 }
 
 .sidebar .floor-number {
-  font-size: 16px;
   flex: none;
   width: auto;
   font-weight: 600;
@@ -212,14 +195,6 @@
   gap: 8px;
 }
 
-.sidebar .layer-options > label:first-child {
-  font-size: 12px !important;
-}
-
-.sidebar .roof-option {
-  font-size: 12px !important;
-}
-
 .sidebar .layer-options input[type=range] {
   height: 28px;
 }
@@ -230,7 +205,6 @@
 }
 
 .sidebar .poi-list button {
-  font-size: 14px;
   min-height: 60px;
   padding: 8px 3px;
 }
@@ -259,12 +233,7 @@
   position: static;
 }
 
-.facility-filters label {
-  font-size: 13px;
-}
-
 .facility-filters select {
-  font-size: 16px;
   min-height: 44px;
 }
 

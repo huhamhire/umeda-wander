@@ -5,7 +5,7 @@ import { RouteModel } from './models/stations/route-model.ts';
 import { orbitAboutPoint } from './camera/orbit-view.ts';
 import { geographicBuildings } from '../infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
-import { buildGeographicContext } from './models/public-areas/geographic-context.ts';
+import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
 import * as T from 'three';
 import type { Facility, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
@@ -18,6 +18,15 @@ import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
+
+export interface MapCameraSnapshot {
+    offset: [number, number, number];
+    pan: [number, number, number];
+    zoom: number;
+    manual?: { center: [number, number, number]; span: number };
+    facility?: string;
+    followFacility: boolean;
+}
 
 export class MapScene {
     private models: MapModels;
@@ -36,6 +45,12 @@ export class MapScene {
      */
     setRoadsVisible(visible: boolean): void {
         this.roadsVisible = visible;
+        this.requestRender();
+    }
+    /** Dim the model in dark mode while retaining operator and paid-area colors. */
+    setDarkTheme(dark: boolean): void {
+        this.renderer.toneMappingExposure = dark ? 0.68 : 1.35;
+        setGeographicContextTheme(this.context, dark);
         this.requestRender();
     }
     private appearance = new LayerAppearance();
@@ -297,6 +312,33 @@ export class MapScene {
         this.locatingFacility = true;
         this.focusTransition = true;
         this.selectionMarker.restart(performance.now());
+        this.requestRender();
+    }
+    /** Capture navigation intent and manual camera framing for a locale reload. */
+    snapshotCamera(): MapCameraSnapshot {
+        return {
+            offset: cameraOffset.toArray(),
+            pan: this.pan.toArray(),
+            zoom: this.zoomValue,
+            manual: this.manualView && { center: this.manualView.center.toArray(), span: this.manualView.span },
+            facility: this.activeFacility?.id,
+            followFacility: this.locatingFacility
+        };
+    }
+    /** Restore the camera and marker without jumping or restarting the focus transition. */
+    restoreCamera(snapshot: MapCameraSnapshot): void {
+        cameraOffset.fromArray(snapshot.offset);
+        this.pan.fromArray(snapshot.pan);
+        this.zoomValue = snapshot.zoom;
+        if (snapshot.manual) {
+            this.manualView = {
+                center: new T.Vector3().fromArray(snapshot.manual.center),
+                span: snapshot.manual.span
+            };
+        }
+        this.activeFacility = this.facilities.find(facility => facility.id === snapshot.facility);
+        this.locatingFacility = snapshot.followFacility && this.activeFacility !== undefined;
+        window.dispatchEvent(new Event('map-orientation'));
         this.requestRender();
     }
     /**

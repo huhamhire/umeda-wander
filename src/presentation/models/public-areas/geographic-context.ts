@@ -3,6 +3,13 @@ import context from '../../../../data/geography/display-context.json' with { typ
 import { buildFloorGeometry } from '../floor-geometry.ts';
 import type { Point2 } from '../../../domain/map/model.ts';
 
+const groundColors = {
+    skin: { light: 0xe8e7dc, dark: 0x263335 },
+    road: { light: 0xb9c2be, dark: 0x39464a },
+    building: { light: 0xd6ddce, dark: 0x354641 },
+    public: { light: 0xe6dfc5, dark: 0x4a4636 }
+} as const;
+
 /**
  * Build the toggleable ground skin, roads and footprints, cutting openings for vertical equipment.
  */
@@ -12,7 +19,7 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
     const add = (
         group: T.Group,
         rings: number[][][],
-        color: number,
+        surface: keyof typeof groundColors,
         y: number,
         height: number,
         name: string,
@@ -23,13 +30,15 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
         if (!geometry.getAttribute('position')?.count) {
             return;
         }
-        const mesh = new T.Mesh(geometry, new T.MeshStandardMaterial({ color, roughness: .95 }));
+        const material = new T.MeshStandardMaterial({ color: groundColors[surface].light, roughness: .95 });
+        const mesh = new T.Mesh(geometry, material);
         mesh.name = name;
+        mesh.userData.groundSurface = surface;
         group.add(mesh);
     };
     // The clipped opaque ground still covers all station/B1 blocks; real openings remain.
     for (const [i, polygon] of context.scope.entries()) {
-        add(roads, polygon, 0xe8e7dc, -1.7, .2, `ground-skin-${i}`, groundOpenings);
+        add(roads, polygon, 'skin', -1.7, .2, `ground-skin-${i}`, groundOpenings);
     }
     for (const surface of context.surfaces) {
         const building = surface.kind === 'building';
@@ -38,7 +47,7 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
             add(
                 building ? buildings : roads,
                 polygon,
-                building ? 0xd6ddce : road ? 0xb9c2be : 0xe6dfc5,
+                building ? 'building' : road ? 'road' : 'public',
                 road ? -1 : -1.3,
                 building ? .3 : .15,
                 `${surface.kind}-${surface.id}-${i}`,
@@ -47,4 +56,17 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
         }
     }
     return { roads, buildings };
+}
+
+/** Recolor the ground in place without replacing its clipped terrain meshes. */
+export function setGeographicContextTheme(ground: ReturnType<typeof buildGeographicContext>, dark: boolean): void {
+    const theme = dark ? 'dark' : 'light';
+    for (const group of Object.values(ground)) {
+        for (const mesh of group.children) {
+            const surface = mesh.userData.groundSurface as keyof typeof groundColors;
+            if (mesh instanceof T.Mesh && mesh.material instanceof T.MeshStandardMaterial && surface) {
+                mesh.material.color.setHex(groundColors[surface][theme]);
+            }
+        }
+    }
 }

@@ -25,7 +25,7 @@ Windows PowerShell 若阻止执行 `npm.ps1`，将命令中的 `npm` 换成 `npm
 
 `Ctrl+Shift+B` 构建网页；“运行任务”中还提供风格检查、类型检查和测试入口。
 
-代码使用 TypeScript 四空格缩进、单行单语句和英文方法文档注释。`npm run check:style` 运行 ESLint 和 Stylelint。样式按组件领域维护，配色通过 CSS 变量共享，构建为一个 CSS 文件。显示文案使用中文领域词条。[代码风格](./docs/development/code-style.md) · [国际化规划](./docs/development/i18n.md)
+代码使用 TypeScript 四空格缩进、单行单语句和英文方法文档注释。`npm run check:style` 运行 ESLint 和 Stylelint。样式按组件领域维护，浅色和深色主题共用 CSS 语义变量。页面右上角可选择中、日、英语和深色主题。[代码风格](./docs/development/code-style.md) · [国际化维护](./docs/development/i18n.md)
 
 ## 交互范围
 
@@ -93,7 +93,8 @@ umeda-h5/
 │   │   │   ├── nishi-umeda/
 │   │   │   └── kitashinchi/
 │   │   ├── buildings/            # 各商业综合体独立目录
-│   │   ├── i18n/zh-CN/           # 中文领域词条
+│   │   ├── i18n/                 # 中、日、英领域词条
+│   │   ├── preferences/          # 浏览器偏好持久化
 │   │   ├── public-areas/
 │   │   │   ├── north-atrium/
 │   │   │   ├── metro-interchange/

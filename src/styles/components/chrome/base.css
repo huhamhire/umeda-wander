@@ -80,14 +80,66 @@
   margin-right: 7px;
 }
 
-.edition {
-  font-size: 9px;
-  letter-spacing: 1.6px;
-  color: var(--color-subtle-text);
+.header-preferences {
+  display: flex;
+  align-items: stretch;
+  padding: 2px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 12px;
+  pointer-events: auto;
 }
 
-.edition {
-  font-size: 10px;
+.header-preferences select,
+.header-preferences button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--color-field-text);
+  background: transparent;
+  font: inherit;
+}
+
+.header-preferences select {
+  padding: 0 5px 0 9px;
+  font-size: .875rem;
+  cursor: pointer;
+}
+
+.header-preferences option {
+  color: var(--color-field-text);
+  background: var(--color-field-background);
+}
+
+.header-preferences select:hover,
+.header-preferences button:hover {
+  background: var(--color-floor-hover);
+}
+
+.header-preferences select:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.header-preferences button {
+  width: 38px;
+  display: grid;
+  place-items: center;
+}
+
+.header-preferences svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-preferences button[aria-pressed="false"] .theme-sun,
+.header-preferences button[aria-pressed="true"] .theme-moon {
+  display: none;
 }
 
 .map-heading {
@@ -139,12 +191,6 @@
 @media (max-width:1100px) and (min-width:761px) {
   .topbar {
     padding: 0 25px;
-  }
-}
-
-@media (max-width:1100px) and (min-width:761px) {
-  .edition {
-    display: none;
   }
 }
 

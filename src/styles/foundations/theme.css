@@ -89,3 +89,86 @@
   --color-credits-text: var(--palette-teal-125);
   --color-credits-content-link: var(--palette-teal-300);
 }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-text: var(--palette-night-100);
+  --color-accent: var(--palette-mint-200);
+  --color-divider: var(--palette-night-600);
+  --color-paper: var(--palette-night-900);
+  --color-page: var(--palette-night-950);
+  --color-focus: var(--palette-sand-200);
+  --color-atlas-center: var(--palette-night-800);
+  --color-atlas-edge: var(--palette-night-950);
+  --color-subtle-text: var(--palette-night-250);
+  --color-panel: rgb(var(--palette-night-850-rgb) / 96%);
+  --color-panel-border: var(--palette-night-600);
+  --color-panel-shadow: rgb(var(--palette-ink-rgb) / 34%);
+  --color-slider: var(--palette-mint-200);
+  --color-switch-off: var(--palette-night-600);
+  --color-switch-knob: var(--palette-night-100);
+  --color-switch-on: var(--palette-teal-275);
+  --color-selection-background: var(--palette-night-700);
+  --color-status-dot: var(--palette-mint-200);
+
+  --color-brand-caption: var(--palette-night-175);
+  --color-status-border: var(--palette-night-600);
+  --color-status-text: var(--palette-night-175);
+  --color-heading-eyebrow: var(--palette-mint-200);
+  --color-heading-caption: var(--palette-night-175);
+
+  --color-map-label-text: var(--palette-night-100);
+  --color-map-label-background: rgb(var(--palette-night-850-rgb) / 97%);
+  --color-map-label-border: var(--palette-night-600);
+  --color-map-label-shadow: var(--color-panel-shadow);
+  --color-map-label-emphasis-text: var(--palette-mint-100);
+  --color-map-label-emphasis-background: var(--palette-night-700);
+  --color-map-label-hint: var(--palette-night-175);
+  --color-map-label-context-text: var(--palette-night-175);
+  --color-map-label-context-background: var(--color-map-label-background);
+  --color-map-label-context-border: var(--palette-night-600);
+  --color-orientation-text: var(--palette-night-175);
+  --color-orientation-axis: var(--palette-mint-200);
+  --color-orientation-caption: var(--palette-night-250);
+  --color-compass-north: var(--palette-mint-100);
+  --color-compass-south: var(--palette-night-175);
+  --color-compass-arrow: var(--palette-mint-200);
+  --color-compass-line: var(--palette-night-250);
+  --color-warning-background: var(--palette-umber-800);
+  --color-warning-border: var(--palette-sand-200);
+
+  --color-floor-hover: var(--palette-night-800);
+  --color-floor-active: var(--palette-mint-100);
+  --color-floor-caption: var(--palette-night-175);
+  --color-floor-dot: var(--palette-night-500);
+  --color-floor-dot-active: var(--palette-mint-200);
+  --color-controls-divider: var(--palette-night-600);
+  --color-field-label: var(--palette-night-175);
+  --color-facility-background: var(--palette-night-800);
+  --color-facility-highlight: var(--palette-night-700);
+  --color-facility-border: var(--palette-night-500);
+  --color-facility-icon: var(--palette-mint-200);
+  --color-legend-text: var(--palette-night-175);
+  --color-level-description: var(--palette-night-175);
+  --color-description-divider: var(--palette-night-600);
+  --color-picker-label: var(--palette-night-175);
+  --color-field-border: var(--palette-night-600);
+  --color-field-background: var(--palette-night-900);
+  --color-field-text: var(--palette-night-100);
+  --color-tab-divider: var(--palette-night-600);
+  --color-tab-text: var(--palette-night-175);
+  --color-tab-active: var(--palette-mint-100);
+
+  --color-footer-text: var(--palette-night-175);
+  --color-footer-link: var(--palette-night-175);
+  --color-credits-link: var(--palette-mint-200);
+  --color-credits-link-hover: var(--palette-mint-100);
+  --color-credits-focus: var(--color-focus);
+  --color-dialog-border: var(--palette-night-600);
+  --color-dialog-shadow: var(--color-panel-shadow);
+  --color-dialog-backdrop: rgb(var(--palette-ink-rgb) / 68%);
+  --color-dialog-divider: var(--palette-night-600);
+  --color-dialog-close: var(--palette-mint-200);
+  --color-credits-text: var(--palette-night-175);
+  --color-credits-content-link: var(--palette-mint-200);
+}

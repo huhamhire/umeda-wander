@@ -1,4 +1,4 @@
-/** Planned locales share semantic message IDs; only Chinese is maintained today. */
+/** Supported page and map locales share semantic message IDs. */
 export type Locale = 'zh-CN' | 'ja' | 'en';
 
 export type MessageParameters = Readonly<Record<string, string | number>>;

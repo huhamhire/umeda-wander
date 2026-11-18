@@ -1,0 +1,19 @@
+{
+  "railways.hankyu.kobe": "Kobe Line",
+  "railways.hankyu.kyoto": "Kyoto Line",
+  "railways.hankyu.takarazuka": "Takarazuka Line",
+  "railways.hankyu.takarazukaAlternate": "Takarazuka Line",
+  "railways.jr.loop.east": "JR Osaka Loop Line · toward Kyobashi",
+  "railways.jr.loop.name": "JR Osaka Loop Line",
+  "railways.jr.loop.west": "JR Osaka Loop Line · toward Fukushima / Nishikujo",
+  "railways.jr.main.east": "JR main line · toward Shin-Osaka / Kyoto",
+  "railways.jr.main.name": "JR main line",
+  "railways.jr.main.west": "JR main line · toward Amagasaki / Kobe",
+  "railways.labels.approach": "Track extension",
+  "railways.labels.generic": "Tracks",
+  "railways.tozai.east": "JR Tozai Line · toward Kyobashi",
+  "railways.tozai.west": "JR Tozai Line · toward Amagasaki",
+  "railways.umekita.north": "Umekita · toward Shin-Osaka / Kyoto",
+  "railways.umekita.south": "Umekita · toward Kansai Airport / Wakayama",
+  "railways.yotsubashi.south": "Yotsubashi Line · toward Higobashi"
+}

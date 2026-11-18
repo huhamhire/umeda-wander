@@ -57,5 +57,7 @@
   "ui.navigation.label": "车站导览",
   "ui.navigation.station": "车站",
   "ui.navigation.tabs": "导览页面",
-  "ui.page.title": "车站漫游 · UMEDA STATION"
+  "ui.page.title": "车站漫游 · UMEDA STATION",
+  "ui.preferences.language": "语言",
+  "ui.preferences.darkTheme": "深色主题"
 }

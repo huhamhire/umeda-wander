@@ -2,9 +2,8 @@ import { build } from 'esbuild';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { buildStyles } from './styles.ts';
-import { renderHtmlMessages } from './html.ts';
+import { renderLocalizedPage } from './html.ts';
 import { geographicOsmData } from '../src/infrastructure/district/geographic-map.ts';
-import { sourceLocale } from '../src/infrastructure/i18n/index.ts';
 
 /**
  * Build deployable page resources and retain dependency licences separately from source files.
@@ -24,9 +23,11 @@ export async function buildPage(): Promise<void> {
     if (!js) {
         throw new Error('No JavaScript generated');
     }
-    const [template, credits, css, threeLicense, polygonLicense, predicatesLicense, splayReadme] = await Promise.all([
+    const [template, chineseCredits, japaneseCredits, englishCredits, css, threeLicense, polygonLicense, predicatesLicense, splayReadme] = await Promise.all([
         readFile('src/index.html', 'utf8'),
-        readFile(`src/content/source-credits.${sourceLocale}.html`, 'utf8'),
+        readFile('src/content/source-credits.zh-CN.html', 'utf8'),
+        readFile('src/content/source-credits.ja.html', 'utf8'),
+        readFile('src/content/source-credits.en.html', 'utf8'),
         buildStyles(),
         readFile('node_modules/three/LICENSE', 'utf8'),
         readFile('node_modules/polygon-clipping/LICENSE.md', 'utf8'),
@@ -38,10 +39,11 @@ export async function buildPage(): Promise<void> {
         throw new Error('Missing splaytree license text');
     }
     const license = `Three.js\n${threeLicense}\npolygon-clipping\n${polygonLicense}\nrobust-predicates\n${predicatesLicense}\nsplaytree\n${splayLicense}`;
-    const page = template.replace(/^([ \t]*)<!-- SOURCE CREDITS -->\r?$/m, (_marker, indent: string) => {
-        return credits.trimEnd().split(/\r?\n/).map(line => line ? indent + line : '').join('\n');
-    });
-    const html = renderHtmlMessages(page)
+    const html = renderLocalizedPage(template, {
+        'zh-CN': chineseCredits,
+        ja: japaneseCredits,
+        en: englishCredits
+    })
         .replace('<!-- STYLES -->', '<link rel="stylesheet" href="./styles.css" />')
         .replace(
             '<!-- APP -->',

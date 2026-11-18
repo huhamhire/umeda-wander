@@ -90,4 +90,21 @@
   --palette-amber-75: #e2d5b7;
   --palette-amber-100: #d9b881;
   --palette-amber-125: #df8154;
+
+  /* Night surfaces and their readable foregrounds */
+  --palette-night-950: #151e20;
+  --palette-night-900: #1b2628;
+  --palette-night-850-rgb: 33 46 48;
+  --palette-night-800: #29383a;
+  --palette-night-700: #314743;
+  --palette-night-600: #506861;
+  --palette-night-500: #6e897f;
+  --palette-night-250: #aebfb8;
+  --palette-night-175: #c3d1ca;
+  --palette-night-100: #edf4ef;
+  --palette-mint-200: #a6d8c1;
+  --palette-mint-100: #c4ecd8;
+  --palette-sand-200: #e6c584;
+  --palette-umber-800: #363029;
+  --palette-ink-rgb: 9 15 17;
 }

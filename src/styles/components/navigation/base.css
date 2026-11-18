@@ -31,7 +31,6 @@
   text-align: left;
   padding: 12px 9px;
   border-radius: 9px;
-  font-size: 12px;
   margin-bottom: 3px;
   transition: background .2s;
 }
@@ -47,7 +46,6 @@
 
 .floor-number {
   width: 28px;
-  font-size: 16px;
   font-weight: 600;
   letter-spacing: -.5px;
 }
@@ -80,15 +78,13 @@
 .layer-options label {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
   color: var(--color-field-label);
 }
 
 .roof-option {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
   font-weight: 400;
   color: var(--color-field-label);
   line-height: 1.4;
@@ -102,8 +98,9 @@
 
 .layer-toggles {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
   margin-top: 14px;
   padding: 0 3px 6px;
 }
@@ -138,7 +135,6 @@
   background: var(--color-facility-background);
   border: 1px solid transparent;
   border-radius: 8px;
-  font-size: 10px;
 }
 
 .poi-list button:hover {
@@ -231,7 +227,6 @@
 }
 
 .floor-number {
-  font-size: 14px;
   width: 32px;
 }
 
@@ -272,7 +267,6 @@
   background: var(--color-field-background);
   color: var(--color-field-text);
   font: inherit;
-  font-size: 10px;
 }
 
 .sidebar {
@@ -283,6 +277,7 @@
   width: 290px;
   max-height: calc(100% - 300px);
   padding: 15px;
+  font-size: 1rem;
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -301,7 +296,6 @@
   background: transparent;
   border-radius: 7px;
   padding: 9px;
-  font-size: 11px;
   color: var(--color-tab-text);
 }
 
@@ -347,10 +341,6 @@
   display: none;
 }
 
-.sidebar .poi-list button {
-  font-size: 11px;
-}
-
 .sidebar .legend {
   justify-content: space-between;
   font-size: 12px;
@@ -373,7 +363,6 @@
 
 .sidebar .floor-number {
   flex: 0 0 42px;
-  font-size: 12px;
 }
 
 .sidebar .floor > span:nth-child(2) {
@@ -393,7 +382,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
   color: var(--color-field-label);
 }
 
@@ -411,14 +399,12 @@
 
 #facility-picker {
   margin-top: 12px;
-  font-size: 18px;
   min-height: 48px;
   line-height: 1.5;
 }
 
-#facility-picker option {
-  font-size: 18px;
-  line-height: 1.5;
+.sidebar select option {
+  font-size: inherit;
 }
 
 .sidebar .floor-heading {
