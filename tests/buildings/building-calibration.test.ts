@@ -45,6 +45,18 @@ test(
     () => {
         for (const building of geographicBuildings) {
             for (const v of building.volumes.filter(v => v.base > 0)) {
+                if (v.support === 'over-atrium') {
+                    // The lintel and upper gallery span between the two North Gate wings.
+                    const wings = geographicBuildings.filter(b => b.id.startsWith('lucua'));
+                    for (const wing of wings) {
+                        const neighbors = wing.volumes.filter(w => w !== v && w.base <= v.base && w.top >= v.base - .01);
+                        const host = clipping.union(polygon(neighbors[0]!), ...neighbors.slice(1).map(polygon));
+                        assert(clipping.intersection(polygon(v), host).length || wing.volumes.some(w =>
+                            w.base <= v.top && w.top >= v.base && w.outline.some(point => v.outline.some(p =>
+                                Math.hypot(p.x - point.x, p.z - point.z) < .01))));
+                    }
+                    continue;
+                }
                 const lower = building.volumes.filter(w => w !== v && w.base < v.base && w.top >= v.base - .01);
                 assert(lower.length, building.id + '/' + v.name + ' has no lower mass');
                 const support = clipping.union(polygon(lower[0]!), ...lower.slice(1).map(polygon));

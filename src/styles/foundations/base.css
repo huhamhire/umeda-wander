@@ -69,6 +69,7 @@ button[hidden] {
 }
 
 .atlas {
+  --desktop-ui-inset: clamp(25px, 2.6vw, 36px);
   position: relative;
   width: 100%;
   height: 100dvh;

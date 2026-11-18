@@ -3,6 +3,7 @@ import { createGeographicUmekita } from './umekita/geographic.ts';
 import { westWalkway } from './umekita/west-walkway.ts';
 import { applyCrostAccess } from './crost-access.ts';
 import { applySouthEntrance } from './south-entrance.ts';
+import { applyLucuaEastAccess } from './lucua-east-access.ts';
 import { building as southBuilding } from '../../buildings/daimaru/index.ts';
 
 /** Ground and Umekita (うめきた) keep independent frames, with explicit internal links. */
@@ -10,6 +11,7 @@ export function createGeographicJr() {
     const ground = createGeographicJrGround();
     const underground = createGeographicUmekita();
     applySouthEntrance(ground, southBuilding.entrance!);
+    applyLucuaEastAccess(ground);
     const west = westWalkway(ground, underground);
     const jr = {
         ...ground,

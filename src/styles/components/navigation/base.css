@@ -266,32 +266,44 @@
   border-top: 1px solid var(--color-description-divider);
 }
 
-.picker-label {
-  display: block;
-  font-size: 9px;
-  color: var(--color-picker-label);
-  margin: 15px 3px 7px;
-}
-
-#facility-picker {
-  width: 100%;
-  padding: 9px 5px;
-  border: 1px solid var(--color-field-border);
-  border-radius: 7px;
-  background: var(--color-field-background);
-  color: var(--color-field-text);
-}
-
 .sidebar {
   position: absolute;
   z-index: 3;
-  left: 36px;
-  top: 235px;
+  left: var(--desktop-ui-inset);
+  top: 106px;
   width: 290px;
-  max-height: calc(100% - 300px);
+  max-height: calc(100% - 171px);
   padding: 15px;
   overflow-y: auto;
   scrollbar-width: thin;
+}
+
+.map-heading {
+  padding: 4px 3px 6px;
+}
+
+.map-heading .eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-heading-eyebrow);
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.map-heading h1 {
+  margin: 0;
+  font-size: 29px;
+  font-weight: 550;
+  letter-spacing: .02em;
+}
+
+.map-heading > p:last-child {
+  margin: 6px 0 0;
+  color: var(--color-heading-caption);
+  font-size: 12px;
+}
+
+.navigation-toggle {
+  display: none;
 }
 
 .sidebar-tabs {
@@ -372,6 +384,7 @@
 
 .sidebar .legend .paid {
   background: var(--paid-color, var(--color-legend-paid-default));
+  background: color-mix(in oklab, var(--paid-color, var(--color-legend-paid-default)) var(--legend-station-tint, 100%), var(--legend-station-backdrop, transparent));
 }
 
 #floor-list {
@@ -391,12 +404,12 @@
 
 .facility-filters {
   display: grid;
-  grid-template-columns: minmax(0,2fr) minmax(0,1fr);
+  grid-template-columns: minmax(0,2fr) minmax(96px,1fr);
   gap: 8px;
   margin: 0 0 12px;
 }
 
-.facility-filters label {
+.facility-filter-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -404,20 +417,40 @@
   color: var(--color-field-label);
 }
 
-.facility-filters select {
+.panel-select {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
   width: 100%;
   min-width: 0;
   min-height: 38px;
-  padding: 7px 5px;
+  padding: 7px 10px;
   border: 1px solid var(--color-field-border);
   border-radius: 7px;
   background: var(--color-field-background);
   color: var(--color-field-text);
-}
-
-.inspector select {
   font: inherit;
   font-size: 12px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.panel-select::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.panel-select[aria-expanded="true"]::after {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.panel-select:disabled {
+  color: var(--color-subtle-text);
 }
 
 #facility-picker {
@@ -425,8 +458,78 @@
   min-height: 48px;
 }
 
-.inspector select option {
-  font-size: inherit;
+.panel-select-menu {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid var(--color-field-border);
+  border-radius: 10px;
+  background: var(--color-paper);
+  color: var(--color-field-text);
+  box-shadow: 0 12px 32px var(--color-dialog-shadow);
+  font-size: 13px;
+}
+
+.panel-select-menu:popover-open {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-select-search {
+  flex: none;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 9px;
+  margin-bottom: 4px;
+  border: 1px solid var(--color-field-border);
+  border-radius: 6px;
+  background: var(--color-field-background);
+  color: var(--color-field-text);
+}
+
+.panel-select-search:focus-visible {
+  outline-offset: -2px;
+}
+
+.panel-select-options {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.panel-select-options [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.panel-select-options [role="option"]:hover,
+.panel-select-options .active {
+  background: var(--color-floor-hover);
+}
+
+.panel-select-options [aria-selected="true"] {
+  color: var(--color-floor-active);
+  font-weight: 600;
+}
+
+.panel-select-options [aria-selected="true"]::after {
+  content: "✓";
+}
+
+.panel-select-empty {
+  margin: 0;
+  padding: 10px;
+  color: var(--color-subtle-text);
 }
 
 .sidebar .floor-heading {
@@ -444,4 +547,5 @@
 .sidebar .layer-options input[type=range] {
   display: block;
   margin: 10px 0 0;
+  touch-action: none;
 }

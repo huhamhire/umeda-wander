@@ -78,3 +78,5 @@ Inogate 新桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-d
 ## 桥面顶棚
 
 JP Tower—大丸的 Skywalk 与大丸东侧到路口的桥臂按用户俯视照片增加顶棚。配置在 `south-decks/canopies.ts`，只覆盖已指定轴线，不把整个外围步道或通往阪急的分支全部封顶。净高约 3.2 米、分格及边柱为示意；顶棚跟随桥面所在层，并由建筑轮廓开关控制。屋面与桥面、栏杆分别建模，不新增步行路线。
+
+北中庭至 Grand Front 南馆的主桥和 Yodobashi 西、东两侧跨街桥使用半透明顶棚，配置在 `north-decks/canopies.ts`。桥轴沿用已核对的 OSM 步行线，覆盖范围参照俯视照片。广场和建筑外围回廊保留露天，净高与分格为展示拟合。

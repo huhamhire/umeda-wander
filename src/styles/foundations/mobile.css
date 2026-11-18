@@ -1,6 +1,6 @@
 .atlas {
   height: 100dvh;
   min-height: 0;
-  --navigation-height: 170px;
+  --navigation-height: 46px;
   --navigation-bottom: calc(58px + env(safe-area-inset-bottom,0px));
 }

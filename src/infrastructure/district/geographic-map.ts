@@ -3,6 +3,7 @@ import osmExportMetadata from '../../../data/geography/osm-export-metadata.json'
 import { platformRail, railApproachFootprints } from '../../domain/map/rail-geometry.ts';
 import { passageOutline } from '../../domain/map/geometry.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
+import { northDeckCanopies } from '../public-areas/north-decks/canopies.ts';
 import buildingParts from '../../../data/geography/building-parts.json' with { type: 'json' };
 import { osmRunningLines } from '../geography/runtime-rails.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
@@ -129,7 +130,7 @@ const composed = composeStationMaps(
         platforms: [],
         connections: externalConnections,
         exteriorOpenings,
-        canopies: southDeckCanopies(),
+        canopies: [...northDeckCanopies(), ...southDeckCanopies()],
         concourses: hankyuConcourses,
         atria: hankyuConcourseAtria,
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),

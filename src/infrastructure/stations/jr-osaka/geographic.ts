@@ -1,28 +1,17 @@
 import { planGateBoundaries } from '../../../application/connections/gate-boundaries.ts';
 import type { Point2, StationMap } from '../../../domain/map/model.ts';
 import { jrStation } from './index.ts';
+import { jrAxisPoint, jrGroundFrame } from './ground-frame.ts';
 
 // The two commercial frontages bound the railway apron at about v=-39 / +74.
 // Keep the station inside that gap; do not reshape the source building footprints.
-const groundFrame = {
-    angle: -31.65 * Math.PI / 180,
-    along: 2.5,
-    across: 1.2,
-    acrossOffset: 4,
-    platformWidth: .9,
-    eastSetback: 12
-};
-
 /**
  * Fit a local JR ground point to the district frame with a separate west-side length adjustment.
  */
 export function jrGroundPoint(p: Point2): Point2 {
-    const { angle, along, across, acrossOffset } = groundFrame;
+    const { along, across, acrossOffset } = jrGroundFrame;
     const x = p.x < -70 ? -70 + (p.x + 70) * .4 : p.x;
-    return {
-        x: 447 + x * along * Math.cos(angle) - (p.z * across + acrossOffset) * Math.sin(angle),
-        z: 610 + x * along * Math.sin(angle) + (p.z * across + acrossOffset) * Math.cos(angle)
-    };
+    return jrAxisPoint(x * along, p.z * across + acrossOffset);
 }
 
 /** Compress the schematic atrium without scaling the surrounding station or floor heights. */
@@ -32,7 +21,7 @@ export function jrAtriumPoint(p: Point2): Point2 {
 
 /** Ground-station review slice only. Umekita (うめきた) needs its own frame. */
 export function createGeographicJrGround(): StationMap {
-    const { angle, along, across, eastSetback } = groundFrame;
+    const { angle, along, across, eastSetback, platformWidth } = jrGroundFrame;
     const point = jrGroundPoint;
     const direction = (a: number) => angle + Math.atan2(Math.sin(a) * across, Math.cos(a) * along);
     const levels = jrStation.levels.filter(l => !l.id.startsWith('underground'));
@@ -73,7 +62,7 @@ export function createGeographicJrGround(): StationMap {
                     x: (west.x + east.x) / 2,
                     z: (west.z + east.z) / 2,
                     length: Math.hypot(east.x - west.x, east.z - west.z),
-                    width: p.width * groundFrame.platformWidth,
+                    width: p.width * platformWidth,
                     rotationRad: angle
                 };
             }),

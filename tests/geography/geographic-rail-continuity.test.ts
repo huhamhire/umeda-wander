@@ -9,6 +9,8 @@ import clipping from 'polygon-clipping';
 import { deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { platformTangent } from '../../src/domain/map/geometry.ts';
 import { nishiAxis } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
+import { jrAxisPoint, jrGroundFrame } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
+import { jrRailCorridors } from '../../src/infrastructure/stations/jr-osaka/rail-corridors.ts';
 test(
     'calibrated rail approaches restore smooth shared merges without sharp doglegs',
     () => {
@@ -193,6 +195,23 @@ test(
             Math.max(...loopThroat) - Math.min(...loopThroat) < (Math.max(...loopRoots) - Math.min(...loopRoots)) * .5,
             'loop roads remain platform-width apart'
         );
+        for (const approach of [main, loop]) {
+            for (const segment of approach.segments.filter(s => s.platformId)) {
+                const samples = sampleRailSegment(approach, segment, 100);
+                const first = samples[0]!.point;
+                const last = samples.at(-1)!.point;
+                const run = (first.x - last.x) * Math.cos(angle) + (first.z - last.z) * Math.sin(angle);
+                assert.ok(run > 185, segment.id + ' compresses the west fan');
+                let previousTurn = 0;
+                for (const { normal } of samples) {
+                    const forward = -normal.z * Math.cos(angle) + normal.x * Math.sin(angle);
+                    const turn = Math.atan2(normal.z * Math.sin(angle) + normal.x * Math.cos(angle), forward);
+                    assert.ok(turn >= previousTurn - 1e-7, segment.id + ' reverses its westward curve');
+                    previousTurn = turn;
+                }
+                assert.ok(Math.abs(previousTurn - jrRailCorridors.mainNorthTurn) < 1e-7, segment.id + ' misses the common departure tangent');
+            }
+        }
     }
 );
 
@@ -206,7 +225,7 @@ test('JR east runtime track beds stay clear of the actual Hankyu halls and landm
     ];
     for (const approach of jr!.layout.railApproaches!.filter(a => a.level === 'platform' && !a.id.endsWith('--1'))) {
         for (const obstacle of obstacles) {
-            const halfWidth = obstacle.name.startsWith('hankyu-dept/') ? 1.25 : 2.75;
+            const halfWidth = obstacle.name.startsWith('hankyu-dept/') ? 4.25 : 2.75;
             for (const bed of railApproachFootprints(approach, halfWidth)) {
                 assert.equal(clipping.intersection([ring(bed)], [ring(obstacle.outline)]).length, 0, `${approach.id}: ${obstacle.name}`);
             }
@@ -241,5 +260,25 @@ test('JR eastern apron retains six running roads with a gentle departure rather 
                 assert(Math.abs(heading - axis) < 15 * Math.PI / 180, segment.id + ' bends too far from the departure axis');
             }
         }
+    }
+});
+
+test('the east loop outer road turns in before Hankyu department store (阪急うめだ本店)', () => {
+    const jr = createGeographicStations()[0]!;
+    const loop = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-loop-1')!;
+    const outer = loop.segments.find(s => s.track === 1)!;
+    const inner = loop.segments.find(s => s.track === 2)!;
+    const e = jrAxisPoint(200, 0);
+    const { angle } = jrGroundFrame;
+    const beforeFrontage = sampleRailSegment(loop, outer, 200).reduce((closest, sample) => {
+        const alongDistance = (p: Point2) => Math.abs((p.x - e.x) * Math.cos(angle) + (p.z - e.z) * Math.sin(angle));
+        return alongDistance(sample.point) < alongDistance(closest.point) ? sample : closest;
+    });
+    const lateral = (p: Point2) => -(p.x - e.x) * Math.sin(angle) + (p.z - e.z) * Math.cos(angle);
+    assert.ok(lateral(beforeFrontage.point) < 41.5);
+    const innerPieces = railPieces({ ...loop, segments: [inner, ...loop.segments.filter(s => s.from === inner.to)] });
+    const outerPieces = railPieces({ ...loop, segments: [outer, ...loop.segments.filter(s => s.from === outer.to)] });
+    for (const [a, b] of outerPieces) {
+        assert.ok(innerPieces.every(([c, d]) => !crossing(a, b, c, d) && pointSegmentDistance(a, c, d) > 4));
     }
 });

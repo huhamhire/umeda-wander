@@ -92,7 +92,12 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
             const platform = platforms.find(p => p.id === c.platformId);
             const from = levels.find(l => l.id === c.from.level)!;
             const to = levels.find(l => l.id === c.to.level)!;
-            const destination = platform ? (platform.name ?? messageText('facilities.labels.platformTracks', { tracks: platform.tracks.join('/') })) : `${from.label} ↔ ${to.label}`;
+            let destination = from.label;
+            if (platform) {
+                destination = platform.name ?? messageText('facilities.labels.platformTracks', { tracks: platform.tracks.join('/') });
+            } else if (from.label !== to.label) {
+                destination = `${from.label} ↔ ${to.label}`;
+            }
             result.push({
                 id: `connection-${c.id}-${side}`,
                 connectionId: c.id,

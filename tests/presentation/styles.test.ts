@@ -25,6 +25,9 @@ test(
         assert(!css.includes('@import'));
         assert(!/url\(https?:/.test(css));
         assert.match(css, /\.sidebar\s*\{/);
+        assert.match(css, /\.navigation-toggle\s*\{\s*display:\s*none/);
+        assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{[^}]*min-height:\s*44px/.test(rules ?? '')));
+        assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));
         assert.match(css, /\.map-tools\s*\{/);
         assert.match(css, /\.credits-content\s*\{[^}]*overflow-y:\s*auto/);
         assert.match(css, /--navigation-height/);

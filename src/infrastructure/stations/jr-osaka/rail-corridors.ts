@@ -12,10 +12,14 @@ export const jrRailCorridors = {
     ],
     eastLoopRoads: [
         { along: 460, across: 30 },
-        { along: 460, across: 36 }
+        // Draw the outer road inward before the Hankyu department store (阪急うめだ本店) frontage.
+        { along: 245, across: 38.5, departureHandle: 22 }
     ],
     eastMainTail: 70,
-    eastLoopTail: 70,
+    eastLoopEnd: 530,
     // Keep the west loop south of the four main roads, but bring both bundles closer.
     westLoopAcrossMain: 18,
+    // Take up the northward turn over the full fan, while the two bundles converge.
+    westMergeRun: 280,
+    westNorthShift: 31,
 };

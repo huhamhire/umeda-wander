@@ -151,6 +151,7 @@ export interface WalkwayCanopy {
     points: Point2[];
     width: number;
     clearHeight: number;
+    glazed?: boolean;
     evidence: Evidence;
 }
 

@@ -53,7 +53,7 @@ test('night colours distinguish active floors, lower floors and deck materials a
     style.apply(lower, true);
     style.apply(deck, false);
     style.apply(concourse, false);
-    assert.equal(active.material.color.getHex(), 0x425a6b);
+    assert.equal(active.material.color.getHex(), 0x434f57);
     assert.notEqual(lower.material.color.getHex(), active.material.color.getHex());
     assert(lower.material.opacity < active.material.opacity);
     assert.notEqual(deck.material.color.getHex(), concourse.material.color.getHex());
@@ -63,6 +63,21 @@ test('night colours distinguish active floors, lower floors and deck materials a
     style.apply(lower, false);
     assert.equal(active.material, material);
     assert.equal(lower.material, material);
+});
+
+test('night basement footprints stay close to neutral and darker than shared walking surfaces', () => {
+    const publicSurface = new T.Mesh(new T.PlaneGeometry(), new T.MeshStandardMaterial({ color: undergroundPublicColor }));
+    const style = new LayerAppearance();
+    style.setDarkTheme(true);
+    style.apply(publicSurface, false);
+    for (const fill of [0xd3dfc5, 0xe8d8b9, 0xcbdde5, 0xddd0e2, 0xe7cfbf, 0xc9ddd4, 0xe7dfbc]) {
+        const basement = new T.Mesh(new T.PlaneGeometry(), new T.MeshStandardMaterial({ color: fill }));
+        style.apply(basement, false);
+        const dark = basement.material.color;
+        const paint = dark.getHSL({ h: 0, s: 0, l: 0 }, T.SRGBColorSpace);
+        assert(paint.s < .12);
+        assert(dark.getHSL({ h: 0, s: 0, l: 0 }).l < publicSurface.material.color.getHSL({ h: 0, s: 0, l: 0 }).l);
+    }
 });
 test(
     'lower-floor facilities remain visible when focusing a higher layer',
@@ -76,6 +91,25 @@ test(
         assert(model.group.getObjectByName('upper-landing')?.visible);
     }
 );
+test('expansion drag keeps both stair landings attached without replacing tread instances', () => {
+    const connection = connections.find(c => c.id === 'central-34')!;
+    const model = new VerticalConnectionModel(connection, levels, platforms);
+    const initial = (id: typeof connection.from.level) => displayElevation(levels, id, 0);
+    const expanded = (id: typeof connection.from.level) => displayElevation(levels, id, 1.5);
+    model.update(initial, 'all');
+    const steps = model.group.getObjectByName('tread-surfaces') as T.InstancedMesh;
+    const landing = model.group.getObjectByName('upper-landing')!;
+    const version = steps.instanceMatrix.version;
+    const initialY = landing.getWorldPosition(new T.Vector3()).y;
+    model.update(expanded, 'all', false, true);
+    assert(model.group.scale.y > 1);
+    assert.equal(steps.instanceMatrix.version, version);
+    const high = connection.to;
+    assert(Math.abs(landing.getWorldPosition(new T.Vector3()).y - initialY - expanded(high.level) + initial(high.level)) < 1e-7);
+    model.update(expanded, 'all');
+    assert.equal(model.group.scale.y, 1);
+    assert(steps.instanceMatrix.version > version);
+});
 test(
     'Daimaru 1F raised landings retain the 2F escalator and lift across cuts and expansion',
     () => {

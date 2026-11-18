@@ -1,11 +1,14 @@
 import type { Vector3 } from 'three';
 
+type PointerSample = { x: number; y: number; touch: boolean };
+const mouseOrbitRadiansPerPixel = .006;
+
 export interface MapGestureActions {
     beginOrbit: (clientX: number, clientY: number) => Vector3 | undefined;
-    rotate: (pivot: Vector3, deltaX: number, deltaY: number) => boolean;
+    rotate: (pivot: Vector3, yawRadians: number, pitchRadians: number) => boolean;
     beginDrag: () => void;
     pan: (deltaX: number, deltaY: number) => void;
-    zoom: (factor: number) => void;
+    zoom: (factor: number, pivot?: Vector3) => void;
     select: (clientX: number, clientY: number) => void;
     invalidate: () => void;
 }
@@ -15,11 +18,12 @@ export class MapGestures {
     private readonly canvas: HTMLCanvasElement;
     private readonly actions: MapGestureActions;
     private readonly lifetime = new AbortController();
-    private readonly pointers = new Map<number, { x: number; y: number }>();
+    private readonly pointers = new Map<number, PointerSample>();
     private down: { x: number; y: number } | null = null;
     private dragged = false;
     private moving = false;
     private orbit?: { pointer: number; pivot: Vector3 };
+    private touchPivot?: Vector3;
 
     /** Bind one canvas and retain removable listeners for the lifetime of the map. */
     constructor(canvas: HTMLCanvasElement, actions: MapGestureActions) {
@@ -37,7 +41,10 @@ export class MapGestures {
             this.finishMovement();
         }, { signal });
         canvas.addEventListener('lostpointercapture', event => {
-            this.pointers.delete(event.pointerId);
+            if (this.pointers.delete(event.pointerId)) {
+                this.touchPivot = undefined;
+                this.dragged = true;
+            }
             if (this.orbit?.pointer === event.pointerId) {
                 this.cancelOrbit();
             }
@@ -65,6 +72,7 @@ export class MapGestures {
     /** Forget an active orbit after selecting a facility or resetting the view. */
     cancelOrbit(): void {
         this.orbit = undefined;
+        this.touchPivot = undefined;
     }
 
     /** Detach all canvas listeners and release transient pointer state. */
@@ -90,11 +98,12 @@ export class MapGestures {
         } else {
             this.dragged = true;
         }
-        this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, touch: event.pointerType === 'touch' });
+        this.touchPivot = undefined;
         this.canvas.setPointerCapture(event.pointerId);
     }
 
-    /** Distinguish orbit, pinch and pan without feeding orbit deltas into zoom. */
+    /** Recognize mouse orbit, a two-touch transform, and single-pointer pan. */
     private pointerMove(event: PointerEvent): void {
         const old = this.pointers.get(event.pointerId);
         if (!old) {
@@ -108,20 +117,43 @@ export class MapGestures {
         const deltaY = event.clientY - old.y;
         this.moving ||= deltaX !== 0 || deltaY !== 0;
         const other = [...this.pointers].find(([id]) => id !== event.pointerId)?.[1];
-        if (this.orbit?.pointer === event.pointerId && (event.buttons & 4) &&
-            this.actions.rotate(this.orbit.pivot, deltaX, deltaY)) {
+        if (this.orbit?.pointer === event.pointerId && (event.buttons & 4) && this.actions.rotate(
+            this.orbit.pivot, deltaX * mouseOrbitRadiansPerPixel, deltaY * mouseOrbitRadiansPerPixel
+        )) {
             this.dragged = true;
-        } else if (other) {
-            const previous = Math.hypot(old.x - other.x, old.y - other.y);
-            const current = Math.hypot(event.clientX - other.x, event.clientY - other.y);
-            if (previous > 1) {
-                this.actions.zoom(current / previous);
-            }
-        } else {
+        } else if (other && this.pointers.size === 2) {
+            this.movePinch(old, other, event);
+        } else if (!other) {
             this.actions.pan(deltaX, deltaY);
         }
-        this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        old.x = event.clientX;
+        old.y = event.clientY;
         this.actions.invalidate();
+    }
+
+    /** Keep the original two-finger midpoint anchored while measuring angle and distance independently. */
+    private movePinch(old: PointerSample, other: PointerSample, event: PointerEvent): void {
+        const beforeX = old.x - other.x;
+        const beforeY = old.y - other.y;
+        const afterX = event.clientX - other.x;
+        const afterY = event.clientY - other.y;
+        const previous = Math.hypot(beforeX, beforeY);
+        const current = Math.hypot(afterX, afterY);
+        if (Math.min(previous, current) < 4) {
+            return;
+        }
+        if (old.touch && other.touch) {
+            this.touchPivot ??= this.actions.beginOrbit((old.x + other.x) / 2, (old.y + other.y) / 2)?.clone();
+            // atan2 of the cross and dot products wraps cleanly when the fingers pass ±π.
+            const twist = Math.atan2(beforeX * afterY - beforeY * afterX, beforeX * afterX + beforeY * afterY);
+            if (this.touchPivot && Math.abs(twist) > 1e-6) {
+                this.actions.rotate(this.touchPivot, -twist, 0);
+            }
+        }
+        const scale = current / previous;
+        if (Math.abs(scale - 1) > 1e-6) {
+            this.actions.zoom(scale, this.touchPivot);
+        }
     }
 
     /** Select only a primary click that has not become a drag, pinch or orbit. */
@@ -130,6 +162,7 @@ export class MapGestures {
             this.cancelOrbit();
         }
         this.pointers.delete(event.pointerId);
+        this.touchPivot = undefined;
         if (event.button === 0 && !this.dragged && this.down) {
             this.actions.select(event.clientX, event.clientY);
         }

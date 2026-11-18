@@ -1,7 +1,7 @@
 const white = { wall: 0xe4e5df, tower: 0xd5dcda, trim: 0xf0f0e9 };
 const hankyu = { wall: 0xeee3e2, tower: 0xddd0d2, trim: 0xf6eeeb };
-const slate = { wall: 0x45575c, tower: 0x394e58, trim: 0x586b72 };
-const hankyuNight = { wall: 0x554751, tower: 0x493b49, trim: 0x675561 };
+const slate = { wall: 0x424c50, tower: 0x384449, trim: 0x505c60 };
+const hankyuNight = { wall: 0x494348, tower: 0x423c42, trim: 0x554e52 };
 
 /** Pair model exterior tones with their operator tint across both themes. */
 export function buildingPalette(buildingId: string, volumeName: string, dark = false) {

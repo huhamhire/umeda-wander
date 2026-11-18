@@ -4,6 +4,7 @@ import * as T from 'three';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { southDeckCanopies } from '../../src/infrastructure/public-areas/south-decks/canopies.ts';
+import { northDeckCanopies } from '../../src/infrastructure/public-areas/north-decks/canopies.ts';
 import { buildWalkwayCanopy } from '../../src/presentation/models/public-areas/walkway-canopy-model.ts';
 import { createGeographicStation } from '../../src/infrastructure/district/geographic-stations.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
@@ -36,9 +37,13 @@ test('HEP landmark has finite red wheel geometry at the official diameter and he
     assert(geographicBuildings.some(b => b.id === 'hep-navio'));
 });
 
-test('JP and eastern junction canopies leave a clear walking centreline under their roofs', () => {
-    const canopies = southDeckCanopies();
-    assert.equal(canopies.length, 2);
+test('north and south bridge canopies leave a clear walking centreline under their roofs', () => {
+    const north = northDeckCanopies();
+    assert(north.some(canopy => canopy.id.startsWith('canopy-grand-front-atrium') && canopy.glazed));
+    assert(north.some(canopy => canopy.id.startsWith('canopy-yodobashi-west') && canopy.glazed));
+    const south = southDeckCanopies();
+    assert.equal(south.length, 2);
+    const canopies = [...north, ...south];
     for (const canopy of canopies) {
         const model = buildWalkwayCanopy(canopy);
         model.updateMatrixWorld(true);

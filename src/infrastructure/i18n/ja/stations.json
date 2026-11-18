@@ -138,6 +138,8 @@
   "stations.jrOsaka.entities.acB1Access.name": "うめきた連絡通路エレベーター通路",
   "stations.jrOsaka.entities.jrOsaka.name": "JR大阪駅",
   "stations.jrOsaka.entities.north2fPublic.name": "ノースゲートビルディング2F・アトリウムと連絡通路",
+  "stations.jrOsaka.areas.lucuaTracksideGallery.name": "ルクア 3F・線路側通路",
+  "stations.jrOsaka.areas.lucuaEastLanding.name": "ルクア 2F・東側デッキ",
   "stations.jrOsaka.entities.northAtriumLowerLanding.name": "北側アトリウム・北側開放デッキ",
   "stations.jrOsaka.entities.northAtriumVoid.name": "北側アトリウム・吹き抜け",
   "stations.jrOsaka.entities.northB1EastPublic.name": "北口B1F・アトリウムからルクア東側への自由通路",

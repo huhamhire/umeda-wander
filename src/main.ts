@@ -5,6 +5,7 @@ import { MapSession, type MapViewState } from './application/map-session.ts';
 import type { MapScene, MapCameraSnapshot } from './presentation/map-scene.ts';
 import { element } from './utils/dom.ts';
 import { bindSidebarTabs } from './presentation/components/sidebar-tabs.ts';
+import { bindPanelSelect } from './presentation/components/panel-select.ts';
 import { stationPalettes } from './presentation/appearance/station-palette.ts';
 import { floorOptions } from './presentation/components/floor-options.ts';
 import { filterFacilities, facilityCategory } from './application/exploration/facility-filter.ts';
@@ -24,6 +25,7 @@ interface LanguageChangeView {
     filters: FacilityFilters;
     facility: string;
     facilityTab: boolean;
+    navigationExpanded?: boolean;
     roadsVisible: boolean;
     categoryScroll: number;
     camera?: MapCameraSnapshot;
@@ -87,9 +89,16 @@ roads.addEventListener('change', () => {
 });
 const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
-const facilityPicker = element<HTMLSelectElement>('#facility-picker');
-const facilityStation = element<HTMLSelectElement>('#facility-station');
-const facilityFloor = element<HTMLSelectElement>('#facility-floor');
+const facilityPanel = element('#panel-facilities');
+const facilityPickerButton = element<HTMLButtonElement>('#facility-picker');
+const facilityStationButton = element<HTMLButtonElement>('#facility-station');
+const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
+const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
+    label: messageText('ui.facilities.search'),
+    empty: messageText('ui.facilities.searchEmpty')
+});
+const facilityStation = bindPanelSelect(facilityStationButton, facilityPanel);
+const facilityFloor = bindPanelSelect(facilityFloorButton, facilityPanel);
 const facilityFilter: FacilityFilters = restored?.filters ?? { station: null, level: 'all', kind: 'all' };
 const floorList = element('#floor-list');
 const floors = floorOptions(levels);
@@ -116,6 +125,23 @@ const showSidebarTab = bindSidebarTabs(
 if (restored?.facilityTab) {
     showSidebarTab(1);
 }
+const sidebar = element('.sidebar');
+const navigationToggle = element<HTMLButtonElement>('#navigation-toggle');
+
+/** Match the mobile drawer visibility to the disclosure state without affecting the desktop sidebar. */
+function setNavigationExpanded(expanded: boolean): void {
+    if (!expanded) {
+        facilityPicker.close();
+        facilityStation.close();
+        facilityFloor.close();
+    }
+    sidebar.toggleAttribute('data-collapsed', !expanded);
+    navigationToggle.setAttribute('aria-expanded', String(expanded));
+}
+
+setNavigationExpanded(restored?.navigationExpanded ?? false);
+navigationToggle.addEventListener('click', () => setNavigationExpanded(sidebar.hasAttribute('data-collapsed')));
+
 /** Save only the current view so the locale reload can rebuild all names and labels in place. */
 function saveLanguageChangeView(): void {
     const snapshot: LanguageChangeView = {
@@ -123,6 +149,7 @@ function saveLanguageChangeView(): void {
         filters: facilityFilter,
         facility: facilityPicker.value,
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
+        navigationExpanded: !sidebar.hasAttribute('data-collapsed'),
         roadsVisible: groundPreference,
         categoryScroll: element('#poi-list').scrollLeft,
         camera: scene?.snapshotCamera() ?? savedCamera,
@@ -137,7 +164,6 @@ function saveLanguageChangeView(): void {
 }
 bindPagePreferences(saveLanguageChangeView, dark => scene?.setDarkTheme(dark));
 // Keep floating controls clear of every tab's actual height.
-const sidebar = element('.sidebar');
 const atlas = element('.atlas');
 new ResizeObserver(() => {
     atlas.style.setProperty('--navigation-height', `${sidebar.getBoundingClientRect().height}px`);
@@ -149,30 +175,23 @@ new ResizeObserver(() => {
 function refreshFacilities(): void {
     const { station, level, kind: facilityKind } = facilityFilter;
     const previous = facilityPicker.value;
-    facilityStation.replaceChildren(
-        new Option(messageText('ui.filters.allStations'), 'all'),
-        ...stations.map(s => new Option(s.name, s.id))
-    );
-    facilityStation.value = station ?? 'all';
-    const options = floors;
+    facilityStation.setOptions([
+        { value: 'all', label: messageText('ui.filters.allStations') },
+        ...stations.map(s => ({ value: s.id, label: s.name }))
+    ], station ?? 'all');
     const current = floors.find(f => f.members.some(l => l.id === level));
-    facilityFloor.replaceChildren(
-        new Option(messageText('ui.floors.all'), 'all'),
-        ...options.map(f => new Option(f.label, f.id))
-    );
-    facilityFloor.value = options.find(f => f.y === current?.y)?.id ?? 'all';
+    facilityFloor.setOptions([
+        { value: 'all', label: messageText('ui.floors.all') },
+        ...floors.map(f => ({ value: f.id, label: f.label }))
+    ], current?.id ?? 'all');
     const filter = facilityFilter;
     const available = filterFacilities(facilities, levels, { ...filter, kind: 'all' });
     const visible = filterFacilities(facilities, levels, { ...filter, kind: facilityKind });
-    facilityPicker.replaceChildren(new Option(visible.length ? messageText('ui.facilities.placeholder') : messageText('ui.facilities.empty'), ''));
-    facilityPicker.disabled = visible.length === 0;
-    for (const f of visible) {
+    const choices = visible.map(f => {
         const location = f.kind === 'convenience-store' ? (f.level === 'bridge' ? messageText('ui.facilities.bridgeStore') : messageText('ui.facilities.centralStore')) : '';
-        const option = new Option(`${f.name}${location ? ' · ' + location : ''}`, f.id);
-        option.dataset.code = facilityCodes[f.id];
-        facilityPicker.append(option);
-    }
-    facilityPicker.value = visible.some(f => f.id === previous) ? previous : '';
+        return { value: f.id, label: `${f.name}${location ? ' · ' + location : ''}`, code: facilityCodes[f.id] };
+    });
+    facilityPicker.setOptions(choices, previous, messageText(visible.length ? 'ui.facilities.placeholder' : 'ui.facilities.empty'));
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
     categoryList.replaceChildren();
@@ -290,7 +309,7 @@ for (const b of floorButtons) {
         }
     );
 }
-facilityStation.addEventListener(
+facilityStationButton.addEventListener(
     'change',
     () => {
         facilityFilter.station = facilityStation.value === 'all' ? null : facilityStation.value as StationId;
@@ -305,7 +324,7 @@ facilityStation.addEventListener(
         sync();
     }
 );
-facilityFloor.addEventListener(
+facilityFloorButton.addEventListener(
     'change',
     () => {
         facilityFilter.level = facilityFloor.value as LevelId | 'all';
@@ -316,6 +335,24 @@ facilityFloor.addEventListener(
         sync();
     }
 );
+let explodePointer: number | undefined;
+slider.addEventListener('pointerdown', event => {
+    explodePointer = event.pointerId;
+    scene?.setExplodeDragging(true);
+});
+
+/** Restore full scene detail once the slider pointer leaves, including releases outside the panel. */
+function endExplodeDrag(event?: PointerEvent): void {
+    if (explodePointer === undefined || (event && event.pointerId !== explodePointer)) {
+        return;
+    }
+    explodePointer = undefined;
+    scene?.setExplodeDragging(false);
+}
+
+window.addEventListener('pointerup', endExplodeDrag);
+window.addEventListener('pointercancel', endExplodeDrag);
+window.addEventListener('blur', () => endExplodeDrag());
 slider.addEventListener(
     'input',
     () => {
@@ -328,7 +365,7 @@ roof.addEventListener('change', () => {
     session.state.roof = roof.checked;
     sync();
 });
-facilityPicker.addEventListener(
+facilityPickerButton.addEventListener(
     'change',
     () => {
         const f = facilities.find(f => f.id === facilityPicker.value);
@@ -361,9 +398,7 @@ element('.brand').addEventListener('click', e => {
 });
 refreshFacilities();
 if (restored) {
-    if ([...facilityPicker.options].some(option => option.value === restored.facility)) {
-        facilityPicker.value = restored.facility;
-    }
+    facilityPicker.value = restored.facility;
     element('#poi-list').scrollLeft = restored.categoryScroll;
     element<HTMLSelectElement>('#language').focus({ preventScroll: true });
 }
@@ -385,6 +420,7 @@ async function loadMap(): Promise<void> {
         session = new MapSession(runtime.edges);
         session.state = currentState;
         scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, select);
+        scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);
         scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
         if (pendingFacility) {

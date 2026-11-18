@@ -26,7 +26,7 @@
 | `references/stations/hanshin-umeda/station-guide.pdf` | `stations/hanshin-umeda/index.ts`：阪神 B1/B2 与出口竖向连接 | 阪神构内图适用于本用途的许可／授权 |
 | `references/stations/metro-umeda/station-guide.pdf`、`references/stations/higashi-umeda/station-guide.pdf`、`references/stations/nishi-umeda/station-guide.pdf` | `stations/metro-umeda/index.ts`、`stations/higashi-umeda/index.ts`、`stations/nishi-umeda/index.ts`：三站构内几何 | Osaka Metro 图表的整理改编依据 |
 | `references/district/underground-walkway-map.pdf`、`references/district/elevated-walkways-2026.pdf` | `data/geography/underground/`、`public-areas/south-diamor/`、`basement-buildings.ts`：DIAMOR、建筑占位、第一生命互通 | 周边图已识别为 UMEDA CONNECT 2024-02 系列，并找到发布方站点的同系列繁体版；本地简体文件是否为同一版、底层 Whity 图数据的改编条款仍需核实，不能套用大阪市其他资料的许可 |
-| `references/connections/osaka-station-city/2f-map.png`、`references/connections/osaka-station-city/3f-map.png`、`references/connections/osaka-station-city/map-legend.png` | `jr-south-forecourt.ts` 与大丸前庭、竖向连接整理 | 原图发布地址、截图或图层的改编许可 |
+| `references/connections/osaka-station-city/2f-map.png`、`references/connections/osaka-station-city/3f-map.png`、`references/connections/osaka-station-city/map-legend.png` | 大丸前庭、竖向连接和 LUCUA 东侧 2F／3F 楼梯关系 | 原图发布地址、截图或图层的改编许可 |
 | `references/connections/grand-green-osaka/jr-umekita-decks.pdf`、`references/connections/grand-green-osaka/south-building-2f.png`、`references/connections/grand-green-osaka/jambase-2f-route.jpg`、`references/connections/grand-green-osaka/jambase-access.png` | 北侧连桥关系核对；Grand Green 目标区域未全部建模 | 各文件的原发布地址与后续几何使用依据，不能从目录名推定共同许可 |
 | `references/district/station-area-orientation.webp` | 地铁相对位置、阪急街区与外围轮廓校准 | 原发布页、作者、允许改编的依据 |
 | 会话上传的 Google 地图／卫星图及建筑外景截图（没有稳定仓库原文件路径） | `src/infrastructure/buildings/`、建筑外观呈现模块及公共连廊拟合 | 截图原始出处、摄影者和允许派生使用的授权；没有发布照片贴图或宣称获得 Google 授权 |
@@ -61,5 +61,7 @@ Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽�
 2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/design/buildings/model-calibration.md`。
 
 ## HEP 与顶棚补充
+
+北门大楼的屋面分带核对同一 PLATEAU 网格中的 LOD2 建筑 `bldg_a7a0f325-c271-44db-bced-7d3066780c65`，测绘年份为 2017。白模采用人工简化的退台和跨空关系，说明见[建筑白模校对](../design/buildings/model-calibration.md)。北侧桥棚覆盖范围依据俯视照片，桥轴仍沿用 OSM。照片未随页面发布，外观参考的授权边界沿用桥棚既有记录。
 
 HEP FIVE／NAVIO 平面轮廓来自现有 OSM 快照；摩天轮直径、最高处及轿厢数量核对 HEP FIVE 官网与阪急介绍，出处见[地标说明](../design/buildings/hep-landmarks.md)。程序化模型及官网链接已加入来源配置。屋面、轮面方向、三番街附属楼、阪神组合体和两段桥棚仍含用户截图观察拟合；未发布照片贴图，截图派生授权待核实，不能套用 OSM 或 PLATEAU 许可。

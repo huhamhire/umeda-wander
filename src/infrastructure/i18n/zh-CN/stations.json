@@ -138,6 +138,8 @@
   "stations.jrOsaka.entities.acB1Access.name": "梅北连接通道直梯通路",
   "stations.jrOsaka.entities.jrOsaka.name": "JR 大阪站",
   "stations.jrOsaka.entities.north2fPublic.name": "2F 北门大楼 · 中庭与连廊",
+  "stations.jrOsaka.areas.lucuaTracksideGallery.name": "LUCUA · 3F 临轨连廊",
+  "stations.jrOsaka.areas.lucuaEastLanding.name": "LUCUA · 2F 东侧平台",
   "stations.jrOsaka.entities.northAtriumLowerLanding.name": "北中庭 · 北侧开放平台",
   "stations.jrOsaka.entities.northAtriumVoid.name": "北中庭 · 开放天井",
   "stations.jrOsaka.entities.northB1EastPublic.name": "北门 B1F · 中庭—LUCUA 东侧公共通路",

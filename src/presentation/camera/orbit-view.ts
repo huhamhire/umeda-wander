@@ -12,11 +12,11 @@ function orientation(offset: T.Vector3): T.Quaternion {
 
 /** Rotate the camera and its look-at target rigidly about a picked world point.
  * The orthographic span is deliberately outside this function and stays fixed. */
-export function orbitAboutPoint(offset: T.Vector3, center: T.Vector3, pivot: T.Vector3, dx: number, dy: number): void {
+export function orbitAboutPoint(offset: T.Vector3, center: T.Vector3, pivot: T.Vector3, yawRadians: number, pitchRadians: number): void {
     const previous = orientation(offset);
     const distance = offset.length();
-    const yaw = Math.atan2(offset.x, offset.z) - dx * .006;
-    const pitch = T.MathUtils.clamp(Math.asin(offset.y / distance) + dy * .006, 15 * Math.PI / 180, 80 * Math.PI / 180);
+    const yaw = Math.atan2(offset.x, offset.z) - yawRadians;
+    const pitch = T.MathUtils.clamp(Math.asin(offset.y / distance) + pitchRadians, 15 * Math.PI / 180, 80 * Math.PI / 180);
     offset.set(
         Math.sin(yaw) * Math.cos(pitch) * distance,
         Math.sin(pitch) * distance,

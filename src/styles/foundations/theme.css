@@ -25,7 +25,7 @@
   --color-status-border: var(--palette-sage-475);
   --color-status-text: var(--palette-teal-100);
   --color-heading-eyebrow: var(--palette-teal-50);
-  --color-heading-caption: var(--palette-moss-300);
+  --color-heading-caption: var(--palette-moss-425);
 
   /* Map labels, compass and fallback */
   --color-map-label-text: var(--palette-teal-175);
@@ -149,6 +149,12 @@
   --color-facility-border: var(--palette-night-500);
   --color-facility-icon: var(--palette-mint-200);
   --color-legend-text: var(--palette-night-175);
+  --color-legend-public: var(--palette-night-ochre);
+  --color-legend-platform: var(--palette-night-blue);
+  --color-legend-paid: var(--palette-night-slate);
+  --color-legend-paid-default: var(--color-legend-paid);
+  --legend-station-tint: 22%;
+  --legend-station-backdrop: var(--palette-night-900);
   --color-level-description: var(--palette-night-175);
   --color-description-divider: var(--palette-night-600);
   --color-picker-label: var(--palette-night-175);

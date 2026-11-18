@@ -140,15 +140,6 @@
   top: 169px;
 }
 
-.picker-label {
-  font-size: 7px;
-  margin-top: 9px;
-}
-
-#facility-picker {
-  padding: 6px 2px;
-}
-
 .sidebar {
   left: 12px;
   right: 12px;
@@ -156,10 +147,62 @@
   bottom: var(--navigation-bottom);
   width: auto;
   max-height: 46dvh;
-  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.navigation-toggle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--color-field-text);
+  text-align: left;
+  font: inherit;
+  font-weight: 600;
+}
+
+.map-heading {
+  display: none;
+}
+
+.navigation-toggle:focus-visible {
+  outline-offset: -3px;
+}
+
+.navigation-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.navigation-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.sidebar-content {
+  min-height: 0;
+  padding: 6px 10px 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-radius: 14px;
+  scrollbar-width: thin;
+  border-top: 1px solid var(--color-tab-divider);
+}
+
+.sidebar[data-collapsed] .sidebar-content {
+  display: none;
 }
 
 .sidebar-tabs {
@@ -237,28 +280,31 @@
   font-size: 11px;
 }
 
-.sidebar .picker-label {
-  font-size: 13px;
-  margin: 12px 2px 7px;
-}
-
-#facility-picker {
-  padding: 9px 7px;
-}
-
 .inspector {
   position: static;
 }
 
-.facility-filters label {
+.facility-filter-field {
   font-size: 13px;
 }
 
-.inspector select {
+.facility-filters {
+  grid-template-columns: minmax(0,2fr) minmax(112px,1fr);
+}
+
+.panel-select {
+  padding-inline: 8px;
+}
+
+.panel-select,
+.panel-select-search,
+.panel-select-menu {
   font-size: 16px;
 }
 
-.facility-filters select {
+.panel-select,
+.panel-select-search,
+.panel-select-options [role="option"] {
   min-height: 44px;
 }
 

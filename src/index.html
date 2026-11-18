@@ -61,11 +61,6 @@
         </div>
       </header>
 
-      <section class="map-heading">
-        <p class="eyebrow">{{ui.heading.eyebrow}}</p>
-        <h1>{{ui.heading.title}}</h1>
-        <p>{{ui.heading.subtitle}}</p>
-      </section>
       <div id="viewport" role="region" aria-label="{{ui.map.accessibleDescription}}" aria-busy="true"></div>
       <div id="labels" aria-hidden="true"></div>
       <div id="map-loading" class="map-loading" role="status">
@@ -78,74 +73,89 @@
         <p>{{ui.errors.unsupportedAdvice}}</p>
       </div>
 
-      <aside class="sidebar panel" aria-label="{{ui.navigation.label}}">
-        <div class="sidebar-tabs" role="tablist" aria-label="{{ui.navigation.tabs}}">
-          <button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">{{ui.navigation.floors}}</button>
-          <button
-            id="tab-facilities"
-            role="tab"
-            aria-selected="false"
-            aria-controls="panel-facilities"
-            tabindex="-1"
-          >{{ui.navigation.facilities}}</button>
+      <aside class="sidebar panel" aria-label="{{ui.navigation.label}}" data-collapsed>
+        <button class="navigation-toggle" id="navigation-toggle" type="button" aria-controls="navigation-content" aria-expanded="false">
+          <span>{{ui.navigation.controls}}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6" /></svg>
+        </button>
+        <div class="sidebar-content" id="navigation-content">
+          <div class="map-heading">
+            <p class="eyebrow">{{ui.heading.eyebrow}}</p>
+            <h1>{{ui.heading.title}}</h1>
+            <p>{{ui.heading.subtitle}}</p>
+          </div>
+          <div class="sidebar-tabs" role="tablist" aria-label="{{ui.navigation.tabs}}">
+            <button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">{{ui.navigation.floors}}</button>
+            <button
+              id="tab-facilities"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-facilities"
+              tabindex="-1"
+            >{{ui.navigation.facilities}}</button>
+          </div>
+
+          <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
+            <div class="section-heading floor-heading">
+              <span>{{ui.layers.explore}}</span>
+            </div>
+            <div id="floor-list"></div>
+            <div class="layer-options">
+              <label for="explode">
+                {{ui.layers.expand}}
+                <output id="explode-value" hidden>0%</output>
+              </label>
+              <input
+                id="explode"
+                type="range"
+                min="0"
+                max="150"
+                value="0"
+                aria-label="{{ui.layers.expandDescription}}"
+              />
+            </div>
+            <div class="layer-toggles">
+              <label class="roof-option">
+                <span>{{ui.layers.showGround}}</span>
+                <input id="roads" type="checkbox" checked role="switch" />
+              </label>
+              <label class="roof-option">
+                <span>{{ui.layers.showBuildings}}</span>
+                <input id="roof" type="checkbox" checked role="switch" />
+              </label>
+            </div>
+          </section>
+
+          <section class="inspector" id="panel-facilities" role="tabpanel" aria-labelledby="tab-facilities" hidden>
+            <div class="section-heading">
+              <span>{{ui.facilities.heading}}</span>
+              <span class="micro">{{ui.facilities.eyebrow}}</span>
+            </div>
+            <div class="facility-filters">
+              <div class="facility-filter-field">
+                <span>{{ui.navigation.station}}</span>
+                <button class="panel-select" id="facility-station" type="button" aria-label="{{ui.facilities.stationFilter}}">
+                  <span>{{ui.filters.allStations}}</span>
+                </button>
+              </div>
+              <div class="facility-filter-field">
+                <span>{{ui.navigation.floors}}</span>
+                <button class="panel-select" id="facility-floor" type="button" aria-label="{{ui.facilities.floorFilter}}">
+                  <span>{{ui.floors.all}}</span>
+                </button>
+              </div>
+            </div>
+            <div class="poi-list" id="poi-list" role="group" aria-label="{{ui.facilities.types}}"></div>
+            <button class="panel-select" id="facility-picker" type="button" aria-label="{{ui.facilities.select}}">
+              <span>{{ui.facilities.placeholder}}</span>
+            </button>
+            <div class="legend">
+              <span><i class="public"></i>{{ui.legend.public}}</span>
+              <span><i class="paid"></i>{{ui.legend.paid}}</span>
+              <span><i class="rail"></i>{{ui.legend.platform}}</span>
+            </div>
+          </section>
         </div>
-
-        <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
-          <div class="section-heading floor-heading">
-            <span>{{ui.layers.explore}}</span>
-          </div>
-          <div id="floor-list"></div>
-          <div class="layer-options">
-            <label for="explode">
-              {{ui.layers.expand}}
-              <output id="explode-value" hidden>0%</output>
-            </label>
-            <input
-              id="explode"
-              type="range"
-              min="0"
-              max="150"
-              value="0"
-              aria-label="{{ui.layers.expandDescription}}"
-            />
-          </div>
-          <div class="layer-toggles">
-            <label class="roof-option">
-              <span>{{ui.layers.showGround}}</span>
-              <input id="roads" type="checkbox" checked role="switch" />
-            </label>
-            <label class="roof-option">
-              <span>{{ui.layers.showBuildings}}</span>
-              <input id="roof" type="checkbox" checked role="switch" />
-            </label>
-          </div>
-        </section>
-
-        <section class="inspector" id="panel-facilities" role="tabpanel" aria-labelledby="tab-facilities" hidden>
-          <div class="section-heading">
-            <span>{{ui.facilities.heading}}</span>
-            <span class="micro">{{ui.facilities.eyebrow}}</span>
-          </div>
-          <div class="facility-filters">
-            <label>
-              {{ui.navigation.station}}
-              <select id="facility-station" aria-label="{{ui.facilities.stationFilter}}"></select>
-            </label>
-            <label>
-              {{ui.navigation.floors}}
-              <select id="facility-floor" aria-label="{{ui.facilities.floorFilter}}"></select>
-            </label>
-          </div>
-          <div class="poi-list" id="poi-list" role="group" aria-label="{{ui.facilities.types}}"></div>
-          <select id="facility-picker" aria-label="{{ui.facilities.select}}">
-            <option value="">{{ui.facilities.placeholder}}</option>
-          </select>
-          <div class="legend">
-            <span><i class="public"></i>{{ui.legend.public}}</span>
-            <span><i class="paid"></i>{{ui.legend.paid}}</span>
-            <span><i class="rail"></i>{{ui.legend.platform}}</span>
-          </div>
-        </section>
       </aside>
 
       <nav class="map-tools panel" aria-label="{{ui.map.controls}}">

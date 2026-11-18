@@ -138,6 +138,8 @@
   "stations.jrOsaka.entities.acB1Access.name": "Umekita connecting passage elevator walkway",
   "stations.jrOsaka.entities.jrOsaka.name": "JR Osaka Station",
   "stations.jrOsaka.entities.north2fPublic.name": "North Gate Building 2F · Atrium and gallery",
+  "stations.jrOsaka.areas.lucuaTracksideGallery.name": "LUCUA · 3F trackside gallery",
+  "stations.jrOsaka.areas.lucuaEastLanding.name": "LUCUA · 2F east deck",
   "stations.jrOsaka.entities.northAtriumLowerLanding.name": "North Atrium · Open north landing",
   "stations.jrOsaka.entities.northAtriumVoid.name": "North Atrium · Open atrium",
   "stations.jrOsaka.entities.northB1EastPublic.name": "North Gate B1F · Atrium to LUCUA east public passage",

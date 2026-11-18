@@ -27,7 +27,7 @@ test(
             [0, 500],
             [0, -500]
         ]) {
-            orbitAboutPoint(offset, center, pivot, dx!, dy!);
+            orbitAboutPoint(offset, center, pivot, dx! * .006, dy! * .006);
             const current = camera(offset, center);
             const p = pivot.clone().project(current);
             assert.ok(Math.abs(p.x - screen.x) < 1e-9 && Math.abs(p.y - screen.y) < 1e-9);

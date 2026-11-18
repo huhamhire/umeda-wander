@@ -98,17 +98,7 @@
 }
 
 .map-tools {
-  right: 12px;
-  bottom: calc(var(--navigation-bottom) + var(--navigation-height) + 10px);
-  flex-direction: row;
-  border-radius: 10px;
-  z-index: 4;
-}
-
-.map-tools button {
-  width: 44px;
-  height: 44px;
-  font-size: 23px;
+  display: none;
 }
 
 .orientation {

@@ -282,10 +282,10 @@ export class VerticalConnectionModel {
     /**
      * Update full equipment across expanded floors, retaining visible elevator shafts and both landings.
      */
-    update(elevation: (id: LevelId) => number, focus: LevelId | 'all', forceVisible = false): void {
+    update(elevation: (id: LevelId) => number, focus: LevelId | 'all', forceVisible = false, preview = false): void {
         if (this.lanes.length) {
             for (const lane of this.lanes) {
-                lane.update(elevation, focus);
+                lane.update(elevation, focus, forceVisible, preview);
             }
             this.group.visible = this.lanes.some(lane => lane.group.visible);
             return;
@@ -293,6 +293,14 @@ export class VerticalConnectionModel {
         const lowY = elevation(this.low.level) + (this.low.elevationOffset ?? 0) + 0.65;
         const highY = elevation(this.high.level) + (this.high.elevationOffset ?? 0) + 0.65;
         const rise = highY - lowY;
+        const previousRise = (this.previousHighY ?? 0) - (this.previousLowY ?? 0);
+        this.group.position.y = lowY;
+        // A vertical stretch keeps both landings attached without rebuilding tread instances during slider input.
+        if (preview && this.connection.kind !== 'elevator' && previousRise > .01) {
+            this.group.scale.y = rise / previousRise;
+            return;
+        }
+        this.group.scale.y = 1;
         if (lowY === this.previousLowY && highY === this.previousHighY && focus === this.previousFocus && forceVisible === this.previousForceVisible) {
             return;
         }

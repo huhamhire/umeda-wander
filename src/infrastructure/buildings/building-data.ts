@@ -14,7 +14,7 @@ export interface BuildingVolume {
     note: string;
     references?: string[];
     facade?: 'bands' | 'vertical' | 'grid' | 'plain';
-    support?: 'over-road';
+    support?: 'over-road' | 'over-atrium';
     surface?: 'podium' | 'tower';
 }
 

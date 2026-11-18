@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 42px;
+  padding: 0 var(--desktop-ui-inset);
   background: transparent;
   pointer-events: none;
 }
@@ -22,6 +22,7 @@
   letter-spacing: 1.4px;
   text-decoration: none;
   color: var(--color-text);
+  text-shadow: 0 1px 5px var(--color-paper);
 }
 
 .brand-mark {
@@ -59,15 +60,17 @@
 
 .header-right {
   display: flex;
-  gap: 24px;
   align-items: center;
+  padding: 2px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 12px;
 }
 
 .local-badge {
-  font-size: 11px;
-  border: 1px solid var(--color-status-border);
-  border-radius: 20px;
-  padding: 8px 13px;
+  font-size: 10px;
+  padding: 5px 9px;
+  border-inline-end: 1px solid var(--color-divider);
   color: var(--color-status-text);
 }
 
@@ -77,22 +80,18 @@
   height: 5px;
   background: var(--color-status-dot);
   border-radius: 50%;
-  margin-right: 7px;
+  margin-right: 5px;
 }
 
 .header-preferences {
   display: flex;
   align-items: stretch;
-  padding: 2px;
-  background: var(--color-panel);
-  border: 1px solid var(--color-panel-border);
-  border-radius: 12px;
   pointer-events: auto;
 }
 
 .header-preferences select,
 .header-preferences button {
-  min-height: 36px;
+  min-height: 32px;
   border: 0;
   border-radius: 8px;
   color: var(--color-field-text);
@@ -101,8 +100,8 @@
 }
 
 .header-preferences select {
-  padding: 0 5px 0 9px;
-  font-size: .875rem;
+  padding: 0 4px 0 7px;
+  font-size: .8125rem;
   cursor: pointer;
 }
 
@@ -122,14 +121,14 @@
 }
 
 .header-preferences button {
-  width: 38px;
+  width: 32px;
   display: grid;
   place-items: center;
 }
 
 .header-preferences svg {
-  width: 19px;
-  height: 19px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.5;
@@ -140,58 +139,6 @@
 .header-preferences button[aria-pressed="false"] .theme-sun,
 .header-preferences button[aria-pressed="true"] .theme-moon {
   display: none;
-}
-
-.map-heading {
-  position: absolute;
-  z-index: 2;
-  top: 126px;
-  left: 42px;
-  pointer-events: none;
-}
-
-.eyebrow {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--color-heading-eyebrow);
-  margin: 0 0 12px;
-}
-
-.map-heading h1 {
-  font-size: 29px;
-  font-weight: 550;
-  letter-spacing: 1px;
-  margin: 0;
-}
-
-.map-heading > p:last-child {
-  color: var(--color-heading-caption);
-  font-size: 12px;
-  margin-top: 11px;
-}
-
-@media (min-width:1600px) {
-  .map-heading {
-    left: 5vw;
-  }
-}
-
-@media (min-width:1600px) {
-  .topbar {
-    padding: 0 5vw;
-  }
-}
-
-@media (max-width:1100px) and (min-width:761px) {
-  .map-heading {
-    left: 25px;
-  }
-}
-
-@media (max-width:1100px) and (min-width:761px) {
-  .topbar {
-    padding: 0 25px;
-  }
 }
 
 .brand-mark {
