@@ -1,6 +1,16 @@
 import type { Level, LevelId, StationId } from '../../domain/map/model.ts';
 import type { LayerRole } from './layer-focus.ts';
 import { explorationElevation } from './exploration-level.ts';
+import { stationFocusLevel } from './region-focus.ts';
+
+/** Keep the street surface clear of below-ground levels and underground station overviews. */
+export function allowsGroundLayer(
+    levels: readonly Level[],
+    state: { level: LevelId | 'all'; focusStation?: StationId | null }
+): boolean {
+    const selected = state.level === 'all' ? stationFocusLevel(state.focusStation) : state.level;
+    return (levels.find(level => level.id === selected)?.y ?? 0) >= 0;
+}
 
 /**
  * Resolve visibility across exploration groups while retaining each entity’s physical floor identity.

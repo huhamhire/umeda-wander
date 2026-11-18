@@ -10,7 +10,7 @@ import * as T from 'three';
 import type { Facility, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
-import { viewLayerRole } from '../application/exploration/view-layer.ts';
+import { allowsGroundLayer, viewLayerRole } from '../application/exploration/view-layer.ts';
 import { LayerAppearance } from './appearance/layer-appearance.ts';
 import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts';
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
@@ -44,13 +44,17 @@ export class MapScene {
      * Toggle the full ground context and synchronize the visibility of above-ground building shells and footprints.
      */
     setRoadsVisible(visible: boolean): void {
+        if (this.roadsVisible === visible) {
+            return;
+        }
         this.roadsVisible = visible;
         this.requestRender();
     }
-    /** Dim the model in dark mode while retaining operator and paid-area colors. */
+    /** Apply the same night theme to ground, building and station model materials. */
     setDarkTheme(dark: boolean): void {
         this.renderer.toneMappingExposure = dark ? 0.68 : 1.35;
         setGeographicContextTheme(this.context, dark);
+        this.appearance.setDarkTheme(dark);
         this.requestRender();
     }
     private appearance = new LayerAppearance();
@@ -240,6 +244,7 @@ export class MapScene {
         this.disposed = true;
         this.gestures.dispose();
         this.labels.dispose();
+        this.appearance.dispose(this.scene);
         this.resizeObserver.disconnect();
         if (this.frame) {
             cancelAnimationFrame(this.frame);
@@ -437,16 +442,17 @@ export class MapScene {
                 owner
             );
         }
-        const above = this.state.level === 'all' || this.levels.find(l => l.id === this.state.level)!.y >= 0;
-        this.context.roads.visible = this.roadsVisible && above;
-        this.context.buildings.visible = this.roadsVisible && above;
+        const canShowGround = allowsGroundLayer(this.levels, this.state);
+        const groundVisible = this.roadsVisible && canShowGround;
+        this.context.roads.visible = groundVisible;
+        this.context.buildings.visible = groundVisible;
         for (const floor of this.models.geographicBuildingFloors) {
-            floor.visible = this.roadsVisible && above;
+            floor.visible = groundVisible;
         }
-        this.geographicExteriors.visible = this.roadsVisible && this.state.roof && this.state.level === 'all';
+        this.geographicExteriors.visible = groundVisible && this.state.roof && this.state.level === 'all';
         this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
         this.models.roof.position.y = 26 + this.displayedExplode * 56;
-        this.models.roof.visible = this.state.roof && this.state.level === 'all';
+        this.models.roof.visible = canShowGround && this.state.roof && this.state.level === 'all';
         for (const canopy of this.models.canopies) {
             canopy.visible = this.state.roof;
         }

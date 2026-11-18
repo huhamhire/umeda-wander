@@ -8,6 +8,7 @@ import { connections, levels, platforms } from '../../src/infrastructure/station
 import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 import { cameraOffset } from '../../src/presentation/camera/view-orientation.ts';
+import { elevatedPublicColor, stationPalettes, undergroundPublicColor } from '../../src/presentation/appearance/station-palette.ts';
 test(
     'focused floors retain all lower levels as context and hide upper levels',
     () => {
@@ -38,6 +39,31 @@ test(
         assert.equal(lower.material, material);
     }
 );
+
+test('night colours distinguish active floors, lower floors and deck materials across theme changes', () => {
+    const { paid } = stationPalettes['jr-osaka'];
+    const material = new T.MeshStandardMaterial({ color: paid, transparent: true, opacity: 0.4 });
+    const active = new T.Mesh(new T.BoxGeometry(), material);
+    const lower = new T.Mesh(new T.BoxGeometry(), material);
+    const deck = new T.Mesh(new T.BoxGeometry(), new T.MeshStandardMaterial({ color: elevatedPublicColor }));
+    const concourse = new T.Mesh(new T.BoxGeometry(), new T.MeshStandardMaterial({ color: undergroundPublicColor }));
+    const style = new LayerAppearance();
+    style.setDarkTheme(true);
+    style.apply(active, false);
+    style.apply(lower, true);
+    style.apply(deck, false);
+    style.apply(concourse, false);
+    assert.equal(active.material.color.getHex(), 0x425a6b);
+    assert.notEqual(lower.material.color.getHex(), active.material.color.getHex());
+    assert(lower.material.opacity < active.material.opacity);
+    assert.notEqual(deck.material.color.getHex(), concourse.material.color.getHex());
+    assert.equal(material.color.getHex(), paid);
+    style.setDarkTheme(false);
+    style.apply(active, false);
+    style.apply(lower, false);
+    assert.equal(active.material, material);
+    assert.equal(lower.material, material);
+});
 test(
     'lower-floor facilities remain visible when focusing a higher layer',
     () => {

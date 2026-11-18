@@ -1,5 +1,6 @@
 import type { LevelId, RouteEdge, StationId } from '../domain/map/model.ts';
 import { findRoute } from '../domain/navigation/find-route.ts';
+import { stationFocusLevel } from './exploration/region-focus.ts';
 
 export interface MapViewState {
     explode: number;
@@ -37,15 +38,8 @@ export class MapSession {
      * Focus a station, choose its default hall and clear any previous route.
      */
     focusStation(station: StationId | null): void {
-        const halls: Partial<Record<StationId, LevelId>> = {
-            'metro-umeda': 'metro-hall',
-            'hanshin-umeda': 'hanshin-hall',
-            'higashi-umeda': 't20-hall',
-            'nishi-umeda': 'y11-hall',
-            kitashinchi: 'kitashinchi-hall'
-        };
         this.state.focusStation = station;
-        this.state.level = station ? halls[station] ?? 'all' : 'all';
+        this.state.level = stationFocusLevel(station);
         this.state.route = null;
     }
     /**

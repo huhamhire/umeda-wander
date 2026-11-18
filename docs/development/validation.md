@@ -4,6 +4,8 @@
 
 在仓库根目录运行，Node.js 24 或以上。Windows PowerShell 如限制 npm 脚本，使用 `npm.cmd`。
 
+日常迭代优先运行 `npm run check:style:changed`。提交前或 CI 如需覆盖全仓库，使用 `npm run check:style`。
+
 ```powershell
 npm run check:style
 npm run typecheck

@@ -12,6 +12,7 @@ import { filterFacilities, facilityCategory } from './application/exploration/fa
 import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
+import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 
 interface FacilityFilters {
     station: StationId | null;
@@ -73,8 +74,11 @@ function updateCompass() {
 updateCompass();
 window.addEventListener('map-orientation', updateCompass);
 const roads = element<HTMLInputElement>('#roads');
-roads.checked = restored?.roadsVisible ?? roads.checked;
-roads.addEventListener('change', () => scene?.setRoadsVisible(roads.checked));
+let groundPreference = restored?.roadsVisible ?? roads.checked;
+roads.addEventListener('change', () => {
+    groundPreference = roads.checked;
+    scene?.setRoadsVisible(groundPreference);
+});
 const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
 const facilityPicker = element<HTMLSelectElement>('#facility-picker');
@@ -113,7 +117,7 @@ function saveLanguageChangeView(): void {
         filters: facilityFilter,
         facility: facilityPicker.value,
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
-        roadsVisible: roads.checked,
+        roadsVisible: groundPreference,
         categoryScroll: element('#poi-list').scrollLeft,
         camera: scene?.snapshotCamera()
     };
@@ -229,6 +233,8 @@ function refreshFacilities(): void {
  */
 function sync(): void {
     scene?.update(session.state);
+    roads.disabled = !allowsGroundLayer(levels, session.state);
+    roads.checked = !roads.disabled && groundPreference;
     const focus = session.state.focusStation;
     const palette = stationPalettes[focus ?? 'jr-osaka'];
     element('.atlas').style.setProperty('--paid-color', `#${palette.paid.toString(16).padStart(6, '0')}`);
@@ -344,7 +350,7 @@ try {
         session.state,
         select
     );
-    scene.setRoadsVisible(roads.checked);
+    scene.setRoadsVisible(groundPreference);
     scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
     if (restored?.camera) {
         scene.restoreCamera(restored.camera);

@@ -1,5 +1,5 @@
 import { MapSession } from '../../src/application/map-session.ts';
-import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
+import { allowsGroundLayer, viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
@@ -77,3 +77,20 @@ test(
         assert.equal(viewLayerRole(levels, { level: 'metro-hall' }, 'hankyu-platform'), 'hidden');
     }
 );
+
+test('ground visibility follows underground station defaults and manual exploration levels', () => {
+    const session = new MapSession(edges);
+    for (const station of ['metro-umeda', 'hanshin-umeda', 'higashi-umeda', 'nishi-umeda', 'kitashinchi'] as const) {
+        session.focusStation(station);
+        assert(!allowsGroundLayer(levels, session.state), station);
+        assert(!allowsGroundLayer(levels, { ...session.state, level: 'all' }), station);
+    }
+    for (const level of ['underground-platform', 'metro-intermediate', 'metro-platform'] as const) {
+        assert(!allowsGroundLayer(levels, { level }), level);
+    }
+    for (const level of ['concourse', 'mezzanine', 'bridge', 'all'] as const) {
+        assert(allowsGroundLayer(levels, { level }), level);
+    }
+    session.focusStation(null);
+    assert(allowsGroundLayer(levels, session.state));
+});

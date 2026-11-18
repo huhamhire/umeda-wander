@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check:style": "eslint \"{src,scripts,tests,data}/**/*.ts\" && stylelint \"src/**/*.css\"",
+    "check:style": "node scripts/check-style.ts",
+    "check:style:changed": "node scripts/check-style.ts --changed",
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.ts",
     "dev": "node scripts/dev.ts",

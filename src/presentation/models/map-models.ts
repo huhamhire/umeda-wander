@@ -74,9 +74,10 @@ export class MapModels {
         level?: LevelId,
         roof = false,
         emphasis = false,
-        owner?: StationId | null
+        owner?: StationId | null,
+        surface?: T.Object3D
     ): void {
-        this.labels.push({ text, position: new T.Vector3(x, y, z), level, roof, emphasis, owner });
+        this.labels.push({ text, position: new T.Vector3(x, y, z), level, roof, emphasis, owner, surface });
     }
 
     /**
@@ -170,7 +171,8 @@ export class MapModels {
                     area.level,
                     false,
                     area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised',
-                    owner
+                    owner,
+                    buildingContext ? floorGroup : undefined
                 );
             }
         }

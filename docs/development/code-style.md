@@ -19,6 +19,17 @@
 
 ## 本地检查
 
+日常修改后用 `npm run check:style:changed`。它按当前 Git 工作区选择已暂存、未暂存和未跟踪的 TypeScript、CSS 文件，检查的是工作区里的版本。改动 ESLint 配置、Stylelint 配置或依赖锁文件时会自动转为全量。
+
+只检查指定文件时，可以直接调用对应工具。
+
+```powershell
+npm exec -- eslint src/main.ts
+npm exec -- stylelint src/styles/foundations/base.css
+```
+
+提交前或 CI 可按改动范围使用全量检查。
+
 ```powershell
 npm run check:style
 npm run typecheck

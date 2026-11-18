@@ -7,6 +7,7 @@ import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts
 import type { BuildingVolume } from '../../src/infrastructure/buildings/building-data.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
+import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
 import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
 import { exteriorOpenings, deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
 
@@ -129,3 +130,30 @@ test(
         }
     }
 );
+
+test('night mode recolors podium, tower and facade trim without replacing geometry', () => {
+    const building = geographicBuildings.find(b => b.id === 'hankyu-dept')!;
+    const model = buildGeographicBuilding(building);
+    const meshes: T.Mesh<T.BufferGeometry, T.MeshStandardMaterial>[] = [];
+    model.traverse(object => {
+        if (object instanceof T.Mesh && object.material instanceof T.MeshStandardMaterial) {
+            meshes.push(object);
+        }
+    });
+    const originals = meshes.map(mesh => ({ geometry: mesh.geometry, material: mesh.material }));
+    const palette = buildingPalette(building.id, building.name, true);
+    const style = new LayerAppearance();
+    style.setDarkTheme(true);
+    style.apply(model, false);
+    const colors = new Set(meshes.map(mesh => mesh.material.color.getHex()));
+    for (const color of Object.values(palette)) {
+        assert(colors.has(color));
+    }
+    assert.notDeepEqual(palette, buildingPalette('daimaru', '', true));
+    style.setDarkTheme(false);
+    style.apply(model, false);
+    meshes.forEach((mesh, index) => {
+        assert.equal(mesh.geometry, originals[index]!.geometry);
+        assert.equal(mesh.material, originals[index]!.material);
+    });
+});

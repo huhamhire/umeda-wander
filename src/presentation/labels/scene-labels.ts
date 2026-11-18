@@ -12,6 +12,7 @@ export interface SceneLabelDefinition {
     roof?: boolean;
     emphasis?: boolean;
     owner?: StationId | null;
+    surface?: T.Object3D;
 }
 
 interface MapLabel extends SceneLabelDefinition {
@@ -67,6 +68,9 @@ export class SceneLabels {
         const placements = orderedLabels.map(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
+            if (label.surface && !label.surface.visible) {
+                visible = false;
+            }
             label.element.classList.toggle('context', role === 'context' || labelMuted(label));
             if (role === 'context' && !label.element.classList.contains('emphasis')) {
                 visible = false;

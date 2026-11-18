@@ -24,12 +24,13 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
     for (const volume of building.volumes) {
         const palette = buildingPalette(building.id, volume.name);
         if (!materials.has(palette)) {
+            const night = buildingPalette(building.id, volume.name, true);
             materials.set(
                 palette,
                 {
-                    wall: new T.MeshStandardMaterial({ color: palette.wall, roughness: .9 }),
-                    glass: new T.MeshStandardMaterial({ color: palette.tower, roughness: .85, metalness: 0 }),
-                    trim: new T.MeshStandardMaterial({ color: palette.trim, roughness: .9 }),
+                    wall: new T.MeshStandardMaterial({ color: palette.wall, roughness: .9, userData: { nightColor: night.wall } }),
+                    glass: new T.MeshStandardMaterial({ color: palette.tower, roughness: .85, metalness: 0, userData: { nightColor: night.tower } }),
+                    trim: new T.MeshStandardMaterial({ color: palette.trim, roughness: .9, userData: { nightColor: night.trim } }),
                 }
             );
         }
@@ -120,7 +121,12 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
             texture.colorSpace = T.SRGBColorSpace;
             const text = new T.Mesh(
                 new T.PlaneGeometry(sign.width * .95, sign.height * .9),
-                new T.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
+                new T.MeshBasicMaterial({
+                    map: texture,
+                    transparent: true,
+                    depthWrite: false,
+                    userData: { nightColor: 0xf4e9d5 }
+                })
             );
             text.quaternion.copy(backing.quaternion);
             text.position.copy(backing.position).add(new T.Vector3(-s * .05, 0, c * .05));

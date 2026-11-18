@@ -14,7 +14,8 @@ export function buildFloorLabel(area: FloorArea, angle: number, maxAnisotropy = 
         ? messageText('publicAreas.basementBuildings.ekimaeFloorLabel', { number: ekimae[1]! })
         : area.name.replace(' · B1', '');
     const lines = name.split('\n');
-    context.fillStyle = '#4f635a';
+    // Bake an alpha mask; the material supplies the text colour for each theme.
+    context.fillStyle = '#fff';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.font = '600 100px "Yu Gothic","Microsoft YaHei",sans-serif';
@@ -30,6 +31,8 @@ export function buildFloorLabel(area: FloorArea, angle: number, maxAnisotropy = 
         new T.PlaneGeometry(width, width * 384 / 1024),
         new T.MeshBasicMaterial({
             map: texture,
+            color: 0x4f635a,
+            userData: { nightColor: 0xc8d7c9 },
             transparent: true,
             depthWrite: false,
             polygonOffset: true,
