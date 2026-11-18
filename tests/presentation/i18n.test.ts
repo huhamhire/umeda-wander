@@ -71,6 +71,37 @@ test('localized catalogs cover the same keys and named parameters', () => {
     assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'en'), 'Track 21');
 });
 
+test('level captions and facility filters keep their meaning in each locale', () => {
+    const keys = [
+        'ui.floors.overview',
+        'ui.floors.second.description',
+        'ui.floors.third.description',
+        'ui.facilities.floorFilter',
+        'ui.facilities.heading',
+        'ui.facilities.placeholder',
+        'ui.facilities.select',
+        'ui.facilities.stationFilter',
+        'ui.facilities.types'
+    ] as const;
+    const expected = {
+        'zh-CN': [
+            '总览', '站台 / 站厅 / 站外连廊', 'JR 联络桥 / 阪急站台',
+            '筛选楼层', '站内设施', '选择设施…', '选择设施', '筛选车站', '设施类型'
+        ],
+        ja: [
+            '全体', 'ホーム／コンコース／連絡デッキ', 'JR連絡橋／阪急ホーム',
+            '階で絞り込む', '駅の施設', '施設を選択…', '施設を選択', '駅で絞り込む', '施設の種類'
+        ],
+        en: [
+            'All', 'Platforms / concourses / decks', 'JR link bridge / Hankyu platforms',
+            'Filter by level', 'Station facilities', 'Choose a facility…', 'Choose a facility', 'Filter by station', 'Facility types'
+        ]
+    };
+    for (const locale of availableLocales) {
+        assert.deepEqual(keys.map(key => messageText(key, {}, locale)), expected[locale], locale);
+    }
+});
+
 test(
     'named parameters preserve zero and literal markup without recursively interpreting values',
     () => {
