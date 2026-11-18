@@ -17,6 +17,10 @@
 
 当前生成在 `src/infrastructure/geography/runtime-rails.ts`，JR 约束在 `stations/jr-osaka/rail-corridors.ts`，共用 `RailApproach` 领域图与 `presentation/models/stations/rail-approach-model.ts`。站台轨道和延伸线共用 `platformRail` 端点，合流节点共用切向，公共尾段只绘制一次。轨道不进入步行 `RouteEdge`。
 
+东侧按用户提供的卫星照片核对阪急站南沿、阪急百货北沿及 HEP 北侧的行车区域。站台先延续出站轴向，沿较长的缓变段逐步并为六股运行线（本线四股、环状线两股），再向东继续延伸；不设置横向收束点后再转回的折返曲线。运行线间距与并线位置为人工拟合，不表示核验了实际道岔。净距回归使用运行时道床、阪急全部站厅楼板及实际建筑外壳，不再仅用原始 OSM 线位检查避让。站模侵入现有建筑时先修订站体包络，不能削改已对齐的建筑轮廓。
+
+西侧 11 番线接头曾被 Inogate 同高占位盖住。二层占位现在同时避让站台钢轨和延伸道床，不能通过重复补画轨道掩盖遮挡。`railApproachFootprints` 提供共用道床边界。
+
 OSM 原始对象及许可见[轨道数据说明](../../data/geography/railways/README.md)；当前处理不能将示意合流映射当成各番线实际列车方向。地理延伸长度、转弯半径及束间距仍为展示拟合，实际乘车以站内标识为准。
 
 ## 验证

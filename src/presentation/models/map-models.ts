@@ -25,6 +25,7 @@ import { buildPublicDeckRailing } from './public-areas/public-deck-model.ts';
 import { areaColor } from '../appearance/area-palette.ts';
 import { ModelPrimitives } from './model-primitives.ts';
 import { colors } from '../appearance/scene-palette.ts';
+import { buildWalkwayCanopy } from './public-areas/walkway-canopy-model.ts';
 import type { SceneLabelDefinition } from '../labels/scene-labels.ts';
 
 export interface MapModelOptions {
@@ -44,6 +45,7 @@ export class MapModels {
     readonly geographicBuildingFloors: T.Group[] = [];
     readonly publicPassages: PublicPassageModel[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
+    readonly canopies: T.Group[] = [];
     readonly pickables: T.Object3D[] = [];
     readonly labels: SceneLabelDefinition[] = [];
     readonly openings: FloorOpening[];
@@ -370,6 +372,11 @@ export class MapModels {
             if (!approach.id.startsWith('map-rail-') || approach.level === 'platform' || approach.level === 'underground-platform' || approach.level === 'hankyu-platform') {
                 this.label(approach.name, approach.labelPoint.x, 2.5, approach.labelPoint.z, approach.level, false, true);
             }
+        }
+        for (const canopy of this.layout.canopies ?? []) {
+            const model = setRegionOwner(buildWalkwayCanopy(canopy), null);
+            this.groups.get(canopy.level)!.add(model);
+            this.canopies.push(model);
         }
         for (const guide of this.layout.guides ?? []) {
             for (const p of guide.points) {

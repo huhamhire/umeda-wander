@@ -92,9 +92,10 @@ export function buildBuildingOccupancies(
     target: {
         level: LevelId;
         prefix: string;
+        reservedRegions?: PlanRegion[];
     }
 ) {
-    const cuts = [...publicAreas.filter(a => !a.elevationOffset), ...stationInteriors].map(geometry);
+    const cuts = [...publicAreas.filter(a => !a.elevationOffset), ...stationInteriors, ...target.reservedRegions ?? []].map(geometry);
     const occupied: clipping.MultiPolygon = [];
     const areas: FloorArea[] = [];
     const contacts: {

@@ -2,7 +2,7 @@ import * as T from 'three';
 import polygonClipping from 'polygon-clipping';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Point2, RailApproach } from '../../../domain/map/model.ts';
-import { offsetRailSample, sampleRailSegment } from '../../../domain/map/rail-geometry.ts';
+import { offsetRailSample, sampleRailSegment, railApproachFootprints } from '../../../domain/map/rail-geometry.ts';
 import { buildFloorGeometry } from '../floor-geometry.ts';
 
 /**
@@ -14,10 +14,7 @@ export function buildRailApproachModel(approach: RailApproach): T.Group {
     const group = new T.Group();
     group.name = `rail-approach-${approach.id}`;
     const samples = approach.segments.map(segment => sampleRailSegment(approach, segment));
-    const beds = samples.map(path => [
-        ...path.map(p => offsetRailSample(p, 1.25)),
-        ...path.slice().reverse().map(p => offsetRailSample(p, -1.25))
-    ]);
+    const beds = railApproachFootprints(approach);
     const ring = (points: Point2[]): [
         number,
         number

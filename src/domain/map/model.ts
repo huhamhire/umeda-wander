@@ -143,6 +143,17 @@ export interface StationLayout {
     atria?: AtriumVoid[];
     concourses?: CommercialConcourse[];
     exteriorOpenings?: BuildingOpening[];
+    canopies?: WalkwayCanopy[];
+}
+
+/** Roof over a confirmed public deck, independent of its floor and walking graph. */
+export interface WalkwayCanopy {
+    id: string;
+    level: LevelId;
+    points: Point2[];
+    width: number;
+    clearHeight: number;
+    evidence: Evidence;
 }
 
 export interface BuildingOpening {

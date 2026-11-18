@@ -52,6 +52,18 @@ export interface GeographicBuilding {
     signs?: BuildingSign[];
     entrance?: BuildingEntrance;
     galleries?: BuildingGallery[];
+    wheel?: FerrisWheel;
+}
+
+/** Procedural landmark dimensions; placement is a reference fit, not a surveyed asset. */
+export interface FerrisWheel {
+    center: Point2;
+    centerHeight: number;
+    radius: number;
+    heading: number;
+    depth: number;
+    cabins: number;
+    source: string;
 }
 
 /**

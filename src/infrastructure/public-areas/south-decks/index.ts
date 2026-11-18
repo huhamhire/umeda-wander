@@ -50,11 +50,6 @@ export function southDecks(stations: StationMap[]): {
             messageText('publicAreas.southDecks.deckPaths.southFrontageEast.name'),
             [p(24, -8), { x: 558.9, z: 692.9 }],
             8
-        ),
-        deckPath(
-            'hanshin-lift-deck-entry',
-            messageText('publicAreas.southDecks.deckPaths.hanshinLiftDeckEntry.name'),
-            [{ x: 655.5, z: 726.8 }, hs]
         )
     );
     const portal = (id: string, target: string, point: {

@@ -52,3 +52,14 @@ export function offsetRailSample(sample: {
 }, offset: number): Point2 {
     return { x: sample.point.x + sample.normal.x * offset, z: sample.point.z + sample.normal.z * offset };
 }
+
+/** Preserve the rendered ballast envelope when reserving space beside a rail approach. */
+export function railApproachFootprints(approach: RailApproach, halfWidth = 1.25): Point2[][] {
+    return approach.segments.map(segment => {
+        const samples = sampleRailSegment(approach, segment);
+        return [
+            ...samples.map(sample => offsetRailSample(sample, halfWidth)),
+            ...samples.slice().reverse().map(sample => offsetRailSample(sample, -halfWidth))
+        ];
+    });
+}

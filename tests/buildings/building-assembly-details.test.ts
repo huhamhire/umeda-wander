@@ -22,7 +22,7 @@ test(
         const ring = (p: typeof ground.outline): clipping.Ring => p.map(p => [p.x, p.z]);
         assert.equal(clipping.difference([ring(office.outline)], [ring(upper.outline)]).length, 0);
         assert(office.outline.every(p => pointInPolygon(p, upper.outline)));
-        const overRoad = office.outline.find(p => !pointInPolygon(p, ground.outline));
+        const overRoad = upper.outline.find(p => !pointInPolygon(p, ground.outline));
         assert(overRoad, 'the street-level retreat must remain open');
         const model = buildGeographicBuilding(hanshin, exteriorOpenings);
         model.updateMatrixWorld(true);

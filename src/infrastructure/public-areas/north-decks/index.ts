@@ -3,6 +3,7 @@ import type { StationMap } from '../../../domain/map/model.ts';
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { building as yodobashi } from '../../buildings/yodobashi/index.ts';
 import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
+import { jrAtriumPoint } from '../../stations/jr-osaka/geographic.ts';
 
 /**
  * Connect the north atrium, commercial galleries and Hankyu public interface while preserving block ownership.
@@ -28,6 +29,12 @@ export function northDecks(stations: StationMap[]): {
         'hankyu-public-frontage',
         messageText('publicAreas.northDecks.deckPaths.hankyuPublicFrontage.name'),
         [{ x: 659.8, z: 446.5 }, { x: 644, z: 390 }, stationDoor]
+    ));
+    const atriumDoor = jrAtriumPoint({ x: -1, z: -68 });
+    paths.push(deckPath(
+        'atrium-compact-landing',
+        messageText('publicAreas.northDecks.entities.northDecks.name'),
+        [{ x: 393.7, z: 521.8 }, atriumDoor]
     ));
     const portal = (id: string, target: string, point: {
         x: number;
@@ -56,7 +63,7 @@ export function northDecks(stations: StationMap[]): {
             portal('grand-front-south-bridge-door', 'grand-front-south', { x: 347.2, z: 373.5 }, Math.PI / 2),
             portal('grand-front-atrium-door', 'grand-front-south', { x: 369.3, z: 481.6 }, Math.PI / 3),
             portal('hankyu-jr-interface', 'station:hankyu-umeda', stationDoor, -Math.PI / 2),
-            portal('jr-north-atrium', 'station:jr-osaka', { x: 393.7, z: 521.8 }, Math.PI / 3),
+            portal('jr-north-atrium', 'station:jr-osaka', atriumDoor, Math.PI / 3),
             portal('yodobashi-west-gallery', 'yodobashi', { x: 438.3, z: 473.1 }, -Math.PI / 4),
             portal('yodobashi-east-gallery', 'yodobashi', { x: 510.7, z: 447.9 }, Math.PI / 3),
         ]

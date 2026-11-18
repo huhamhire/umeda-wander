@@ -3,9 +3,7 @@ interface TabControl extends EventTarget {
     setAttribute(name: string, value: string): void;
     focus(): void;
 }
-interface TabPanel {
-    hidden: boolean;
-}
+type TabPanel = Pick<HTMLElement, 'hidden'>;
 
 /** Clicks and keyboard navigation share the same selected tab and visible panel. */
 export function bindSidebarTabs(buttons: TabControl[], panels: TabPanel[]): (index: number) => void {

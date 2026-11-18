@@ -173,6 +173,7 @@ export const sourceCredits: SourceCredits = {
                     'https://www.jp-re.japanpost.jp/properties/jptower-osaka.html'
                 ),
                 link(messageText('credits.links.sanbangaiFloors.label'), 'https://www.h-sanbangai.com/floor/'),
+                link(messageText('credits.links.hepWheel.label'), 'https://www.hepfive.jp/ferriswheel'),
                 link(
                     messageText('credits.links.jrRoof.label'),
                     'https://www.city.osaka.lg.jp/toshiseibi/page/0000647324.html'

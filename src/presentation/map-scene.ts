@@ -434,6 +434,9 @@ export class MapScene {
             model.visible = this.state.roof && this.state.level === 'all';
         }
         this.models.roof.visible = this.state.roof && this.state.level === 'all';
+        for (const canopy of this.models.canopies) {
+            canopy.visible = this.state.roof;
+        }
         this.appearance.apply(this.models.roof, false, this.state.focusStation, 'jr-osaka');
         this.routeModel.group.visible = !!this.state.route;
         if (previousExplode !== this.displayedExplode && this.state.route) {
@@ -461,6 +464,9 @@ export class MapScene {
         }
         if (this.layout.geographic && !this.state.focusStation) {
             for (const b of geographicBuildings) {
+                if (b.wheel) {
+                    envelope.push(new T.Vector3(b.wheel.center.x, b.wheel.centerHeight + b.wheel.radius + 2, b.wheel.center.z));
+                }
                 for (const v of b.volumes) {
                     for (const p of v.outline) {
                         envelope.push(new T.Vector3(p.x, v.top, p.z));

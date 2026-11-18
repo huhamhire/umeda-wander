@@ -26,7 +26,9 @@ const ids = assembly
         'daimaru',
         'yodobashi',
         'grand-front-south',
-        'lucua-1100'
+        'lucua-1100',
+        'hep-five',
+        'hep-navio'
     ];
 const output = assembly ? 'building-assembly' : 'building-details';
 const width = 1200;

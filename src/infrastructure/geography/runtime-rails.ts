@@ -106,10 +106,7 @@ export function restoreMapRails(stations: StationMap[]): void {
                         );
                     }
                     if (level === 'platform' && key === 'main') {
-                        turn = -side * jrRailCorridors.mainNorthTurn;
-                    }
-                    if (level === 'platform' && key === 'loop' && side === 1) {
-                        turn = jrRailCorridors.eastLoopTurn;
+                        turn = jrRailCorridors.mainNorthTurn;
                     }
                     if (level === 'platform') {
                         approach.name = key === 'main' ? (side === 1 ? messageText('railways.jr.main.east') : messageText('railways.jr.main.west')) : (side === 1 ? messageText('railways.jr.loop.east') : messageText('railways.jr.loop.west'));
@@ -119,7 +116,7 @@ export function restoreMapRails(stations: StationMap[]): void {
                     }
                     // Shared throats follow the old layout's grouped topology, in the new metre frame.
                     const outletCount = key === 'main' ? 4 : 2;
-                    let outletAcross = Array.from(
+                    const outletAcross = Array.from(
                         { length: outletCount },
                         (_, i) => {
                             const subset = roots.filter((_, j) => Math.min(outletCount - 1, Math.floor(j * outletCount / roots.length)) === i);
@@ -140,22 +137,32 @@ export function restoreMapRails(stations: StationMap[]): void {
                     const targetFor = (i: number) => Math.min(outletCount - 1, Math.floor(i * outletCount / roots.length));
                     const spread = Math.max(...roots.map((r, i) => Math.abs(r.v - outletAcross[targetFor(i)]!)));
                     const mergeRun = Math.max(level === 'platform' ? 90 : 65, spread * 5);
-                    let mergeU = Math.max(...roots.map(r => side * r.u)) + mergeRun;
-                    if (level === 'platform' && key === 'loop' && side === 1) {
-                        const guide = project(jrRailCorridors.eastLoopThroat);
-                        const span = roots.at(-1)!.v - roots[0]!.v;
-                        mergeU = guide.u;
-                        outletAcross = outletAcross.map((_, i) => guide.v + (i - .5) * Math.min(4.4, span));
-                    }
+                    const mergeU = Math.max(...roots.map(r => side * r.u)) + mergeRun;
                     if (level === 'platform' && key === 'loop' && side === -1) {
                         turn = jrRailCorridors.mainNorthTurn;
                     }
-                    const outlets = outletAcross.map((v, i) => addNode(id + '-merge-' + i, point(side * mergeU, v), 'junction'));
+                    const eastMain = level === 'platform' && key === 'main' && side === 1;
+                    const eastSurface = level === 'platform' && side === 1;
+                    const eastRoads = eastMain ? jrRailCorridors.eastMainRoads : jrRailCorridors.eastLoopRoads;
+                    const mergeHeading = endAngle;
+                    const mergeAxis = { x: Math.cos(mergeHeading), z: Math.sin(mergeHeading) };
+                    const outlets = outletAcross.map((v, i) => {
+                        const guide = eastRoads[i]!;
+                        const location = eastSurface ? {
+                            x: 447 + guide.along * axis.x - guide.across * axis.z,
+                            z: 610 + guide.along * axis.z + guide.across * axis.x
+                        } : point(side * mergeU, v);
+                        return addNode(id + '-merge-' + i, location, 'junction');
+                    });
+                    // Six running roads remain parallel along the photographed railway
+                    // apron. A long fan distributes merges without a forced crosswise throat.
+                    const outletAxes = outlets.map(() => eastSurface ? axis : mergeAxis);
                     roots.forEach((r, i) => {
                         const root = addNode(id + '-track-' + r.p.id + '-' + r.track, r.root, 'platform-end');
                         const out = outlets[targetFor(i)]!;
                         const heading = platformTangent(r.p, side * r.p.length / 2);
-                        const handle = (mergeU - side * r.u) / 3;
+                        const handle = eastSurface ? Math.hypot(out.point.x - r.root.x, out.point.z - r.root.z) / 3 : (mergeU - side * r.u) / 3;
+                        const outletAxis = outletAxes[targetFor(i)]!;
                         approach.segments.push({
                             id: root.id + '-merge',
                             from: root.id,
@@ -163,22 +170,26 @@ export function restoreMapRails(stations: StationMap[]): void {
                             platformId: r.p.id,
                             track: r.track,
                             control1: { x: r.root.x + side * Math.cos(heading) * handle, z: r.root.z + side * Math.sin(heading) * handle },
-                            control2: { x: out.point.x - side * axis.x * handle, z: out.point.z - side * axis.z * handle }
+                            control2: { x: out.point.x - side * outletAxis.x * handle, z: out.point.z - side * outletAxis.z * handle }
                         });
                     });
                     // Common-radius turns keep paired running roads parallel and avoid an S-shaped offset.
-                    const axisOut = { x: axis.x * side, z: axis.z * side };
+                    const axisOut = { x: mergeAxis.x * side, z: mergeAxis.z * side };
                     const left = { x: -axisOut.z, z: axisOut.x };
                     const sign = Math.sign(turn) || 1;
                     const radius = 220;
                     const tailAcross = outletAcross.reduce((sum, v) => sum + v / outletAcross.length, 0);
                     const center = point(side * mergeU, tailAcross);
-                    const arcCenter = { x: center.x + left.x * radius * sign, z: center.z + left.z * radius * sign };
+                    const arcCenter = {
+                        x: center.x + left.x * radius * sign,
+                        z: center.z + left.z * radius * sign
+                    };
                     const rotate = (v: Point2, a: number) => ({ x: v.x * Math.cos(a) - v.z * Math.sin(a), z: v.x * Math.sin(a) + v.z * Math.cos(a) });
                     const road = rotate(axisOut, turn);
                     for (const [i, out] of outlets.entries()) {
+                        const continuation = eastSurface ? outletAxes[i]! : road;
                         let start = out;
-                        if (Math.abs(turn) > .01) {
+                        if (!eastSurface && Math.abs(turn) > .01) {
                             const vector = { x: out.point.x - arcCenter.x, z: out.point.z - arcCenter.z };
                             const delta = rotate(vector, turn);
                             const r = Math.hypot(vector.x, vector.z);
@@ -193,14 +204,14 @@ export function restoreMapRails(stations: StationMap[]): void {
                             });
                             start = bend;
                         }
-                        const tail = 70;
-                        const end = addNode(out.id + '-end', { x: start.point.x + road.x * tail, z: start.point.z + road.z * tail }, 'end');
+                        const tail = eastSurface ? (eastMain ? jrRailCorridors.eastMainTail : jrRailCorridors.eastLoopTail) : 70;
+                        const end = addNode(out.id + '-end', { x: start.point.x + continuation.x * tail, z: start.point.z + continuation.z * tail }, 'end');
                         approach.segments.push({
                             id: out.id + '-tail',
                             from: start.id,
                             to: end.id,
-                            control1: { x: start.point.x + road.x * tail / 3, z: start.point.z + road.z * tail / 3 },
-                            control2: { x: end.point.x - road.x * tail / 3, z: end.point.z - road.z * tail / 3 }
+                            control1: { x: start.point.x + continuation.x * tail / 3, z: start.point.z + continuation.z * tail / 3 },
+                            control2: { x: end.point.x - continuation.x * tail / 3, z: end.point.z - continuation.z * tail / 3 }
                         });
                     }
                     const ends = approach.nodes.filter(n => n.kind === 'end');

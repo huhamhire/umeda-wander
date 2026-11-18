@@ -6,11 +6,15 @@ import type { BuildingOpening } from '../../../domain/map/model.ts';
 import { buildFloorGeometry } from '../floor-geometry.ts';
 import { buildingFacade } from './building-facade.ts';
 import { buildingPalette } from '../../appearance/building-palette.ts';
+import { buildFerrisWheel } from './ferris-wheel-model.ts';
 
 /** Shared metre-scale exterior; detached from walkable floors and their openings. */
 export function buildGeographicBuilding(building: GeographicBuilding, openings: BuildingOpening[] = []) {
     const group = new T.Group();
     group.name = 'geographic-building-' + building.id;
+    if (building.wheel) {
+        group.add(buildFerrisWheel(building.wheel));
+    }
     const doors = openings.filter(o => o.buildingId === building.id);
     const materials = new Map<ReturnType<typeof buildingPalette>, {
         wall: T.Material;

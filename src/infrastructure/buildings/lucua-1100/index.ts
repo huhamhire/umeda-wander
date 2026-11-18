@@ -1,5 +1,5 @@
 import { messageText } from '../../i18n/index.ts';
-import { volume, insetPart, type GeographicBuilding } from '../building-data.ts';
+import { volume, type GeographicBuilding } from '../building-data.ts';
 
 export const building: GeographicBuilding = {
     id: 'lucua-1100',

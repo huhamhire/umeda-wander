@@ -103,7 +103,7 @@ test(
 test(
     'commercial 2F context is occupancy only and cannot cover walking faces or become a route',
     () => {
-        assert.equal(new Set(deckBuildingAreas.map(a => a.blockId)).size, 12);
+        assert.equal(new Set(deckBuildingAreas.map(a => a.blockId)).size, 14);
         for (const a of deckBuildingAreas) {
             assert.equal(a.kind, 'commercial');
             assert.ok(a.labelStyle === 'floor');

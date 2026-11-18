@@ -1,6 +1,6 @@
 import { messageText } from '../../i18n/index.ts';
 import clipping from 'polygon-clipping';
-import { volume, alignedPoint, type GeographicBuilding } from '../building-data.ts';
+import { volume, type GeographicBuilding } from '../building-data.ts';
 import { softenPodium } from '../profile-data.ts';
 
 const source = volume('502411898', messageText('buildings.hanshinDept.volumes.level502411898.name'), 0, 14);
@@ -9,14 +9,16 @@ const references = [
     'https://www.nihonsekkei.co.jp/projects/18825/',
     'https://office.hankyu-hanshin.co.jp/twin-south/outline/',
 ];
-/**
- * Construct a rectangular outline in the current building frame.
- */
-const rectangle = (u0: number, u1: number, v0: number, v1: number) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]]
-    .map(([u, v]) => alignedPoint(groundOutline, 0, u!, v!));
 // The street-level L is not the envelope of the upper retail floors. Those
 // bridge the road and form one continuous podium under the inset office tower.
-const bridgeOutline = softenPodium(rectangle(.59, .99, .09, .81), 6);
+// Only infill the narrow inner retreat. The former world-axis rectangle
+// incorrectly pushed a large block through the curved street frontage.
+const bridgeOutline = [
+    { x: 672, z: 766 },
+    { x: 705, z: 821 },
+    { x: 716, z: 816 },
+    { x: 683, z: 761 }
+];
 const upperRegion = clipping.union(
     [groundOutline.map(p => [p.x, p.z] as [
         number,
@@ -49,13 +51,21 @@ const upper = {
 const office = {
     ...source,
     name: messageText('buildings.hanshinDept.office.name'),
-    outline: rectangle(.62, .97, .12, .70),
+    // Independent straight-sided office slab, not an intersection with the
+    // rounded retail envelope: clipping that envelope produced an acute tip.
+    outline: [[-48, -21], [48, -21], [48, 21], [-48, 21]].map(([u, v]) => {
+        const angle = -31.65 * Math.PI / 180;
+        return {
+            x: 625 + u! * Math.cos(angle) - v! * Math.sin(angle),
+            z: 769 + u! * Math.sin(angle) + v! * Math.cos(angle)
+        };
+    }),
     base: 52,
     top: 188.9,
     facade: 'grid' as const,
     surface: 'tower' as const,
     references,
-    note: 'Single office tower set back on the continuous retail podium. North is the separate Hankyu complex. Approximate 4,650 square metre gross footprint; no historical PLATEAU Hanshin geometry is used.',
+    note: 'Single elongated office tower along the podium street frontage, aligned with the southwest–northeast wing. User oblique and overhead references correct the former east-only square crop. Extent and setbacks are illustrative; no historical PLATEAU Hanshin geometry is used.',
 };
 export const building: GeographicBuilding = {
     id: 'hanshin-dept',

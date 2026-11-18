@@ -2,6 +2,7 @@ import { messageText } from '../../i18n/index.ts';
 import config from '../../../../data/geography/elevated/inogate.json' with { type: 'json' };
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import type { Evidence } from '../../../domain/map/model.ts';
+import { jrGroundPoint } from '../../stations/jr-osaka/geographic.ts';
 
 export const inogateDeckEvidence: Evidence = {
     source: 'district',
@@ -15,17 +16,23 @@ export function inogateDecks(): {
     portals: DeckPortal[];
 } {
     const level = 'district-north-deck';
+    const stationDoor = jrGroundPoint({ x: -60, z: -41 });
+    const sourceDoor = config.portals.find(p => p.id === 'inogate-jr-public')!.point;
     return {
         blocks: [{
             id: 'inogate-decks',
             name: messageText('publicAreas.westDecks.entities.inogateDecks.name'),
             level,
-            paths: config.paths.map(path => ({ ...path, width: config.widthMetres, evidence: inogateDeckEvidence })),
+            paths: [
+                ...config.paths.map(path => ({ ...path, width: config.widthMetres, evidence: inogateDeckEvidence })),
+                { id: 'inogate-calibrated-jr-frontage', name: messageText('publicAreas.westDecks.entities.inogateDecks.name'), points: [sourceDoor, stationDoor], width: config.widthMetres, evidence: inogateDeckEvidence }
+            ],
             regions: [],
             evidence: inogateDeckEvidence,
         }],
         portals: config.portals.map(portal => ({
             ...portal,
+            ...(portal.id === 'inogate-jr-public' ? { point: stationDoor } : {}),
             blockId: 'inogate-decks',
             level,
             width: config.widthMetres,

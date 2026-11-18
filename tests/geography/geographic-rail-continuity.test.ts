@@ -4,7 +4,9 @@ import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
-import { sampleRailSegment, platformRail } from '../../src/domain/map/rail-geometry.ts';
+import { sampleRailSegment, platformRail, railApproachFootprints } from '../../src/domain/map/rail-geometry.ts';
+import clipping from 'polygon-clipping';
+import { deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { platformTangent } from '../../src/domain/map/geometry.ts';
 import { nishiAxis } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
 test(
@@ -99,7 +101,7 @@ test(
             const a = main.nodes.find(n => n.id === tail.from)!.point;
             const b = main.nodes.find(n => n.id === tail.to)!.point;
             assert.ok(
-                (b.z - a.z) / Math.hypot(b.x - a.x, b.z - a.z) < side * Math.sin(angle),
+                side === 1 ? b.z < a.z : (b.z - a.z) / Math.hypot(b.x - a.x, b.z - a.z) < side * Math.sin(angle),
                 'main must turn toward geographic north'
             );
             assert.ok(main.name.includes(side === 1 ? '新大阪' : '神户'));
@@ -193,3 +195,51 @@ test(
         );
     }
 );
+
+test('JR east runtime track beds stay clear of the actual Hankyu halls and landmark shells', () => {
+    const [jr, hankyu] = createGeographicStations();
+    const ring = (points: Point2[]): clipping.Ring => points.map(p => [p.x, p.z]);
+    const obstacles = [
+        ...hankyu!.layout.areas.map(a => ({ name: a.id, outline: a.outline })),
+        ...geographicBuildings.filter(b => ['hankyu-sanbangai', 'hankyu-dept', 'hankyu-grand', 'hep-five', 'hep-navio'].includes(b.id))
+            .flatMap(b => b.volumes.map(v => ({ name: b.id + '/' + v.name, outline: v.outline })))
+    ];
+    for (const approach of jr!.layout.railApproaches!.filter(a => a.level === 'platform' && !a.id.endsWith('--1'))) {
+        for (const obstacle of obstacles) {
+            const halfWidth = obstacle.name.startsWith('hankyu-dept/') ? 1.25 : 2.75;
+            for (const bed of railApproachFootprints(approach, halfWidth)) {
+                assert.equal(clipping.intersection([ring(bed)], [ring(obstacle.outline)]).length, 0, `${approach.id}: ${obstacle.name}`);
+            }
+        }
+    }
+});
+
+test('Inogate 2F context cannot hide the western track 11 connection', () => {
+    const jr = createGeographicStations()[0]!;
+    const approach = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-main--1')!;
+    const segment = approach.segments.find(s => s.track === 11)!;
+    const platform = jr.layout.platforms.find(p => p.id === segment.platformId)!;
+    const end = platformRail(platform, 0).start;
+    const samples = [end, ...sampleRailSegment(approach, segment, 100).slice(0, 14).map(s => s.point)];
+    for (const p of samples) {
+        assert(!deckBuildingAreas.filter(a => a.level === 'district-north-deck').some(a => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h))), 'context slab covers the rendered rail seam');
+    }
+});
+
+test('JR eastern apron retains six running roads with a gentle departure rather than a crosswise throat', () => {
+    const station = createGeographicStations()[0]!;
+    const eastern = station.layout.railApproaches!.filter(a => a.level === 'platform' && !a.id.endsWith('--1'));
+    assert.equal(eastern.flatMap(a => a.nodes.filter(n => n.kind === 'end')).length, 6);
+    const axis = station.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
+    for (const approach of eastern) {
+        for (const segment of approach.segments) {
+            const samples = sampleRailSegment(approach, segment, 120);
+            for (let i = 1; i < samples.length; i++) {
+                const p = samples[i - 1]!.point;
+                const q = samples[i]!.point;
+                const heading = Math.atan2(q.z - p.z, q.x - p.x);
+                assert(Math.abs(heading - axis) < 15 * Math.PI / 180, segment.id + ' bends too far from the departure axis');
+            }
+        }
+    }
+});

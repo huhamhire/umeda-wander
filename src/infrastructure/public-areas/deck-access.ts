@@ -86,9 +86,7 @@ export function createDeckAccess() {
         ],
         detail: 'JR south/east 1F plan shows a stair to the perimeter pedestrian bridge north landing. Location fitted to the calibrated bridge-north axis; width and rise estimated.',
     };
-    // Its ground end already rests on JR's south-public face; do not overlay it.
-    const redundantLanding = areas.findIndex(a => a.id === northStair.from.id + ':landing');
-    areas.splice(redundantLanding, 1);
+    // The public stair owns its landing independently of the calibrated JR envelope.
     return {
         connections,
         areas,

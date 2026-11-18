@@ -10,8 +10,9 @@
 | Yodobashi／LINKS／RESPIRE | `yodobashi/` | 同一综合体；内层弧形裙楼与公共二层外回廊分开，酒店连续承接 |
 | 阪急百货／Grand Building | `hankyu-dept/`、`hankyu-grand/` | 独立建筑；百货南侧主塔及 1F 公共通廊，不能把邻楼凹口切进主塔 |
 | 阪急三番街 | `hankyu-sanbangai/` | 与车站共用宿主及通口，不重复生成站外 2F 占位 |
-| 阪神百货／Twin Towers South | `hanshin-dept/` | 同一综合体的裙楼、架空道路与东侧办公塔，[独立说明](./hanshin-dept.md) |
+| 阪神百货／Twin Towers South | `hanshin-dept/` | 保留临街弧线与退台长条办公塔，[独立说明](./hanshin-dept.md) |
 | JP Tower／KITTE | `jp-tower/` | 连续塔身、裙楼及下沉广场，[独立说明](./jp-tower.md) |
+| HEP FIVE／NAVIO | `hep-five/`、`hep-navio/` | 两栋独立白模、红色摩天轮，[地标说明](./hep-landmarks.md) |
 
 上部造型的来源、PLATEAU 年代、白模承接和 JR 屋顶见[模型校对](./model-calibration.md)。当前采用的几何及待核实授权见[来源审计](../../data/source-credits-audit.md)。地下占位不是建筑外壳，另由[南侧地下设计](../areas/south.md)维护。
 

@@ -1,4 +1,7 @@
 import { messageText, resolveMessage } from '../i18n/index.ts';
+import { platformRail, railApproachFootprints } from '../../domain/map/rail-geometry.ts';
+import { passageOutline } from '../../domain/map/geometry.ts';
+import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
 import buildingParts from '../../../data/geography/building-parts.json' with { type: 'json' };
 import { osmRunningLines } from '../geography/runtime-rails.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
@@ -90,11 +93,23 @@ export const deckBuildingAreas = deckBuildingOccupancies.flatMap(group => {
         ...o,
         evidence: a.evidence,
     })));
+    // Context slabs must not conceal platform rails or the first metres of their approaches.
+    const reservedRegions = shared.stations.flatMap(station => {
+        const sameHeight = (id: string) => Math.abs(station.levels.find(l => l.id === id)!.y - y) < .01;
+        return [
+            ...station.layout.platforms.filter(p => sameHeight(p.level)).flatMap(p => p.tracks.map((_, i) => {
+                const rail = platformRail(p, i);
+                return { outline: passageOutline(rail.start, rail.end, 3.3) };
+            })),
+            ...station.layout.railApproaches!.filter(a => sameHeight(a.level))
+                .flatMap(a => railApproachFootprints(a, 1.65).map(outline => ({ outline })))
+        ];
+    });
     return buildBuildingOccupancies(
         group.definitions,
         [...elevatedAreas.filter(a => a.level === group.level), ...atriumCuts],
         stationAreas,
-        { level: group.level, prefix: 'deck-context' }
+        { level: group.level, prefix: 'deck-context', reservedRegions }
     ).areas;
 });
 const externalConnections = [...publicAccess.connections, ...deckAccess.connections];
@@ -113,6 +128,7 @@ const composed = composeStationMaps(
         platforms: [],
         connections: externalConnections,
         exteriorOpenings,
+        canopies: southDeckCanopies(),
         concourses: hankyuConcourses,
         atria: hankyuConcourseAtria,
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),

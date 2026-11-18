@@ -85,7 +85,27 @@
 }
 
 .roof-option {
+  display: flex;
   align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #718174;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.roof-option input {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.layer-toggles {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 0 3px 6px;
 }
 
 .inspector {
@@ -279,22 +299,9 @@
 
 @media (max-width:760px) {
   .roof-option {
-    font-size: 9px !important;
+    font-size: 12px;
     gap: 6px;
     white-space: nowrap;
-  }
-}
-
-@media (max-width:760px) {
-  .roof-option > span {
-    font-size: 0;
-  }
-}
-
-@media (max-width:760px) {
-  .roof-option > span:after {
-    content: '建筑轮廓';
-    font-size: 9px;
   }
 }
 
@@ -675,12 +682,6 @@
 }
 
 @media (max-width:760px) {
-  .sidebar .roof-option > span:after {
-    font-size: 12px;
-  }
-}
-
-@media (max-width:760px) {
   .sidebar .layer-options input[type=range] {
     height: 28px;
     margin: 0;
@@ -767,6 +768,14 @@
 
 #facility-picker {
   margin-top: 12px;
+  font-size: 18px;
+  min-height: 48px;
+  line-height: 1.5;
+}
+
+#facility-picker option {
+  font-size: 18px;
+  line-height: 1.5;
 }
 
 .sidebar .floor-heading {
@@ -774,24 +783,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-}
-
-.floor-heading .roof-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 400;
-  color: #718174;
-}
-
-.floor-heading .roof-option {
-  line-height: 1;
-}
-
-.floor-heading .roof-option input {
-  flex-shrink: 0;
-  margin: 0;
 }
 
 .sidebar .layer-options {
@@ -825,8 +816,8 @@
 }
 
 @media (max-width:760px) {
-  .floor-heading .roof-option {
-    min-height: 36px;
+  .layer-toggles .roof-option {
+    min-height: 44px;
   }
 }
 

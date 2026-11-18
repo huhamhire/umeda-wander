@@ -3,6 +3,9 @@ import type { StationMap } from '../../domain/map/model.ts';
 
 /** Preserve the concourse landing; shorten the flight at its platform end only. */
 export function calibratePlatformEquipment(station: StationMap): void {
+    // JR schematic plan scaling must not stretch ordinary flights beyond their useful run.
+    const escalatorPitch = station.id === 'jr-osaka' ? 32 : 27;
+    const stairPitch = station.id === 'jr-osaka' ? 30 : 20;
     const anchors = station.facilities.flatMap(f => {
         const match = station.layout.connections.filter(c => c.kind === f.kind).flatMap(c => [c.from, c.to])
             .find(n => n.level === f.level && Math.hypot(n.x - f.x, n.z - f.z) < .01 && (n.elevationOffset ?? 0) === (f.elevationOffset ?? 0));
@@ -25,7 +28,7 @@ export function calibratePlatformEquipment(station: StationMap): void {
         const elevation = (n: typeof moving) => station.levels.find(l => l.id === n.level)!.y + (n.elevationOffset ?? 0);
         const rise = Math.abs(elevation(moving) - elevation(fixed));
         const run = Math.hypot(moving.x - fixed.x, moving.z - fixed.z);
-        const limit = rise / Math.tan(27 * Math.PI / 180);
+        const limit = rise / Math.tan((connection.kind === 'stairs' ? stairPitch : escalatorPitch) * Math.PI / 180);
         if (rise < .1 || run <= limit) {
             continue;
         }
@@ -64,7 +67,7 @@ export function calibratePlatformEquipment(station: StationMap): void {
             }
         }
         else if (rise > 2) {
-            const limit = rise / Math.tan((connection.kind === 'escalator' ? 27 : 20) * Math.PI / 180);
+            const limit = rise / Math.tan((connection.kind === 'escalator' ? escalatorPitch : stairPitch) * Math.PI / 180);
             if (run <= limit) {
                 continue;
             }

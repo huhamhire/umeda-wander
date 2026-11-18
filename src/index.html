@@ -21,10 +21,13 @@
     <aside class="sidebar panel" aria-label="{{ui.navigation.label}}">
       <div class="sidebar-tabs" role="tablist" aria-label="{{ui.navigation.tabs}}"><button id="tab-layers" role="tab" aria-selected="true" aria-controls="panel-layers">{{ui.navigation.floors}}</button><button id="tab-facilities" role="tab" aria-selected="false" aria-controls="panel-facilities" tabindex="-1">{{ui.navigation.facilities}}</button></div>
       <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
-      <label class="roof-option"><span>{{ui.layers.showGround}}</span><input id="roads" type="checkbox" checked role="switch" /></label>
-      <div class="section-heading floor-heading"><span>{{ui.layers.explore}}</span><label class="roof-option"><span>{{ui.layers.showBuildings}}</span><input id="roof" type="checkbox" checked role="switch" /></label></div>
+      <div class="section-heading floor-heading"><span>{{ui.layers.explore}}</span></div>
       <div id="floor-list"></div>
-      <div class="layer-options"><label for="explode">{{ui.layers.expand}} <output id="explode-value">0%</output></label><input id="explode" type="range" min="0" max="100" value="0" aria-label="{{ui.layers.expandDescription}}" /></div>
+      <div class="layer-options"><label for="explode">{{ui.layers.expand}} <output id="explode-value" hidden>0%</output></label><input id="explode" type="range" min="0" max="150" value="0" aria-label="{{ui.layers.expandDescription}}" /></div>
+      <div class="layer-toggles">
+        <label class="roof-option"><span>{{ui.layers.showGround}}</span><input id="roads" type="checkbox" checked role="switch" /></label>
+        <label class="roof-option"><span>{{ui.layers.showBuildings}}</span><input id="roof" type="checkbox" checked role="switch" /></label>
+      </div>
     </section>
     <section class="inspector" id="panel-facilities" role="tabpanel" aria-labelledby="tab-facilities" hidden>
       <div class="section-heading"><span>{{ui.facilities.heading}}</span><span class="micro">{{ui.facilities.eyebrow}}</span></div>

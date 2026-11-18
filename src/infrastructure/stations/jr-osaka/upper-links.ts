@@ -130,7 +130,7 @@ export function refineUpperLevelLinks(areas: FloorArea[], connections: VerticalC
         name: messageText('stations.jrOsaka.entities.northAtriumLowerLanding.name'),
         kind: 'public',
         label: true,
-        outline: rect(-1, -63.5, 42, 9),
+        outline: rect(-1, -63.5, 26, 9),
         evidence: evidence(
             [2, 3],
             'Atrium north platform beyond the shared void; outside-edge access between North Gate building 2F and 3F'
@@ -138,13 +138,13 @@ export function refineUpperLevelLinks(areas: FloorArea[], connections: VerticalC
     };
     areas.push(northPad);
     areas.find(a => a.id === 'north-2f-public')!.label = false;
-    for (const [id, x] of [['west', -17], ['east', 16]] as const) {
+    for (const [id, x] of [['west', -13.5], ['east', 12.5]] as const) {
         areas.push({
             id: `north-atrium-${id}-gallery`,
             level: 'platform',
             name: messageText('stations.jrOsaka.areas.northAtriumSideGallery.name'),
             kind: 'public',
-            outline: rect(x, -53.5, 7, 11),
+            outline: rect(x, -53.5, 3, 11),
             evidence: northAtrium.evidence
         });
     }
