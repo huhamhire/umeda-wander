@@ -19,7 +19,6 @@ test(
             files.sort(),
             [
                 'buildings.json',
-                'credits.json',
                 'facilities.json',
                 'public-areas.json',
                 'railways.json',

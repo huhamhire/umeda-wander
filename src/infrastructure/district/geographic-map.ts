@@ -1,4 +1,5 @@
 import { messageText, resolveMessage } from '../i18n/index.ts';
+import osmExportMetadata from '../../../data/geography/osm-export-metadata.json' with { type: 'json' };
 import { platformRail, railApproachFootprints } from '../../domain/map/rail-geometry.ts';
 import { passageOutline } from '../../domain/map/geometry.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
@@ -163,7 +164,7 @@ export const geographicPlan = plan;
  */
 export function geographicOsmData() {
     return {
-        title: messageText('credits.osmExport.title'),
+        title: osmExportMetadata.title,
         attribution: '© OpenStreetMap contributors',
         licence: 'https://opendatacommons.org/licenses/odbl/1-0/',
         frame: {
@@ -178,6 +179,6 @@ export function geographicOsmData() {
         runningLines: osmRunningLines,
         elevatedAxes: elevatedWays,
         elevatedWidthEstimates,
-        reconstruction: messageText('credits.osmExport.reconstruction')
+        reconstruction: osmExportMetadata.reconstruction
     };
 }

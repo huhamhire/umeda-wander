@@ -13,6 +13,40 @@ import { edges, facilities, layout, levels, stations } from '../../src/infrastru
 import { hanshinStation } from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+import { createGeographicStation } from '../../src/infrastructure/district/geographic-stations.ts';
+import { axisPlacement } from '../../src/domain/map/axis-calibration.ts';
+import { hanshinAxis } from '../../src/infrastructure/stations/hanshin-umeda/geographic.ts';
+import { stationFrontages } from '../../src/infrastructure/public-areas/station-frontages/index.ts';
+
+test('Hanshin B1 covers the office bay while retaining a local eastern main-stair opening', () => {
+    const station = createGeographicStation('hanshin-umeda');
+    const cover = station.layout.areas.find(a => a.id === 'hanshin-umeda-east-hall-public')!;
+    assert(stationFrontages([station]).some(a => a.id === cover.id), 'full slab must survive shared-public assembly');
+    const frame = axisPlacement(hanshinAxis);
+    const point = (x: number, z: number) => ({
+        x: frame.origin.x + Math.cos(frame.angle) * x * frame.planScale.along - Math.sin(frame.angle) * z * frame.planScale.across,
+        z: frame.origin.z + Math.sin(frame.angle) * x * frame.planScale.along + Math.cos(frame.angle) * z * frame.planScale.across
+    });
+    const b1 = layout.areas.filter(a => levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) === -8);
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const [x, z] of [[-34, 0], [-45, -13], [-20, 14], [-52, 12]]) {
+        const p = point(x!, z!);
+        assert(b1.some(a => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h))), 'office-side slab missing');
+        assert(!openings.some(o => b1.some(a => a.level === o.level) && pointInPolygon(p, o.outline)), 'office bay is cut away');
+    }
+    const aperture = openings.find(o => o.connectionId === 'hanshin-umeda-east-public-stairs' && o.level === 'district-underground')!;
+    const center = aperture.outline.reduce((sum, p) => ({ x: sum.x + p.x / aperture.outline.length, z: sum.z + p.z / aperture.outline.length }), { x: 0, z: 0 });
+    const floor = b1.find(a => a.level === aperture.level && pointInPolygon(center, a.outline))!;
+    assert(floor, 'stair opening must lie inside the restored slab');
+    const mesh = new T.Mesh(
+        buildFloorGeometry(floor.outline, [...floor.holes ?? [], ...openings.filter(o => o.level === floor.level).map(o => o.outline)], .55),
+        new T.MeshBasicMaterial({ side: T.DoubleSide })
+    );
+    mesh.updateMatrixWorld(true);
+    assert.equal(new T.Raycaster(new T.Vector3(center.x, 5, center.z), new T.Vector3(0, -1, 0)).intersectObject(mesh).length, 0);
+    mesh.geometry.dispose();
+    (mesh.material as T.Material).dispose();
+});
 test(
     'Hanshin has separate B1 west/department gates, B2 east gate and four tracks with independent alighting strips',
     () => {

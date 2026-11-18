@@ -237,6 +237,21 @@ export function createStation(
         24,
         64
     );
+    // The B1 slab continues over the eastern platform hall and station office.
+    // Only the actual vertical-access openings reveal B2; the whole bay is not an atrium.
+    area(
+        'east-hall-public',
+        'hanshin-hall',
+        messageText('stations.hanshinUmeda.areas.centralPublic.name'),
+        'public',
+        -38.5,
+        -1,
+        89,
+        48
+    );
+    const eastHall = draft.layout.areas.at(-1)!;
+    eastHall.label = false;
+    eastHall.evidence = proof('B1 continuous slab around the station office, restored after user review; only eastern main access and actual vertical equipment cut through it. Extent fitted in the station frame, not surveyed.');
     area(
         'department-public',
         'hanshin-hall',

@@ -4,8 +4,7 @@ import { buildStyles } from '../../scripts/styles.ts';
 import { renderHtmlMessages } from '../../scripts/html.ts';
 import { test } from 'node:test';
 import { geographicOsmData as osmCreditData } from '../../src/infrastructure/district/geographic-map.ts';
-import { sourceCredits } from '../../src/infrastructure/source-credits.ts';
-import { bindCreditsDialog, renderSourceCredits } from '../../src/presentation/components/source-credits-dialog.ts';
+import { bindCreditsDialog } from '../../src/presentation/components/source-credits-dialog.ts';
 
 class Node extends EventTarget {
     children: (Node | string)[] = [];
@@ -50,32 +49,30 @@ class Doc {
         return new Node(tag, this);
     }
 }
-const text = (node: Node): string => node.textContent + node.children.map(c => typeof c === 'string' ? c : text(c)).join(' ');
 test(
-    'credits skip empty source-code section and keep data licences separate from unverified material',
+    'the standalone credits resource preserves source links and verified licences without audit notes',
     () => {
-        const doc = new Doc();
-        const container = doc.createElement('div');
-        let downloads = 0;
-        renderSourceCredits(container as unknown as HTMLElement, sourceCredits, () => downloads++);
-        const body = text(container);
-        assert(body.includes(sourceCredits.description));
+        const body = readFileSync('src/content/source-credits.zh-CN.html', 'utf8');
+        assert(body.includes('非官方交互式步行地图'));
         assert(!body.includes('项目源码'));
-        const headings = container.children.filter((c): c is Node => typeof c !== 'string').map(s => (s.children[0] as Node).textContent);
+        const headings = [...body.matchAll(/<h3>([^<]+)<\/h3>/g)].map(match => match[1]);
         assert.deepEqual(headings, ['项目说明', '数据与素材许可', '参考资料']);
-        const licensed = sourceCredits.data.filter(d => d.licence);
-        assert.equal(licensed.length, 2);
-        assert(licensed.some(d => d.licence!.url.includes('/odbl/')));
-        assert(licensed.some(d => d.licence!.url.includes('/licenses/by/4.0/')));
-        assert(sourceCredits.data.filter(d => !d.licence).every(d => d.status));
-        for (const item of [...sourceCredits.data, ...sourceCredits.references]) {
-            for (const link of [...item.links, ...item.licence ? [item.licence] : []]) {
-                assert.equal(new URL(link.url).protocol, 'https:');
+        assert.equal([...body.matchAll(/<p>许可：/g)].length, 2);
+        assert(body.includes('https://opendatacommons.org/licenses/odbl/1-0/'));
+        assert(body.includes('https://creativecommons.org/licenses/by/4.0/'));
+        assert(body.includes('© OpenStreetMap contributors'));
+        assert(body.includes('西日本旅客鉄道株式会社'));
+        assert(!/未查到|待核实|待确认|下载|本地 SVG|\{\{credits\./.test(body));
+        assert(body.includes('href="./osm-derived-data.json"'));
+        for (const [, href, attributes] of body.matchAll(/<a href="([^"]+)"([^>]*)>/g)) {
+            if (href !== './osm-derived-data.json') {
+                assert.equal(new URL(href!).protocol, 'https:');
             }
+            assert(attributes!.includes('rel="noopener noreferrer"'));
         }
-        const button = container.querySelectorAll().find(n => n.tagName === 'button')!;
-        button.dispatchEvent(new Event('click'));
-        assert.equal(downloads, 1);
+        const template = renderHtmlMessages(readFileSync('src/index.html', 'utf8'));
+        assert.match(template, /id="credits-close"[^>]*aria-label="关闭数据来源与版权"><span aria-hidden="true">×<\/span><\/button>/);
+        assert(template.includes('<!-- SOURCE CREDITS -->'));
     }
 );
 test(

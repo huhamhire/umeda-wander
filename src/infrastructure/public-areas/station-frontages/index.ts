@@ -16,7 +16,7 @@ const core: Record<StationId, string[]> = {
         'jr-interface',
         'south-public'
     ],
-    'hanshin-umeda': ['west-public', 'central-public'],
+    'hanshin-umeda': ['west-public', 'central-public', 'east-hall-public'],
     'higashi-umeda': ['public-spine', 'whity-public'],
     'nishi-umeda': ['public-hall', 'north-west-public', 'south-public'],
     // The southern exits have local equipment bays, not a confirmed full-length hall.

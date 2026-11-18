@@ -1,0 +1,4 @@
+{
+  "title": "UMEDA OSM 地面基底",
+  "reconstruction": "原始经纬度按固定原点等距近似投影；道路宽度估计按 scripts/geography/road-width.ts，静态地面几何由 build-runtime.ts 生成。地下建筑占位使用同一 ground 建筑轮廓；与参考图通道相减后的混合几何不属于此数据集。"
+}

@@ -34,7 +34,7 @@
 - 源码风格参考本地 nstarter service-express 模板，规范见 `docs/development/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
 - 注释统一使用英文。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc；关键算法、坐标框架、人工估计和副作用补必要说明，不生成复述代码的模板注释。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 使用已有 TypeScript 解析器检查基本规则，不安装 nstarter／ESLint 依赖。格式整理与行为变更分别校对。
 - CSS 按 `src/styles/index.css`、`foundations/` 和 `components/` 维护，响应式规则放在所属组件中；每条属性独占一行。`scripts/styles.ts` 使用现有 esbuild 合并为 `dist/styles.css`，目前无需 Sass，不把新覆盖不断堆到入口末尾。
-- 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 只分界面、车站、建筑、公共区域、设施、线路、版权七个领域文件；目前只维护中文，不实际翻译日文／英文。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/development/i18n.md`。
+- 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/` 分界面、车站、建筑、公共区域、设施、线路六个领域文件；目前只维护中文，不实际翻译日文／英文。版权正文按用户约定在 `src/content/source-credits.zh-CN.html` 整体维护，不拆成词条；未来按语言维护整份资源。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；完整规划见 `docs/development/i18n.md`。
 - 当前源码入口与目录职责见 roadmap 的 tree。旧坐标总图、专属商业模块和旧校准脚本已退役，`deprecated/` 目录已移除；历史对照查 Git `b2a3da6` 与 `docs/data/facility-migration-audit.md`，不恢复第二个运行入口。清理代码须先迁移有价值的回归；仍被现役站模复用的局部数据不按旧文件年龄删除。
 - 设施迁移基线固定在 `tests/fixtures/legacy-facilities.json`，检查命令为 `node scripts/geography/audit-facility-migration.ts`；改名设备需登记明确替代关系，不以增加总数抵消遗漏，也不自动覆盖基线。旧测试依赖已清除，源码、脚本及测试均不能重新导入已退役模块。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
@@ -88,7 +88,7 @@
 
 ## 验证与交付
 
-- 来源展示集中于 `src/infrastructure/source-credits.ts`。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。版权弹窗使用原生 dialog，入口与可见 OSM 署名合并为文本链接，焦点在打开／关闭时正确转移；详细核查见 `docs/data/source-credits-audit.md`。
+- 来源正文集中于 `src/content/source-credits.zh-CN.html`，构建时嵌入弹窗；只显示已核实许可、用途、出处及署名，未确认的授权或发布地址保留在内部审计，不显示待查文案。无公开 remote、源码许可证或反馈渠道时省略相应内容；构内图或步行图参与几何整理的条目不可只列作参考，更不能推定已获授权。OSM 衍生数据与编制说明作为独立资源交付，不在正文描述下载机制。版权弹窗使用原生 dialog，关闭按钮仅显示 × 并保留无障碍名称，焦点在打开／关闭时正确转移；详细核查见 `docs/data/source-credits-audit.md`。
 
 - 地下公共空间采用面状布局，与二层天桥区分：现役合并在 `application/public-areas/shared-underground.ts`；旧地区示例已退役；`application/public-areas/underground-space.ts` 的纯几何能力保留独立夹具回归。`surfaceId` 骨架不重复生成楼板；`FloorArea.holes` 必须在渲染和公共接触判定中保留。各站可提供独立 `StationMap.site`，缺省由本站楼板派生外围区域。允许车站重点放大，不强求全图统一比例，优先保证方位、边界和接入口连通，见 `docs/design/public-areas/underground.md`。
 

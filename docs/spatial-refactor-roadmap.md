@@ -51,7 +51,7 @@ umeda-h5/
 │   │   │   ├── nishi-umeda/
 │   │   │   └── kitashinchi/
 │   │   ├── buildings/            # 各商业综合体独立目录
-│   │   ├── i18n/zh-CN/           # 七个领域的中文词条，日英尚未翻译
+│   │   ├── i18n/zh-CN/           # 六个领域的中文词条，日英尚未翻译
 │   │   ├── public-areas/
 │   │   │   ├── north-atrium/
 │   │   │   ├── metro-interchange/
@@ -69,6 +69,7 @@ umeda-h5/
 │   │   ├── appearance/          # 配色、灰化及缓动
 │   │   ├── components/          # 控件及定位标记
 │   │   └── models/              # 构造入口、几何及 buildings／stations／public-areas
+│   ├── content/                  # 整体维护的来源与版权正文
 │   ├── utils/                    # 无地图领域语义的通用工具
 │   ├── main.ts                   # 应用与 DOM 事件绑定
 │   ├── index.html                # 单入口模板
@@ -93,7 +94,7 @@ umeda-h5/
 
 页面使用 `district/geographic-map.ts`；`createGeographicStation(id)` 与全图共用最终站模。地下所有权见 [公共板块说明](../src/infrastructure/public-areas/README.md)，旧图与回归迁移见 [退役记录](./data/facility-migration-audit.md)。应用与呈现能力已按职责归组，见[应用层说明](../src/application/README.md)和[呈现层说明](../src/presentation/README.md)。
 
-工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案迁到七个中文领域词库，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
+工程维护已补齐 TypeScript 四空格／单语句／英文 JSDoc 约束，以及本地风格检查；CSS 按组件拆分，仍输出一个资源。界面及模型显示文案维护在六个中文领域词库，版权正文改为独立内容资源，日／英作为后续阶段；门面装饰文字保持建筑常量。见[代码风格](./development/code-style.md)和[国际化规划](./development/i18n.md)。现役脚本的输入输出及保留理由见[脚本说明](../scripts/geography/README.md)。
 
 文档索引见 [docs/README](./README.md)。旧方案、旧坐标参数及已完成迁移流水已删除，历史查 Git；仍有价值的事实、边界和待确认项归入现行区域文档，不保留 archive 副本。维护约定见[文档规范](./development/documentation.md)。
 
@@ -106,7 +107,7 @@ umeda-h5/
 1. **地下门位**：JP 下沉广场的楼梯及连续直梯已按官方剖面补齐，Garden Avenue 与地区主网的具体接入仍待平面资料定位；局部落台和建筑接触不等于接上主网。E-ma、Hilton West 的 B1 占位已按同一地下图投影贴合公共面，具体门洞仍未核验。
 2. **独立出口与高差**：核对北新地南侧出口、西梅田短升降落台及其地区接入，保留缺少资料的边界。
 3. **地下占位**：继续核对第一酒店等未登记街区；源图中与街道／站前大楼连在一起的复合描边，不能直接当成独立酒店外轮廓。保持公共开挖面及孔洞，地上轮廓与 B1 街区边界分别维护。
-4. **局部净空**：按反馈复核桥宽、阪急西侧公共前沿、设备大小、商业门口和轨道收束。JR 站体横向包络、中庭及东侧六股缓变运行线已调整，参考拟合与北侧 4F 扶梯待补边界见 [JR 记录](./design/stations/jr-osaka.md)；轨道不强制吸附 OSM 逐线坐标。
+4. **局部净空**：按反馈复核桥宽、阪急西侧公共前沿、设备大小、商业门口和轨道收束。JR 站体横向包络、中庭及东侧六股缓变运行线已调整，参考拟合与北侧 4F 扶梯待补边界见 [JR 记录](./design/stations/jr-osaka.md)；轨道不强制吸附 OSM 逐线坐标。阪神站务室周围的 B1 连续楼板已补回并保留局部设备开口，真实视觉仍待复核，见 [阪神记录](./design/stations/hanshin-umeda.md)。
 5. **人工整体验收**：在用户浏览器／手机检查外观、遮挡、聚焦、滑块和触控。遵守不直接操作浏览器的约定，离线图与替身测试不代替 WebGL 实测。
 
 资料不足项单独保留，不阻止其他有依据的局部修订。未来仍可在独立板块内调整坐标与轮廓。

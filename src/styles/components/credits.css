@@ -154,10 +154,6 @@ footer a {
   color: #245e4e;
 }
 
-.credits-download:hover {
-  background: #e9efe3;
-}
-
 #credits-open:focus-visible {
   outline: 2px solid #36715e;
   outline-offset: 3px;
@@ -211,9 +207,9 @@ footer a {
 #credits-close {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   flex: none;
-  min-width: 68px;
+  width: 44px;
   min-height: 44px;
   background: #edf1e7;
   border: 0;
@@ -280,18 +276,6 @@ footer a {
   flex-wrap: wrap;
   gap: 6px 16px;
   margin: 8px 0;
-}
-
-.credits-download {
-  font: inherit;
-  font-size: 14px;
-  min-height: 44px;
-  text-align: left;
-  padding: 8px 12px;
-  border: 1px solid #cad7c3;
-  border-radius: 8px;
-  color: #315f51;
-  background: #f2f5eb;
 }
 
 @media (max-width:760px) {

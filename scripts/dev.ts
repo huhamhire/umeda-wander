@@ -29,6 +29,7 @@ const server = createServer(async (req, res) => {
         '/index.html': { file: 'index.html', mime: 'text/html; charset=utf-8' },
         '/app.js': { file: 'app.js', mime: 'text/javascript; charset=utf-8' },
         '/styles.css': { file: 'styles.css', mime: 'text/css; charset=utf-8' },
+        '/osm-derived-data.json': { file: 'osm-derived-data.json', mime: 'application/json; charset=utf-8' },
     };
     const resource = files[path];
     if (!resource) {
