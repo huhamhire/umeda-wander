@@ -10,7 +10,8 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
     const proof = {
         source: 'district' as const,
         pages: [],
-        detail: 'User south entrance facade photo: recessed two-level portal with flanking paired escalators. Local geometry and floor heights schematic.'
+        urls: ['https://osakastationcity.com/guide/'],
+        detail: 'Osaka Station City (大阪ステーションシティ) 2F and 3F plans and the user facade photo show the South Gate forecourt and the public approach between stair banks. The outlines and elevations are schematic.'
     };
     station.layout.areas = station.layout.areas.filter(a => !['south-building-2f', 'south-gate-west-escalator-ground'].includes(a.id));
     station.layout.areas.push(
@@ -32,8 +33,10 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
             label: false,
             evidence: proof,
             outline: [
-                [-24, -24],
-                [24, -24],
+                [-24, -26],
+                [-19, -34],
+                [20, -34],
+                [24, -26],
                 [24, 3],
                 [10, 3],
                 ...Array.from(
@@ -54,7 +57,8 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
             kind: 'public',
             label: false,
             evidence: proof,
-            outline: [[-10, -31], [23, -31], [23, -17], [-10, -17]].map(([u, v]) => point(u!, v!))
+            // Continue the public 3F landing to the inner lobby before turning toward the bridge bank.
+            outline: [[-11, -48], [14, -48], [23, -32], [23, -17], [-10, -17]].map(([u, v]) => point(u!, v!))
         }
     );
     const existing = station.layout.connections.find(c => c.id === 'south-building-61')!;

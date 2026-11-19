@@ -4,10 +4,12 @@ import clipping from 'polygon-clipping';
 import type { Polygon } from 'polygon-clipping';
 import { MapSession } from '../../src/application/map-session.ts';
 import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
 import { maxWalkingStops, planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
 import type { RouteEdge } from '../../src/domain/map/model.ts';
-import { passageOutline } from '../../src/domain/map/geometry.ts';
-import { edges, layout, levels, nodes, publicWalkingRoutes, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { edges, layout, levels, nodes, northWalking, southWalking, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
 
@@ -74,7 +76,7 @@ test('authored transfers follow public floors and use the modeled Crost stair fo
     const stair = layout.connections.find(connection => connection.id === 'crost-stairs-68')!;
     const lookup = new Map(nodes.map(node => [node.id, node]));
     const byLevel = new Map(levels.map(level => [level.id, level.y]));
-    for (const edge of publicWalkingRoutes.edges) {
+    for (const edge of southWalking.edges) {
         const from = lookup.get(edge.from)!;
         const to = lookup.get(edge.to)!;
         assert(!edge.directed);
@@ -104,7 +106,93 @@ test('JR Central Gate connects to Hanshin and the southern transfer network via 
         assert.deepEqual(session.previewWalkingRoute([from, to], false), { issue: 'gateRequired', from, to });
         assert.equal(session.state.route, null);
         const { route } = session.previewWalkingRoute([from, to], true);
-        assert(route?.includes('crost68-1') && route.includes('gate-in') && route.includes('gate-out'));
+        assert(route && route.includes('gate-in'));
+        const gate = route.indexOf('gate-out');
+        const landing = route.indexOf('crost68-1');
+        assert(gate >= 0 && landing >= 0 && Math.abs(gate - landing) === 1);
+    }
+});
+
+test('JR South Central Entrance uses the public gap beside the Crost openings to reach the gate', () => {
+    const { route } = planWalkingRoute(edges, ['entry', 'gate-out'], false);
+    assert.deepEqual(route, ['entry', 'hall-crost-side', 'gate-out']);
+    const polygon = (outline: { x: number; z: number }[]): Polygon => [outline.map(({ x, z }) => [x, z])];
+    const floors = clipping.union(
+        polygon(layout.areas.find(area => area.id === 'central-public')!.outline),
+        polygon(layout.areas.find(area => area.id === 'south-public')!.outline)
+    );
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(opening => opening.level === 'concourse');
+    const obstructions = [
+        ...openings,
+        ...layout.areas.filter(area => area.level === 'concourse' && ['paid', 'commercial', 'service'].includes(area.kind))
+    ].map(item => polygon(item.outline));
+    const points = route.map(id => nodes.find(node => node.id === id)!);
+    for (const [i, from] of points.slice(0, -1).entries()) {
+        const strip = polygon(passageOutline(from, points[i + 1]!, 2.5));
+        assert.equal(clipping.difference(strip, floors).length, 0);
+        assert(obstructions.every(block => clipping.intersection(strip, block).length === 0));
+    }
+});
+
+test('JR Central and West gate options land on the outside of their modeled gates', () => {
+    const byFacility = new Map(walkingPlaces().map(place => [place.facilityId, place]));
+    for (const id of ['gate', 'gate-central-north', 'west-gate']) {
+        const place = byFacility.get(id);
+        assert(place && place.access === 'outside');
+        const gate = edges.find(edge => edge.kind === 'gate' && edge.from === place.id)!;
+        assert(planWalkingRoute(edges, ['entry', place.id], false).route);
+        assert.equal(planWalkingRoute(edges, [place.id, gate.to], false).issue, 'gateRequired');
+        assert.deepEqual(planWalkingRoute(edges, [place.id, gate.to], true).route, [place.id, gate.to]);
+    }
+});
+
+test('Kitashinchi to Hankyu Kyoto platform via Hanshin West uses the JR north deck and Hankyu gate', () => {
+    const waypoint = 'hanshin-umeda-route-entry';
+    const destination = 'hankyu-umeda-central-1-upper';
+    for (const start of ['kitashinchi-west-escalators-low', 'kitashinchi-west-escalators-high']) {
+        const route = planWalkingRoute(edges, [start, waypoint, destination], true).route;
+        assert(route);
+        for (const id of [waypoint, 'crost68-b1', 'north-48-1', 'north-48-2', 'hankyu-umeda-gate-in', destination]) {
+            assert(route.includes(id), id);
+        }
+        assert.equal(planWalkingRoute(edges, [start, waypoint, destination], false).issue, 'gateRequired');
+    }
+});
+
+test('the northern transfer follows public floors and the ascent modeled in the atrium', () => {
+    const openingCuts = [
+        ...planFloorOpenings(layout.connections, levels, layout.platforms),
+        ...planAtriumOpenings(layout.atria)
+    ];
+    const lookup = new Map(nodes.map(node => [node.id, node]));
+    const rise = layout.connections.find(connection => connection.id === 'north-48')!;
+    for (const edge of northWalking.edges) {
+        if (edge.kind === 'escalator') {
+            assert.deepEqual([edge.from, edge.to], [rise.from.id, rise.to.id]);
+            assert(edge.directed);
+            continue;
+        }
+        const from = lookup.get(edge.from)!;
+        const to = lookup.get(edge.to)!;
+        const floors = from.level === 'concourse' ? ['concourse'] : ['platform', 'district-north-deck', 'hankyu-hall'];
+        const areas = layout.areas.filter(area => floors.includes(area.level) && !area.elevationOffset);
+        const cuts = openingCuts.filter(opening => floors.includes(opening.level));
+        const dx = to.x - from.x;
+        const dz = to.z - from.z;
+        const length = Math.hypot(dx, dz);
+        // The first 2F node is on the escalator threshold. Test the slab immediately beyond it.
+        for (let distance = from.id === rise.to.id ? .25 : 0; distance <= length; distance += .25) {
+            for (const offset of [-1.25, 0, 1.25]) {
+                const point = {
+                    x: from.x + (dx * distance - dz * offset) / length,
+                    z: from.z + (dz * distance + dx * offset) / length
+                };
+                const overlaps = areas.filter(area => pointInPolygon(point, area.outline) &&
+                    !area.holes?.some(hole => pointInPolygon(point, hole)));
+                assert(overlaps.length && overlaps.every(area => area.kind === 'public') &&
+                    !cuts.some(cut => pointInPolygon(point, cut.outline)), edge.from + ' → ' + edge.to);
+            }
+        }
     }
 });
 
@@ -114,6 +202,9 @@ test('shipped places are authored stations with real graph nodes, and unsupporte
     for (const place of places) {
         assert(nodes.some(node => node.id === place.id && node.level === place.level));
         assert(edges.some(edge => edge.from === place.id || edge.to === place.id));
+        if (!place.facilityId) {
+            assert(place.name.startsWith(stations.find(station => station.id === place.station)!.name + ' · '));
+        }
     }
     const session = new MapSession(edges);
     assert(session.previewWalkingRoute(['entry', 'hall', 'gate-out'], false).route);
@@ -122,6 +213,6 @@ test('shipped places are authored stations with real graph nodes, and unsupporte
     assert.equal(session.previewWalkingRoute(['entry', 'destination'], false).issue, 'gateRequired');
     assert.equal(session.state.route, null);
     assert(session.previewWalkingRoute(['entry', 'destination'], true).route);
-    assert.equal(session.previewWalkingRoute(['entry', 'hankyu-umeda-route-entry'], true).issue, 'unavailable');
+    assert.equal(session.previewWalkingRoute(['entry', 'metro-umeda-route-entry'], true).issue, 'unavailable');
     assert.equal(session.state.route, null);
 });

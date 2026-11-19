@@ -5,9 +5,15 @@ import { escalatorOverallWidth } from '../connections/connection-lanes.ts';
 
 /** Clear public halls and the main vertical circulation inside the station-attached shell. */
 export function stationBuildingOpenings(stations: StationMap[]): BuildingOpening[] {
+    const southGate = stations.find(s => s.id === 'jr-osaka');
+    const southGateExclusions = new Set(['south-entrance-deck', 'south-building-upper-landing', 'south-building-3f']);
+    const southGateOpenings = southGate?.layout.areas.filter(area => southGateExclusions.has(area.id)).map(area => {
+        const y = southGate.levels.find(level => level.id === area.level)!.y;
+        return { buildingId: 'daimaru', outline: area.outline, base: y - .1, top: y + 4.5, evidence: area.evidence };
+    }) ?? [];
     const station = stations.find(s => s.id === 'hankyu-umeda');
     if (!station) {
-        return [];
+        return southGateOpenings;
     }
     const buildingId = 'hankyu-sanbangai';
     const landings = station.layout.areas.filter(area => area.kind === 'public').flatMap(area => {
@@ -41,5 +47,5 @@ export function stationBuildingOpenings(stations: StationMap[]): BuildingOpening
             evidence: c.evidence
         };
     });
-    return [...landings, ...circulation];
+    return [...southGateOpenings, ...landings, ...circulation];
 }

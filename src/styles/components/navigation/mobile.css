@@ -169,7 +169,7 @@
 }
 
 .navigation-toggle:focus-visible {
-  outline-offset: -3px;
+  outline-offset: -2px;
 }
 
 .navigation-toggle svg {
@@ -216,6 +216,22 @@
 .walking-field {
   min-height: 44px;
   padding-inline-end: 46px;
+}
+
+.walking-grip {
+  flex-basis: 32px;
+}
+
+.walking-itinerary #walking-add {
+  width: 44px;
+}
+
+#walking-pick {
+  flex-basis: 44px;
+}
+
+#walking-clear {
+  width: 44px;
 }
 
 .walking-field input {

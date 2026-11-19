@@ -9,10 +9,7 @@ test(
             findRoute(edges, 'entry', 'destination', true),
             [
                 'entry',
-                'hall-bypass',
-                'hall-turn',
-                'hall-rejoin',
-                'hall',
+                'hall-crost-side',
                 'gate-out',
                 'gate-in',
                 'turn',

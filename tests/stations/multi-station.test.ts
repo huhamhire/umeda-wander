@@ -202,7 +202,7 @@ test(
     }
 );
 test(
-    'new station previews cross their own gates without inventing a JR transfer',
+    'station previews respect gates and only Hankyu has an authored JR transfer here',
     () => {
         for (const station of [hankyuStation, metroStation]) {
             const start = `${station.id}-route-entry`;
@@ -210,11 +210,9 @@ test(
             const path = findRoute(edges, start, end, true);
             assert(path && path.length > 5);
             assert.equal(findRoute(edges, start, end, false), null);
-            assert.equal(
-                findRoute(edges, 'entry', end, true),
-                null,
-                'cross-station interfaces remain unconnected until calibrated'
-            );
         }
+        assert(findRoute(edges, 'entry', 'hankyu-umeda-destination', true)?.includes('north-48-2'));
+        assert.equal(findRoute(edges, 'entry', 'hankyu-umeda-destination', false), null);
+        assert.equal(findRoute(edges, 'entry', 'metro-umeda-destination', true), null);
     }
 );

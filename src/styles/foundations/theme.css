@@ -6,7 +6,7 @@
   --color-divider: var(--palette-sage-300);
   --color-paper: rgb(var(--palette-cream-75-rgb));
   --color-page: var(--palette-cream-175);
-  --color-focus: var(--palette-amber-125);
+  --color-focus: var(--palette-pine-50);
   --color-atlas-center: var(--palette-cream-125);
   --color-atlas-edge: var(--palette-cream-200);
   --color-subtle-text: var(--palette-moss-375);
@@ -97,7 +97,7 @@
   --color-divider: var(--palette-night-600);
   --color-paper: var(--palette-night-900);
   --color-page: var(--palette-night-950);
-  --color-focus: var(--palette-sand-200);
+  --color-focus: var(--palette-mint-200);
   --color-atlas-center: var(--palette-night-800);
   --color-atlas-edge: var(--palette-night-950);
   --color-subtle-text: var(--palette-night-250);

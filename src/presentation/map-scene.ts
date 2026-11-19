@@ -286,19 +286,14 @@ export class MapScene {
         }
     }
 
-    /** Select a facility or highlight a walking point in its dedicated picking mode. */
+    /** Select a facility or send the picked walking point to the active route field. */
     private selectAt(clientX: number, clientY: number): void {
         const target = this.pickAt(clientX, clientY);
         if (!this.onWalkingPick) {
             this.onSelect(target?.userData.facility as Facility | undefined);
         }
         else if (target) {
-            for (const marker of this.walkingMarkers.children) {
-                marker.scale.setScalar(marker === target ? 1.45 : 1);
-            }
-            this.walkingMarkers.updateMatrixWorld();
             this.onWalkingPick(target.name);
-            this.requestRender();
         }
     }
 

@@ -1,5 +1,6 @@
 import type { FacilityKind, Level, StationId } from '../../domain/map/model.ts';
 import type { WalkingPlace } from '../../application/navigation/walking-route.ts';
+import type { FacilityOption } from '../../application/exploration/navigation-data.ts';
 import { maxWalkingStops } from '../../application/navigation/walking-route.ts';
 import { facilityCategory } from '../../application/exploration/facility-filter.ts';
 import { messageText } from '../../infrastructure/i18n/index.ts';
@@ -15,9 +16,24 @@ interface WalkingActions {
 }
 
 interface WalkingField {
+    row: HTMLLIElement;
     element: HTMLElement;
     input: HTMLInputElement;
     clear: HTMLButtonElement;
+    grip: HTMLElement;
+}
+
+interface StopDrag {
+    from: number;
+    pointer: number;
+    startY: number;
+    target?: number;
+}
+
+interface WalkingCandidate extends Omit<FacilityOption, 'id' | 'kind'> {
+    station: StationId | null;
+    kind?: FacilityKind;
+    place?: WalkingPlace;
 }
 
 export interface WalkingDraft {
@@ -31,6 +47,7 @@ export function bindWalkingRoutePanel(
     places: WalkingPlace[],
     levels: Level[],
     stations: { id: StationId; name: string }[],
+    facilities: readonly FacilityOption[],
     actions: WalkingActions,
     restored?: WalkingDraft
 ) {
@@ -40,10 +57,6 @@ export function bindWalkingRoutePanel(
     const floor = panel.querySelector<HTMLSelectElement>('#walking-floor')!;
     const kind = panel.querySelector<HTMLSelectElement>('#walking-kind')!;
     const pick = panel.querySelector<HTMLButtonElement>('#walking-pick')!;
-    const mapChoice = panel.querySelector<HTMLElement>('#walking-map-choice')!;
-    const confirm = panel.querySelector<HTMLButtonElement>('#walking-confirm')!;
-    const cancel = panel.querySelector<HTMLButtonElement>('#walking-cancel')!;
-    const pickStatus = panel.querySelector<HTMLElement>('#walking-pick-status')!;
     const results = panel.querySelector<HTMLElement>('#walking-results')!;
     const searchStatus = panel.querySelector<HTMLElement>('#walking-search-status')!;
     const gates = panel.querySelector<HTMLInputElement>('#walking-gates')!;
@@ -54,40 +67,64 @@ export function bindWalkingRoutePanel(
     const allowGates = panel.querySelector<HTMLButtonElement>('#walking-allow-gates')!;
     const floors = floorOptions(levels);
     const byId = new Map(places.map(place => [place.id, place]));
-    const endpointKinds = [...new Set(places.flatMap(place => place.kind ? [facilityCategory(place.kind)] : []))];
+    const routableFacilities = new Set(places.map(place => place.facilityId));
+    const stationByLevel = new Map(levels.map(level => [level.id, level.station ?? null]));
+    const candidates: WalkingCandidate[] = [
+        ...places.map(place => ({ ...place, place })),
+        ...facilities.filter(facility => !routableFacilities.has(facility.id)).map(facility => ({
+            ...facility,
+            station: stationByLevel.get(facility.level) ?? null
+        }))
+    ];
+    const endpointKinds = [...new Set(candidates.flatMap(candidate => candidate.kind ? [facilityCategory(candidate.kind)] : []))];
     let stops: (WalkingPlace | undefined)[] = restored && restored.ids.length >= 2 && restored.ids.length <= maxWalkingStops + 2
         ? restored.ids.map(id => id ? byId.get(id) : undefined)
         : [undefined, undefined];
     let fields: WalkingField[] = [];
+    let drag: StopDrag | undefined;
     let editing: number | undefined;
     let query = '';
     let composing = false;
     let timer: number | undefined;
     let active = -1;
-    let visible: WalkingPlace[] = [];
-    let candidate: WalkingPlace | undefined;
+    let visible: WalkingCandidate[] = [];
     let picking = false;
     let mapReady = false;
-    gates.checked = restored?.allowPaid ?? false;
+    gates.checked = restored?.allowPaid ?? true;
 
     station.replaceChildren(new Option(messageText('ui.filters.allStations'), ''), ...stations.map(item => new Option(item.name, item.id)));
     floor.replaceChildren(new Option(messageText('ui.floors.all'), ''), ...floors.map(item => new Option(item.label, item.id)));
     kind.replaceChildren(new Option(messageText('ui.walking.allKinds'), ''), ...endpointKinds.map(item => new Option(actions.kindLabel(item), item)));
 
-    /** Disambiguate nearby points by station, floor and gate side. */
+    /** Add floor and gate side, plus the station if it is absent from the authored caption. */
     function context(place: WalkingPlace): string {
         const owner = stations.find(item => item.id === place.station)!.name;
         const level = levels.find(item => item.id === place.level)!.label;
         const access = messageText(place.access === 'inside' ? 'ui.walking.inside' : 'ui.walking.outside');
-        return `${owner} · ${level} · ${access}`;
+        return place.facilityId ? `${owner} · ${level} · ${access}` : `${level} · ${access}`;
     }
 
-    /** Apply the optional filters to the endpoints available for this edit. */
-    function matchingPlaces(): WalkingPlace[] {
+    /** Identify unconnected facilities alongside the graph destinations. */
+    function candidateContext(candidate: WalkingCandidate): string {
+        if (candidate.place) {
+            return context(candidate.place);
+        }
+        const owner = stations.find(item => item.id === candidate.station)?.name;
+        const level = levels.find(item => item.id === candidate.level)!.label;
+        return [owner, level, messageText('ui.walking.notRoutable')].filter(Boolean).join(' · ');
+    }
+
+    /** Apply the optional filters to every facility shown in the search list. */
+    function matchingCandidates(): WalkingCandidate[] {
         const members = floors.find(item => item.id === floor.value)?.members;
-        return places.filter(place => (!station.value || place.station === station.value) &&
-            (!members || members.some(level => level.id === place.level)) &&
-            (!kind.value || place.kind && facilityCategory(place.kind) === kind.value));
+        return candidates.filter(candidate => (!station.value || candidate.station === station.value) &&
+            (!members || members.some(level => level.id === candidate.level)) &&
+            (!kind.value || candidate.kind && facilityCategory(candidate.kind) === kind.value));
+    }
+
+    /** Only graph destinations can be selected on the map. */
+    function matchingPlaces(): WalkingPlace[] {
+        return matchingCandidates().flatMap(candidate => candidate.place ? [candidate.place] : []);
     }
 
     /** Create a compact action with an explicit accessible name. */
@@ -104,7 +141,7 @@ export function bindWalkingRoutePanel(
     function refreshActions(): void {
         add.disabled = stops.length >= maxWalkingStops + 2;
         preview.disabled = !mapReady || stops.some(stop => !stop);
-        pick.disabled = !mapReady || !matchingPlaces().length;
+        pick.disabled = !picking && (!mapReady || !matchingPlaces().length);
     }
 
     /** Invalidate the drawn route when the itinerary or gate policy changes. */
@@ -131,10 +168,12 @@ export function bindWalkingRoutePanel(
         field.input.value = place?.name ?? '';
         field.input.title = place ? `${place.name} · ${context(place)}` : '';
         field.clear.hidden = !place && (index === 0 || index === stops.length - 1);
+        field.grip.setAttribute('aria-disabled', String(!place));
     }
 
     /** Render only itinerary structure changes; typing never replaces the focused field. */
     function render(): void {
+        clearDrag();
         fields = [];
         rows.replaceChildren(...stops.map((_, index) => {
             const row = document.createElement('li');
@@ -171,7 +210,26 @@ export function bindWalkingRoutePanel(
                 changed();
             });
             clear.className = 'walking-point-clear';
-            fields.push({ element: field, input, clear });
+            const grip = document.createElement('span');
+            grip.className = 'walking-grip';
+            grip.title = messageText('ui.walking.drag', { role });
+            grip.addEventListener('pointerdown', event => {
+                if (!drag && event.button === 0 && stops[index]) {
+                    event.preventDefault();
+                    grip.setPointerCapture(event.pointerId);
+                    drag = { from: index, pointer: event.pointerId, startY: event.clientY };
+                }
+            });
+            grip.addEventListener('pointermove', updateDrag);
+            grip.addEventListener('pointerup', finishDrag);
+            for (const type of ['pointercancel', 'lostpointercapture'] as const) {
+                grip.addEventListener(type, event => {
+                    if (event.pointerId === drag?.pointer) {
+                        clearDrag();
+                    }
+                });
+            }
+            fields.push({ row, element: field, input, clear, grip });
             showPlace(index);
             input.addEventListener('focus', () => {
                 activate(index);
@@ -199,19 +257,8 @@ export function bindWalkingRoutePanel(
                 }
             });
             input.addEventListener('keydown', event => navigateResults(event, index));
-            field.append(label, input, clear);
+            field.append(grip, label, input, clear);
             row.append(field);
-            if (intermediate && stops.length > 3) {
-                const order = document.createElement('div');
-                order.className = 'walking-order';
-                if (index > 1) {
-                    order.append(button('↑', messageText('ui.walking.up', { role }), () => move(index, -1)));
-                }
-                if (index < stops.length - 2) {
-                    order.append(button('↓', messageText('ui.walking.down', { role }), () => move(index, 1)));
-                }
-                row.append(order);
-            }
             return row;
         }));
         refreshActions();
@@ -239,31 +286,37 @@ export function bindWalkingRoutePanel(
             return;
         }
         const needsQuery = !station.value && !query.trim();
-        visible = needsQuery ? [] : matchingOptions(matchingPlaces().map(place => ({
-            place,
-            label: `${place.name} · ${context(place)}`
-        })), query).map(option => option.place);
+        visible = needsQuery ? [] : matchingOptions(matchingCandidates().map(candidate => ({
+            candidate,
+            label: `${candidate.name} · ${candidateContext(candidate)}`
+        })), query).map(option => option.candidate);
         if (!visible.length) {
             searchStatus.textContent = messageText(needsQuery ? 'ui.walking.prompt' : 'ui.facilities.searchEmpty');
             searchStatus.hidden = false;
             return;
         }
-        for (const [index, place] of visible.entries()) {
+        for (const [index, candidate] of visible.entries()) {
+            const { place } = candidate;
             const option = document.createElement('div');
             option.id = `${results.id}-${index}`;
             option.setAttribute('role', 'option');
             option.setAttribute('aria-selected', 'false');
+            if (!place) {
+                option.setAttribute('aria-disabled', 'true');
+            }
             const text = document.createElement('div');
             const name = document.createElement('strong');
-            name.textContent = place.name;
+            name.textContent = candidate.name;
             const detail = document.createElement('span');
-            detail.textContent = context(place);
+            detail.textContent = candidateContext(candidate);
             text.append(name, detail);
-            if (place.kind) {
-                option.append(createFacilityIcon(place.kind));
+            if (candidate.kind) {
+                option.append(createFacilityIcon(candidate.kind));
             }
             option.append(text);
-            option.addEventListener('click', () => accept(place));
+            if (place) {
+                option.addEventListener('click', () => accept(place));
+            }
             results.append(option);
         }
         results.hidden = false;
@@ -301,6 +354,7 @@ export function bindWalkingRoutePanel(
             stops[index] = undefined;
             fields[index]!.input.title = '';
             fields[index]!.clear.hidden = index === 0 || index === stops.length - 1;
+            fields[index]!.grip.setAttribute('aria-disabled', 'true');
             changed();
         }
         window.clearTimeout(timer);
@@ -327,13 +381,24 @@ export function bindWalkingRoutePanel(
                 window.clearTimeout(timer);
                 timer = undefined;
                 refreshResults();
-            } else if (visible[active] ?? visible[0]) {
-                accept((visible[active] ?? visible[0])!);
+            } else {
+                const place = visible[active]?.place ?? visible.find(option => option.place)?.place;
+                if (place) {
+                    accept(place);
+                }
             }
         } else if (visible.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
             event.preventDefault();
+            const step = event.key === 'ArrowDown' ? 1 : -1;
+            let next = active < 0 && step === -1 ? visible.length - 1 : active + step;
+            while (visible[next] && !visible[next]!.place) {
+                next += step;
+            }
+            if (!visible[next]?.place) {
+                return;
+            }
             results.children[active]?.setAttribute('aria-selected', 'false');
-            active = Math.min(visible.length - 1, Math.max(0, active + (event.key === 'ArrowDown' ? 1 : -1)));
+            active = next;
             const option = results.children[active] as HTMLElement;
             option.setAttribute('aria-selected', 'true');
             fields[index]!.input.setAttribute('aria-activedescendant', option.id);
@@ -342,35 +407,78 @@ export function bindWalkingRoutePanel(
         }
     }
 
-    /** Change the order of intermediate stops without moving either endpoint. */
-    function move(index: number, by: -1 | 1): void {
-        closeEditor();
-        [stops[index], stops[index + by]] = [stops[index + by], stops[index]];
-        render();
-        changed();
-        fields[index + by]?.input.focus();
+    /** Mark the insertion edge on the hovered row, including either endpoint. */
+    function updateDrag(event: PointerEvent): void {
+        if (event.pointerId !== drag?.pointer) {
+            return;
+        }
+        if (drag.target === undefined) {
+            if (Math.abs(event.clientY - drag.startY) < 5) {
+                return;
+            }
+            closeEditor();
+            fields[drag.from]!.row.setAttribute('data-dragging', '');
+        }
+        const index = fields.findIndex(field => event.clientY < field.row.getBoundingClientRect().bottom);
+        const target = index < 0 ? fields.length - 1 : index;
+        if (target !== drag.target) {
+            if (drag.target !== undefined) {
+                fields[drag.target]!.row.removeAttribute('data-drop');
+            }
+            drag.target = target;
+            if (target !== drag.from) {
+                fields[target]!.row.setAttribute('data-drop', target < drag.from ? 'before' : 'after');
+            }
+        }
     }
 
-    /** Show the map-picked location before it becomes a confirmed stop. */
-    function onMapPoint(id?: string): void {
-        candidate = id ? byId.get(id) : undefined;
-        confirm.hidden = !candidate;
-        pickStatus.textContent = candidate
-            ? messageText('ui.walking.picked', { name: `${candidate.name} · ${context(candidate)}` })
-            : messageText('ui.walking.pickHint');
+    /** Drop the place into its new slot and invalidate the previous preview. */
+    function finishDrag(event: PointerEvent): void {
+        if (event.pointerId !== drag?.pointer) {
+            return;
+        }
+        updateDrag(event);
+        const { from, target } = drag;
+        clearDrag();
+        if (target !== undefined && target !== from) {
+            const [place] = stops.splice(from, 1);
+            stops.splice(target, 0, place);
+            render();
+            changed();
+        }
+    }
+
+    /** Clear sorting feedback on drop, cancellation or when rows are rebuilt. */
+    function clearDrag(): void {
+        if (drag) {
+            fields[drag.from]!.row.removeAttribute('data-dragging');
+            if (drag.target !== undefined) {
+                fields[drag.target]!.row.removeAttribute('data-drop');
+            }
+            drag = undefined;
+        }
+    }
+
+    /** Commit a map point to the current field in the same way as a search result. */
+    function onMapPoint(id: string): void {
+        const place = byId.get(id);
+        if (picking && place) {
+            accept(place);
+        }
     }
 
     /** Exit map picking without clearing the field being edited. */
     function stopPicking(): void {
         if (picking) {
             picking = false;
+            pick.setAttribute('aria-pressed', 'false');
+            pick.title = messageText('ui.walking.pick');
             actions.pick(undefined, onMapPoint);
+            refreshActions();
         }
-        mapChoice.hidden = true;
-        onMapPoint();
     }
 
-    /** End the current edit and discard any unconfirmed text or map position. */
+    /** End the current edit and discard any unconfirmed search text. */
     function closeEditor(): void {
         window.clearTimeout(timer);
         timer = undefined;
@@ -401,7 +509,6 @@ export function bindWalkingRoutePanel(
         timer = undefined;
         if (picking) {
             actions.pick(matchingPlaces(), onMapPoint);
-            onMapPoint();
         }
         refreshResults();
     }
@@ -419,23 +526,17 @@ export function bindWalkingRoutePanel(
         fields[index]?.input.focus();
     });
     pick.addEventListener('click', () => {
+        if (picking) {
+            stopPicking();
+            refreshResults();
+            return;
+        }
         ensureEditing();
         hideResults();
         picking = true;
-        mapChoice.hidden = false;
+        pick.setAttribute('aria-pressed', 'true');
+        pick.title = messageText('ui.walking.cancel');
         actions.pick(matchingPlaces(), onMapPoint);
-        onMapPoint();
-    });
-    confirm.addEventListener('click', () => {
-        if (candidate) {
-            accept(candidate);
-            pick.focus();
-        }
-    });
-    cancel.addEventListener('click', () => {
-        stopPicking();
-        refreshResults();
-        pick.focus();
     });
     gates.addEventListener('change', changed);
     preview.addEventListener('click', runPreview);
@@ -448,7 +549,7 @@ export function bindWalkingRoutePanel(
         closeEditor();
         stops = [undefined, undefined];
         station.value = floor.value = kind.value = '';
-        gates.checked = false;
+        gates.checked = true;
         changed();
         render();
     });

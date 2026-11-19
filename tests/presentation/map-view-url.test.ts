@@ -34,7 +34,7 @@ test('shared map URLs round-trip the rendered frame and state without replacing 
     assert.equal(address.searchParams.get('view.yaw'), '12');
     assert(![...next.searchParams.keys()].some(key => key === 'view' || key.startsWith('view.')));
     assert.equal(next.searchParams.get('yaw'), '-121.32');
-    assert.equal(next.searchParams.get('allow-paid'), '1');
+    assert(!next.searchParams.has('allow-paid'));
     assert.deepEqual(next.searchParams.getAll('stop'), ['entry', 'hall']);
     assert.deepEqual(readMapView(next, data), view);
     assert.equal(readMapView(mapViewUrl(address, { ...view, camera: { ...view.camera, yaw: -121.3199999 } }), data)?.camera.yaw, -121.32);
@@ -75,7 +75,7 @@ test('integrators can use camera-only parameters and replace individual settings
     assert.deepEqual(readMapView(edited, data), parsed);
     const itinerary = { ids: ['hall', 'entry'], allowPaid: false };
     const route = mapViewUrl(prior, { ...parsed, itinerary });
-    assert(!route.searchParams.has('allow-paid'));
+    assert.equal(route.searchParams.get('allow-paid'), '0');
     assert.deepEqual(readMapView(route, data)?.itinerary, itinerary);
 });
 

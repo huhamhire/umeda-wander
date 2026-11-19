@@ -36,6 +36,10 @@ test(
         assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{[^}]*min-height:\s*44px/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));
         assert.match(css, /\.map-tools\s*\{/);
+        assert.match(css, /\.walking-itinerary\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) max-content/);
+        assert.match(css, /\.walking-panel ol\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+        assert.match(css, /#walking-preview:enabled\s*\{[^}]*background:\s*var\(--color-tab-active\)/);
+        assert.match(css, /\.walking-route-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto/);
         assert.match(css, /#viewport canvas\s*\{[^}]*cursor:\s*grab/);
         assert.match(css, /canvas\[data-clickable\]\s*\{\s*cursor:\s*pointer[^}]*\}[\s\S]*canvas\[data-dragging\]\s*\{\s*cursor:\s*grabbing[^}]*\}[\s\S]*canvas\[data-orbiting\]\s*\{\s*cursor:\s*move/);
         assert.match(css, /\.credits-content\s*\{[^}]*overflow-y:\s*auto/);

@@ -6,8 +6,37 @@ import { planFloorOpenings } from '../../src/application/connections/connection-
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
-import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { exteriorOpenings, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+
+test('Daimaru 2F forecourt and 3F access corridor stay continuous through the building', () => {
+    const building = geographicBuildings.find(b => b.id === 'daimaru')!;
+    const e = building.entrance!;
+    const c = Math.cos(e.angle);
+    const s = Math.sin(e.angle);
+    const point = (u: number, v: number) => ({ x: e.center.x + u * c - v * s, z: e.center.z + u * s + v * c });
+    const cuts = planFloorOpenings(layout.connections, levels, layout.platforms);
+    const model = buildGeographicBuilding(building, exteriorOpenings);
+    model.updateMatrixWorld(true);
+    for (const [level, height, along, across] of [
+        ['south-deck', 4, [0, 0], [-33, -8]],
+        ['south-deck', 4, [-23, 23], [-15, -15]],
+        ['platform', 8, [0, 0], [-60, -22]]
+    ] as const) {
+        for (let i = 0; i <= 40; i++) {
+            const t = i / 40;
+            const p = point(along[0] + (along[1] - along[0]) * t, across[0] + (across[1] - across[0]) * t);
+            assert(layout.areas.some(area => area.level === level && area.kind === 'public' && pointInPolygon(p, area.outline)));
+            assert(!cuts.some(cut => cut.level === level && pointInPolygon(p, cut.outline)));
+        }
+        const from = point(along[0], across[0]);
+        const to = point(along[1], across[1]);
+        const delta = new T.Vector3(to.x - from.x, 0, to.z - from.z);
+        const ray = new T.Raycaster(new T.Vector3(from.x, height + 1.5, from.z), delta.clone().normalize(), 0, delta.length());
+        assert.equal(ray.intersectObject(model, true).length, 0, level + ' facade blocks the route');
+    }
+});
+
 test(
     'both geographic South Gate escalator banks retain paired lanes and cut every overlapping 2F floor',
     () => {

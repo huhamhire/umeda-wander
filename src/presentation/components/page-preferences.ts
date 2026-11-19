@@ -20,7 +20,7 @@ export function mountLocalizedPage(): void {
 }
 
 /** Bind adjacent language and appearance controls and apply the saved theme on startup. */
-export function bindPagePreferences(saveView: () => void, setMapTheme: (dark: boolean) => void): void {
+export function bindPagePreferences(saveView: (keyboardFocus: boolean) => void, setMapTheme: (dark: boolean) => void): void {
     const language = element<HTMLSelectElement>('#language');
     const darkTheme = element<HTMLButtonElement>('#dark-theme');
     language.value = activeLocale;
@@ -46,7 +46,7 @@ export function bindPagePreferences(saveView: () => void, setMapTheme: (dark: bo
         if (!isLocale(locale) || locale === activeLocale) {
             return;
         }
-        saveView();
+        saveView(language.matches(':focus-visible'));
         writePreference(languageCookie, locale);
         const url = new URL(location.href);
         // File previews and browsers blocking cookies can keep the locale on this URL.

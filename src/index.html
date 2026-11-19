@@ -165,10 +165,21 @@
             </div>
           </section>
           <section class="walking-panel" id="panel-walking" role="tabpanel" aria-labelledby="tab-walking" hidden>
-            <ol id="walking-places"></ol>
+            <div class="walking-itinerary">
+              <ol id="walking-places"></ol>
+              <button type="button" id="walking-add" aria-label="{{ui.walking.add}}" title="{{ui.walking.add}}">
+                <span aria-hidden="true">+</span>
+              </button>
+            </div>
             <div class="walking-filters">
               <select id="walking-station" aria-label="{{ui.facilities.stationFilter}}"></select>
-              <button type="button" id="walking-pick">{{ui.walking.pick}}</button>
+              <button type="button" id="walking-pick" aria-label="{{ui.walking.pick}}" aria-pressed="false" title="{{ui.walking.pick}}">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <circle cx="12" cy="12" r="7" />
+                  <circle cx="12" cy="12" r="2" />
+                  <path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+                </svg>
+              </button>
             </div>
             <details class="walking-options" id="walking-options">
               <summary>{{ui.walking.options}}</summary>
@@ -176,27 +187,25 @@
                 <select id="walking-floor" aria-label="{{ui.facilities.floorFilter}}"></select>
                 <select id="walking-kind" aria-label="{{ui.facilities.types}}"></select>
               </div>
-              <label class="walking-gates"><input id="walking-gates" type="checkbox" />{{ui.walking.gates}}</label>
-              <button type="button" id="walking-clear">{{ui.walking.clear}}</button>
             </details>
-            <div id="walking-map-choice" hidden>
-              <p id="walking-pick-status" role="status"></p>
-              <div class="walking-actions">
-                <button type="button" id="walking-confirm" hidden>{{ui.walking.confirm}}</button>
-                <button type="button" id="walking-cancel">{{ui.walking.cancel}}</button>
-              </div>
-            </div>
             <p id="walking-search-status" role="status" hidden></p>
             <div id="walking-results" class="walking-results" role="listbox" aria-label="{{ui.walking.choose}}" hidden></div>
-            <div class="walking-actions">
-              <button type="button" id="walking-add">{{ui.walking.add}}</button>
+            <div class="walking-route-actions">
+              <label class="walking-gates">
+                <input id="walking-gates" type="checkbox" role="switch" checked />
+                <span>{{ui.walking.gates}}</span>
+              </label>
+              <button type="button" id="walking-clear" aria-label="{{ui.walking.clear}}" title="{{ui.walking.clear}}">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5" />
+                </svg>
+              </button>
               <button type="button" id="walking-preview">{{ui.walking.preview}}</button>
             </div>
             <p id="walking-status" role="status" hidden></p>
             <div class="walking-actions" id="walking-gate-action" hidden>
               <button type="button" id="walking-allow-gates">{{ui.walking.allowGatesAndRetry}}</button>
             </div>
-            <p class="walking-coverage">{{ui.walking.coverage}}</p>
           </section>
         </div>
       </aside>

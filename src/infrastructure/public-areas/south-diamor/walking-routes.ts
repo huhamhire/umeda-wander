@@ -68,6 +68,11 @@ export function southernWalkingRoutes(stationNodes: readonly RouteNode[]) {
         const path = [corridor.from, ...corridor.through.map(point => point.id), corridor.to];
         return path.slice(1).map((id, i) => segment(path[i]!, id));
     });
-    edges.push(segment('entry', 'crost68-1'), segment('crost68-1', 'crost68-b1', 8));
+    edges.push(
+        segment('entry', 'crost68-1'),
+        segment('hall', 'crost68-1'),
+        segment('gate-out', 'crost68-1'),
+        segment('crost68-1', 'crost68-b1', 8)
+    );
     return { nodes, edges };
 }

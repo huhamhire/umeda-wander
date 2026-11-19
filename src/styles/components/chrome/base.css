@@ -115,11 +115,6 @@
   background: var(--color-floor-hover);
 }
 
-.header-preferences select:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
 .header-preferences button {
   width: 32px;
   display: grid;

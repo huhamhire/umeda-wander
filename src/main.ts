@@ -27,6 +27,7 @@ interface LanguageChangeView {
     walkingDraft?: WalkingDraft;
     navigationExpanded?: boolean;
     roadsVisible: boolean;
+    languageKeyboardFocus?: boolean;
     categoryScroll: number;
     camera?: MapCameraSnapshot;
     pendingFacility?: string;
@@ -176,7 +177,7 @@ const showSidebarTab = bindSidebarTabs(
         }
     }
 );
-const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, {
+const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, facilities, {
     kindLabel: kind => categoryLabels[kind],
     preview: (places, allowPaid) => {
         const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid);
@@ -278,7 +279,7 @@ setNavigationExpanded(restored?.navigationExpanded ?? false);
 navigationToggle.addEventListener('click', () => setNavigationExpanded(sidebar.hasAttribute('data-collapsed')));
 
 /** Save only the current view so the locale reload can rebuild all names and labels in place. */
-function saveLanguageChangeView(): void {
+function saveLanguageChangeView(languageKeyboardFocus: boolean): void {
     const snapshot: LanguageChangeView = {
         state: session.state,
         filters: facilityFilter,
@@ -288,6 +289,7 @@ function saveLanguageChangeView(): void {
         walkingDraft: walkingRoute.snapshot(),
         navigationExpanded: !sidebar.hasAttribute('data-collapsed'),
         roadsVisible: groundPreference,
+        languageKeyboardFocus,
         categoryScroll: element('#poi-list').scrollLeft,
         camera: scene?.snapshotCamera() ?? savedCamera,
         pendingFacility
@@ -584,6 +586,8 @@ refreshFacilities();
 syncWalkingActions();
 if (restored) {
     element('#poi-list').scrollLeft = restored.categoryScroll;
+}
+if (restored?.languageKeyboardFocus) {
     element<HTMLSelectElement>('#language').focus({ preventScroll: true });
 }
 sync();

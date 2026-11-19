@@ -48,7 +48,7 @@ export function readMapView(url: URL, data: NavigationData): SharedMapView | und
     const stops = params.getAll('stop');
     const itinerary = stops.length >= 2 && stops.length <= maxWalkingStops + 2 &&
         stops.every(id => data.walkingPlaces.some(place => place.id === id))
-        ? { ids: stops, allowPaid: params.get('allow-paid') === '1' }
+        ? { ids: stops, allowPaid: params.get('allow-paid') !== '0' }
         : undefined;
     const explode = numericField('explode');
     return {
@@ -91,7 +91,7 @@ export function mapViewUrl(url: URL, view: SharedMapView): URL {
         explode: view.explode || undefined,
         buildings: view.buildings ? undefined : 0,
         ground: view.ground ? undefined : 0,
-        'allow-paid': view.itinerary?.allowPaid ? 1 : undefined
+        'allow-paid': view.itinerary?.allowPaid === false ? 0 : undefined
     };
     for (const [name, value] of Object.entries(fields)) {
         if (value == null) {

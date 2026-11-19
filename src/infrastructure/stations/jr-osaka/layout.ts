@@ -1043,12 +1043,13 @@ export const connections: VerticalConnection[] = [
 export const layout: StationLayout = { areas, platforms, connections };
 export const nodes: RouteNode[] = [
     landing('entry', 'concourse', 0, 41),
-    landing('hall-bypass', 'concourse', 14, 36),
-    landing('hall-turn', 'concourse', 14, 30),
-    landing('hall-rejoin', 'concourse', 7, 24),
+    // Use the public space between Crost (クロスト) escalator 67 and stair 68.
+    landing('hall-crost-side', 'concourse', -3, 32),
     landing('hall', 'concourse', 0, 4),
     landing('gate-out', 'concourse', -6, 4),
     landing('gate-in', 'concourse', -13, 4),
+    landing('central-north-gate-out', 'concourse', -6, -15),
+    landing('central-north-gate-in', 'concourse', -13, -15),
     landing('turn', 'concourse', -20, 4),
     connections[0]!.from,
     connections[0]!.to,
@@ -1060,6 +1061,7 @@ export const nodes: RouteNode[] = [
     landing('umekita-gate-in', 'underground-hall', -88, -101),
     landing('west-entry', 'concourse', -81, 20),
     landing('west-inside', 'concourse', -67, 20),
+    landing('west-public-turn', 'concourse', -81, 41),
     ...connections.filter(connection => ['west-92', 'umekita-93', 'umekita-95'].includes(connection.id)).flatMap(connection => [connection.from, connection.to]),
     landing('umekita-hall-north', 'underground-hall', -94, -100),
     landing('umekita-hall-south', 'underground-hall', -94, -87),
@@ -1113,26 +1115,20 @@ export const edges: RouteEdge[] = [
     },
     {
         from: 'entry',
-        to: 'hall-bypass',
-        cost: 15,
+        to: 'hall-crost-side',
+        cost: 9.5,
         kind: 'walk'
     },
     {
-        from: 'hall-bypass',
-        to: 'hall-turn',
-        cost: 6,
-        kind: 'walk'
-    },
-    {
-        from: 'hall-turn',
-        to: 'hall-rejoin',
-        cost: 9,
-        kind: 'walk'
-    },
-    {
-        from: 'hall-rejoin',
+        from: 'hall-crost-side',
         to: 'hall',
-        cost: 21,
+        cost: 28.2,
+        kind: 'walk'
+    },
+    {
+        from: 'hall-crost-side',
+        to: 'gate-out',
+        cost: 28.2,
         kind: 'walk'
     },
     {
@@ -1146,6 +1142,24 @@ export const edges: RouteEdge[] = [
         to: 'gate-in',
         cost: 7,
         kind: 'gate'
+    },
+    {
+        from: 'gate-out',
+        to: 'central-north-gate-out',
+        cost: 19,
+        kind: 'walk'
+    },
+    {
+        from: 'central-north-gate-out',
+        to: 'central-north-gate-in',
+        cost: 7,
+        kind: 'gate'
+    },
+    {
+        from: 'central-north-gate-in',
+        to: 'gate-in',
+        cost: 19,
+        kind: 'walk'
     },
     {
         from: 'gate-in',
@@ -1170,6 +1184,18 @@ export const edges: RouteEdge[] = [
         from: 'upper',
         to: 'destination',
         cost: 32,
+        kind: 'walk'
+    },
+    {
+        from: 'entry',
+        to: 'west-public-turn',
+        cost: 111,
+        kind: 'walk'
+    },
+    {
+        from: 'west-public-turn',
+        to: 'west-entry',
+        cost: 21,
         kind: 'walk'
     },
     {
@@ -1281,7 +1307,7 @@ for (const connection of connections.filter(c => c.id.startsWith('west-') || c.i
     shiftWest(connection.from);
     shiftWest(connection.to);
 }
-for (const node of nodes.filter(n => ['west-entry', 'west-inside', 'west-lower', 'walkway-start'].includes(n.id))) {
+for (const node of nodes.filter(n => ['west-entry', 'west-inside', 'west-public-turn', 'west-lower', 'walkway-start'].includes(n.id))) {
     shiftWest(node);
 }
 const undergroundAnchor = { x: -90, z: -110 };

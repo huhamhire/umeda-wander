@@ -497,8 +497,17 @@
   margin: 0;
 }
 
+.walking-itinerary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 6px;
+}
+
 .walking-panel ol {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 6px;
   margin: 0;
   padding: 0;
@@ -506,8 +515,58 @@
 }
 
 .walking-panel li {
+  position: relative;
   display: flex;
   gap: 5px;
+}
+
+.walking-panel li[data-dragging] {
+  opacity: .55;
+}
+
+.walking-panel li[data-drop]::after {
+  position: absolute;
+  inset-inline: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-tab-active);
+  content: "";
+  pointer-events: none;
+}
+
+.walking-panel li[data-drop="before"]::after {
+  top: -4px;
+}
+
+.walking-panel li[data-drop="after"]::after {
+  bottom: -4px;
+}
+
+.walking-grip {
+  display: grid;
+  flex: 0 0 18px;
+  align-self: stretch;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--color-field-text);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.walking-grip::before {
+  content: "⠿";
+  font-size: 17px;
+}
+
+.walking-grip[aria-disabled="true"] {
+  opacity: .4;
+  cursor: default;
+  touch-action: auto;
+}
+
+.walking-panel li[data-dragging] .walking-grip {
+  cursor: grabbing;
 }
 
 .walking-field {
@@ -517,8 +576,8 @@
   align-items: center;
   min-width: 0;
   min-height: 42px;
-  padding-inline: 9px 30px;
-  gap: 7px;
+  padding-inline: 3px 30px;
+  gap: 5px;
   background: var(--color-field-background);
   border: 1px solid var(--color-field-border);
   border-radius: 7px;
@@ -537,6 +596,7 @@
 
 .walking-field input {
   flex: 1 1 0;
+  width: 0;
   min-width: 0;
   padding: 0;
   background: transparent;
@@ -551,8 +611,7 @@
 }
 
 .walking-filters,
-.walking-actions,
-.walking-order {
+.walking-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
@@ -580,6 +639,80 @@
   font: inherit;
 }
 
+.walking-itinerary #walking-add {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#walking-add > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-field-border);
+  border-radius: 50%;
+  font-size: 15px;
+  line-height: 1;
+}
+
+#walking-add:enabled:hover > span {
+  border-color: var(--color-tab-active);
+  background: var(--color-selection-background);
+}
+
+#walking-add:disabled > span {
+  opacity: .5;
+}
+
+#walking-pick,
+#walking-clear {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+#walking-pick {
+  flex: 0 0 36px;
+}
+
+#walking-clear {
+  width: 36px;
+}
+
+#walking-pick > svg,
+#walking-clear > svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.75;
+}
+
+#walking-pick:disabled {
+  color: var(--color-subtle-text);
+}
+
+#walking-pick[aria-pressed="true"] {
+  border-color: var(--color-tab-active);
+  background: var(--color-tab-active);
+  color: var(--color-paper);
+}
+
+#walking-preview {
+  padding-inline: 11px;
+}
+
+#walking-preview:enabled {
+  border-color: var(--color-tab-active);
+  background: var(--color-tab-active);
+  color: var(--color-paper);
+}
+
 .walking-field .walking-point-clear {
   position: absolute;
   inset: 0 1px 0 auto;
@@ -592,8 +725,7 @@
   font-size: 16px;
 }
 
-.walking-options > :not(summary),
-#walking-map-choice .walking-actions {
+.walking-options > :not(summary) {
   margin-top: 5px;
 }
 
@@ -616,9 +748,14 @@
   text-align: left;
 }
 
-.walking-results [role="option"]:hover,
+.walking-results [role="option"]:not([aria-disabled="true"]):hover,
 .walking-results [aria-selected="true"] {
   background: var(--color-selection-background);
+}
+
+.walking-results [aria-disabled="true"] {
+  color: var(--color-subtle-text);
+  cursor: default;
 }
 
 .walking-results [role="option"] div {
@@ -638,14 +775,21 @@
   color: var(--color-subtle-text);
 }
 
+.walking-route-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 5px;
+}
+
 .walking-gates {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.walking-coverage {
-  color: var(--color-subtle-text);
+.walking-gates input {
+  flex: none;
 }
 
 #facility-walking-actions {
