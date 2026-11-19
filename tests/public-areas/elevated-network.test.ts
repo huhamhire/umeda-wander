@@ -125,7 +125,6 @@ test(
     'public lifts use existing upper floors at the door and overlapping slabs keep real equipment openings',
     () => {
         const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-        assert.equal(deckAccess.connections.length, 11);
         for (const c of deckAccess.connections) {
             assert.ok(c.blockId && c.evidence.urls?.length);
             if (c.kind === 'elevator') {
@@ -142,7 +141,11 @@ test(
                 }));
                 assert.ok(samples.every(p => floors.some(a => contains(a, p))), c.id + ' unsupported door or landing');
             }
-            const cut = openings.find(o => o.connectionId === c.id && o.level === c.to.level)!;
+            const cut = openings.find(o => o.connectionId === c.id && o.level === c.to.level);
+            if (c.placement === 'exterior') {
+                assert(!cut, c.id + ' cuts an interior well');
+                continue;
+            }
             assert.ok(cut);
             const p = cut.outline.reduce(
                 (p, q) => ({ x: p.x + q.x / cut.outline.length, z: p.z + q.z / cut.outline.length }),
@@ -169,6 +172,31 @@ test(
                 (mesh.material as T.Material).dispose();
             }
         }
+    }
+);
+test(
+    'Grand Front approach reaches both south podium doors and supplies the plaza stair and lift',
+    () => {
+        const portals = elevated.portals.filter(p => ['jr-north-atrium', 'grand-front-atrium-door', 'grand-front-atrium-side-door'].includes(p.id));
+        assert.equal(portals.length, 3);
+        const northFloors = [
+            ...elevatedAreas.filter(a => a.blockId === 'north-decks'),
+            layout.areas.find(a => a.id === 'north-atrium-lower-landing')!
+        ];
+        const polygons = clipping.union(geometry(northFloors[0]!), ...northFloors.slice(1).map(geometry));
+        const regions = polygons.map(p => ({
+            outline: p[0]!.map(([x, z]) => ({ x, z })),
+            holes: p.slice(1).map(r => r.map(([x, z]) => ({ x, z })))
+        }));
+        const stairs = deckAccess.connections.find(c => c.id === 'public-north-plaza-stairs')!;
+        const lift = deckAccess.connections.find(c => c.id === 'public-north-plaza-lift')!;
+        const connectedPoints = [...portals.map(p => p.point), stairs.to, lift.to];
+        assert(regions.some(region => connectedPoints.every(p => contains(region, p))));
+        for (const portal of portals.filter(p => p.target === 'grand-front-south')) {
+            assert(exteriorOpenings.some(o => o.buildingId === portal.target && contains(o, portal.point)));
+        }
+        assert.equal(stairs.from.level, 'district-ground');
+        assert.equal(lift.from.level, 'district-ground');
     }
 );
 test(

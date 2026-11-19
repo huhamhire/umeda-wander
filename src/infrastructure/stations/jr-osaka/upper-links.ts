@@ -19,8 +19,8 @@ export const northAtrium: AtriumVoid = {
     id: 'north-atrium-void',
     name: messageText('stations.jrOsaka.entities.northAtriumVoid.name'),
     openings: [
-        { level: 'platform', outline: rect(-0.5, -48.5, 26, 21) },
-        { level: 'bridge', outline: rect(-0.5, -58.5, 26, 19) }
+        { level: 'platform', outline: rect(-0.5, -48.5, 21, 21) },
+        { level: 'bridge', outline: rect(-0.5, -54, 26, 10) }
     ],
     evidence: evidence(
         [2, 3, 5],
@@ -130,27 +130,29 @@ export function refineUpperLevelLinks(areas: FloorArea[], connections: VerticalC
         name: messageText('stations.jrOsaka.entities.northAtriumLowerLanding.name'),
         kind: 'public',
         label: true,
-        outline: rect(-1, -63.5, 26, 9),
+        outline: rect(-.5, -63.5, 26, 9),
+        railings: true,
         evidence: evidence(
             [2, 3],
-            'Atrium north platform beyond the shared void; outside-edge access between North Gate building 2F and 3F'
+            'North Gate Building 2F Atrium Plaza extends under the north entrance canopy to the Grand Front Osaka (グランフロント大阪) approach; outline is fitted.'
         )
     };
     areas.push(northPad);
     areas.find(a => a.id === 'north-2f-public')!.label = false;
-    for (const [id, x] of [['west', -13.5], ['east', 12.5]] as const) {
+    for (const [id, x] of [['west', -12], ['east', 11]] as const) {
         areas.push({
             id: `north-atrium-${id}-gallery`,
             level: 'platform',
             name: messageText('stations.jrOsaka.areas.northAtriumSideGallery.name'),
             kind: 'public',
-            outline: rect(x, -53.5, 3, 11),
+            outline: rect(x, -53, 2, 12),
+            railings: true,
             evidence: northAtrium.evidence
         });
     }
     for (const [id, x] of [['north-47', -0.5], ['north-48', 9]] as const) {
         const c = connections.find(c => c.id === id)!;
-        Object.assign(c.from, { x, z: -41 });
+        Object.assign(c.from, { x, z: -42 });
         Object.assign(c.to, { x, z: -59 });
         c.placement = 'exterior';
         c.evidence = evidence(
@@ -162,13 +164,51 @@ export function refineUpperLevelLinks(areas: FloorArea[], connections: VerticalC
         const connection = link(
             id,
             kind,
-            { level: 'platform', x, z: -63 },
+            { level: 'platform', x, z: -59 },
             { level: 'bridge', x, z: -49 },
             [2, 3],
             'North atrium outside-edge 2F/3F connection; no interior slab well'
         );
         connection.placement = 'exterior';
     }
+    const tokiAccess = link(
+        'north-toki-escalator',
+        'escalator',
+        { level: 'bridge', x: 2, z: -40 },
+        { level: 'jr-toki-plaza', x: 2, z: -57 },
+        [],
+        'Osaka Station City 3F guide marks the escalator to Toki no Hiroba (時空の広場) on 5F. The northward flight and upper platform are schematic.'
+    );
+    tokiAccess.placement = 'exterior';
+    tokiAccess.evidence = {
+        ...tokiAccess.evidence,
+        source: 'jr',
+        urls: ['https://osakastationcity.com/guide/', 'https://osakastationcity.com/green/toki/']
+    };
+    areas.push({
+        id: 'north-atrium-toki-landing',
+        level: 'jr-toki-plaza',
+        name: messageText('stations.jrOsaka.entities.tokiPlaza.name'),
+        kind: 'public',
+        outline: rect(2, -58, 8, 4),
+        railings: true,
+        evidence: tokiAccess.evidence
+    });
+    facilities.push({
+        id: 'bridge-north-information',
+        name: messageText('stations.jrOsaka.facilities.bridgeNorthInformation.name'),
+        kind: 'information',
+        level: 'bridge',
+        x: -8,
+        z: -42,
+        note: 'OSC 问讯台位于 3F 南北联络桥北端的公共走道。',
+        evidence: {
+            source: 'jr',
+            pages: [2],
+            urls: ['https://osakastationcity.com/guide/information/'],
+            detail: 'Osaka Station City Information is at the north end of the public North-South Bridge. Counter dimensions and its precise placement are fitted.'
+        }
+    });
     // Station 2F corresponds to South Gate building 3F; the bridge reaches building 4F.
     // Keep building names explicit instead of renumbering station floors globally.
     areas.find(a => a.id === 'bridge-south')!.outline = rect(-7.5, 41.5, 35, 13);

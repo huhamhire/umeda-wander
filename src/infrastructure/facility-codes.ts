@@ -526,4 +526,11 @@ export const facilityCodes: Record<string, string> = {
     'connection-grand-front-plaza-sunken-stairs-from': 'PUB-035',
     'connection-grand-front-plaza-sunken-stairs-to': 'PUB-036',
     'connection-public-north-lift-26-bridge-to': 'PUB-037',
+    'connection-north-toki-escalator-from': 'JR-215',
+    'connection-north-toki-escalator-to': 'JR-216',
+    'connection-public-north-plaza-lift-from': 'PUB-038',
+    'connection-public-north-plaza-lift-to': 'PUB-039',
+    'connection-public-north-plaza-stairs-from': 'PUB-040',
+    'connection-public-north-plaza-stairs-to': 'PUB-041',
+    'bridge-north-information': 'JR-217',
 };

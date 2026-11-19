@@ -2,6 +2,9 @@ import type { Level } from '../../domain/map/model.ts';
 
 /** Exploration bands combine local half-floors without changing physical heights. */
 export function explorationElevation(level: Level): number {
+    if (level.id === 'jr-toki-plaza') {
+        return 16;
+    }
     if (level.id === 'south-deck' || level.id === 'hanshin-deck' || level.id === 'district-south-deck') {
         return 8;
     }

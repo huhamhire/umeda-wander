@@ -52,6 +52,13 @@ export const levels: Level[] = [
         y: 16,
         description: '公共南北连络桥与桥上改札内区域并行，北接开放中庭，南经 15/16/I 连接南门大楼 3F，另有同标高通道往大楼 4F。'
     },
+    {
+        id: 'jr-toki-plaza',
+        label: '5F',
+        name: messageText('stations.jrOsaka.entities.tokiPlaza.name'),
+        y: 25,
+        description: '时空广场北侧扶梯落台，标高为展示拟合。'
+    },
 ];
 /**
  * Construct a JR-local floor rectangle from its centre, width and depth.

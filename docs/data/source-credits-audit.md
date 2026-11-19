@@ -26,7 +26,7 @@
 | `references/stations/hanshin-umeda/station-guide.pdf` | `stations/hanshin-umeda/index.ts`：阪神 B1/B2 与出口竖向连接 | 阪神构内图适用于本用途的许可／授权 |
 | `references/stations/metro-umeda/station-guide.pdf`、`references/stations/higashi-umeda/station-guide.pdf`、`references/stations/nishi-umeda/station-guide.pdf` | `stations/metro-umeda/index.ts`、`stations/higashi-umeda/index.ts`、`stations/nishi-umeda/index.ts`：三站构内几何 | Osaka Metro 图表的整理改编依据 |
 | `references/district/underground-walkway-map.pdf`、`references/district/elevated-walkways-2026.pdf` | `data/geography/underground/`、`public-areas/south-diamor/`、`basement-buildings.ts`：DIAMOR、建筑占位、第一生命互通 | 周边图已识别为 UMEDA CONNECT 2024-02 系列，并找到发布方站点的同系列繁体版；本地简体文件是否为同一版、底层 Whity 图数据的改编条款仍需核实，不能套用大阪市其他资料的许可 |
-| `references/connections/osaka-station-city/2f-map.png`、`references/connections/osaka-station-city/3f-map.png`、`references/connections/osaka-station-city/map-legend.png` | 大丸前庭、竖向连接和 LUCUA 东侧 2F／3F 楼梯关系 | 原图发布地址、截图或图层的改编许可 |
+| `references/connections/osaka-station-city/2f-map.png`、`references/connections/osaka-station-city/3f-map.png`、`references/connections/osaka-station-city/map-legend.png` | 大丸前庭、北中庭 2F 公共面、LUCUA 东侧楼梯关系、通往时空广场的扶梯和 OSC 问讯台 | 原图发布地址、截图或图层的改编许可 |
 | `references/connections/grand-green-osaka/jr-umekita-decks.pdf`、`references/connections/grand-green-osaka/south-building-2f.png`、`references/connections/grand-green-osaka/jambase-2f-route.jpg`、`references/connections/grand-green-osaka/jambase-access.png` | 北侧连桥关系核对；Grand Green 目标区域未全部建模 | 各文件的原发布地址与后续几何使用依据，不能从目录名推定共同许可 |
 | `references/district/station-area-orientation.webp` | 地铁相对位置、阪急街区与外围轮廓校准 | 原发布页、作者、允许改编的依据 |
 | 会话上传的 Google 地图／卫星图及建筑外景截图（没有稳定仓库原文件路径） | `src/infrastructure/buildings/`、建筑外观呈现模块及公共连廊拟合 | 截图原始出处、摄影者和允许派生使用的授权；没有发布照片贴图或宣称获得 Google 授权 |

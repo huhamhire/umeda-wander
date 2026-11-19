@@ -3,7 +3,9 @@ import type { StationMap } from '../../../domain/map/model.ts';
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { building as yodobashi } from '../../buildings/yodobashi/index.ts';
 import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
-import { jrAtriumPoint } from '../../stations/jr-osaka/geographic.ts';
+import { closestPolygonPoint } from '../../../domain/map/geometry.ts';
+import { building as grandFrontNorth } from '../../buildings/grand-front-north/index.ts';
+import { building as grandFrontSouth } from '../../buildings/grand-front-south/index.ts';
 
 /**
  * Connect the north atrium, commercial galleries and Hankyu (阪急) public interface while preserving block ownership.
@@ -30,12 +32,17 @@ export function northDecks(stations: StationMap[]): {
         messageText('publicAreas.northDecks.deckPaths.hankyuPublicFrontage.name'),
         [{ x: 659.8, z: 446.5 }, { x: 644, z: 390 }, stationDoor]
     ));
-    const atriumDoor = jrAtriumPoint({ x: -1, z: -68 });
-    paths.push(deckPath(
-        'atrium-compact-landing',
-        messageText('publicAreas.northDecks.entities.northDecks.name'),
-        [{ x: 393.7, z: 521.8 }, atriumDoor]
-    ));
+    const grandFrontApproach = paths.find(p => p.id === 'grand-front-atrium:501012843')!;
+    const southEntranceBranch = paths.find(p => p.id === 'grand-front-atrium:553431479')!;
+    const interBuildingBridge = paths.find(p => p.id === 'grand-front-bridge:220190709')!;
+    // The OSM nodes identify the entrances. Fit them to their declared podium faces only.
+    const southOutline = grandFrontSouth.volumes[0]!.outline;
+    const northOutline = grandFrontNorth.volumes[0]!.outline;
+    const southEntrance = closestPolygonPoint(grandFrontApproach.points.at(-1)!, southOutline);
+    const southSideEntrance = closestPolygonPoint(southEntranceBranch.points.at(-1)!, southOutline);
+    const southBridgeEntrance = closestPolygonPoint(interBuildingBridge.points[0]!, southOutline);
+    const northBridgeEntrance = closestPolygonPoint(interBuildingBridge.points.at(-1)!, northOutline);
+    const atriumDoor = grandFrontApproach.points[0]!;
     const portal = (id: string, target: string, point: {
         x: number;
         z: number;
@@ -59,9 +66,10 @@ export function northDecks(stations: StationMap[]): {
             evidence: deckEvidence
         }],
         portals: [
-            portal('grand-front-north-door', 'grand-front-north', { x: 339.7, z: 326.5 }, Math.PI / 2),
-            portal('grand-front-south-bridge-door', 'grand-front-south', { x: 347.2, z: 373.5 }, Math.PI / 2),
-            portal('grand-front-atrium-door', 'grand-front-south', { x: 369.3, z: 481.6 }, Math.PI / 3),
+            portal('grand-front-north-door', 'grand-front-north', northBridgeEntrance, Math.PI / 2),
+            portal('grand-front-south-bridge-door', 'grand-front-south', southBridgeEntrance, Math.PI / 2),
+            portal('grand-front-atrium-door', 'grand-front-south', southEntrance, Math.PI / 3),
+            portal('grand-front-atrium-side-door', 'grand-front-south', southSideEntrance, Math.PI / 2),
             portal('hankyu-jr-interface', 'station:hankyu-umeda', stationDoor, -Math.PI / 2),
             portal('jr-north-atrium', 'station:jr-osaka', atriumDoor, Math.PI / 3),
             portal('yodobashi-west-gallery', 'yodobashi', { x: 438.3, z: 473.1 }, -Math.PI / 4),

@@ -18,12 +18,16 @@ export function deckBoundarySegments(
 ) {
     const y = levels.find(l => l.id === area.level)!.y;
     const neighbours = areas.filter(a => a.id !== area.id && a.kind === 'public' && Math.abs(levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) - y) < .01);
-    const endpoints = connections.flatMap(c => [c.from, c.to]).filter(n => levels.find(l => l.id === n.level)!.y + (n.elevationOffset ?? 0) === y);
+    const endpoints = connections.flatMap(c => [c.from, c.to].map(node => ({
+        node,
+        clearance: Math.max(2.5, (c.width ?? 0) / 2 + 1)
+    }))).filter(({ node }) => levels.find(l => l.id === node.level)!.y + (node.elevationOffset ?? 0) === y);
     const atSeam = (p: Point2, a: FloorArea) => contains(p, a) || [a.outline, ...a.holes ?? []].some(r => {
         const q = closestPolygonPoint(p, r);
         return Math.hypot(q.x - p.x, q.z - p.z) < .12;
     });
-    const open = (p: Point2) => neighbours.some(a => atSeam(p, a)) || doors.some(d => d.base <= y + .55 && d.top > y && contains(p, d)) || endpoints.some(n => Math.hypot(n.x - p.x, n.z - p.z) < 2.5);
+    const open = (p: Point2) => neighbours.some(a => atSeam(p, a)) || doors.some(d => d.base <= y + .55 && d.top > y && contains(p, d)) ||
+        endpoints.some(({ node, clearance }) => Math.hypot(node.x - p.x, node.z - p.z) < clearance);
     const result: {
         from: Point2;
         to: Point2;

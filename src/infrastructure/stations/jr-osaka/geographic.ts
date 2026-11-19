@@ -14,9 +14,15 @@ export function jrGroundPoint(p: Point2): Point2 {
     return jrAxisPoint(x * along, p.z * across + acrossOffset);
 }
 
-/** Compress the schematic atrium without scaling the surrounding station or floor heights. */
+/** Fit the atrium between the two LUCUA (ルクア) wings and reach the covered north frontage. */
 export function jrAtriumPoint(p: Point2): Point2 {
-    return jrGroundPoint({ x: p.x * .6 - 2.5, z: -49 + (p.z + 49) * .48 });
+    let across = -54.8 + (p.z + 49) * .575;
+    if (p.z < -59) {
+        across = -66.5 + (p.z + 59) * (36.5 / 9);
+    } else if (p.z < -49) {
+        across = -54.8 + (p.z + 49) * 1.17;
+    }
+    return jrAxisPoint(p.x * 1.5 - 6.25, across);
 }
 
 /** Ground-station review slice only. Umekita (うめきた) needs its own frame. */

@@ -5,6 +5,7 @@ import { planAtriumOpenings } from '../../src/application/connections/atrium-ope
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 test(
     'North atrium is a shared void with all four bank groups arriving at exterior edges',
@@ -31,14 +32,34 @@ test(
             m.updateMatrixWorld();
             return m;
         };
-        const voidOutline = voids.find(o => o.level === 'platform')!.outline;
-        const center = voidOutline.reduce(
-            (p, q) => ({ x: p.x + q.x / voidOutline.length, z: p.z + q.z / voidOutline.length }),
-            { x: 0, z: 0 }
-        );
+        const center = jrAxisPoint(0, -52);
         const ray = new T.Raycaster(new T.Vector3(center.x, 20, center.z), new T.Vector3(0, -1, 0));
         assert(ray.intersectObject(mesh([])).length > 0);
         assert.equal(ray.intersectObject(mesh(voids.filter(o => o.level === 'platform'))).length, 0);
+    }
+);
+test(
+    'the covered 2F plaza, the 3F information desk and the northbound flight to 5F land on public floors',
+    () => {
+        const plaza = layout.areas.find(a => a.id === 'north-atrium-lower-landing')!;
+        for (const across of [-100, -86, -68]) {
+            for (const along of [-23, 0, 10]) {
+                assert(pointInPolygon(jrAxisPoint(along, across), plaza.outline));
+            }
+        }
+        const desk = facilities.find(f => f.id === 'bridge-north-information')!;
+        const bridge = layout.areas.find(a => a.id === 'bridge-north')!;
+        assert.equal(desk.level, 'bridge');
+        assert.equal(desk.kind, 'information');
+        assert(pointInPolygon(desk, bridge.outline));
+        assert(!layout.areas.some(a => a.kind === 'paid' && a.level === desk.level && pointInPolygon(desk, a.outline)));
+        const escalator = layout.connections.find(c => c.id === 'north-toki-escalator')!;
+        const upper = layout.areas.find(a => a.id === 'north-atrium-toki-landing')!;
+        assert.equal(escalator.kind, 'escalator');
+        assert(escalator.to.z < escalator.from.z);
+        assert(pointInPolygon(escalator.from, bridge.outline));
+        assert(pointInPolygon(escalator.to, upper.outline));
+        assert.equal(levels.find(l => l.id === upper.level)!.label, '5F');
     }
 );
 test(

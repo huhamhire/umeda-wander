@@ -447,7 +447,11 @@ export class MapModels {
             }
         }
         else if (facility.kind === 'information') {
-            this.primitives.box(group, facility.x, 2.1, facility.z, 7, 0.4, 3, colors.white);
+            const rotation = -(facility.rotationRad ?? 0);
+            const base = this.primitives.box(group, facility.x, 1.17, facility.z, 4.2, 1.15, 1.25, 0x678984);
+            base.rotation.y = rotation;
+            const top = this.primitives.box(group, facility.x, 1.83, facility.z, 4.6, 0.18, 1.55, colors.white);
+            top.rotation.y = rotation;
         }
         else if (facility.kind === 'convenience-store') {
             this.label(facility.name, facility.x, 3.3, facility.z, facility.level, false, true);
