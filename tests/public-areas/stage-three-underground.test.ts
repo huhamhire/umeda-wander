@@ -138,7 +138,13 @@ test(
             assert.ok(c.evidence.urls?.length);
             assert.ok([c.from, c.to].some(n => n.level === 'district-underground'));
             const upper = [c.from, c.to].find(n => levels.find(l => l.id === n.level)!.y === 0)!;
-            const surface = layout.areas.find(a => a.level === upper.level && contains(a, upper))!;
+            const facing = c.doorFacingRad;
+            const landing = facing === undefined ? upper : {
+                x: upper.x + 2 * Math.cos(facing),
+                z: upper.z + 2 * Math.sin(facing)
+            };
+            const surfaces = layout.areas.filter(a => a.level === upper.level);
+            assert.ok(surfaces.some(a => contains(a, landing)), c.id + ' unsupported upper landing');
             const cuts = openings.filter(o => o.level === upper.level);
             assert.ok(cuts.some(o => o.connectionId === c.id));
             const cut = cuts.find(o => o.connectionId === c.id)!;
@@ -146,16 +152,18 @@ test(
                 (p, q) => ({ x: p.x + q.x / cut.outline.length, z: p.z + q.z / cut.outline.length }),
                 { x: 0, z: 0 }
             );
-            const g = buildFloorGeometry(surface.outline, [...surface.holes ?? [], ...cuts.map(o => o.outline)], .55, 0);
-            const mesh = new T.Mesh(g, new T.MeshBasicMaterial({ side: T.DoubleSide }));
-            mesh.updateMatrixWorld();
-            assert.equal(
-                new T.Raycaster(new T.Vector3(center.x, 5, center.z), new T.Vector3(0, -1, 0), 0, 10).intersectObject(mesh).length,
-                0,
-                c.id + ' sealed aperture'
-            );
-            g.dispose();
-            (mesh.material as T.Material).dispose();
+            for (const surface of surfaces.filter(a => contains(a, center))) {
+                const g = buildFloorGeometry(surface.outline, [...surface.holes ?? [], ...cuts.map(o => o.outline)], .55, 0);
+                const mesh = new T.Mesh(g, new T.MeshBasicMaterial({ side: T.DoubleSide }));
+                mesh.updateMatrixWorld();
+                assert.equal(
+                    new T.Raycaster(new T.Vector3(center.x, 5, center.z), new T.Vector3(0, -1, 0), 0, 10).intersectObject(mesh).length,
+                    0,
+                    c.id + ' sealed aperture'
+                );
+                g.dispose();
+                (mesh.material as T.Material).dispose();
+            }
             if (c.kind === 'elevator') {
                 assert.ok(Math.hypot(c.from.x - c.to.x, c.from.z - c.to.z) < 1e-8);
             }

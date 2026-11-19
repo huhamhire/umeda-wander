@@ -1,5 +1,6 @@
 import { messageText } from '../i18n/index.ts';
 import type { FloorArea, VerticalConnection, Point2 } from '../../domain/map/model.ts';
+import { elevatorDoorApproach } from '../../application/connections/connection-openings.ts';
 import { deckEvidence } from './elevated-source.ts';
 
 /** Only public equipment explicitly marked by the supplied elevated/2F plans. */
@@ -18,7 +19,8 @@ export function createDeckAccess() {
         level: 'district-north-deck' | 'district-south-deck',
         high: Point2,
         low = high,
-        kind: VerticalConnection['kind'] = 'elevator'
+        kind: VerticalConnection['kind'] = 'elevator',
+        ownsGroundApproach = true
     ) => {
         const evidence = {
             ...deckEvidence,
@@ -34,13 +36,18 @@ export function createDeckAccess() {
             ...(kind === 'elevator' ? { doorFacingRad: -Math.PI / 6 } : { width: 3.2 })
         };
         connections.push(c);
-        areas.push(...[c.from, c.to].map(n => ({
+        if (!ownsGroundApproach) {
+            return;
+        }
+        // The bridge supplies the upper lift approach. At street level draw only the door-side strip.
+        const landings = kind === 'elevator' ? [c.from] : [c.from, c.to];
+        areas.push(...landings.map(n => ({
             id: n.id + ':landing',
             blockId,
             level: n.level,
             name: messageText('publicAreas.deckAccess.landing.name'),
             kind: 'public' as const,
-            outline: pad(n),
+            outline: kind === 'elevator' ? elevatorDoorApproach(n, c.doorFacingRad!) : pad(n),
             height: .55,
             label: false,
             evidence
@@ -65,7 +72,9 @@ export function createDeckAccess() {
         { x: 331.7, z: 815 },
         'stairs'
     );
-    add('public-jp-deck-lift', 'south-decks', 'district-south-deck', { x: 342, z: 808.4 });
+    const jpLift = { x: 342, z: 808.4 };
+    // The ground door opens onto the shared sunken garden stair landing.
+    add('public-jp-deck-lift', 'south-decks', 'district-south-deck', jpLift, jpLift, 'elevator', false);
     // JR south/east 1F plan: the stair at the north end of the perimeter bridge.
     add(
         'umeda-deck-north-stairs',

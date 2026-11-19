@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { areas, facilities, connections, platforms, levels } from '../../src/infrastructure/stations/jr-osaka/layout.ts';
-import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { elevatorWellHalfWidth, planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { platformPoint } from '../../src/domain/map/geometry.ts';
@@ -149,11 +149,21 @@ test(
         assert(floor.scale.x * cabin.scale.x < shaft.scale.x);
         assert.equal(cabin.scale.y, 1, 'horizontal refinement must retain cabin height');
         const frames: T.Mesh[] = [];
+        const thresholds: T.Mesh[] = [];
         model.group.traverse(o => {
             if (o instanceof T.Mesh && o.name === 'landing-door-frame') {
                 frames.push(o);
             }
+            if (o instanceof T.Mesh && o.name === 'landing-sill') {
+                thresholds.push(o);
+            }
         });
+        assert.equal(thresholds.length, 2);
+        for (const threshold of thresholds) {
+            assert(threshold.scale.x < shaft.scale.x && threshold.scale.z < 0.5);
+            assert(threshold.position.z - threshold.scale.z / 2 > 1);
+            assert(threshold.position.z + threshold.scale.z / 2 > elevatorWellHalfWidth, 'threshold must reach the floor beyond the well');
+        }
         for (const frame of frames) {
             assert(Math.abs(frame.position.x) + frame.scale.x / 2 < shaft.scale.x / 2);
         }

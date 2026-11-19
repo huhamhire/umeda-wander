@@ -73,7 +73,7 @@ export const basements = buildBasementOccupancies(
 );
 export const elevated = createElevatedBlocks(shared.stations);
 const assemblyLevels = [...shared.stations.flatMap(s => s.levels), ...elevatedLevels, publicGroundLevel];
-// Equipment pads join their block before union; a floor is never drawn twice at a junction.
+// Stair landings join their block before union; lift doors meet the existing deck.
 for (const b of elevated.blocks) {
     b.regions.push(...deckAccess.areas.filter(a => a.level === b.level && a.blockId === b.id));
 }

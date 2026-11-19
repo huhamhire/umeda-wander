@@ -1,5 +1,6 @@
 import { messageText } from '../../i18n/index.ts';
 import type { Evidence, FloorArea, Point2, VerticalConnection } from '../../../domain/map/model.ts';
+import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
 
 const evidence: Evidence = {
     source: 'district',
@@ -50,17 +51,17 @@ export function createJpBasementAccess(upperLift: VerticalConnection) {
         { x: p.x - 3, z: p.z + 3 },
     ];
     const connections = [stairs, lift];
-    const areas: FloorArea[] = connections.flatMap(c => [c.from, c.to].map(n => ({
+    const areas: FloorArea[] = [stairs.from, stairs.to].map(n => ({
         id: n.id + ':landing',
         level: n.level,
-        blockId: c.blockId,
+        blockId: stairs.blockId,
         name: messageText('publicAreas.southDiamor.jpGardenLanding.name'),
         kind: 'public',
-        outline: pad(n),
+        outline: n === stairs.to ? elevatorDoorApproach(lift.to, lift.doorFacingRad!, pad(n)) : pad(n),
         height: .55,
         label: false,
         evidence,
-    })));
+    }));
     areas.push({
         id: 'jp-sunken-garden-b1',
         level: 'district-underground',

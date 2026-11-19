@@ -7,6 +7,7 @@ import { southDeckCanopies } from '../../src/infrastructure/public-areas/south-d
 import { northDeckCanopies } from '../../src/infrastructure/public-areas/north-decks/canopies.ts';
 import { buildWalkwayCanopy } from '../../src/presentation/models/public-areas/walkway-canopy-model.ts';
 import { createGeographicStation } from '../../src/infrastructure/district/geographic-stations.ts';
+import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import plan from '../../data/geography/runtime-plan.json' with { type: 'json' };
 import { toGeographicPlan } from '../../src/domain/map/spatial-block.ts';
@@ -57,19 +58,30 @@ test('north and south bridge canopies leave a clear walking centreline under the
     }
 });
 
-test('Hanshin lift lands directly at the deck junction with a compact upper platform', () => {
+test('Hanshin lift approaches stay on the door side and join the upper bridge', () => {
     const station = createGeographicStation('hanshin-umeda');
     const lift = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;
     assert(Math.hypot(lift.to.x - 666, lift.to.z - 731) < .01);
-    for (const id of ['hanshin-umeda-south-ground', 'hanshin-umeda-south-deck']) {
+    const facing = lift.doorFacingRad!;
+    const atDoor = (distance: number, side = 0) => ({
+        x: lift.to.x + distance * Math.cos(facing) - side * Math.sin(facing),
+        z: lift.to.z + distance * Math.sin(facing) + side * Math.cos(facing)
+    });
+    for (const id of ['hanshin-umeda-south-b1-lift-door-approach', 'hanshin-umeda-south-ground', 'hanshin-umeda-south-deck']) {
         const area = station.layout.areas.find(a => a.id === id)!;
-        assert(pointInPolygon(lift.to, area.outline));
+        assert(!pointInPolygon(lift.to, area.outline));
+        assert(!pointInPolygon(atDoor(-2), area.outline));
+        assert([-1, 0, 1].every(side => pointInPolygon(atDoor(1.78, side), area.outline)));
         const maxEdge = Math.max(...area.outline.map((p, i) => {
             const next = area.outline[(i + 1) % area.outline.length]!;
             return Math.hypot(p.x - next.x, p.z - next.z);
         }));
-        assert(maxEdge <= 12.01, 'landing is still scaled to station size');
+        assert(maxEdge <= 3, 'door approach must stay within the width of the shaft');
     }
+    const bridge = layout.areas.filter(a => a.blockId === 'south-decks' && a.railings);
+    assert(bridge.some(a => pointInPolygon(atDoor(3.3), a.outline) && !a.holes?.some(h => pointInPolygon(atDoor(3.3), h))));
+    assert(layout.areas.some(a => a.kind === 'public' && levels.find(l => l.id === a.level)?.y === -8 &&
+        pointInPolygon(atDoor(2), a.outline) && !a.holes?.some(h => pointInPolygon(atDoor(2), h))));
 });
 
 test('Hanshin office keeps four right-angle corners and the retail frontage has no northward box', () => {

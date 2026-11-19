@@ -1,6 +1,6 @@
 import * as T from 'three';
 import type { Level, LevelId, Platform, VerticalConnection } from '../../../domain/map/model.ts';
-import { elevatorShaftWidth } from '../../../application/connections/connection-openings.ts';
+import { elevatorShaftWidth, elevatorWellHalfWidth } from '../../../application/connections/connection-openings.ts';
 import { connectionHeading } from '../../../application/connections/connection-orientation.ts';
 import { connectionLanes, escalatorTreadWidth } from '../../../application/connections/connection-lanes.ts';
 import { viewLayerRole } from '../../../application/exploration/view-layer.ts';
@@ -147,7 +147,10 @@ export class VerticalConnectionModel {
     private landing(group: T.Group, elevator = false): void {
         if (elevator) {
             const w = elevatorShaftWidth;
-            box(group, 'landing-sill', 0, 0, w * 0.6, w - 0.2, 0.14, w * 0.25, 0xbcc8bb);
+            const sillBack = w / 2 - 0.08;
+            const sillFront = elevatorWellHalfWidth + 0.06;
+            // Keep the threshold just above the nominal floor to avoid coplanar faces.
+            box(group, 'landing-sill', 0, -0.14, (sillBack + sillFront) / 2, w * 0.8, 0.1, sillFront - sillBack, 0xbcc8bb);
             for (const x of [-w * 0.3875, w * 0.3875]) {
                 box(group, 'landing-door-frame', x, 1.25, w / 2 + 0.05, 0.16, 2.5, 0.2, 0x557f7a);
             }

@@ -28,8 +28,8 @@ export function southDecks(stations: StationMap[]): {
             p(-10, 25)
         ]
     };
-    const hanshin = stations.find(s => s.id === 'hanshin-umeda')!.layout.areas.find(a => a.id === 'hanshin-umeda-south-deck')!;
-    const hs = hanshin.outline.reduce((v, q) => ({ x: v.x + q.x / 4, z: v.z + q.z / 4 }), { x: 0, z: 0 });
+    const hanshin = stations.find(s => s.id === 'hanshin-umeda')!;
+    const liftDeck = hanshin.layout.connections.find(c => c.id === 'hanshin-umeda-south-lift-ground-deck')!.to;
     const paths = sourceDeckPaths([
         'south-skywalk',
         'bridge-north',
@@ -81,7 +81,7 @@ export function southDecks(stations: StationMap[]): {
             portal('hankyu-dept-north-door', 'hankyu-dept', { x: 645.5, z: 564.6 }, -Math.PI / 4),
             portal('hankyu-dept-south-door', 'hankyu-dept', { x: 669.3, z: 632.4 }, -Math.PI / 4),
             portal('hanshin-dept-door', 'hanshin-dept', { x: 701.5, z: 750.3 }, Math.PI / 6),
-            portal('hanshin-station-lift', 'station:hanshin-umeda', hs, -Math.PI / 6),
+            portal('hanshin-station-lift', 'station:hanshin-umeda', { x: liftDeck.x, z: liftDeck.z }, -Math.PI / 6),
         ]
     };
 }

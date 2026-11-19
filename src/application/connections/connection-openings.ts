@@ -1,3 +1,4 @@
+import clipping from 'polygon-clipping';
 import type { FloorOpening, Level, Platform, Point2, VerticalConnection } from '../../domain/map/model.ts';
 import { passageOutline, rotatePoint } from '../../domain/map/geometry.ts';
 import { connectionHeading } from './connection-orientation.ts';
@@ -5,6 +6,26 @@ import { connectionLanes, escalatorOverallWidth } from './connection-lanes.ts';
 // Diagram units shared by the clearance plan and its rendered equipment.
 export const escalatorWidth = escalatorOverallWidth;
 export const elevatorShaftWidth = 3;
+export const elevatorWellHalfWidth = elevatorShaftWidth / 2 + 0.25;
+
+/** Build a door-width apron, joining it to the supplied floor where they overlap. */
+export function elevatorDoorApproach(center: Point2, facing: number, connectedFloor?: Point2[]): Point2[] {
+    const point = (distance: number): Point2 => ({
+        x: center.x + Math.cos(facing) * distance,
+        z: center.z + Math.sin(facing) * distance
+    });
+    const approach = passageOutline(point(elevatorShaftWidth / 2 - 0.1), point(elevatorWellHalfWidth + 1.5), 2.6);
+    if (!connectedFloor) {
+        return approach;
+    }
+    const [floor, apron] = [connectedFloor, approach].map(outline => [outline.map(({ x, z }): clipping.Pair => [x, z])]);
+    const joined = clipping.union(floor!, apron!);
+    if (joined.length !== 1 || joined[0]!.length !== 1) {
+        throw new Error('An elevator approach and its connected floor must form one simple outline');
+    }
+    return joined[0]![0]!.slice(0, -1).map(([x, z]) => ({ x, z }));
+}
+
 /**
  * Plan real slab openings for each equipment lane; exterior connections do not cut internal wells.
  */
@@ -45,7 +66,7 @@ export function planFloorOpenings(
                 const center: Point2 = { x: connection.from.x + t * dx, z: connection.from.z + t * dz };
                 let outline: Point2[];
                 if (connection.kind === 'elevator') {
-                    const half = (elevatorShaftWidth + 0.5) / 2;
+                    const half = elevatorWellHalfWidth;
                     const heading = connectionHeading(connection, platforms, fromY, toY);
                     outline = [
                         { x: center.x - half, z: center.z - half },

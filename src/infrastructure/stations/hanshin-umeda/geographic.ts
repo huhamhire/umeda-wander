@@ -1,6 +1,7 @@
 import { axisPlacement } from '../../../domain/map/axis-calibration.ts';
 import { createStation } from './index.ts';
 import { passageOutline, pointInPolygon } from '../../../domain/map/geometry.ts';
+import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
 // Manual endpoint fit to the reviewed road / underground plan, not surveyed coordinates.
 export const hanshinAxis = {
     negativeEnd: { x: 612, z: 718 },
@@ -40,7 +41,7 @@ export function createGeographicHanshin() {
     }
     const landing = station.layout.areas.find(a => a.id === 'hanshin-umeda-east-upper-public')!;
     landing.outline = rectangle(-79, -10, 8, 18);
-    // Retain compact lift landings beside the bridge instead of station-scaled square plazas.
+    // Reuse the calibrated lift position when fitting the door-side approaches.
     const lift = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;
     const dx = 666 - lift.to.x;
     const dz = 731 - lift.to.z;
@@ -60,18 +61,22 @@ export function createGeographicHanshin() {
         facility.z += dz;
     }
     const b1Landing = station.layout.areas.find(a => a.id === 'hanshin-umeda-south-b1-landing')!;
-    // Keep the stair-side B1 apron in place when moving only the external lift.
-    const angle = Math.atan2(76, -129);
+    // Keep the stair-side apron and give the lift its own B1 door approach.
+    const b1Lift = moved.find(c => c.id.endsWith('south-lift-b1-ground'))!;
+    station.layout.areas.push({
+        ...b1Landing,
+        id: 'hanshin-umeda-south-b1-lift-door-approach',
+        level: b1Lift.from.level,
+        outline: elevatorDoorApproach(b1Lift.from, b1Lift.doorFacingRad!),
+        label: false,
+        evidence: b1Lift.evidence
+    });
     for (const id of ['hanshin-umeda-south-ground', 'hanshin-umeda-south-deck']) {
         const area = station.layout.areas.find(a => a.id === id)!;
-        const point = lift.to;
-        area.outline = passageOutline(
-            { x: point.x - Math.cos(angle) * 3.2, z: point.z - Math.sin(angle) * 3.2 },
-            { x: point.x + Math.cos(angle) * 3.2, z: point.z + Math.sin(angle) * 3.2 },
-            id.endsWith('south-ground') ? 12 : 6
-        );
+        area.outline = elevatorDoorApproach(lift.to, lift.doorFacingRad!);
+        area.railings = id.endsWith('south-deck');
     }
-    for (const connection of station.layout.connections.filter(c => c.id.includes('south-ground-') || c.id.includes('south-lift-'))) {
+    for (const connection of station.layout.connections.filter(c => c.id.includes('south-ground-'))) {
         for (const node of [connection.from, connection.to]) {
             if (station.layout.areas.some(a => a.level === node.level && pointInPolygon(node, a.outline))) {
                 continue;

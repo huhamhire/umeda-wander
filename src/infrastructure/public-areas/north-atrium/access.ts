@@ -3,6 +3,7 @@ import type { FloorArea, Point2, VerticalConnection, Evidence, Level } from '../
 import type { StationPublicInterface } from '../../../domain/map/spatial-block.ts';
 import { jrPublicAccessAnchors } from '../../stations/jr-osaka/public-access.ts';
 import { passageOutline } from '../../../domain/map/geometry.ts';
+import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
 
 export const publicGroundLevel: Level = {
     id: 'district-ground',
@@ -42,6 +43,9 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
             ...(kind === 'elevator' ? { doorFacingRad: -31.65 * Math.PI / 180 } : {}),
         };
         connections.push(c);
+        if (kind === 'elevator') {
+            return c;
+        }
         for (const n of [c.from, c.to]) {
             areas.push({
                 id: n.id + ':landing',
@@ -55,6 +59,7 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
                 evidence
             });
         }
+        return c;
     };
     const anchors = jrPublicAccessAnchors();
     const proof: Evidence = {
@@ -66,7 +71,7 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
     for (const bank of anchors.banks) {
         add('public-north-' + bank.reference, 'escalator', bank.b1, bank.ground, 'concourse', proof);
     }
-    add('public-north-lift-b', 'elevator', anchors.lift, anchors.lift, 'concourse', proof);
+    const northLift = add('public-north-lift-b', 'elevator', anchors.lift, anchors.lift, 'concourse', proof);
     areas.push({
         id: 'public-north-lift-ground-access',
         level: 'concourse',
@@ -74,7 +79,7 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
         name: messageText('publicAreas.northAtrium.entities.publicNorthLiftGroundAccess.name'),
         kind: 'public',
         label: false,
-        outline: passageOutline(anchors.lift, anchors.liftGroundJoin, 5),
+        outline: elevatorDoorApproach(northLift.to, northLift.doorFacingRad!, passageOutline(anchors.lift, anchors.liftGroundJoin, 5)),
         evidence: proof
     });
     add(
@@ -114,6 +119,19 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
     };
     add('public-umekita-ground-escalator', 'escalator', at(8, -4), at(24, -4), 'district-ground', umekitaProof);
     add('public-umekita-ground-stairs', 'stairs', at(8, 0), at(24, 0), 'district-ground', umekitaProof);
-    add('public-umekita-ground-lift', 'elevator', at(12, 6), at(12, 6), 'district-ground', umekitaProof);
+    const groundLift = add('public-umekita-ground-lift', 'elevator', at(12, 6), at(12, 6), 'district-ground', umekitaProof);
+    for (const [lift, stop] of [[northLift, northLift.from], [groundLift, groundLift.to]] as const) {
+        areas.push({
+            id: stop.id + ':landing',
+            level: stop.level,
+            blockId: lift.blockId,
+            name: messageText('publicAreas.northAtrium.entranceLanding.name'),
+            kind: 'public',
+            outline: elevatorDoorApproach(stop, lift.doorFacingRad!),
+            height: .55,
+            label: false,
+            evidence: lift.evidence
+        });
+    }
     return { connections, areas };
 }
