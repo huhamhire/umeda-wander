@@ -99,6 +99,7 @@ test('pinch and wheel zoom retain their scale factors, cancellation and disposal
     dispatch(canvas, 'pointerdown', { pointerId: 1, pointerType: 'touch', clientX: 0 });
     dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 10 });
     dispatch(canvas, 'pointermove', { pointerId: 1, clientX: -10 });
+    gestures.applyTouchGesture();
     dispatch(canvas, 'pointercancel', { pointerId: 1 });
     assert(gestures.isMoving);
     dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 10 });
@@ -117,7 +118,7 @@ test('pinch and wheel zoom retain their scale factors, cancellation and disposal
     assert.deepEqual(selections, []);
 });
 
-test('two-finger twist orbits its starting midpoint, with separate distance-based zoom', () => {
+test('twist and pinch ignore competing motion until a finger is lifted', () => {
     const starts: number[][] = [];
     const zoomPivots: number[][] = [];
     const pivot = new Vector3(4, 5, 6);
@@ -133,17 +134,70 @@ test('two-finger twist orbits its starting midpoint, with separate distance-base
     try {
         dispatch(canvas, 'pointerdown', { pointerId: 1, pointerType: 'touch', clientX: 10 });
         dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 30 });
-        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 10, clientY: 20 });
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 31, clientY: 1 });
+        gestures.applyTouchGesture();
+        assert.deepEqual(starts, []);
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 10, clientY: 22 });
+        gestures.applyTouchGesture();
         assert.deepEqual(rotations, [[4, 5, 6, -Math.PI / 2, 0]]);
-        assert.deepEqual(zoomPivots, []);
-        pivot.set(0, 0, 0);
-        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 10, clientY: 40 });
-        assert.deepEqual(zoomPivots, [[2, 4, 5, 6]]);
+        assert.equal(zoomPivots.length, 0);
+        pivot.set(7, 8, 9);
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 6, clientY: 44 });
+        gestures.applyTouchGesture();
+        assert.deepEqual(rotations[1]!.slice(0, 3), [4, 5, 6]);
+        assert(Math.abs(rotations[1]![3]! + Math.atan2(4, 44)) < 1e-9);
+        assert.equal(rotations[1]![4], 0);
+        assert.equal(zoomPivots.length, 0);
         assert.deepEqual(starts, [[20, 0]]);
-        dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 10, clientY: 40 });
+        dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 6, clientY: 44 });
+
+        dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 30 });
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 50, clientY: 4 });
+        gestures.applyTouchGesture();
+        assert.deepEqual(zoomPivots, [[Math.hypot(40, 4) / 20, 7, 8, 9]]);
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 4, clientY: 60 });
+        gestures.applyTouchGesture();
+        assert(Math.abs(zoomPivots[1]![0]! - 1.5) < 1e-9);
+        assert.deepEqual(zoomPivots[1]!.slice(1), [7, 8, 9]);
+        assert.equal(rotations.length, 2);
+        assert.deepEqual(starts, [[20, 0], [20, 0]]);
+        dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 4, clientY: 60 });
         dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 14, clientY: 3 });
         dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 14, clientY: 3 });
         assert.deepEqual(pans, [[4, 3]]);
+        assert.deepEqual(selections, []);
+        assert(!gestures.isMoving);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('parallel two-finger movement changes pitch in both directions without zoom or yaw', () => {
+    const starts: number[][] = [];
+    const { canvas, gestures, rotations, zooms, pans, selections } = setup({
+        beginOrbit: (x, y) => {
+            starts.push([x, y]);
+            return new Vector3(1, 2, 3);
+        }
+    });
+    try {
+        dispatch(canvas, 'pointerdown', { pointerId: 1, pointerType: 'touch', clientX: 10, clientY: 40 });
+        dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 30, clientY: 40 });
+        dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 10, clientY: 52 });
+        gestures.applyTouchGesture();
+        assert.deepEqual(rotations, []);
+        assert.deepEqual(zooms, []);
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 30, clientY: 52 });
+        gestures.applyTouchGesture();
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 31, clientY: 40 });
+        dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 10, clientY: 38 });
+        gestures.applyTouchGesture();
+        dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 31, clientY: 40 });
+        dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 10, clientY: 38 });
+        assert.deepEqual(starts, [[20, 40]]);
+        assert.deepEqual(rotations, [[1, 2, 3, 0, 12 * .006], [1, 2, 3, 0, -13 * .006]]);
+        assert.deepEqual(zooms, []);
+        assert.deepEqual(pans, []);
         assert.deepEqual(selections, []);
         assert(!gestures.isMoving);
     } finally {

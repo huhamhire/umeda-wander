@@ -1,13 +1,8 @@
 {
   "facilities.labels.connection": "{location} · {kind} · {destination}",
   "facilities.labels.convenienceStore": "7-Eleven",
-  "facilities.labels.elevator": "Elevator ↕",
-  "facilities.labels.escalator": "Escalator ↗",
-  "facilities.labels.information": "Information i",
-  "facilities.labels.mezzanineStairs": "Mezzanine stairs",
   "facilities.labels.platformName": "Track {tracks} platform",
   "facilities.labels.platformTracks": "Tracks {tracks}",
-  "facilities.labels.ticketMachine": "Ticket machines",
   "facilities.labels.trackNumber": "Track {number}",
   "facilities.labels.trackSuffix": " tracks",
   "facilities.locations.carillon": "Carillon Plaza",

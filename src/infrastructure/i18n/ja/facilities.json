@@ -1,13 +1,8 @@
 {
   "facilities.labels.connection": "{location} · {kind} · {destination}",
   "facilities.labels.convenienceStore": "セブン-イレブン",
-  "facilities.labels.elevator": "エレベーター ↕",
-  "facilities.labels.escalator": "エスカレーター ↗",
-  "facilities.labels.information": "案内 i",
-  "facilities.labels.mezzanineStairs": "中2階への階段",
   "facilities.labels.platformName": "{tracks} 番のりば",
   "facilities.labels.platformTracks": "{tracks} 番のりば",
-  "facilities.labels.ticketMachine": "券売機",
   "facilities.labels.trackNumber": "{number} 番のりば",
   "facilities.labels.trackSuffix": " 番のりば",
   "facilities.locations.carillon": "カリヨン広場",

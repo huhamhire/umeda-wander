@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
 import type { Level } from '../../src/domain/map/model.ts';
-import { SceneLabels, type SceneLabelDefinition } from '../../src/presentation/labels/scene-labels.ts';
+import { SceneLabels, type SceneLabelDefinition, type SceneLabelView } from '../../src/presentation/labels/scene-labels.ts';
 
 class LabelStub {
     className = '';
@@ -53,7 +53,7 @@ function withLabels(definitions: SceneLabelDefinition[], run: (labels: SceneLabe
     }
 }
 
-function render(labels: SceneLabels): void {
+function render(labels: SceneLabels, selection?: SceneLabelView['selection']): void {
     const camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 1000);
     camera.position.set(0, 100, 100);
     camera.lookAt(0, 0, 0);
@@ -70,7 +70,8 @@ function render(labels: SceneLabels): void {
         width: 1000,
         height: 800,
         zoom: 2,
-        occluders: []
+        occluders: [],
+        selection
     });
 }
 
@@ -90,6 +91,29 @@ test('current-floor labels win collisions, context labels mute, hidden roofs do 
         assert(elements[3]!.hidden);
         assert(Math.abs(Number.parseFloat(elements[1]!.style.left) - 500) < 1e-9);
         assert(Math.abs(Number.parseFloat(elements[1]!.style.top) - 400) < 1e-9);
+    });
+});
+
+test('detail labels are lazy, take priority on selection and reuse a single DOM node', () => {
+    const position = new T.Vector3();
+    withLabels([{ text: 'platform', position, level: 'platform', emphasis: true }], (labels, elements) => {
+        render(labels);
+        assert.equal(elements.length, 1);
+        assert(!elements[0]!.hidden);
+        render(labels, { text: 'escalator', position });
+        assert.equal(elements.length, 2);
+        assert(elements[0]!.hidden);
+        const detail = elements[1]!;
+        assert.equal(detail.textContent, 'escalator');
+        assert(!detail.hidden);
+        render(labels, { text: 'elevator', position });
+        assert.equal(elements.length, 2);
+        assert.equal(detail.textContent, 'elevator');
+        render(labels);
+        assert(detail.hidden);
+        assert(!elements[0]!.hidden);
+        labels.dispose();
+        assert(detail.removed);
     });
 });
 

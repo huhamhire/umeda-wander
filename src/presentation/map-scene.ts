@@ -7,7 +7,7 @@ import { geographicBuildings } from '../infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
 import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
 import * as T from 'three';
-import type { Facility, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
+import type { Facility, FacilityKind, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
 import { allowsGroundLayer, viewLayerRole } from '../application/exploration/view-layer.ts';
@@ -18,6 +18,8 @@ import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
+
+const facilityDetailKinds = new Set<FacilityKind>(['escalator', 'elevator', 'stairs', 'ticket-machine', 'information']);
 
 export interface MapCameraSnapshot {
     offset: [number, number, number];
@@ -598,6 +600,7 @@ export class MapScene {
     /** Render camera motion independently of static geometry, shading and layer visibility. */
     private render(): void {
         this.frame = 0;
+        this.gestures.applyTouchGesture();
         const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
         const { value, animate } = advanceExplode(this.displayedExplode, this.state.explode, this.immediateExplode, reducedMotion);
         this.immediateExplode = false;
@@ -652,6 +655,10 @@ export class MapScene {
         const showLabels = !this.draggingExplode && (!this.gestures.isMoving || worldUnitsPerPixel < 0.7);
         this.labels.setVisible(showLabels);
         if (showLabels) {
+            const facility = this.activeFacility;
+            const selection = this.selected.visible && facility && facilityDetailKinds.has(facility.kind)
+                ? { text: facility.name, position: this.selectionMarker.labelAnchor() }
+                : undefined;
             this.labels.update({
                 state: this.state,
                 levels: this.levels,
@@ -662,7 +669,8 @@ export class MapScene {
                 width: this.width,
                 height: this.height,
                 zoom: this.zoomValue,
-                occluders: this.labelOccluders
+                occluders: this.labelOccluders,
+                selection
             });
         }
         if (animate || this.focusTransition || (this.selected.visible && !reducedMotion)) {

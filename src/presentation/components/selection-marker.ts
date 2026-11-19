@@ -67,6 +67,12 @@ export class SelectionMarker {
     restart(now: number): void {
         this.startedAt = now;
     }
+
+    /** Anchor the detail label above the floating pin in world coordinates. */
+    labelAnchor(): T.Vector3 {
+        return this.floating.localToWorld(new T.Vector3(0, 5, 0));
+    }
+
     /**
      * Advance entrance and floating animation, remaining still for reduced motion; report whether another frame is needed.
      */

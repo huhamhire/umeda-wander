@@ -1,13 +1,8 @@
 {
   "facilities.labels.connection": "{location} · {kind} · {destination}",
   "facilities.labels.convenienceStore": "7-Eleven",
-  "facilities.labels.elevator": "直梯 ↕",
-  "facilities.labels.escalator": "扶梯 ↗",
-  "facilities.labels.information": "咨询 i",
-  "facilities.labels.mezzanineStairs": "夹层楼梯",
   "facilities.labels.platformName": "{tracks} 番线站台",
   "facilities.labels.platformTracks": "{tracks} 番线",
-  "facilities.labels.ticketMachine": "自动售票机",
   "facilities.labels.trackNumber": "{number} 番线",
   "facilities.labels.trackSuffix": " 番线",
   "facilities.locations.carillon": "钟楼广场",

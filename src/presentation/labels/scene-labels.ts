@@ -30,6 +30,7 @@ export interface SceneLabelView {
     height: number;
     zoom: number;
     occluders: T.Object3D[];
+    selection?: Pick<SceneLabelDefinition, 'text' | 'position'>;
 }
 
 /** Own screen labels, their occlusion and collision ordering independently of scene geometry. */
@@ -37,6 +38,7 @@ export class SceneLabels {
     private readonly host: HTMLElement;
     private readonly labels: MapLabel[] = [];
     private readonly labelOcclusion = new LabelOcclusion();
+    private selectionElement?: HTMLDivElement;
 
     /** Create DOM labels from model-owned anchors without copying station layout logic. */
     constructor(host: HTMLElement, definitions: readonly SceneLabelDefinition[]) {
@@ -58,6 +60,25 @@ export class SceneLabels {
         }
     }
 
+    /** Create one reusable detail label only when a facility is selected. */
+    private selectionLabel(definition: SceneLabelView['selection']): MapLabel | undefined {
+        if (!definition) {
+            if (this.selectionElement) {
+                this.selectionElement.hidden = true;
+            }
+            return undefined;
+        }
+        if (!this.selectionElement) {
+            this.selectionElement = document.createElement('div');
+            this.selectionElement.className = 'map-label emphasis';
+            this.host.append(this.selectionElement);
+        }
+        if (this.selectionElement.textContent !== definition.text) {
+            this.selectionElement.textContent = definition.text;
+        }
+        return { ...definition, element: this.selectionElement, emphasis: true };
+    }
+
     /** Project, mute, occlude and deconflict labels using one DOM measurement pass. */
     update(view: SceneLabelView): void {
         const { state, levels, levelY, camera, roof, rect, width, height, zoom } = view;
@@ -75,13 +96,17 @@ export class SceneLabels {
         );
         const priority = (label: MapLabel) => Number(!labelMuted(label)) * 8 + Number(label.level && viewLayerRole(levels, state, label.level) === 'current') * 4 + Number(label.element.classList.contains('emphasis'));
         const orderedLabels = [...this.labels].sort((a, b) => priority(b) - priority(a));
+        const selection = this.selectionLabel(view.selection);
+        if (selection) {
+            orderedLabels.unshift(selection);
+        }
         const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
             if (label.surface && !label.surface.visible) {
                 visible = false;
             }
-            label.element.classList.toggle('context', role === 'context' || labelMuted(label));
+            label.element.classList.toggle('context', role === 'context' || (label !== selection && labelMuted(label)));
             if (role === 'context' && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
@@ -104,7 +129,7 @@ export class SceneLabels {
                 return [];
             }
             const x = rect.left + (point.x + 1) * width / 2;
-            const y = rect.top + (1 - point.y) * height / 2;
+            const y = rect.top + (1 - point.y) * height / 2 - (label === selection ? 14 : 0);
             label.element.style.left = `${x}px`;
             label.element.style.top = `${y}px`;
             return [{
@@ -134,5 +159,7 @@ export class SceneLabels {
             label.element.remove();
         }
         this.labels.length = 0;
+        this.selectionElement?.remove();
+        this.selectionElement = undefined;
     }
 }

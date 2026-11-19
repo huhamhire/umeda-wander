@@ -445,23 +445,12 @@ export class MapModels {
                 cabinet(offset, 1.48, 0.49, 0.66, 0.1, 0.05, 0x3c5c54);
                 cabinet(offset, 3.1, 0, 1.4, 0.12, 0.88, 0x91b397);
             }
-            this.label(messageText('facilities.labels.ticketMachine'), facility.x, 3.6, facility.z, facility.level);
         }
         else if (facility.kind === 'information') {
             this.primitives.box(group, facility.x, 2.1, facility.z, 7, 0.4, 3, colors.white);
-            this.label(messageText('facilities.labels.information'), facility.x, 3.5, facility.z, facility.level);
         }
         else if (facility.kind === 'convenience-store') {
             this.label(facility.name, facility.x, 3.3, facility.z, facility.level, false, true);
-        }
-        else if (['stairs', 'escalator', 'elevator'].includes(facility.kind)) {
-            this.label(
-                facility.kind === 'elevator' ? messageText('facilities.labels.elevator') : facility.kind === 'stairs' ? messageText('facilities.labels.mezzanineStairs') : messageText('facilities.labels.escalator'),
-                facility.x,
-                2.2,
-                facility.z,
-                facility.level
-            );
         }
     }
 

@@ -1,7 +1,9 @@
 import type { Vector3 } from 'three';
 
 type PointerSample = { x: number; y: number; touch: boolean };
-const mouseOrbitRadiansPerPixel = .006;
+type TouchPair = { first: PointerSample; second: PointerSample };
+const orbitRadiansPerPixel = .006;
+const touchGestureThreshold = 4;
 
 export interface MapGestureActions {
     beginOrbit: (clientX: number, clientY: number) => Vector3 | undefined;
@@ -24,6 +26,9 @@ export class MapGestures {
     private moving = false;
     private orbit?: { pointer: number; pivot: Vector3 };
     private touchPivot?: Vector3;
+    private touchBaseline?: TouchPair;
+    private touchMode?: 'pitch' | 'yaw' | 'zoom';
+    private waitingForSecondTouch = false;
 
     /** Bind one canvas and retain removable listeners for the lifetime of the map. */
     constructor(canvas: HTMLCanvasElement, actions: MapGestureActions) {
@@ -42,7 +47,7 @@ export class MapGestures {
         }, { signal });
         canvas.addEventListener('lostpointercapture', event => {
             if (this.pointers.delete(event.pointerId)) {
-                this.touchPivot = undefined;
+                this.resetTouchGesture();
                 this.dragged = true;
             }
             if (this.orbit?.pointer === event.pointerId) {
@@ -72,7 +77,7 @@ export class MapGestures {
     /** Forget an active orbit after selecting a facility or resetting the view. */
     cancelOrbit(): void {
         this.orbit = undefined;
-        this.touchPivot = undefined;
+        this.resetTouchGesture();
     }
 
     /** Detach all canvas listeners and release transient pointer state. */
@@ -99,7 +104,7 @@ export class MapGestures {
             this.dragged = true;
         }
         this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, touch: event.pointerType === 'touch' });
-        this.touchPivot = undefined;
+        this.resetTouchGesture();
         this.canvas.setPointerCapture(event.pointerId);
     }
 
@@ -116,53 +121,112 @@ export class MapGestures {
         const deltaX = event.clientX - old.x;
         const deltaY = event.clientY - old.y;
         this.moving ||= deltaX !== 0 || deltaY !== 0;
-        const other = [...this.pointers].find(([id]) => id !== event.pointerId)?.[1];
+        this.touchBaseline ??= this.currentTouchPair();
+        this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, touch: old.touch });
         if (this.orbit?.pointer === event.pointerId && (event.buttons & 4) && this.actions.rotate(
-            this.orbit.pivot, deltaX * mouseOrbitRadiansPerPixel, deltaY * mouseOrbitRadiansPerPixel
+            this.orbit.pivot, deltaX * orbitRadiansPerPixel, deltaY * orbitRadiansPerPixel
         )) {
             this.dragged = true;
-        } else if (other && this.pointers.size === 2) {
-            this.movePinch(old, other, event);
-        } else if (!other) {
+        } else if (this.pointers.size === 1) {
             this.actions.pan(deltaX, deltaY);
         }
-        old.x = event.clientX;
-        old.y = event.clientY;
         this.actions.invalidate();
     }
 
-    /** Keep the original two-finger midpoint anchored while measuring angle and distance independently. */
-    private movePinch(old: PointerSample, other: PointerSample, event: PointerEvent): void {
-        const beforeX = old.x - other.x;
-        const beforeY = old.y - other.y;
-        const afterX = event.clientX - other.x;
-        const afterY = event.clientY - other.y;
-        const previous = Math.hypot(beforeX, beforeY);
-        const current = Math.hypot(afterX, afterY);
-        if (Math.min(previous, current) < 4) {
+    /** Classify paired samples together, then apply only the locked action until the pair changes. */
+    applyTouchGesture(finishing = false): void {
+        const baseline = this.touchBaseline;
+        const pair = this.currentTouchPair();
+        if (!baseline || !pair || (baseline.first === pair.first && baseline.second === pair.second)) {
             return;
         }
-        if (old.touch && other.touch) {
-            this.touchPivot ??= this.actions.beginOrbit((old.x + other.x) / 2, (old.y + other.y) / 2)?.clone();
-            // atan2 of the cross and dot products wraps cleanly when the fingers pass ±π.
-            const twist = Math.atan2(beforeX * afterY - beforeY * afterX, beforeX * afterX + beforeY * afterY);
+        const firstX = pair.first.x - baseline.first.x;
+        const firstY = pair.first.y - baseline.first.y;
+        const secondX = pair.second.x - baseline.second.x;
+        const secondY = pair.second.y - baseline.second.y;
+        const midpointY = (firstY + secondY) / 2;
+        const beforeX = baseline.first.x - baseline.second.x;
+        const beforeY = baseline.first.y - baseline.second.y;
+        const afterX = pair.first.x - pair.second.x;
+        const afterY = pair.first.y - pair.second.y;
+        const previous = Math.hypot(beforeX, beforeY);
+        const current = Math.hypot(afterX, afterY);
+        if (Math.min(previous, current) < touchGestureThreshold) {
+            this.touchBaseline = pair;
+            return;
+        }
+        // Cross and dot products wrap the twist cleanly as the fingers pass ±π.
+        const twist = Math.atan2(beforeX * afterY - beforeY * afterX, beforeX * afterX + beforeY * afterY);
+        if (!this.touchMode) {
+            const vertical = Math.abs(midpointY);
+            const horizontal = Math.abs(firstX + secondX) / 2;
+            const separationChange = Math.hypot(firstX - secondX, firstY - secondY) / 2;
+            // Compare pinch and twist as distances travelled by one finger around the midpoint.
+            const pinchDistance = Math.abs(current - previous) / 2;
+            const twistDistance = Math.abs(twist) * (previous + current) / 4;
+            if (vertical >= touchGestureThreshold && vertical > Math.max(horizontal, separationChange * 1.5)) {
+                this.touchMode = 'pitch';
+            } else if (Math.max(pinchDistance, twistDistance) >= touchGestureThreshold) {
+                // A second pointer event can arrive in the next frame of a parallel vertical drag.
+                if (vertical > horizontal * 1.5 && (firstY === 0 || secondY === 0) && !finishing && !this.waitingForSecondTouch) {
+                    this.waitingForSecondTouch = true;
+                    this.actions.invalidate();
+                    return;
+                }
+                this.touchMode = twistDistance > pinchDistance ? 'yaw' : 'zoom';
+            } else {
+                return;
+            }
+        }
+        this.touchPivot ??= this.actions.beginOrbit(
+            (baseline.first.x + baseline.second.x) / 2,
+            (baseline.first.y + baseline.second.y) / 2
+        )?.clone();
+        this.touchBaseline = pair;
+        if (this.touchMode === 'pitch') {
+            if (this.touchPivot && midpointY !== 0) {
+                this.actions.rotate(this.touchPivot, 0, midpointY * orbitRadiansPerPixel);
+            }
+        } else if (this.touchMode === 'yaw') {
             if (this.touchPivot && Math.abs(twist) > 1e-6) {
                 this.actions.rotate(this.touchPivot, -twist, 0);
             }
+        } else {
+            const scale = current / previous;
+            if (Math.abs(scale - 1) > 1e-6) {
+                this.actions.zoom(scale, this.touchPivot);
+            }
         }
-        const scale = current / previous;
-        if (Math.abs(scale - 1) > 1e-6) {
-            this.actions.zoom(scale, this.touchPivot);
+    }
+
+    /** Keep a stable finger order regardless of which pointer sent the latest event. */
+    private currentTouchPair(): TouchPair | undefined {
+        if (this.pointers.size !== 2) {
+            return undefined;
         }
+        const [first, second] = this.pointers.values();
+        if (first?.touch && second?.touch) {
+            return { first, second };
+        }
+        return undefined;
+    }
+
+    /** Reclassify from fresh samples whenever the active fingers change. */
+    private resetTouchGesture(): void {
+        this.touchBaseline = undefined;
+        this.touchPivot = undefined;
+        this.touchMode = undefined;
+        this.waitingForSecondTouch = false;
     }
 
     /** Select only a primary click that has not become a drag, pinch or orbit. */
     private pointerUp(event: PointerEvent): void {
+        this.applyTouchGesture(true);
         if (this.orbit?.pointer === event.pointerId) {
             this.cancelOrbit();
         }
         this.pointers.delete(event.pointerId);
-        this.touchPivot = undefined;
+        this.resetTouchGesture();
         if (event.button === 0 && !this.dragged && this.down) {
             this.actions.select(event.clientX, event.clientY);
         }
