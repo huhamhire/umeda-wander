@@ -1,13 +1,12 @@
 # 车站模块与地区组装
 
-H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。目录结构见[项目 README](../../README.md#项目结构)，待核对事项见[空间重构 Roadmap](../spatial-refactor-roadmap.md)。
+H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。目录结构见[项目 README](../../README.md#项目结构)，待核对事项见[Roadmap](../roadmap.md)。
 
-## 现役入口
+## 组装入口
 
 | 部分 | 入口（相对 src/） | 职责 |
 | --- | --- | --- |
 | 最终站模 | `infrastructure/district/geographic-stations.ts` | `createGeographicStation(id)` 独立创建站模；与全图共用设备校准与轨道恢复 |
-| JR 子区 | `infrastructure/stations/jr-osaka/geographic-station.ts` | 组装地面、梅北独立框架及西口、Crost、南门连接 |
 | 各站 | `infrastructure/stations/<id>/index.ts`、`geographic.ts` | 本站原始布局、设施、证据及地理校准；不引用其他站内部数据 |
 | 公共接口 | `application/stations/station-public-interfaces.ts` | 从付费边界生成稳定门户及标高、宽度、朝向和依据 |
 | 公共前庭 | `infrastructure/public-areas/station-frontages/index.ts` | 提取已有前庭与局部落台，捐入公共网，避免车站重复绘制 |
@@ -16,7 +15,7 @@ H5 使用地理米制总图，车站、商业建筑及公共区域按独立板�
 | 纯组装 | `application/stations/compose-station-maps.ts` | 汇总领域实体并拒绝重复身份，不耦合 Three.js |
 | H5 数据 | `infrastructure/district/geographic-map.ts` | 组装站体与公共板块、补齐设施目录，导出公共接口及绑定 |
 
-公共地下与高架所有者见 [公共板块说明](../../src/infrastructure/public-areas/README.md)。M16 前庭已接入共享地下公共面；Yodobashi 外环由公共 2F 板块持有，不属于建筑外壳副本。
+各站设计与源码目录集中在[七站索引](../design/stations/README.md)，公共地下与高架所有者见[公共板块说明](../../src/infrastructure/public-areas/README.md)。M16 前庭已接入共享地下公共面；Yodobashi 外环由公共 2F 板块持有，不属于建筑外壳副本。
 
 网页源码从 `data/geography/` 读取准备好的模型资源。原始快照和构内图由 `references/` 归档，提取、离线校准报告及核查脚本集中在 `scripts/geography/`。站体在场景中的组装和设备位置校准仍属运行时逻辑。
 
@@ -36,7 +35,7 @@ MapScene 协调镜头、状态和生命周期；MapModels 构造网格并输出�
 
 1. 修改具体站点、建筑或公共板块，保留稳定 ID 与来源。
 2. 修改空间时检查包络、设备端点、孔洞、围栏、公共接口、轨道与设施候选。
-3. 用 `node scripts/geography/review-stage-two.ts --station=nishi-umeda` 独立复核；省略站点参数输出七站。阶段三、四分别使用同目录下的 review 脚本。
+3. 用 `node scripts/geography/review-stations.ts --station=nishi-umeda` 独立复核；省略站点参数输出七站。公共网使用[对应的离线核查命令](./validation.md#数据与模型改动)。
 4. 按改动运行类型检查、回归、构建及离线图检查。几何相邻不解释为已核验门位或现场导航。
 
 ## 旧坐标对照

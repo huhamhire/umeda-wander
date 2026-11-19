@@ -1,7 +1,5 @@
 # 谷町线东梅田站 T20
 
-> 本站资料事实与布局核对记录。现役入口：`src/infrastructure/stations/higashi-umeda/`；局部草图数值和历次调整不等同当前地理标定。共用尺度及读取顺序见[七站索引](./README.md)，当前待办见 [Roadmap](../../spatial-refactor-roadmap.md)。
-
 ## 来源与确认范围
 
 主要依据用户新增的 `references/stations/higashi-umeda/station-guide.pdf`，共 1 页；对应 [Osaka Metro 官方构内图](https://subway.osakametro.co.jp/station_guide/station/T20_%E6%9D%B1%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf)及[站点页](https://subway.osakametro.co.jp/station_guide/T/t20/index.php)。新实体统一使用 `Evidence.source: tanimachi`，不能记作 M16 或 JR 参考图。
@@ -10,7 +8,7 @@
 
 ## 建模
 
-- `stations/higashi-umeda/index.ts` 使用独立 B2 站台、B1 改札／公共通路和 1F 地面落台。两个站台分别保留 `platformId`，轨道画在内侧；不画成岛式站台。
+- 模型使用独立 B2 站台、B1 改札／公共通路和 1F 地面落台。两个站台分别保留 `platformId`，轨道画在内侧；不画成岛式站台。
 - 四组付费区各有独立改札围栏。公共 B1 通路串联各出口和改札外，不添加两个站台间的闸内捷径。
 - 表达北侧楼梯、中西与南侧的楼梯／扶梯、两组站台电梯，以及街面出口的楼梯和公共电梯。斜段位置与长度按图上关系简化，不声称已逐个核对 A–J 楼梯编号；所有设备与楼板开口共享落点。
 - 出入口、售票机、售票处、咨询和跨层设施进入现有菜单，内部编号追加 `T20-001` 起，旧站编号保持。图上“店舗”只作店铺体块，不推断便利店品牌。

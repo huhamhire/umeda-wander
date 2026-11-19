@@ -10,7 +10,7 @@
 
 ## 当前实现
 
-本站模块在 `src/infrastructure/stations/hankyu-umeda/`，地理包络和内部校准由本站维护。三番街与站体共用建筑宿主，建筑体量不能重复封住 1F／2F 公共通道；造型见[建筑索引](../buildings/README.md)。
+地理包络和内部校准共用本站坐标。三番街与站体共用建筑宿主，建筑体量不能重复封住 1F／2F 公共通道；造型见[建筑索引](../buildings/README.md)。
 
 JR／Yodobashi 方向接本站公共接口，连接归地区二层板块，不把其他站内部数据导入本站。付费区、闸机、站台铺装使用浅灰粉／淡栗红主题，京都／宝冢／神户的线路色分别保留。
 
@@ -18,4 +18,4 @@ JR／Yodobashi 方向接本站公共接口，连接归地区二层板块，不�
 
 构内图可确认层级、设备符号和相对位置；当前站台尺寸、设备间距、桥门口与行车区域仍为地理拟合。不得用把整站推远的方式掩盖 JR 轨道与本站南端比例问题。建筑与轨道的平面净距、设备落点、开口、付费边界和公共落脚面均需同步检查。
 
-运行 `node scripts/geography/review-stage-two.ts --station=hankyu-umeda`，结合 `tests/stations/`、`tests/geography/` 和二层相关检查。实际外观与触屏仍需人工复核，见[北侧区域](../areas/north.md)。
+运行 `node scripts/geography/review-stations.ts --station=hankyu-umeda`，结合 `tests/stations/`、`tests/geography/` 和二层相关检查。实际外观与触屏仍需人工复核，见[北侧区域](../areas/north.md)。

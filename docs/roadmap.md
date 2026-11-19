@@ -1,13 +1,13 @@
-# 梅田地图空间重构 Roadmap
+# 梅田地图维护 Roadmap
 
-这里记录仍需核对的空间与交互事项。目录结构见[项目 README](../README.md#项目结构)，区域依据见[设计文档索引](./README.md)。
+七站地理模型、地下公共网和主要二层连廊进入日常维护。这里记录资料补证、模型细化和人工验收事项。目录结构见[项目 README](../README.md#项目结构)，区域依据见[设计文档索引](./README.md)。
 
 ## 空间待核对
 
 - **地下门位**：依据平面资料确定 JP 下沉广场到 Garden Avenue 主网，以及 E-ma、Hilton West 的具体门洞。核对北新地南侧出口、西梅田短升降落台与公共网的连接及高差。[南侧区域](./design/areas/south.md)
-- **地下占位**：核对第一酒店等未登记街区的独立边界，保留源图公共开挖面及孔洞。[地下装配](./design/public-areas/underground.md)
-- **二层接口**复核阪急西侧公共前沿、连廊宽度与净空、商业门位、设备落点及 Inogate 连桥两端的实际标高。[北侧区域](./design/areas/north.md) · [二层连廊](./design/public-areas/elevated.md)
-- **公共直梯门位**：统一校准设备位置时，核对北侧 26 号直梯的 2F 落点及北中庭 B 直梯、阪神南出口直梯的 B1 门前接驳。[二层连廊](./design/public-areas/elevated.md)
+- **地下占位**：核对第一酒店等未登记街区的独立边界，保留源图公共开挖面及孔洞。[地下公共网](./design/public-areas/underground.md)
+- **二层接口**：复核阪急西侧公共前沿、连廊宽度与净空、商业门位、设备落点及 Inogate 连桥两端的实际标高。[北侧区域](./design/areas/north.md) · [二层连廊](./design/public-areas/elevated.md)
+- **公共直梯地下接驳**：核对 JR 北中庭 B 直梯（大阪市图编号 26）和阪神南出口直梯的 B1 门前落台如何接入公共主网。[二层连廊](./design/public-areas/elevated.md)
 - **JR 北中庭**：确认通往建筑 4F 的扶梯落点及上方公共区域，取得依据后补入。[JR 大阪站](./design/stations/jr-osaka.md)
 - **外围地标候选**：评估蓝天大厦的模型范围与距离对取景的影响。
 

@@ -34,25 +34,25 @@
 
 配置中的公开链接逐项通过原发布站核对，包括 JR、阪急、阪神、Osaka Metro、大阪市两份 PDF、日本邮便、LUCUA、大丸、Grand Front、日本设计及 RESPIRE。线上资料可能更新，不能据此认定与仓库本地版本完全相同。无法确认的原始资料没有伪造公开下载链接，也没有把本地参考文件随弹窗发布。
 
-阶段三新增在用结果：`public-areas/metro-interchange/` 的三处局部接驳面依据 JR p6、M16 p1 与地区图编写；`north-atrium/access.ts` 的公共设备依据 JR p5–6／8。`basement-buildings.ts` 的 OSM 宿主轮廓经 `basement-occupancy.ts` 与参考 PDF 公共面相减，属于混合来源结果，不纳入纯 OSM 下载。对应原始资料仍适用上表的待授权事项，本轮没有获得新的许可、引入外部模型或在线瓦片。维护分区不会将 PDF 派生数据变成 ODbL。
+地下公共网使用混合来源。`public-areas/metro-interchange/` 的三处局部接驳面依据 JR p6、M16 p1 与地区图编写；`north-atrium/access.ts` 的公共设备依据 JR p2–3／5–6／8。`basement-buildings.ts` 的 OSM 宿主轮廓经 `basement-occupancy.ts` 与参考 PDF 公共面相减，属于混合来源结果，不纳入纯 OSM 下载。原始资料适用上表的待授权事项。
 
-阶段四新增在用结果：`data/geography/elevated/ways.json` 摘取仓库 OSM 的 34 条高架步行轴线，原坐标及估计宽度在 OSM 下载中交付。`public-areas/north-decks/`、`south-decks/`、`west-decks/` 的公共平台、`deck-access.ts` 的公共设备及建筑裁口结合高架步行图、站城楼层图和既有参考照片；其混合几何不作为纯 OSM 子集发布，仍对应上表的待授权事项。Yodobashi 外圈的沿边界退让是程序化拟合，没有新增图片贴图或第三方模型。
+高架资料保留 OSM 轴线和独立的混合几何。`data/geography/elevated/ways.json` 摘取仓库 OSM 的 34 条高架步行轴线，原坐标及估计宽度在 OSM 下载中交付。`public-areas/north-decks/`、`south-decks/`、`west-decks/` 的公共平台、`deck-access.ts` 的公共设备及建筑裁口结合高架步行图、站城楼层图和既有参考照片；其混合几何不作为纯 OSM 子集发布，仍对应上表的待授权事项。Yodobashi 外圈的沿边界退让是程序化拟合，没有新增图片贴图或第三方模型。
+
+`west-decks/inogate.ts` 根据 JR 位置图及两端 2F 图拟合独立公共前沿／新桥，具体资源为 `data/geography/elevated/inogate.json`。宿主轮廓来自仓库 OSM，前沿、桥面、门口及统一展示标高仍为混合来源参考拟合，适用原有待授权事项。`display-context.json` 根据地下公共面、核心站体及连廊裁剪地面铺装，不能当作纯 OSM 下载。
 
 ## 交互检查
 
 使用原生 `<dialog>.showModal()`，依赖浏览器的顶层模态与 inert 隔离；标题接收初始焦点，关闭按钮、Esc 和 cancel 均恢复入口焦点，Tab 首尾循环。手机入口包含 12px OSM 署名，触摸区域至少 44px，底部导览预留 58px 加安全区；对话框限制屏幕高度、内容独立滚动，关闭按钮在滚动区外。
 
-版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits/`、`src/content/source-credits.zh-CN.html`、`src/presentation/components/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集，旧下载对照已退役；其后用户追加的南侧布局、车站比例、北新地扶梯和默认展开调整单独记录于 `underground-space-plan.md`。
+版权功能当前维护入口为 `src/index.html`、`src/main.ts`、`src/styles/components/credits/`、`src/content/source-credits.zh-CN.html`、`src/presentation/components/source-credits-dialog.ts`、`tests/presentation/source-credits.test.ts` 及本记录。页面使用 `geographicOsmData` 导出实际引用的 OSM 子集。
 
 自动化测试覆盖内容节顺序、空节省略、许可分离、下载数据边界、打开关闭与键盘焦点生命周期，以及窄屏样式约束。遵照既有“不直接操作浏览器”的要求，没有做真实浏览器／手机视口的视觉和原生模态验收；原生 inert、触摸滚动与关闭后地图手势仍需在浏览器实测，不能把测试替身称为该项实测通过。
 
-本轮追加：公共 2F 桥面使用统一暖赭色；`west-decks/inogate.ts` 根据 JR 位置图及两端 2F 图拟合独立公共前沿／新桥，具体资源为 `data/geography/elevated/inogate.json`。新增宿主轮廓来自仓库 OSM，前沿、桥面、门口及统一展示标高仍为混合来源参考拟合，适用原有待授权事项。`display-context.json` 根据地下公共面、核心站体及连廊裁剪地面铺装，不能当作纯 OSM 下载；原始数据下载内容和许可保持原样。
-
-## PLATEAU 建筑补充
+## 地下占位、建筑与公共设备
 
 地下街区占位另有 `data/geography/underground/basement-source.json`／`basement-outlines.json`，分别保存 E-ma、Hilton West、MARU 的 PDF 原始边界及投影结果，用于 H5 B1 占位填充。来源为 `references/district/underground-walkway-map.pdf`，哈希及绘图对象可追溯；几何整理、改编和公开使用授权仍待核实。该部分不属于 OSM 或 PLATEAU 许可，不包含在纯 OSM 数据下载中。
 
-设施迁移校对恢复 `public-areas/south-diamor/jp-access.ts`：日本邮便连桥说明第 2 页直接确认下沉广场 B1–1F 外部阶梯及 B1–2F 电梯；`deck-access.ts` 的步道桥北端楼梯依据 JR 南侧 1F 图。仅核对了存在性及层间关系，位置、尺寸为人工拟合；仍适用原有改编／公开使用授权待确认状态，不新增许可推断。已核对的原始文件归档到 `references/commercial/`，未作为页面图片发布。
+`public-areas/south-diamor/jp-access.ts` 使用日本邮便连桥说明第 2 页确认下沉广场 B1–1F 外部阶梯及 B1–2F 电梯；`deck-access.ts` 的步道桥北端楼梯依据 JR 南侧 1F 图。仅核对了存在性及层间关系，位置、尺寸为人工拟合；仍适用原有改编／公开使用授权待确认状态，不新增许可推断。已核对的原始文件归档到 `references/commercial/`，未作为页面图片发布。
 
 Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽楼梯的拓扑及方位核对，单列在运行时数据与素材来源中；几何改编及公开使用授权待确认。原图保存在 `references/commercial/grand-front/`。全部本地资料按车站、地区、接驳及商业体分类，稳定 ID、原名、SHA-256、核对用途及待确认事项集中于 `references/catalog.json`；文件来源可追溯与获得授权是两个独立事项。
 
@@ -60,7 +60,7 @@ Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽�
 
 2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/design/buildings/model-calibration.md`。
 
-## HEP 与顶棚补充
+## 地标与顶棚
 
 北门大楼的屋面分带核对同一 PLATEAU 网格中的 LOD2 建筑 `bldg_a7a0f325-c271-44db-bced-7d3066780c65`，测绘年份为 2017。白模采用人工简化的退台和跨空关系，说明见[建筑白模校对](../design/buildings/model-calibration.md)。北侧桥棚覆盖范围依据俯视照片，桥轴仍沿用 OSM。照片未随页面发布，外观参考的授权边界沿用桥棚既有记录。
 

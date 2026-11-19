@@ -16,7 +16,7 @@ git diff --check
 
 按改动运行相关检查，提交前复核暂存差异；不为已通过且未变化的代码反复运行同一套检查。文档修改检查本地链接、路径、命令和事实引用；只调整链接与源码注释时无需重建模型或把历史测试数更新成当前数。
 
-测试按[七个领域](../../tests/README.md)组织，`npm test` 递归收集全部 `*.test.ts`。单域可用 `node --test "tests/stations/*.test.ts"`；固定设施基线不可自动重写。单个测试文件的范围比“第几阶段”的历史名称更重要。
+测试按[七个领域](../../tests/README.md)组织，`npm test` 递归收集全部 `*.test.ts`。单域可用 `node --test "tests/stations/*.test.ts"`；固定设施基线不可自动重写。公共空间的回归按地面、地下和高架分别定位。
 
 ## 数据与模型改动
 
@@ -28,7 +28,7 @@ git diff --check
 | 建筑体量与模型 | 承接关系、立面裁口、选层隐藏、路网开关、完整取景及许可记录 |
 | 原始资料路径或版本 | catalog 哈希、来源用途、派生配置、受影响脚本和授权边界 |
 
-站模离线入口为 `review-stage-two.ts`，地下和二层为 `review-stage-three.ts`、`review-stage-four.ts`，位于 `scripts/geography/`；重建顺序由[脚本说明](../../scripts/geography/README.md)和对应[数据说明](../../data/geography/README.md)确定。产物写入忽略的 `build/`，网页由构建写入 `dist/`，均不直接维护或提交。
+按[地理脚本清单](../../scripts/geography/README.md#离线核查)选择站模、地下、二层或建筑的核查命令，数据重建顺序见[地理数据说明](../../data/geography/README.md)。产物写入忽略的 `build/`，网页由构建写入 `dist/`，均不直接维护或提交。
 
 原始资料校验使用 `node scripts/geography/audit-references.ts`。哈希一致只证明本地版本未变化，不证明授权或外部网址仍可访问。
 

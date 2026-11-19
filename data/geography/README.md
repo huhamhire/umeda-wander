@@ -11,7 +11,7 @@ https://opendatacommons.org/licenses/odbl/1-0/
 
 运行 `python scripts/geography/extract-osm.py`，然后 `node scripts/geography/render-plan.ts`。输出在 `build/geography/`：SVG 平面图、WGS84 GeoJSON 与数量报告。SVG 局部坐标 x 向东、y 向南，原点为范围西北角；111320 m/纬度度，横向乘原点纬度余弦，仅用于本地区近似平面。所有位置直接投影，不含旧地图展示偏移。GeoJSON 保留经纬度，便于后续 GIS 工具复用。
 
-当前矩形仅为取数与预览窗口。最终使用范围后续按实际需要沿外围道路或建筑边界裁剪；原始快照不裁剪覆盖。最终裁剪边界应独立维护，预览的 SVG 裁切不改变导出几何。暂不把矩形边缘封成公共通路或区域围墙。
+矩形仅界定取数与预览窗口；H5 依据下文的展示政策计算几何范围。预览 SVG 裁切不改变导出几何。
 
 当前地面展示与重建规则如下。
 
@@ -26,4 +26,4 @@ https://opendatacommons.org/licenses/odbl/1-0/
 
 ## 当前 H5 展示范围
 
-地理底稿已接入 H5。原始快照和完整投影继续作为数据基准；页面地面从 `display-context.json` 加载按地下网、站体及高架板块筛选的范围，普通建筑仅保留相关宿主。展示政策在 `context-policy.json`；道路内部中段及同名分段保持连接，只裁外围端头。重建命令为 `node scripts/geography/build-ground-context.ts`，规则及数量见 [地面展示范围](../../docs/design/public-areas/ground.md)。
+地理底稿已接入 H5。原始快照和完整投影继续作为数据基准；页面地面从 `display-context.json` 加载按地下网、站体及高架板块筛选的范围，普通建筑仅保留相关宿主。展示政策在 `context-policy.json`；道路内部中段及同名分段保持连接，只裁外围端头。重建命令为 `node scripts/geography/build-ground-context.ts`，规则见 [地面展示范围](../../docs/design/public-areas/ground.md)。

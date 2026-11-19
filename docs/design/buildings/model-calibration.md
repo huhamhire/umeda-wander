@@ -1,19 +1,15 @@
 # 建筑白模校对
 
-> 设计依据与核对记录。历次检查数量、性能样本和“本轮”状态属于当时快照，不是当前验收结论；当前范围与未决项以 [Roadmap](../../spatial-refactor-roadmap.md) 为准。
-
-本批保留独立建筑板块，体量只在总览及“显示建筑轮廓”开启时显示。没有增加商场内可通行楼层、跨站路线或照片贴图。阪急建筑、Grand Building、三番街及 RESPIRE 酒店塔楼采用浅灰粉／淡栗红点缀；其他白模保持中性色，公共步行颜色不变。
+建筑体量按板块维护，只在总览及“显示建筑轮廓”开启时显示。阪急建筑、Grand Building、三番街及 RESPIRE 酒店塔楼采用浅灰粉／淡栗红点缀；其他白模保持中性色，公共步行颜色不变。
 
 ## 来源选择
 
 | 来源 | 核对结果与用途 |
 | --- | --- |
 | [大阪市 PLATEAU 2025](https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025) | 已下载梅田两张局部网格。选中建筑仍注明 surveyYear=2017。使用阪急百货、三番街附属站房和大阪站北门大楼的 LOD2 屋面。JR 站房只有 LOD0／1。 |
-| [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) | 有日本覆盖，当前仓库声明 CDLA Permissive 2.0；主要是机器识别平面轮廓，不能替代裙楼／塔楼分部。这轮未导入。旧发布镜像的 ODbL 说明不能直接套用到当前版本。 |
-| [Google Open Buildings](https://sites.research.google/open-buildings/) | 官方公布的覆盖范围不含日本，这轮不采用。 |
+| [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) | 有日本覆盖，当前仓库声明 CDLA Permissive 2.0；主要是机器识别平面轮廓，不能替代裙楼／塔楼分部。当前白模未使用。旧发布镜像的 ODbL 说明不能直接套用到当前版本。 |
+| [Google Open Buildings](https://sites.research.google/open-buildings/) | 官方公布的覆盖范围不含日本，当前白模未使用。 |
 | [Google Maps 3D Tiles](https://developers.google.com/maps/documentation/tile/policies) | 在线地图服务资源；政策限制提取及手工／自动描摹衍生模型。未导入瓦片、纹理或其网格。 |
-
-本次没有找到比已许可的 PLATEAU 更适合直接引入的目标建筑模型，采用原生几何和开放模型派生体量，便于维护。
 
 ## 各建筑的处理
 
@@ -24,9 +20,9 @@
 - **大阪站北门大楼（ノースゲートビルディング）**：使用本地网格 `52350349_bldg_6697_op.gml` 中 `bldg_a7a0f325-c271-44db-bced-7d3066780c65` 的 LOD2 屋面核对退台位置。两翼分别保留 LUCUA 与 LUCUA 1100 标识，简化体量沿站房轴线拟合。面向 Grand Front 的挑空两侧由裙楼承托，开口上方保留约 50 米的横梁带，靠轨道一侧逐级升至约 77 米。西端办公塔约 150 米，屋顶机房略高。裙楼最高约 78 米和办公主塔约 150 米参考 [JR 西日本项目资料](https://www.westjr.co.jp/company/ir/library/fact/pdf/2011/fact09.pdf)，北侧入口与通高空间参考 [大阪站城北中庭介绍](https://osakastationcity.com/green/atrium/)。中庭内净高、外立面和低层基底均为简化拟合。新外壳保持 11 番线的展示净空。
 - **其他组合体**：复核上部投影与承接体量的搭接。Grand Front、Yodobashi、大丸未改变平面位置。
 
-## 阪急 1F 内庭细节迁回
+## 阪急 1F 公共通廊
 
-`src/infrastructure/buildings/hankyu-dept/concourse.ts` 持有现役地理坐标、来源和裁空；`commercial-concourse-model.ts` 复用旧版的奶油色拱门、暖色玻璃橱窗、竖框、檐口与地坪网格。当前源码不导入 `deprecated/`，不搬用原先独立缩放的坐标。
+`src/infrastructure/buildings/hankyu-dept/concourse.ts` 持有现役地理坐标、来源和裁空；`commercial-concourse-model.ts` 生成奶油色拱门、暖色玻璃橱窗、竖框、檐口与地坪网格。
 
 两条公共轴线按百货与独立 Grand Building 的接缝重新拟合，归入 1F `district-ground`。南北挑高通廊约 12 米宽／12 米高，东西通廊约 10 米宽／3.3 米高，仅为白模展示参数。依据仍为[官方通廊说明](https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf)及既有用户照片，具体边界和外观授权待核实。
 
@@ -36,7 +32,7 @@
 
 ## JR 大屋顶
 
-原地理展示约 220×115 米；改按[大阪市建筑介绍](https://www.city.osaka.lg.jp/toshiseibi/page/0000647324.html)的约 180×100 米，中心对齐 PLATEAU 站房约 184×100 米的包络。站房 GML ID、原包络、中心和展示参数在 `data/geography/buildings/jr-roof.json`。
+模型采用[大阪市建筑介绍](https://www.city.osaka.lg.jp/toshiseibi/page/0000647324.html)的约 180×100 米，中心对齐 PLATEAU 站房约 184×100 米的包络。站房 GML ID、原包络、中心和展示参数在 `data/geography/buildings/jr-roof.json`。
 
 该站房无 LOD2 斜屋面，因此不能宣称坡度来自开放精细模型。北高南低保持，北缘约 49.3 米与官方“最高约 50 米”、北楼屋面附近相符；南缘 34 米、轻弧度和采光带仍为参考拟合。屋顶变换与标签共用坐标函数，旧坐标屋顶已退役，历史比例通过 Git 记录追溯。
 
@@ -58,12 +54,8 @@ node scripts/geography/render-building-details.ts
 
 原包按 HTTP Range 只取压缩目录及指定 GML／README，已核对的网格和原包说明归档在 `references/district/plateau-2025/`。现役只导入小型 `plateau-profiles.json` 和 `jr-roof.json`。离线校对现在使用 H5 实际网格和 CPU 深度缓冲，替代旧的面片画家排序，避免错误的悬空观感；仍不替代浏览器光照与触控验收。
 
-## 可选外围地标
+## 核查
 
-蓝天大厦可作为未来远景白模候选，突出双塔和空中庭园；距离当前核心步行网较远，本批不加入默认地图或取景包络。接入西侧步行路线或实现可选地标层后再决定展示范围。
-
-## 本批验证
-
-244 项测试通过，覆盖分层屋面来源、体量承接、连续主塔、三番街通口和不重复楼板、屋顶尺度／中心／坡向、浅色主题。类型检查与构建分别执行，H5 产物约 2,942 KB。已检查实际 H5 网格的离线模型预览；未直接操作浏览器，手机布局、触控及真实 WebGL 光照仍需人工复核。
+白模按[离线核查命令](../../../scripts/geography/README.md#离线核查)检查。蓝天大厦的展示范围见 [Roadmap](../../roadmap.md)。
 
 车站主题为低饱和度风味：JR 大阪站浅蓝，阪急灰粉／栗红，M16 淡珊瑚红，阪神浅蓝，T20 淡紫，Y11 淡蓝，北新地淡粉。Metro 色系参考其官方线路图，色值为本项目白模适配，不是运营者品牌色数值复刻；公共通路保持统一语义。

@@ -10,4 +10,4 @@
 
 调整位置时先检查源图与道路／车站关系，再改具体板块；不改变资料版本、不以最近点补无依据连接。`StationPublicInterface` 只表达门户与落脚，不自动生成跨站导航边。
 
-地下门位、局部高差、桥门口及真机复核的当前待办统一见 [Roadmap](../../spatial-refactor-roadmap.md)。各记录中的历史测试数量、时间和性能样本不代表最新结果；重跑方式见[验证规范](../../development/validation.md)。
+地下门位、局部高差、桥门口及真机复核的当前待办统一见 [Roadmap](../../roadmap.md)。验证范围和重跑方式见[验证规范](../../development/validation.md)。

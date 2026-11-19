@@ -1,76 +1,34 @@
-# 地下公共空间轮廓投影
+# 地下公共网数据与重建
 
-当前已接入地理 H5；下文初期“未接入”是当时阶段记录。现役公共板块、占位与待核对范围见 [阶段三](../../../docs/design/public-areas/underground.md)。
+地图使用地区地下图第 1 页的矢量轮廓，空间依据见[地下轮廓与道路配准](../../../docs/design/public-areas/underground-projection.md)，运行时归属见[地下公共网与设备](../../../docs/design/public-areas/underground.md)。
 
-## 独立地下街区占位
+| 文件 | 用途 |
+| --- | --- |
+| `pdf-outline.json` | 黄色填充的原图数据，含 SHA-256、页码、PDF 坐标及绘图对象序号。保留直线顶点，三次曲线每段采样 24 次。 |
+| `reference-controls.json` | 人工读出的北、南分区控制点及匹配的 OSM 建筑。 |
+| `road-anchors.json` | 局部道路与建筑锚点，配准实现见 `scripts/geography/reference-projection.ts` 及 `local-road-fit.ts`。 |
+| `basement-source.json`、`basement-outlines.json` | 独立地下占位的原图边界与共用道路投影结果。绘图对象及使用边界见[地下公共网](../../../docs/design/public-areas/underground.md#建筑占位)。 |
+| `network.ts` | 离线校对图据以绘制车站参考范围并说明排除项。 |
 
-`basement-source.json` 从同份 PDF 中提取已人工判读的 E-ma、Hilton West 绿色面与 MARU 闭合曲线，记录源哈希、绘图对象及原坐标；`basement-outlines.json` 使用与公共面完全相同的 `sourceProjection` 投影。它们是 B1 街区填充边界，不替代地上 OSM 建筑，也不确认门洞、地下室范围或通行权限。其改编授权与原 PDF 一并待核实，不纳入纯 OSM 下载。
+## 重建顺序
 
-只在源 PDF 改变时重新运行 `extract-basement-outlines.py`；绘图对象序号依赖已记录 SHA-256，文件不符时中止而非沿用旧编号。道路控制点调整后运行 `node scripts/geography/build-basement-outlines.ts`，随后重建地面展示并运行阶段三核查。PDF 黄色公共面和新占位共用离线 `pdf_vectors.py` 采样，不修改原始 references。
-
-当前以 `references/district/underground-walkway-map.pdf` 第 1 页黄色区域的**原始矢量填充**为轮廓底稿，不再使用中心线加宽或简化多边形代替地区网络。
-
-## 数据与生成
-
-- `pdf-outline.json`：6 个黄色填充对象、41 条闭合边界。记录源文件 SHA-256、页号、PDF 坐标和绘图对象序号；主对象包含 1,357 条原始绘图指令。保留全部直线顶点，三次曲线每段采样 24 次；不做平滑或简化。
-- `reference-controls.json`：南侧站前四栋大楼、北侧 Grand Front 南北馆／Yodobashi／阪急站的控制点。原图中心点为人工判读，目标为 OSM 建筑面积重心。
-- `network.ts`：维护离线校对图中的车站留位及不纳入 B1 公共网的连接说明。实际公共轮廓由 PDF 投影数据生成。
-- `scripts/geography/extract-underground-outline.py`：用 PyMuPDF 读取原始矢量，按主图黄色填充筛选，排除底部图例。依赖只用于离线提取，不进入网页。
-- `scripts/geography/reference-projection.ts`：复合路径的外环／孔洞整理、南北分区仿射配准。在 PDF y=300～440 点之间平滑过渡，长边先细分以避免跨区折线失真。
-- `scripts/geography/render-underground-plan.ts`：地面底图叠加、SVG／GeoJSON 与控制点残差导出。
+源 PDF 变更时需核对版本、SHA-256 及对象序号。安装 PyMuPDF 后运行提取脚本；两者共用 `pdf_vectors.py`。只调整道路控制点时直接从投影重建开始。
 
 ```powershell
-# 仅重新提取源文件时需要 PyMuPDF；当前会话安装于被忽略的 build/pdf-tools
-$env:PYTHONPATH='build/pdf-tools'
 python scripts/geography/extract-underground-outline.py
-node scripts/geography/render-plan.ts
-node scripts/geography/render-underground-plan.ts
-magick -background white build/geography/underground-plan.svg build/geography/underground-plan.png
+python scripts/geography/extract-basement-outlines.py
 ```
 
-输出在 `build/geography/`：`source-outline.svg` 为未投影原图轮廓；`underground-plan.svg`／`.png` 为地面叠加投影；`.geojson` 为 WGS84 数据；`underground-reference-fit.json` 为配准记录。
+以下命令从仓库数据重建地面输入、运行时公共轮廓、地下占位及地面展示范围，再生成核查报告。三个 `build-*` 命令会更新正式派生数据，需审查差异。
 
-## 本轮修正
+```powershell
+node scripts/geography/render-plan.ts
+node scripts/geography/build-runtime.ts
+node scripts/geography/build-basement-outlines.ts
+node scripts/geography/build-ground-context.ts
+node scripts/geography/review-underground.ts
+```
 
-第一生命互通朝阪神南侧的支口、弧形外缘、交汇厅、窄支口和凹凸均沿原 PDF 黄色区域提取。删除先前人工加入的圆盘和手绘南侧轮廓，避免改变通路走向。北侧地下网络也来自同一黄色原始路径。
+用 `node scripts/geography/render-underground-plan.ts` 单独核对源图投影，输入为 `build/geography/ground-plan.svg`。输出为同目录下的 `underground-plan.svg`、WGS84 `underground-plan.geojson`、`underground-reference-fit.json` 和 `underground-report.json`。
 
-建筑岛作为孔洞保留。车站留位只画虚线，不再从公共面扣除或覆盖，以免旧站体比例毁掉原图边界；重叠处需要后续按车站图调整包络和跨层接口。
-
-原图是地区示意地图，不能从黄色直接判为统一 B1。当前统一标记“确认地下、具体层级待核实”；JR 中央通路仍为 1F，不补穿站地下直通。全页数据暂保留，预览按地面研究范围裁剪，GeoJSON 不做最终业务范围裁剪。
-
-南侧控制点拟合残差约 0.1～6.4 m；北侧约 0.3～13.4 m。残差只是控制点拟合值，不代表全图精度；北侧控制点取自示意建筑，后续需要角点及站口校对。当前交付为离线 B1 设计底稿，未接入 H5、未建立通行路由。
-
-## 来源与使用边界
-
-OSM 地面数据适用其自身 ODbL 许可。地下轮廓属于对用户提供地图的直接几何提取，不能作为 OSM 数据署名或仅标为视觉参考。源图再发布／衍生几何授权尚待核实，目前用于内部设计核对。资料年代、层级限制及 JR 证据见 `docs/design/public-areas/underground-projection.md`。
-
-## 道路与站厅局部对齐（2026-11-16）
-
-在南北建筑配准基础上，使用 road-anchors.json 的 51 个局部锚点。普通接口使用对应道路最近点；长段和路口使用 targetHint 选择明确对应的位置，避免吸附到错误道路或错误路段。三番街的 targetMetres 为按阪急建筑长轴人工估计的内部轴线点，非测量数据。
-
-- LUCUA—梅北公共通道保留参考资料及用户确认的走向：先沿 LUCUA 楼边，西端再转向梅北站台上方。撤回将整段强行吸附 Grand Front 西侧道路的约束；地下轨道走向不能代替公共通道走向。
-- 阪神段沿道路设置东西端及两个中间控制点，同时调整站区留位轴向。
-- Whity 东侧交叉口对齐对应 OSM 路口，东向地下街增加沿路控制。
-- 三番街内部公共空间参考阪急建筑长轴，不强制移到建筑外道路。
-- local-road-fit.ts 使用三角网分片仿射坐标插值；校验每个三角形方向，防止翻转。外侧控制框沿用原配准位置。原始 PDF 数据不变，保留凹凸与孔洞。
-- 报告记录源点、目标、要素 ID 与调整距离。该局部校正仍是示意配准，不代表所有边缘位于实际开挖线。
-
-验证包括锚点落位、扩展至梅北和三番街区域的方向采样、沿路方向约束、北新地共用区域边界。离线检查图像，不操作浏览器。本阶段未改动运行时 H5。
-
-LUCUA—梅北修正：移除上一轮沿西侧道路拉伸造成的尖折；源 PDF 轮廓保持不变，通过沿楼段和西端转角控制点重新配准。沿楼位置为近似投影，已确认的通行走向优先于道路吸附。
-
-东侧南北公共通道增加 6 个分段道路控制点：HEP 南侧、HEP NAVIO 西侧、阪急 Grand Building 东侧至 Whity 路口。沿对应 OSM 道路校正纵向主通道，保留源图横向支路。该关系为参考资料与道路的人工对应，非地下实测坐标。
-
-南侧第一生命—MARU—DIAMOR：新增互通节点、MARU 东侧南北段、DIAMOR 交会及站前大楼间通道的 4 个道路匹配控制点。修正南北段约 10 m 的向东偏移，保留源图互通分支与异形边界；地下空间边缘无需与路缘严格重合。
-
-
-## 校对后的位置调整
-
-本轮增加 8 个局部控制点，总计 49 个。第一生命建筑岛、MARU 北侧弧段、DIAMOR 斜街与东西街交会、站前第 4 大楼南缘共同约束，避免只移动主轴而挤压相邻建筑孔洞。第一生命岛内点采用内部位置估计，不错误吸附到建筑外边界。
-
-西梅田北端广场与 Hilton 北侧连接按道路南侧公共空间定位，进入阪神南侧；公共广场中心不强制落在车行道中心。阪急地下接口虚线留位向北延展，覆盖三番街建筑长轴对应范围；阪神继续沿道路斜向留位。这些留位不等于已确定的付费区边界。
-
-重新生成完整投影并目视检查；回归检查包含 DIAMOR 交会顺序与东西街方向、Hilton 接入的南北关系，以及全部配准三角形不翻转。北侧商业支口、西向 HERBIS 分支与各站跨层接口仍待逐项核验。本轮仅调整离线投影底稿，未改动 H5 运行时地图。
-
-
-第一生命—阪神南侧接入修正：补充接入端与中段两个控制点，当前共 51 个局部锚点。此段主轴与阪神沿路长轴近似正交，避免仅约束互通节点后出现斜接。保留源 PDF 的不规则边缘；正交为本项目布局约束，非现场测量结论。测试约束夹角偏差不超过 2°。
+回归检查包含锚点落位、三角形方向、孔洞、DIAMOR 交会关系、Hilton 接入方向及第一生命通道与阪神主轴关系。所用 OSM 基底适用 ODbL；提取的参考图几何按[来源与版权审计](../../../docs/data/source-credits-audit.md)管理。

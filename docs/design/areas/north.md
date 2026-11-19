@@ -26,4 +26,4 @@
 
 站内见 [JR／梅北](../stations/jr-osaka.md)、[阪急](../stations/hankyu-umeda.md)、[M16](../stations/metro-umeda.md)。地下由 `north-atrium/`、`metro-interchange/`、`whity/` 管理；二层由 `north-decks/` 和 `west-decks/inogate.ts` 管理，均位于 `src/infrastructure/public-areas/`。
 
-构内图确认层级及拓扑；道路配准、门洞、桥宽、曲率、设备落点和局部高差仍含拟合。阪急西侧公共前沿、桥门口及局部净空按 [Roadmap](../../spatial-refactor-roadmap.md) 继续核对。检查入口见[地下装配](../public-areas/underground.md)和[二层装配](../public-areas/elevated.md)。
+构内图确认层级及拓扑；道路配准、门洞、桥宽、曲率、设备落点和局部高差仍含拟合。阪急西侧公共前沿、桥门口及局部净空按 [Roadmap](../../roadmap.md) 继续核对。检查入口见[地下装配](../public-areas/underground.md)和[二层装配](../public-areas/elevated.md)。

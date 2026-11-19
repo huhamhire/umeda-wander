@@ -14,9 +14,9 @@
 
 ## 工作约定
 
-- 文档按 `docs/design/`（区域、车站、公共空间、建筑）、`docs/development/`（开发规范）和 `docs/data/`（来源审计）维护，入口为 `docs/README.md`。当前任务统一写 Roadmap；事实、人工拟合和待核实项分开。已失效方案与迁移流水查 Git，不保留 archive 副本；删除前先转移唯一的有效依据。文档移动同步更新所有链接及维护入口，原始 references 不随文档治理删除。规范见 `docs/development/documentation.md`。
+- 文档按 `docs/design/`（区域、车站、公共空间、建筑）、`docs/development/`（开发规范）和 `docs/data/`（来源审计）维护，入口为 `docs/README.md`。维护待办统一写 `docs/roadmap.md`；事实、人工拟合和待核实项分开。已失效方案与迁移流水查 Git，不保留 archive 副本；删除前先转移唯一的有效依据。文档移动同步更新所有链接及维护入口，原始 references 不随文档治理删除。规范见 `docs/development/documentation.md`。
 
-- B1 街区占位可以独立于地上 OSM 实体。E-ma／Hilton West／MARU 使用 `data/geography/underground/basement-outlines.json` 的源图边界，由 `south-diamor/basement-outlines.ts` 适配；原始路径、SHA-256 和绘图对象在 `basement-source.json`。道路配准变化后须运行 `build-basement-outlines.ts`、`build-ground-context.ts` 和阶段三核查。边界接触和核查报告的最短间距均不证明门洞，不可据此补最近点通道。
+- B1 街区占位可以独立于地上 OSM 实体。E-ma／Hilton West／MARU 使用 `data/geography/underground/basement-outlines.json` 的源图边界，由 `south-diamor/basement-outlines.ts` 适配；原始路径、SHA-256 和绘图对象在 `basement-source.json`。道路配准变化后须运行 `build-basement-outlines.ts`、`build-ground-context.ts` 和 `review-underground.ts`。边界接触和核查报告的最短间距均不证明门洞，不可据此补最近点通道。
 
 - 阪急百货 1F 内庭／公共通廊在 `buildings/hankyu-dept/concourse.ts` 独立维护，复用拱门、暖色橱窗和地坪模型；接入 `district-ground`，不依赖归档坐标。外壳按通廊高度裁开，南北挑高同时避让两组 2F 展示标高的占位楼板，东西通廊上层保留。地面关闭时同步隐藏。阪神上部裙楼先合并为单一包络，再承接退台塔楼；`BuildingVolume.surface` 明确材质角色，不以悬空基底推断为塔楼。
 
@@ -25,11 +25,11 @@
 - 地面展示使用 `data/geography/display-context.json`，原始 OSM／地下公共面不裁掉。修改站体、公共网、高架或宿主清单后运行 `node scripts/geography/build-ground-context.ts`，再构建页面。`context-policy.json` 维护外围参照余量；同一源道路从首次进入到最后离开范围之间保留连续走线，同名／同 ref 分段只按原始共用顶点接续，只裁外围端头，不补无来源捷径。无关普通建筑占位剔除，核心站体、地下宿主与连廊目的地保留；维护记录见 `docs/design/public-areas/ground.md`。
 - 公共二层桥面采用 `elevatedPublicColor` 暖赭色，与浅色商业占位区分；细浅栏杆和既有区域灰化规则保留。`west-decks/inogate.ts` 是独立第四个高架板块，资源为 `data/geography/elevated/inogate.json`；新桥连接 Inogate 西端与 Grand Green 南馆，端点、宽度和标高为参考拟合，不误接 Grand Front 或梅北付费站台。
 
-- 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北／南／西板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源与未定位新桥见 `docs/design/public-areas/elevated.md`。
+- 地理 2F 公共网由 `public-areas/elevated-blocks.ts` 登记北、南、西及 Inogate 板块，数据在 `data/geography/elevated/`。北侧 y=8、南侧 y=4，同归 2F 探索；`public-deck-assembly.ts` 合并桥面并避让既有楼板、付费区和天井，`deck-boundaries.ts` 控制细浅密栏杆及接口留口。Yodobashi 外环只由公共板块绘制，建筑外壳保留内层轮廓，不能重复绘制；建筑低层及层带通过明确门户／设备绑定裁口。来源、接口和标高见 `docs/design/public-areas/elevated.md`。
 
 - 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/design/public-areas/underground.md`。
 
-- 后续空间重构按 `docs/spatial-refactor-roadmap.md` 四阶段推进，阶段二工程项与离线／自动检查已完成；真实浏览器和手机触控待人工复核，阶段三地下公共板块与阶段四主要 2F 连廊已接入，地下门位、局部高差和未定位新桥仍待核对。H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供同一最终站模的独立预览。新迁移区域采用统一米制基准，站体与建筑保持近真实比例，仅设备造型可适度放大；旧版独立缩放/展示偏移保留作迁移记录，不再作为新布局原则。每站独立板块，商业体与地面/地下/2F 公共区域可按一个或多个板块独立维护；通过公开接口组装，共享模型、组件和算法按 DDD 语义归层，不能全部塞入 utils。1F 地面路网需独立显隐，不绑定车站楼板或建筑轮廓开关。
+- H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供与总图共用的独立站模。车站、建筑和公共区域使用统一米制坐标，设备造型可按可读性适度放大。各板块通过公开接口组装，共享逻辑按 DDD 语义归层。1F 地面路网独立显隐。空间核对与真机验收见 `docs/roadmap.md`。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
 - 源码风格参考本地 nstarter service-express 模板，规范见 `docs/development/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。

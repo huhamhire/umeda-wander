@@ -1,14 +1,12 @@
 # JR 北新地站与西南地下公共连接
 
-> 本站资料事实与布局核对记录。现役入口：`src/infrastructure/stations/kitashinchi/`；局部草图数值和历次调整不等同当前地理标定。共用尺度及读取顺序见[七站索引](./README.md)，当前待办见 [Roadmap](../../spatial-refactor-roadmap.md)。
-
 ## 资料与结构
 
 主要依据用户新增 `references/stations/kitashinchi/station-guide.pdf` 第 1 页，图上日期为 2026-10-02；[JR 官方站图入口](https://eki.jr-odekake.net/premises?id=0612303)。地区关系采用 `references/district/underground-walkway-map.pdf` 第 1 页，图上日期 2024-02。施工或临时扶梯停用按用户约定忽略。
 
 北新地采用 B2 双线岛式站台、B1 东西改札及公共通路、地面出入口小型落台。1 番线京桥／四条畷／松井山手方向，2 番线尼崎／宝塚／三之宫方向。表达西侧及东侧的主要扶梯、站台电梯、地面电梯、绿色窗口、指定券售票机、站务室和图中 11-4、11-5、11-21、11-23、11-41 出口去向；局部坡道归并至公共层，临时设备状态不参与模型。
 
-`stations/kitashinchi/index.ts` 使用独立站点、独立 `kitashinchi-platform/hall/ground` 和 `Evidence.source: kitashinchi`，不能因同属 JR 就写成大阪站 PDF 页码。主要双排扶梯与逐条孔洞共用落点，设备进入既有菜单并追加 KS 编号。场景为主要布局示意，未逐一核验所有扶梯数量和开间。
+本站使用独立 `kitashinchi-platform/hall/ground` 和 `Evidence.source: kitashinchi`，不能因同属 JR 就写成大阪站 PDF 页码。主要双排扶梯与逐条孔洞共用落点，设备进入设施目录，使用 KS 编号。场景为主要布局示意，未逐一核验所有扶梯数量和开间。
 
 ## 地理与比例
 

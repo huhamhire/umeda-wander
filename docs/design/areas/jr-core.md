@@ -19,4 +19,4 @@
 
 屋顶尺度及中心采用已整理依据；弧度、南缘高度、台阶步数和局部高差为参考拟合，见[白模校对](../buildings/model-calibration.md)。50/T 等跨层设施须检查上下层可见性、完整井道和商业楼板开口，不能靠恢复整块上层楼板解决消失问题。
 
-运行 `node scripts/geography/review-stage-two.ts --station=jr-osaka`，结合车站、公共区域、建筑及呈现测试复核；实际 WebGL 和手机触控按[验证规范](../../development/validation.md)另行检查。
+运行 `node scripts/geography/review-stations.ts --station=jr-osaka`，结合车站、公共区域、建筑及呈现测试复核；实际 WebGL 和手机触控按[验证规范](../../development/validation.md)另行检查。

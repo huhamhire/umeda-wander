@@ -64,7 +64,7 @@ npm run build
 
 入口为 `dist/index.html`。楼层与设施目录随页面交付，立体场景从 `dist/chunks/` 按需加载。通过 HTTP 部署并保留整个 `dist/`，包括模块、样式与 OSM 派生数据。运行时资源均由本站提供，第三方许可证随构建保留。`dist/` 不纳入 Git。
 
-本轮已通过严格类型检查、构建及导航规则测试；未进行浏览器自动操作或视觉验收。后续先人工查看屋顶比例、展开遮挡、移动端可读性和路线显示，再推进精确地图数据。
+离线校准、数据重建及浏览器验收见[开发验证规范](./docs/development/validation.md)。
 
 ## 项目结构
 
@@ -154,6 +154,6 @@ umeda-h5/
 
 遵循 DDD 的领域与技术依赖边界，不引入暂时用不到的仓储、事件总线或复杂框架。展开后的视觉高度只影响渲染，不参与路径代价计算。
 
-文档索引：[docs/README.md](./docs/README.md)，按区域设计、开发与数据来源查找；当前待办统一在 [Roadmap](./docs/spatial-refactor-roadmap.md)，旧方案查 Git 历史。
+文档索引：[docs/README.md](./docs/README.md)，按区域设计、开发与数据来源查找；当前待办统一在 [Roadmap](./docs/roadmap.md)，旧方案查 Git 历史。
 
 布局依据与简化边界：[JR 大阪站布局整理记录](./docs/design/stations/jr-osaka.md)。
