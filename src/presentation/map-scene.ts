@@ -20,6 +20,7 @@ import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camer
 import { SelectionMarker } from './components/selection-marker.ts';
 import { visibleLabelOccluders } from './labels/label-occlusion.ts';
 import { colors } from './appearance/scene-palette.ts';
+import type { ShareCamera } from './camera/map-view-url.ts';
 
 export interface MapCameraSnapshot {
     offset: [number, number, number];
@@ -98,6 +99,9 @@ export class MapScene {
     private readonly walkingMarkerGeometry = new T.SphereGeometry(2.5, 12, 8);
     private readonly walkingMarkerMaterial = new T.MeshBasicMaterial({ color: colors.route });
     private onWalkingPick?: (id: string) => void;
+    private sharedCamera?: ShareCamera;
+    private shareSettled = false;
+    private refreshShareZoomBounds = false;
     /** Rebuild cached shadows and redraw after the renderer restores its WebGL context. */
     private readonly restoreContext = () => this.invalidateModels();
     /**
@@ -111,7 +115,8 @@ export class MapScene {
         nodes: RouteNode[],
         private layout: StationLayout,
         initial: MapViewState,
-        private onSelect: (facility?: Facility) => void
+        private onSelect: (facility?: Facility) => void,
+        private onViewSettled?: () => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -426,6 +431,48 @@ export class MapScene {
             followFacility: this.locatingFacility
         };
     }
+
+    /** Return the actual frame only after pointer motion and scene transitions have settled. */
+    snapshotShareCamera(): ShareCamera | undefined {
+        return this.shareSettled && !this.gestures.isMoving && !this.draggingExplode ? this.sharedCamera : undefined;
+    }
+
+    /** Restore a shared world center and vertical span without following a facility. */
+    restoreShareCamera(snapshot: ShareCamera, facility?: string): void {
+        const yaw = T.MathUtils.degToRad(snapshot.yaw);
+        const pitch = T.MathUtils.degToRad(snapshot.pitch);
+        const length = cameraOffset.length();
+        const horizontal = Math.cos(pitch) * length;
+        this.refreshShareZoomBounds = true;
+        this.restoreCamera({
+            offset: [Math.sin(yaw) * horizontal, Math.sin(pitch) * length, Math.cos(yaw) * horizontal],
+            pan: [0, 0, 0],
+            zoom: snapshot.zoom,
+            manual: { center: snapshot.center, span: snapshot.span },
+            facility,
+            followFacility: false
+        });
+    }
+
+    /** Notify the page once per settled camera change, including after a gesture ends. */
+    private reportShareCamera(center: T.Vector3, span: number, animating: boolean): void {
+        const wasSettled = this.shareSettled;
+        this.shareSettled = !animating && !this.focusTransition && !this.gestures.isMoving && !this.draggingExplode;
+        if (!this.shareSettled || !this.onViewSettled) {
+            return;
+        }
+        const yaw = T.MathUtils.radToDeg(Math.atan2(cameraOffset.x, cameraOffset.z));
+        const pitch = T.MathUtils.radToDeg(Math.atan2(cameraOffset.y, Math.hypot(cameraOffset.x, cameraOffset.z)));
+        const previous = this.sharedCamera;
+        if (previous && wasSettled && previous.center.every((value, i) => Math.abs(value - center.getComponent(i)) < .00001) &&
+            Math.abs(previous.span - span) < .00001 && Math.abs(previous.yaw - yaw) < .00001 &&
+            Math.abs(previous.pitch - pitch) < .00001 && Math.abs(previous.zoom - this.zoomValue) < .00001) {
+            return;
+        }
+        this.sharedCamera = { center: center.toArray(), span, yaw, pitch, zoom: this.zoomValue };
+        this.onViewSettled();
+    }
+
     /** Restore the camera and marker without jumping or restarting the focus transition. */
     restoreCamera(snapshot: MapCameraSnapshot): void {
         cameraOffset.fromArray(snapshot.offset);
@@ -448,7 +495,10 @@ export class MapScene {
     zoom(factor: number, pivot?: T.Vector3): void {
         const previousZoom = this.zoomValue;
         this.focusTransition = false;
-        this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, this.minimumZoom, Math.max(16, this.minimumZoom * 16));
+        // A shared frame may be outside the receiving viewport's normal range.
+        const min = Math.min(this.minimumZoom, previousZoom);
+        const max = Math.max(16, this.minimumZoom * 16, previousZoom);
+        this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, min, max);
         if (this.manualView) {
             const spanRatio = previousZoom / this.zoomValue;
             this.manualView.span *= spanRatio;
@@ -621,7 +671,7 @@ export class MapScene {
 
     /** Fit the current view or reuse the frozen orbit span and centre verbatim. */
     private cameraTarget(): { center: T.Vector3; span: number } {
-        if (this.manualView) {
+        if (this.manualView && !this.refreshShareZoomBounds) {
             return { center: this.manualView.center.clone(), span: this.manualView.span };
         }
         if (this.draggingExplode && this.framing) {
@@ -653,6 +703,10 @@ export class MapScene {
         const usable = facilityFocusRect(viewport, sidebar, mobile);
         const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * viewportHeight / Math.max(1, usableWidth) * 1.12);
         this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
+        this.refreshShareZoomBounds = false;
+        if (this.manualView) {
+            return { center: this.manualView.center.clone(), span: this.manualView.span };
+        }
         this.zoomValue = T.MathUtils.clamp(this.zoomValue, this.minimumZoom, Math.max(16, this.minimumZoom * 16));
         const span = baseSpan / this.zoomValue;
         if (!mobile) {
@@ -745,6 +799,7 @@ export class MapScene {
                 selection
             });
         }
+        this.reportShareCamera(center, span, animate);
         if (animate || this.focusTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
         }

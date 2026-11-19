@@ -15,16 +15,12 @@ import { bindPagePreferences, mountLocalizedPage } from './presentation/componen
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
-
-interface FacilityFilters {
-    station: StationId | null;
-    level: LevelId | 'all';
-    kind: FacilityKind | 'all';
-}
+import { bindMapViewUrl, readMapView, type ShareFilters, type SharedMapView } from './presentation/camera/map-view-url.ts';
+import { planWalkingRoute } from './application/navigation/walking-route.ts';
 
 interface LanguageChangeView {
     state: MapViewState;
-    filters: FacilityFilters;
+    filters: ShareFilters;
     facility: string;
     facilityTab: boolean;
     walkingTab?: boolean;
@@ -51,7 +47,8 @@ function takeLanguageChangeView(): LanguageChangeView | undefined {
 }
 
 mountLocalizedPage();
-const { facilities, levels, stations, walkingPlaces } = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
+const navigation = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
+const { facilities, levels, stations, walkingPlaces } = navigation;
 bindCreditsDialog(
     element<HTMLDialogElement>('#credits-dialog'),
     element('#credits-open'),
@@ -60,13 +57,25 @@ bindCreditsDialog(
 );
 let session = new MapSession([]);
 const restored = takeLanguageChangeView();
+const shared = restored ? undefined : readMapView(new URL(location.href), navigation);
 if (restored) {
     session.state = restored.state;
+} else if (shared) {
+    session.state = {
+        level: shared.level,
+        focusStation: shared.station,
+        explode: shared.explode,
+        roof: shared.buildings,
+        route: null
+    };
 }
 let scene: MapScene | undefined;
 let savedCamera = restored?.camera;
+let sharedCamera = shared?.camera;
+let sharedItinerary = shared?.itinerary;
 let pendingFacility = restored?.pendingFacility;
-let selectedFacilityId = pendingFacility ?? savedCamera?.facility ?? restored?.facility ?? '';
+let selectedFacilityId = pendingFacility ?? savedCamera?.facility ?? restored?.facility ?? shared?.facility ?? '';
+const queueMapUrl = bindMapViewUrl(currentSharedView);
 let screenDirection: typeof import('./presentation/camera/view-orientation.ts').screenDirection | undefined;
 /**
  * Project geographic north onto the screen and update the compass needle and cardinal labels.
@@ -87,10 +96,11 @@ function updateCompass(): void {
 }
 window.addEventListener('map-orientation', updateCompass);
 const roads = element<HTMLInputElement>('#roads');
-let groundPreference = restored?.roadsVisible ?? roads.checked;
+let groundPreference = restored?.roadsVisible ?? shared?.ground ?? roads.checked;
 roads.addEventListener('change', () => {
     groundPreference = roads.checked;
     scene?.setRoadsVisible(groundPreference);
+    queueMapUrl();
 });
 const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
@@ -126,7 +136,7 @@ const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
 });
 const facilityStation = bindPanelSelect(facilityStationButton, facilityPanel);
 const facilityFloor = bindPanelSelect(facilityFloorButton, facilityPanel);
-const facilityFilter: FacilityFilters = restored?.filters ?? { station: null, level: 'all', kind: 'all' };
+const facilityFilter: ShareFilters = restored?.filters ?? shared?.filters ?? { station: null, level: 'all', kind: 'all' };
 let filteredLabelIds: ReadonlySet<string> | undefined;
 
 /** Apply manual facility filters to the label overlay while the facility tab is active. */
@@ -164,6 +174,9 @@ const showSidebarTab = bindSidebarTabs(
         if (!facilityPanel.hidden) {
             syncWalkingActions();
         }
+        if (scene) {
+            queueMapUrl();
+        }
     }
 );
 const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, {
@@ -184,6 +197,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
         return messageText(`ui.walking.${result.issue}`);
     },
     clear: () => {
+        sharedItinerary = undefined;
         if (session.state.route) {
             session.state.route = null;
             sync();
@@ -203,12 +217,34 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
         }
         scene?.setWalkingPickTargets(places?.map(place => place.id), onPick);
     }
-}, restored?.walkingDraft);
+}, restored?.walkingDraft ?? shared?.itinerary);
 closeWalkingEditor = walkingRoute.closeEditor;
-if (restored?.walkingTab) {
+if (restored?.walkingTab || shared?.tab === 'walking') {
     showSidebarTab(2);
-} else if (restored?.facilityTab) {
+} else if (restored?.facilityTab || shared?.tab === 'facilities') {
     showSidebarTab(1);
+}
+
+/** Capture the visible route and visual filters alongside the exact settled camera frame. */
+function currentSharedView(): SharedMapView | undefined {
+    const camera = scene?.snapshotShareCamera();
+    if (!camera) {
+        return undefined;
+    }
+    const draft = session.state.route ? walkingRoute.snapshot() : undefined;
+    const itinerary = draft?.ids.every(id => id !== null) ? { ids: draft.ids, allowPaid: draft.allowPaid } : undefined;
+    return {
+        camera,
+        level: session.state.level,
+        station: session.state.focusStation ?? null,
+        facility: selectedFacilityId || undefined,
+        explode: session.state.explode,
+        buildings: session.state.roof,
+        ground: groundPreference,
+        tab: !walkingPanel.hidden ? 'walking' : !facilityPanel.hidden ? 'facilities' : 'layers',
+        filters: facilityFilter,
+        itinerary
+    };
 }
 for (const role of facilityWalkingRoles) {
     element(`#facility-walking-${role}`).addEventListener('click', () => {
@@ -304,6 +340,9 @@ function refreshFacilities(dismissExcludedSelection = false): void {
         searchPrompt: station ? undefined : messageText('ui.facilities.searchPrompt')
     });
     facilityClear.hidden = selectedFacilityId === '';
+    if (scene) {
+        queueMapUrl();
+    }
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
     categoryList.replaceChildren();
@@ -349,6 +388,9 @@ function refreshFacilities(dismissExcludedSelection = false): void {
  */
 function sync(): void {
     scene?.update(session.state);
+    if (scene) {
+        queueMapUrl();
+    }
     roads.disabled = !allowsGroundLayer(levels, session.state);
     roads.checked = !roads.disabled && groundPreference;
     const focus = session.state.focusStation;
@@ -376,6 +418,7 @@ function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
     session.state.focusStation = owner;
     session.state.level = f.level;
     session.state.route = null;
+    sharedItinerary = undefined;
     selectedFacilityId = f.id;
     facilityPicker.value = f.id;
     facilityClear.hidden = false;
@@ -387,6 +430,7 @@ function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
     } else {
         pendingFacility = f.id;
         savedCamera = undefined;
+        sharedCamera = undefined;
     }
 }
 
@@ -404,6 +448,7 @@ function clearFacilitySelection(): void {
     facilityClear.hidden = true;
     syncWalkingActions();
     scene?.clearFacilitySelection();
+    queueMapUrl();
 }
 
 /** Treat a second tap on the same facility, or a tap on the background, as dismissal. */
@@ -454,6 +499,8 @@ facilityStationButton.addEventListener(
         clearFacilitySelection();
         pendingFacility = undefined;
         savedCamera = undefined;
+        sharedCamera = undefined;
+        sharedItinerary = undefined;
         session.focusStation(facilityFilter.station);
         if (facilityFilter.level !== 'all') {
             session.state.level = facilityFilter.level;
@@ -497,6 +544,7 @@ slider.addEventListener(
         session.state.explode = Number(slider.value) / 100;
         element('#explode-value').textContent = `${slider.value}%`;
         scene?.update(session.state, { immediateExplode: true });
+        queueMapUrl();
     }
 );
 roof.addEventListener('change', () => {
@@ -520,6 +568,7 @@ function reset(): void {
     clearFacilitySelection();
     pendingFacility = undefined;
     savedCamera = undefined;
+    sharedCamera = undefined;
     session.reset();
     scene?.reset(true);
     Object.assign(facilityFilter, { station: null, level: 'all', kind: 'all' });
@@ -557,9 +606,13 @@ async function loadMap(): Promise<void> {
         const runtime = await import('./presentation/map-runtime.ts');
         screenDirection = runtime.screenDirection;
         const currentState = session.state;
+        if (sharedItinerary) {
+            currentState.route = planWalkingRoute(runtime.edges, sharedItinerary.ids, sharedItinerary.allowPaid).route ?? null;
+            sharedItinerary = undefined;
+        }
         session = new MapSession(runtime.edges);
         session.state = currentState;
-        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap);
+        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap, queueMapUrl);
         syncFacilityLabels();
         scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);
@@ -569,6 +622,8 @@ async function loadMap(): Promise<void> {
             pendingFacility = undefined;
         } else if (savedCamera) {
             scene.restoreCamera(savedCamera);
+        } else if (sharedCamera) {
+            scene.restoreShareCamera(sharedCamera, selectedFacilityId || undefined);
         } else if (selectedFacilityId) {
             scene.selectById(selectedFacilityId, false);
         }
