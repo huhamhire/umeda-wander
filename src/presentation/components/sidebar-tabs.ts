@@ -6,12 +6,15 @@ interface TabControl extends EventTarget {
 type TabPanel = Pick<HTMLElement, 'hidden'>;
 
 /** Clicks and keyboard navigation share the same selected tab and visible panel. */
-export function bindSidebarTabs(buttons: TabControl[], panels: TabPanel[]): (index: number) => void {
-    const select = (index: number) => buttons.forEach((button, i) => {
-        button.setAttribute('aria-selected', String(index === i));
-        button.tabIndex = index === i ? 0 : -1;
-        panels[i]!.hidden = index !== i;
-    });
+export function bindSidebarTabs(buttons: TabControl[], panels: TabPanel[], onSelect?: () => void): (index: number) => void {
+    const select = (index: number) => {
+        buttons.forEach((button, i) => {
+            button.setAttribute('aria-selected', String(index === i));
+            button.tabIndex = index === i ? 0 : -1;
+            panels[i]!.hidden = index !== i;
+        });
+        onSelect?.();
+    };
     buttons.forEach((button, i) => {
         button.addEventListener('click', () => select(i));
         button.addEventListener(

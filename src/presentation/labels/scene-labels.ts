@@ -1,5 +1,5 @@
 import * as T from 'three';
-import type { FacilityKind, Level, LevelId, StationId } from '../../domain/map/model.ts';
+import type { Facility, FacilityKind, Level, LevelId, StationId } from '../../domain/map/model.ts';
 import type { MapViewState } from '../../application/map-session.ts';
 import { viewLayerRole } from '../../application/exploration/view-layer.ts';
 import { isRegionMuted } from '../../application/exploration/region-focus.ts';
@@ -39,6 +39,7 @@ export interface SceneLabelView {
 export class SceneLabels {
     private readonly host: HTMLElement;
     private readonly labels: MapLabel[] = [];
+    private filteredLabels?: MapLabel[];
     private readonly labelOcclusion = new LabelOcclusion();
     private selectionElement?: HTMLDivElement;
     private selectionKind?: FacilityKind;
@@ -66,6 +67,24 @@ export class SceneLabels {
         if (this.host.hidden !== hidden) {
             this.host.hidden = hidden;
         }
+    }
+
+    /** Rebuild the filtered labels only when the facility panel's filters change. */
+    setFacilityFilter(facilities?: readonly Facility[]): void {
+        this.filteredLabels?.forEach(label => label.element.remove());
+        this.filteredLabels = facilities?.map(facility => {
+            const element = document.createElement('div');
+            element.className = 'map-label facility-label';
+            element.hidden = true;
+            element.append(createFacilityIcon(facility.kind), facility.name);
+            this.host.append(element);
+            return {
+                text: facility.name,
+                level: facility.level,
+                position: new T.Vector3(facility.x, 3.15 + (facility.elevationOffset ?? 0), facility.z),
+                element
+            };
+        });
     }
 
     /** Create one reusable detail label only when a facility is selected. */
@@ -108,11 +127,18 @@ export class SceneLabels {
             label.owner !== undefined ? label.owner : label.roof ? 'jr-osaka' : levels.find(l => l.id === label.level)?.station ?? 'jr-osaka'
         );
         const priority = (label: MapLabel) => Number(!labelMuted(label)) * 8 + Number(label.level && viewLayerRole(levels, state, label.level) === 'current') * 4 + Number(label.element.classList.contains('emphasis'));
-        const orderedLabels = [...this.labels].sort((a, b) => priority(b) - priority(a));
         const selection = this.selectionLabel(view.selection);
-        if (selection) {
-            orderedLabels.unshift(selection);
+        if (selection || this.filteredLabels) {
+            for (const label of this.labels) {
+                label.element.hidden = true;
+            }
         }
+        if (selection) {
+            for (const label of this.filteredLabels ?? []) {
+                label.element.hidden = true;
+            }
+        }
+        const orderedLabels = selection ? [selection] : [...this.filteredLabels ?? this.labels].sort((a, b) => priority(b) - priority(a));
         const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
@@ -123,7 +149,7 @@ export class SceneLabels {
             if (role === 'context' && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
-            if ((mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
+            if (!this.filteredLabels && (mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
             if (!visible) {
@@ -168,6 +194,7 @@ export class SceneLabels {
 
     /** Remove only labels owned by this instance when the scene is released. */
     dispose(): void {
+        this.setFacilityFilter();
         for (const label of this.labels) {
             label.element.remove();
         }

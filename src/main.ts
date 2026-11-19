@@ -103,6 +103,13 @@ const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
 const facilityStation = bindPanelSelect(facilityStationButton, facilityPanel);
 const facilityFloor = bindPanelSelect(facilityFloorButton, facilityPanel);
 const facilityFilter: FacilityFilters = restored?.filters ?? { station: null, level: 'all', kind: 'all' };
+let filteredLabelIds: ReadonlySet<string> | undefined;
+
+/** Apply manual facility filters to the label overlay while the facility tab is active. */
+function syncFacilityLabels(): void {
+    scene?.setFacilityLabelFilter(facilityPanel.hidden ? undefined : filteredLabelIds);
+}
+
 const floorList = element('#floor-list');
 const floors = floorOptions(levels);
 for (const level of [{ id: 'all', label: messageText('ui.floors.overview'), name: messageText('ui.floors.all') }, ...floors]) {
@@ -123,7 +130,8 @@ for (const level of [{ id: 'all', label: messageText('ui.floors.overview'), name
 const floorButtons = [...floorList.querySelectorAll<HTMLButtonElement>('button')];
 const showSidebarTab = bindSidebarTabs(
     [element<HTMLButtonElement>('#tab-layers'), element<HTMLButtonElement>('#tab-facilities')],
-    [element('#panel-layers'), element('#panel-facilities')]
+    [element('#panel-layers'), facilityPanel],
+    syncFacilityLabels
 );
 if (restored?.facilityTab) {
     showSidebarTab(1);
@@ -175,7 +183,7 @@ new ResizeObserver(() => {
 /**
  * Rebuild filtered facility options while retaining manual filters and category scroll position.
  */
-function refreshFacilities(): void {
+function refreshFacilities(dismissExcludedSelection = false): void {
     const { station, level, kind: facilityKind } = facilityFilter;
     facilityStation.setOptions([
         { value: 'all', label: messageText('ui.filters.allStations') },
@@ -189,11 +197,20 @@ function refreshFacilities(): void {
     const filter = facilityFilter;
     const available = filterFacilities(facilities, levels, { ...filter, kind: 'all' });
     const visible = filterFacilities(facilities, levels, { ...filter, kind: facilityKind });
+    if (dismissExcludedSelection && selectedFacilityId && !visible.some(f => f.id === selectedFacilityId)) {
+        clearFacilitySelection();
+    }
+    filteredLabelIds = station || level !== 'all' || facilityKind !== 'all' ? new Set(visible.map(f => f.id)) : undefined;
+    syncFacilityLabels();
     const choices = visible.map(f => {
         const location = f.kind === 'convenience-store' ? (f.level === 'bridge' ? messageText('ui.facilities.bridgeStore') : messageText('ui.facilities.centralStore')) : '';
         return { value: f.id, label: `${f.name}${location ? ' · ' + location : ''}`, code: facilityCodes[f.id], icon: () => createFacilityIcon(f.kind) };
     });
-    facilityPicker.setOptions(choices, selectedFacilityId, messageText(visible.length ? 'ui.facilities.placeholder' : 'ui.facilities.empty'));
+    const placeholder = station ? 'ui.facilities.placeholder' : 'ui.facilities.search';
+    facilityPicker.setOptions(choices, selectedFacilityId, {
+        placeholder: messageText(visible.length ? placeholder : 'ui.facilities.empty'),
+        searchPrompt: station ? undefined : messageText('ui.facilities.searchPrompt')
+    });
     facilityClear.hidden = selectedFacilityId === '';
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
@@ -241,7 +258,7 @@ function refreshFacilities(): void {
             'click',
             () => {
                 facilityFilter.kind = kind;
-                refreshFacilities();
+                refreshFacilities(true);
                 categoryList.querySelector<HTMLButtonElement>(`[data-kind="${kind}"]`)?.focus({ preventScroll: true });
             }
         );
@@ -343,7 +360,7 @@ for (const b of floorButtons) {
             facilityFilter.level = session.state.level;
             session.state.route = null;
             pendingFacility = undefined;
-            refreshFacilities();
+            refreshFacilities(true);
             sync();
         }
     );
@@ -371,7 +388,7 @@ facilityFloorButton.addEventListener(
         session.state.level = facilityFilter.level;
         session.state.route = null;
         pendingFacility = undefined;
-        refreshFacilities();
+        refreshFacilities(true);
         sync();
     }
 );
@@ -460,6 +477,7 @@ async function loadMap(): Promise<void> {
         session = new MapSession(runtime.edges);
         session.state = currentState;
         scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap);
+        syncFacilityLabels();
         scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);
         scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');

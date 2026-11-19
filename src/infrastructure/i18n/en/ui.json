@@ -22,6 +22,7 @@
   "ui.facilities.placeholder": "Choose a facility…",
   "ui.facilities.search": "Search by facility name",
   "ui.facilities.searchEmpty": "No matching facilities",
+  "ui.facilities.searchPrompt": "Choose a station or enter a keyword",
   "ui.facilities.clearSelection": "Clear facility selection",
   "ui.facilities.select": "Choose a facility",
   "ui.facilities.stationFilter": "Filter by station",

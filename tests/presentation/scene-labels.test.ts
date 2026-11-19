@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import type { Level } from '../../src/domain/map/model.ts';
+import type { Facility, Level } from '../../src/domain/map/model.ts';
 import { SceneLabels, type SceneLabelDefinition, type SceneLabelView } from '../../src/presentation/labels/scene-labels.ts';
 
 class LabelStub {
@@ -28,6 +28,10 @@ class LabelStub {
     remove(): void {
         this.removed = true;
     }
+
+    append(_icon: unknown, text: string): void {
+        this.textContent += text;
+    }
 }
 
 const levels: Level[] = [
@@ -38,7 +42,13 @@ const levels: Level[] = [
 function withLabels(definitions: SceneLabelDefinition[], run: (labels: SceneLabels, elements: LabelStub[]) => void): void {
     const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
     const elements: LabelStub[] = [];
-    Object.defineProperty(globalThis, 'document', { configurable: true, value: { createElement: () => new LabelStub() } });
+    Object.defineProperty(globalThis, 'document', {
+        configurable: true,
+        value: {
+            createElement: () => new LabelStub(),
+            createElementNS: () => ({ setAttribute() {} })
+        }
+    });
     const host = { append: (element: LabelStub) => elements.push(element) } as unknown as HTMLElement;
     const labels = new SceneLabels(host, definitions);
     try {
@@ -123,5 +133,28 @@ test('disposing label management removes only its owned DOM nodes and is safe to
         labels.dispose();
         assert(elements.every(element => element.removed));
         assert.equal(elements[0]!.textContent, 'owned');
+    });
+});
+
+test('facility filtering replaces general labels and selection temporarily replaces the filter labels', () => {
+    const position = new T.Vector3();
+    const filtered: Facility[] = [
+        { id: 'locker', name: 'Lockers', kind: 'locker', level: 'platform', x: 35, z: 0, note: '', evidence: { pages: [], detail: '' } },
+        { id: 'desk', name: 'Information', kind: 'information', level: 'concourse', x: -35, z: 0, note: '', evidence: { pages: [], detail: '' } }
+    ];
+    withLabels([{ text: 'platform', position, level: 'platform' }], (labels, elements) => {
+        labels.setFacilityFilter(filtered);
+        render(labels);
+        assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Lockers']);
+        render(labels, { text: 'Selected gate', position });
+        assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Selected gate']);
+        render(labels);
+        assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Lockers']);
+        labels.setFacilityFilter([]);
+        render(labels);
+        assert(elements.every(e => e.hidden || e.removed));
+        labels.setFacilityFilter();
+        render(labels);
+        assert.deepEqual(elements.filter(e => !e.hidden && !e.removed).map(e => e.textContent), ['platform']);
     });
 });

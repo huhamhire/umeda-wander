@@ -10,6 +10,9 @@ interface SelectSearch {
     empty: string;
 }
 
+/** Delay filtering until text entry pauses or the IME commits its composition. */
+const searchDelayMs = 200;
+
 /** Bind a panel-width DOM list to a field, with optional live search for longer lists. */
 export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, search?: SelectSearch) {
     const menu = document.createElement('div');
@@ -21,7 +24,10 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     let visible: SelectOption[] = [];
     let value = '';
     let placeholder = valueLabel.textContent;
+    let searchPrompt: string | undefined;
     let active = -1;
+    let composing = false;
+    let pendingSearch: number | undefined;
 
     menu.id = trigger.id + '-menu';
     menu.className = 'panel-select-menu';
@@ -98,7 +104,8 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     /** Render matching labels in their supplied order without interpreting them as markup. */
     function renderOptions(): void {
         const query = input?.value ?? '';
-        visible = matchingOptions(options, query);
+        const needsQuery = searchPrompt !== undefined && !query.trim();
+        visible = needsQuery ? [] : matchingOptions(options, query);
         list.replaceChildren(...visible.map((option, index) => {
             const item = document.createElement('div');
             item.id = `${list.id}-${index}`;
@@ -112,9 +119,44 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
             return item;
         }));
         status.hidden = visible.length > 0;
-        status.textContent = search?.empty ?? '';
+        status.textContent = needsQuery ? searchPrompt! : search?.empty ?? '';
         list.scrollTop = 0;
         highlight(Math.max(0, visible.findIndex(option => option.value === value)));
+    }
+
+    /** Cancel a pending search when its input or menu lifecycle changes. */
+    function cancelSearch(): void {
+        window.clearTimeout(pendingSearch);
+        pendingSearch = undefined;
+    }
+
+    /** Remove stale results so neither the keyboard nor a pointer can commit them. */
+    function clearResults(): void {
+        if (visible.length) {
+            visible = [];
+            list.replaceChildren();
+            highlight(-1);
+        }
+        status.hidden = true;
+    }
+
+    /** Search committed text only, with whitespace-only input restoring the initial menu state. */
+    function queueSearch(): void {
+        cancelSearch();
+        if (!input || !menu.matches(':popover-open')) {
+            return;
+        }
+        if (!input.value.trim()) {
+            renderOptions();
+            return;
+        }
+        clearResults();
+        pendingSearch = window.setTimeout(() => {
+            pendingSearch = undefined;
+            if (menu.matches(':popover-open')) {
+                renderOptions();
+            }
+        }, searchDelayMs);
     }
 
     /** Keep the field caption in sync with the chosen option or empty-state message. */
@@ -141,6 +183,8 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
 
     /** Close the transient list and give keyboard focus back to its field when requested. */
     function close(restoreFocus = false): void {
+        cancelSearch();
+        composing = false;
         if (menu.matches(':popover-open')) {
             menu.hidePopover();
         }
@@ -162,6 +206,8 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
 
     /** Open the list at the selected option and focus search when provided. */
     function open(): void {
+        cancelSearch();
+        composing = false;
         if (input) {
             input.value = '';
         }
@@ -187,7 +233,7 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
         }
     });
     keyTarget.addEventListener('keydown', (event: KeyboardEvent) => {
-        if (event.isComposing) {
+        if (composing || event.isComposing || event.keyCode === 229) {
             return;
         }
         if (!menu.matches(':popover-open')) {
@@ -204,6 +250,11 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
             close(true);
         } else if (event.key === 'Enter' || (!input && event.key === ' ')) {
             event.preventDefault();
+            if (pendingSearch !== undefined) {
+                cancelSearch();
+                renderOptions();
+                return;
+            }
             const option = visible[active];
             if (option) {
                 choose(option);
@@ -216,7 +267,20 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
             highlight(event.key === 'Home' ? 0 : visible.length - 1);
         }
     });
-    input?.addEventListener('input', renderOptions);
+    input?.addEventListener('compositionstart', () => {
+        composing = true;
+        cancelSearch();
+        clearResults();
+    });
+    input?.addEventListener('compositionend', () => {
+        composing = false;
+        queueSearch();
+    });
+    input?.addEventListener('input', event => {
+        if (!composing && !(event as InputEvent).isComposing) {
+            queueSearch();
+        }
+    });
     list.addEventListener('mousedown', event => event.preventDefault());
     menu.addEventListener('toggle', () => {
         if (!menu.matches(':popover-open')) {
@@ -251,10 +315,11 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
             setValue(next);
         },
         /** Refresh the available choices without firing a change event. */
-        setOptions(next: SelectOption[], selected: string, emptyLabel = placeholder): void {
+        setOptions(next: SelectOption[], selected: string, field: { placeholder?: string; searchPrompt?: string } = {}): void {
             close();
             options = next;
-            placeholder = emptyLabel;
+            placeholder = field.placeholder ?? placeholder;
+            searchPrompt = field.searchPrompt;
             trigger.disabled = next.length === 0;
             setValue(selected);
         },

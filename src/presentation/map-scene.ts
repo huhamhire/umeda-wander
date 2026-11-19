@@ -7,7 +7,7 @@ import { geographicBuildings } from '../infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
 import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
 import * as T from 'three';
-import type { Facility, FacilityKind, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
+import type { Facility, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
 import { allowsGroundLayer, viewLayerRole } from '../application/exploration/view-layer.ts';
@@ -18,10 +18,6 @@ import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
-
-const facilityDetailKinds = new Set<FacilityKind>([
-    'escalator', 'elevator', 'stairs', 'ticket-machine', 'information', 'police', 'luggage-storage', 'locker'
-]);
 
 export interface MapCameraSnapshot {
     offset: [number, number, number];
@@ -92,6 +88,7 @@ export class MapScene {
     private width = 1;
     private height = 1;
     private selectionMarker = new SelectionMarker();
+    private facilityLabelIds?: ReadonlySet<string>;
     private selected = this.selectionMarker.group;
     private activeFacility?: Facility;
     /** Rebuild cached shadows and redraw after the renderer restores its WebGL context. */
@@ -363,6 +360,16 @@ export class MapScene {
         this.locatingFacility = false;
         this.focusTransition = false;
         this.invalidateModels();
+    }
+
+    /** Replace general map labels with the facilities matching the current panel filters. */
+    setFacilityLabelFilter(ids?: ReadonlySet<string>): void {
+        if (this.facilityLabelIds === ids) {
+            return;
+        }
+        this.facilityLabelIds = ids;
+        this.labels.setFacilityFilter(ids && this.facilities.filter(facility => ids.has(facility.id)));
+        this.requestRender();
     }
     /** Capture navigation intent and manual camera framing for a locale reload. */
     snapshotCamera(): MapCameraSnapshot {
@@ -672,7 +679,7 @@ export class MapScene {
         this.labels.setVisible(showLabels);
         if (showLabels) {
             const facility = this.activeFacility;
-            const selection = this.selected.visible && facility && facilityDetailKinds.has(facility.kind)
+            const selection = this.selected.visible && facility
                 ? { text: facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
                 : undefined;
             this.labels.update({
