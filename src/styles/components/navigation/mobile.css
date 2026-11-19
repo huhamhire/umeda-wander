@@ -213,6 +213,24 @@
   min-height: 44px;
 }
 
+.walking-field {
+  min-height: 44px;
+  padding-inline-end: 46px;
+}
+
+.walking-field input {
+  font-size: 16px;
+}
+
+.walking-field .walking-point-clear {
+  width: 44px;
+  min-height: 0;
+}
+
+.walking-results [role="option"] {
+  min-height: 44px;
+}
+
 .sidebar .section-heading {
   display: none;
 }

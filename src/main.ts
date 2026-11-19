@@ -466,7 +466,7 @@ facilityClear.addEventListener('click', () => {
     next?.focus({ preventScroll: true });
 });
 document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && !event.defaultPrevented && !event.isComposing &&
+    if (event.key === 'Escape' && !event.defaultPrevented && !event.isComposing && event.keyCode !== 229 &&
         !document.querySelector('dialog[open], [popover]:popover-open')) {
         if (!walkingPanel.hidden && walkingRoute.cancelEditing()) {
             event.preventDefault();

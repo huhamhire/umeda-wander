@@ -165,31 +165,35 @@
             </div>
           </section>
           <section class="walking-panel" id="panel-walking" role="tabpanel" aria-labelledby="tab-walking" hidden>
-            <p class="walking-coverage">{{ui.walking.coverage}}</p>
             <ol id="walking-places"></ol>
-            <button type="button" id="walking-add">{{ui.walking.add}}</button>
-            <div class="walking-editor" id="walking-editor" hidden>
+            <div class="walking-filters">
+              <select id="walking-station" aria-label="{{ui.facilities.stationFilter}}"></select>
+              <button type="button" id="walking-pick">{{ui.walking.pick}}</button>
+            </div>
+            <details class="walking-options" id="walking-options">
+              <summary>{{ui.walking.options}}</summary>
               <div class="walking-filters">
-                <select id="walking-station" aria-label="{{ui.facilities.stationFilter}}"></select>
                 <select id="walking-floor" aria-label="{{ui.facilities.floorFilter}}"></select>
                 <select id="walking-kind" aria-label="{{ui.facilities.types}}"></select>
               </div>
-              <button class="panel-select" type="button" id="walking-place" aria-label="{{ui.walking.choose}}">
-                <span>{{ui.walking.choose}}</span>
-              </button>
+              <label class="walking-gates"><input id="walking-gates" type="checkbox" />{{ui.walking.gates}}</label>
+              <button type="button" id="walking-clear">{{ui.walking.clear}}</button>
+            </details>
+            <div id="walking-map-choice" hidden>
+              <p id="walking-pick-status" role="status"></p>
               <div class="walking-actions">
-                <button type="button" id="walking-pick">{{ui.walking.pick}}</button>
                 <button type="button" id="walking-confirm" hidden>{{ui.walking.confirm}}</button>
                 <button type="button" id="walking-cancel">{{ui.walking.cancel}}</button>
               </div>
-              <p id="walking-pick-status" role="status" hidden></p>
             </div>
-            <label class="walking-gates"><input id="walking-gates" type="checkbox" />{{ui.walking.gates}}</label>
+            <p id="walking-search-status" role="status" hidden></p>
+            <div id="walking-results" class="walking-results" role="listbox" aria-label="{{ui.walking.choose}}" hidden></div>
             <div class="walking-actions">
+              <button type="button" id="walking-add">{{ui.walking.add}}</button>
               <button type="button" id="walking-preview">{{ui.walking.preview}}</button>
-              <button type="button" id="walking-clear">{{ui.walking.clear}}</button>
             </div>
             <p id="walking-status" role="status" hidden></p>
+            <p class="walking-coverage">{{ui.walking.coverage}}</p>
           </section>
         </div>
       </aside>

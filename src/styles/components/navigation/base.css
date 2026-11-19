@@ -505,17 +505,61 @@
   list-style: none;
 }
 
-.walking-panel li,
-.walking-editor {
-  display: grid;
+.walking-panel li {
+  display: flex;
   gap: 5px;
 }
 
+.walking-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  min-width: 0;
+  min-height: 42px;
+  padding-inline: 9px 30px;
+  gap: 7px;
+  background: var(--color-field-background);
+  border: 1px solid var(--color-field-border);
+  border-radius: 7px;
+}
+
+.walking-field:focus-within,
+.walking-field[data-active] {
+  border-color: var(--color-tab-active);
+}
+
+.walking-point-role {
+  flex: none;
+  color: var(--color-field-label);
+  white-space: nowrap;
+}
+
+.walking-field input {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--color-field-text);
+  font: inherit;
+  text-overflow: ellipsis;
+}
+
+.walking-field input:focus-visible {
+  outline: none;
+}
+
 .walking-filters,
-.walking-actions {
+.walking-actions,
+.walking-order {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+#walking-station {
+  flex: 1 1 0;
 }
 
 .walking-actions button,
@@ -531,9 +575,62 @@
   font: inherit;
 }
 
-.walking-panel li > button {
+.walking-field .walking-point-clear {
+  position: absolute;
+  inset: 0 1px 0 auto;
+  width: 28px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-subtle-text);
+  font-size: 16px;
+}
+
+.walking-options > :not(summary),
+#walking-map-choice .walking-actions {
+  margin-top: 5px;
+}
+
+.walking-results {
+  position: relative;
+  max-height: min(32dvh, 208px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+
+.walking-results [role="option"] {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  cursor: pointer;
   text-align: left;
-  overflow-wrap: anywhere;
+}
+
+.walking-results [role="option"]:hover,
+.walking-results [aria-selected="true"] {
+  background: var(--color-selection-background);
+}
+
+.walking-results [role="option"] div {
+  min-width: 0;
+}
+
+.walking-results strong,
+.walking-results span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.walking-results span,
+#walking-search-status {
+  color: var(--color-subtle-text);
 }
 
 .walking-gates {

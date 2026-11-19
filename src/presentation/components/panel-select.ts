@@ -11,7 +11,7 @@ interface SelectSearch {
 }
 
 /** Delay filtering until text entry pauses or the IME commits its composition. */
-const searchDelayMs = 200;
+export const searchDelayMs = 200;
 
 /** Bind a panel-width DOM list to a field, with optional live search for longer lists. */
 export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, search?: SelectSearch) {
