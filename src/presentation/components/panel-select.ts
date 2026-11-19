@@ -64,10 +64,13 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     trigger.setAttribute('aria-expanded', 'false');
     const keyTarget: HTMLElement = input ?? trigger;
 
-    /** Use the active panel width and stay clear of the visual viewport edges and mobile keyboard. */
+    /** Align with the panel's content box and stay clear of the mobile keyboard. */
     function placeMenu(): void {
         const field = trigger.getBoundingClientRect();
         const bounds = panel.getBoundingClientRect();
+        const style = window.getComputedStyle(panel);
+        const leftInset = Number.parseFloat(style.paddingLeft) || 0;
+        const rightInset = Number.parseFloat(style.paddingRight) || 0;
         const viewport = window.visualViewport;
         const layoutHeight = document.documentElement.clientHeight;
         const viewportTop = viewport?.offsetTop ?? 0;
@@ -78,8 +81,8 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
         const above = upperEdge - viewportTop - gap;
         const below = viewportBottom - lowerEdge - gap;
         const opensAbove = below < 240 && above > below;
-        menu.style.left = `${bounds.left}px`;
-        menu.style.width = `${bounds.width}px`;
+        menu.style.left = `${bounds.left + panel.clientLeft + leftInset}px`;
+        menu.style.width = `${Math.max(0, panel.clientWidth - leftInset - rightInset)}px`;
         menu.style.top = opensAbove ? 'auto' : `${lowerEdge}px`;
         menu.style.bottom = opensAbove ? `${layoutHeight - upperEdge}px` : 'auto';
         menu.style.maxHeight = `${Math.max(0, Math.min(336, opensAbove ? above : below))}px`;
@@ -289,7 +292,9 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     });
     const reposition = () => {
         if (menu.matches(':popover-open')) {
-            if (trigger.getClientRects().length) {
+            const field = trigger.getBoundingClientRect();
+            const bounds = panel.getBoundingClientRect();
+            if (trigger.getClientRects().length && field.bottom > bounds.top && field.top < bounds.bottom) {
                 placeMenu();
             } else {
                 close();

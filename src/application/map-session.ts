@@ -1,6 +1,7 @@
 import type { LevelId, RouteEdge, StationId } from '../domain/map/model.ts';
 import { findRoute } from '../domain/navigation/find-route.ts';
 import { stationFocusLevel } from './exploration/region-focus.ts';
+import { planWalkingRoute } from './navigation/walking-route.ts';
 
 export interface MapViewState {
     explode: number;
@@ -33,6 +34,18 @@ export class MapSession {
         this.state.explode = 0.78;
         this.state.level = 'all';
         this.state.roof = false;
+    }
+    /** Draw a complete itinerary only when each ordered leg is present in the graph. */
+    previewWalkingRoute(places: readonly string[], allowPaid: boolean) {
+        const result = planWalkingRoute(this.edges, places, allowPaid);
+        this.state.route = result.route ?? null;
+        if (result.route) {
+            this.state.explode = 0.78;
+            this.state.level = 'all';
+            this.state.roof = false;
+            this.state.focusStation = null;
+        }
+        return result;
     }
     /**
      * Focus a station, choose its default hall and clear any previous route.

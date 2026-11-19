@@ -20,9 +20,12 @@ class ElementStub extends EventTarget {
     textContent = '';
     hidden = false;
     opened = false;
+    clientLeft = 0;
+    clientWidth = 190;
     children: ElementStub[] = [];
+    bounds = { left: 0, top: 0, bottom: 30, width: 200 };
     attributes = new Map([['aria-label', 'Facility']]);
-    style = {};
+    style = { left: '', width: '' };
     classList = { add() {}, remove() {} };
     append(...children: ElementStub[]) { this.children.push(...children); }
     replaceChildren(...children: ElementStub[]) { this.children = children; }
@@ -30,7 +33,8 @@ class ElementStub extends EventTarget {
     getAttribute(name: string) { return this.attributes.get(name); }
     setAttribute(name: string, value: string) { this.attributes.set(name, value); }
     removeAttribute(name: string) { this.attributes.delete(name); }
-    getBoundingClientRect() { return { left: 0, top: 0, bottom: 30, width: 200 }; }
+    getBoundingClientRect() { return this.bounds; }
+    getClientRects() { return [this.bounds]; }
     matches(selector: string) { return selector === ':popover-open' && this.opened; }
     showPopover() { this.opened = true; }
     hidePopover() { this.opened = false; }
@@ -44,6 +48,7 @@ test('unscoped candidates wait for committed text, with debounce and no stale se
     const panel = new ElementStub();
     trigger.append(new ElementStub());
     const window = Object.assign(new EventTarget(), {
+        getComputedStyle: () => ({ paddingLeft: '15px', paddingRight: '15px' }),
         setTimeout: (callback: () => void) => {
             timers.set(++lastTimer, callback);
             return lastTimer;
@@ -73,6 +78,8 @@ test('unscoped candidates wait for committed text, with debounce and no stale se
     const enter = () => input!.dispatchEvent(Object.assign(new Event('keydown'), { key: 'Enter' }));
     picker.setOptions(choices, '', { searchPrompt: 'Choose a station or search' });
     click();
+    assert.equal(panel.children[0]!.style.left, '15px');
+    assert.equal(panel.children[0]!.style.width, '160px');
     assert.equal(list!.children.length, 0);
     assert.equal(status!.textContent, 'Choose a station or search');
     input!.dispatchEvent(new Event('compositionstart'));
@@ -100,4 +107,9 @@ test('unscoped candidates wait for committed text, with debounce and no stale se
     assert.equal(timers.size, 0);
     click();
     assert.equal(list!.children.length, 2);
+    window.dispatchEvent(new Event('scroll'));
+    assert(panel.children[0]!.opened);
+    trigger.bounds = { ...trigger.bounds, top: -32, bottom: -2 };
+    window.dispatchEvent(new Event('scroll'));
+    assert(!panel.children[0]!.opened);
 });

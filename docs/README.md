@@ -7,6 +7,7 @@
 | JR 中央区、北侧、南侧的跨板块关系 | [区域设计与参考](./design/README.md) |
 | 车站构内布局、设备、改札与本站证据 | [七站设计](./design/stations/README.md) |
 | 地面遮盖、地下开挖网络、2F 连廊 | [公共空间](./design/public-areas/README.md) |
+| 站内步行路线、端点和地图选点 | [步行路线](./design/walking-routes.md) |
 | 裙楼、塔楼、建筑造型及公共接入 | [建筑设计](./design/buildings/README.md) |
 | 架构、代码风格、国际化、验证和文档维护 | [开发文档](./development/README.md) |
 | 资料版本、授权与来源评估 | [数据与来源](./data/README.md) |

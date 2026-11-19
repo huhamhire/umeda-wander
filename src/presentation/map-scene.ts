@@ -18,6 +18,8 @@ import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
+import { visibleLabelOccluders } from './labels/label-occlusion.ts';
+import { colors } from './appearance/scene-palette.ts';
 
 export interface MapCameraSnapshot {
     offset: [number, number, number];
@@ -91,6 +93,11 @@ export class MapScene {
     private facilityLabelIds?: ReadonlySet<string>;
     private selected = this.selectionMarker.group;
     private activeFacility?: Facility;
+    private readonly walkingMarkers = new T.Group();
+    private readonly walkingNodes: Map<string, RouteNode>;
+    private readonly walkingMarkerGeometry = new T.SphereGeometry(2.5, 12, 8);
+    private readonly walkingMarkerMaterial = new T.MeshBasicMaterial({ color: colors.route });
+    private onWalkingPick?: (id: string) => void;
     /** Rebuild cached shadows and redraw after the renderer restores its WebGL context. */
     private readonly restoreContext = () => this.invalidateModels();
     /**
@@ -109,6 +116,7 @@ export class MapScene {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
         this.routeModel = new RouteModel(nodes);
+        this.walkingNodes = new Map(nodes.map(node => [node.id, node]));
         this.scene.matrixWorldAutoUpdate = false;
         this.renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.domElement.addEventListener('webglcontextrestored', this.restoreContext);
@@ -155,7 +163,7 @@ export class MapScene {
             this.geographicExteriors.add(model);
         }
         this.scene.add(this.geographicExteriors);
-        this.scene.add(this.models.roof, this.routeModel.group, this.selected);
+        this.scene.add(this.models.roof, this.routeModel.group, this.selected, this.walkingMarkers);
         this.scene.traverse(object => {
             if (object.userData.labelOccluder) {
                 this.labelOccluders.push(object);
@@ -235,6 +243,24 @@ export class MapScene {
     /** Pick only facilities on current or normal floors; lower context floors cannot intercept clicks. */
     private selectAt(clientX: number, clientY: number): void {
         this.setPointerRay(clientX, clientY);
+        if (this.onWalkingPick) {
+            const hit = this.raycaster.intersectObjects(this.walkingMarkers.children.filter(marker => marker.visible), false)[0];
+            if (hit) {
+                this.raycaster.far = Math.max(0, hit.distance - .1);
+                const blocked = this.raycaster.intersectObjects(visibleLabelOccluders(this.labelOccluders), false).length > 0;
+                this.raycaster.far = Infinity;
+                if (blocked) {
+                    return;
+                }
+                for (const marker of this.walkingMarkers.children) {
+                    marker.scale.setScalar(marker === hit.object ? 1.45 : 1);
+                }
+                this.walkingMarkers.updateMatrixWorld();
+                this.onWalkingPick(hit.object.name);
+                this.requestRender();
+            }
+            return;
+        }
         const candidates = this.models.pickables.filter(object => object.parent?.visible &&
             ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, (object.userData.facility as Facility).level)));
         const hit = this.raycaster.intersectObjects(candidates, false)[0];
@@ -249,6 +275,9 @@ export class MapScene {
         this.disposed = true;
         this.gestures.dispose();
         this.labels.dispose();
+        this.walkingMarkers.clear();
+        this.walkingMarkerGeometry.dispose();
+        this.walkingMarkerMaterial.dispose();
         this.renderer.domElement.removeEventListener('webglcontextrestored', this.restoreContext);
         this.appearance.dispose(this.scene);
         this.resizeObserver.disconnect();
@@ -370,6 +399,21 @@ export class MapScene {
         this.facilityLabelIds = ids;
         this.labels.setFacilityFilter(ids && this.facilities.filter(facility => ids.has(facility.id)));
         this.requestRender();
+    }
+
+    /** Temporarily pick only authored walking points instead of ordinary map facilities. */
+    setWalkingPickTargets(ids?: readonly string[], onPick?: (id: string) => void): void {
+        this.walkingMarkers.clear();
+        this.onWalkingPick = ids ? onPick : undefined;
+        for (const id of ids ?? []) {
+            const node = this.walkingNodes.get(id);
+            if (node) {
+                const marker = new T.Mesh(this.walkingMarkerGeometry, this.walkingMarkerMaterial);
+                marker.name = id;
+                this.walkingMarkers.add(marker);
+            }
+        }
+        this.invalidateModels();
     }
     /** Capture navigation intent and manual camera framing for a locale reload. */
     snapshotCamera(): MapCameraSnapshot {
@@ -533,9 +577,14 @@ export class MapScene {
         }
         this.models.roof.position.y = 26 + this.displayedExplode * 56;
         if (this.state.route || this.routeModel.group.visible) {
-            this.routeModel.update(this.state.route, levelY);
+            this.routeModel.update(this.state.route, levelY, id => ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, id)));
         }
         this.routeModel.group.visible = !!this.state.route;
+        for (const marker of this.walkingMarkers.children) {
+            const node = this.walkingNodes.get(marker.name)!;
+            marker.visible = ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, node.level));
+            marker.position.set(node.x, levelY(node.level) + (node.elevationOffset ?? 0) + 2, node.z);
+        }
         if (this.activeFacility) {
             this.selected.position.set(
                 this.activeFacility.x,

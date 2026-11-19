@@ -93,6 +93,7 @@
               aria-controls="panel-facilities"
               tabindex="-1"
             >{{ui.navigation.facilities}}</button>
+            <button id="tab-walking" role="tab" aria-selected="false" aria-controls="panel-walking" tabindex="-1">{{ui.walking.tab}}</button>
           </div>
 
           <section class="layers" id="panel-layers" role="tabpanel" aria-labelledby="tab-layers">
@@ -131,6 +132,17 @@
               <span>{{ui.facilities.heading}}</span>
               <span class="micro">{{ui.facilities.eyebrow}}</span>
             </div>
+            <div class="facility-selection">
+              <button class="panel-select" id="facility-picker" type="button" aria-label="{{ui.facilities.select}}">
+                <span>{{ui.facilities.placeholder}}</span>
+              </button>
+              <button id="facility-clear" class="facility-clear" type="button" aria-label="{{ui.facilities.clearSelection}}" title="{{ui.facilities.clearSelection}}" hidden>×</button>
+            </div>
+            <div class="walking-actions" id="facility-walking-actions" hidden>
+              <button type="button" id="facility-walking-start">{{ui.walking.setStart}}</button>
+              <button type="button" id="facility-walking-end">{{ui.walking.setEnd}}</button>
+              <button type="button" id="facility-walking-stop" hidden>{{ui.walking.setStop}}</button>
+            </div>
             <div class="facility-filters">
               <div class="facility-filter-field">
                 <span>{{ui.navigation.station}}</span>
@@ -146,17 +158,38 @@
               </div>
             </div>
             <div class="poi-list" id="poi-list" role="group" aria-label="{{ui.facilities.types}}"></div>
-            <div class="facility-selection">
-              <button class="panel-select" id="facility-picker" type="button" aria-label="{{ui.facilities.select}}">
-                <span>{{ui.facilities.placeholder}}</span>
-              </button>
-              <button id="facility-clear" class="facility-clear" type="button" aria-label="{{ui.facilities.clearSelection}}" title="{{ui.facilities.clearSelection}}" hidden>×</button>
-            </div>
             <div class="legend">
               <span><i class="public"></i>{{ui.legend.public}}</span>
               <span><i class="paid"></i>{{ui.legend.paid}}</span>
               <span><i class="rail"></i>{{ui.legend.platform}}</span>
             </div>
+          </section>
+          <section class="walking-panel" id="panel-walking" role="tabpanel" aria-labelledby="tab-walking" hidden>
+            <p class="walking-coverage">{{ui.walking.coverage}}</p>
+            <ol id="walking-places"></ol>
+            <button type="button" id="walking-add">{{ui.walking.add}}</button>
+            <div class="walking-editor" id="walking-editor" hidden>
+              <div class="walking-filters">
+                <select id="walking-station" aria-label="{{ui.facilities.stationFilter}}"></select>
+                <select id="walking-floor" aria-label="{{ui.facilities.floorFilter}}"></select>
+                <select id="walking-kind" aria-label="{{ui.facilities.types}}"></select>
+              </div>
+              <button class="panel-select" type="button" id="walking-place" aria-label="{{ui.walking.choose}}">
+                <span>{{ui.walking.choose}}</span>
+              </button>
+              <div class="walking-actions">
+                <button type="button" id="walking-pick">{{ui.walking.pick}}</button>
+                <button type="button" id="walking-confirm" hidden>{{ui.walking.confirm}}</button>
+                <button type="button" id="walking-cancel">{{ui.walking.cancel}}</button>
+              </div>
+              <p id="walking-pick-status" role="status" hidden></p>
+            </div>
+            <label class="walking-gates"><input id="walking-gates" type="checkbox" />{{ui.walking.gates}}</label>
+            <div class="walking-actions">
+              <button type="button" id="walking-preview">{{ui.walking.preview}}</button>
+              <button type="button" id="walking-clear">{{ui.walking.clear}}</button>
+            </div>
+            <p id="walking-status" role="status" hidden></p>
           </section>
         </div>
       </aside>

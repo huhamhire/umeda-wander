@@ -29,18 +29,22 @@ export class RouteModel {
     /**
      * Rebuild the illustrative route from selected nodes, clearing it when no route is selected.
      */
-    update(ids: readonly string[] | null, levelY: (id: LevelId) => number): void {
+    update(ids: readonly string[] | null, levelY: (id: LevelId) => number, visible: (id: LevelId) => boolean): void {
         this.clearRoute();
-        if (!ids) {
+        if (!ids?.length) {
             return;
         }
-        const points = ids.map(id => {
-            const node = this.nodeById.get(id)!;
-            return new T.Vector3(node.x, levelY(node.level) + (node.elevationOffset ?? 0) + 1.3, node.z);
-        });
+        const nodes = ids.map(id => this.nodeById.get(id)!);
+        const points = nodes.map(node => new T.Vector3(node.x, levelY(node.level) + (node.elevationOffset ?? 0) + 1.3, node.z));
         for (let i = 0; i < points.length - 1; i++) {
+            if (!visible(nodes[i]!.level) || !visible(nodes[i + 1]!.level)) {
+                continue;
+            }
             const a = points[i]!;
             const b = points[i + 1]!;
+            if (a.distanceToSquared(b) < 1e-6) {
+                continue;
+            }
             this.primitives.beam(this.group, a, b, 0.38, colors.route);
             const direction = b.clone().sub(a).normalize();
             const arrow = new T.Mesh(new T.ConeGeometry(0.9, 2.1, 3), this.primitives.material(colors.route));
@@ -48,9 +52,12 @@ export class RouteModel {
             arrow.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction);
             this.group.add(arrow);
         }
-        for (const point of [points[0]!, points.at(-1)!]) {
+        for (const index of new Set([0, points.length - 1])) {
+            if (!visible(nodes[index]!.level)) {
+                continue;
+            }
             const marker = new T.Mesh(new T.SphereGeometry(0.9, 12, 8), this.primitives.material(colors.route));
-            marker.position.copy(point);
+            marker.position.copy(points[index]!);
             this.group.add(marker);
         }
     }

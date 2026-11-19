@@ -14,6 +14,7 @@ import { bindCreditsDialog } from './presentation/components/source-credits-dial
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
+import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
 
 interface FacilityFilters {
     station: StationId | null;
@@ -26,6 +27,8 @@ interface LanguageChangeView {
     filters: FacilityFilters;
     facility: string;
     facilityTab: boolean;
+    walkingTab?: boolean;
+    walkingDraft?: WalkingDraft;
     navigationExpanded?: boolean;
     roadsVisible: boolean;
     categoryScroll: number;
@@ -48,7 +51,7 @@ function takeLanguageChangeView(): LanguageChangeView | undefined {
 }
 
 mountLocalizedPage();
-const { facilities, levels, stations } = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
+const { facilities, levels, stations, walkingPlaces } = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
 bindCreditsDialog(
     element<HTMLDialogElement>('#credits-dialog'),
     element('#credits-open'),
@@ -96,6 +99,27 @@ const facilityPickerButton = element<HTMLButtonElement>('#facility-picker');
 const facilityClear = element<HTMLButtonElement>('#facility-clear');
 const facilityStationButton = element<HTMLButtonElement>('#facility-station');
 const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
+const walkingPanel = element('#panel-walking');
+const facilityWalkingActions = element('#facility-walking-actions');
+const facilityWalkingStop = element<HTMLButtonElement>('#facility-walking-stop');
+const facilityWalkingRoles = ['start', 'end', 'stop'] as const;
+const placeByFacility = new Map(walkingPlaces.flatMap(place => place.facilityId ? [[place.facilityId, place] as const] : []));
+const categoryLabels = {
+    all: messageText('facilities.types.all'),
+    entrance: messageText('facilities.types.entrance'),
+    platform: messageText('facilities.types.platform'),
+    gate: messageText('facilities.types.gate'),
+    ticket: messageText('facilities.types.ticket'),
+    'ticket-machine': messageText('facilities.types.ticket'),
+    escalator: messageText('facilities.types.escalator'),
+    elevator: messageText('facilities.types.elevator'),
+    stairs: messageText('facilities.types.stairs'),
+    information: messageText('facilities.types.information'),
+    'convenience-store': messageText('facilities.types.convenienceStore'),
+    police: messageText('facilities.types.police'),
+    'luggage-storage': messageText('facilities.types.luggageStorage'),
+    locker: messageText('facilities.types.locker')
+};
 const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
     label: messageText('ui.facilities.search'),
     empty: messageText('ui.facilities.searchEmpty')
@@ -128,13 +152,79 @@ for (const level of [{ id: 'all', label: messageText('ui.floors.overview'), name
     floorList.append(button);
 }
 const floorButtons = [...floorList.querySelectorAll<HTMLButtonElement>('button')];
+let closeWalkingEditor: (() => void) | undefined;
 const showSidebarTab = bindSidebarTabs(
-    [element<HTMLButtonElement>('#tab-layers'), element<HTMLButtonElement>('#tab-facilities')],
-    [element('#panel-layers'), facilityPanel],
-    syncFacilityLabels
+    [element<HTMLButtonElement>('#tab-layers'), element<HTMLButtonElement>('#tab-facilities'), element<HTMLButtonElement>('#tab-walking')],
+    [element('#panel-layers'), facilityPanel, walkingPanel],
+    () => {
+        syncFacilityLabels();
+        if (walkingPanel.hidden) {
+            closeWalkingEditor?.();
+        }
+        if (!facilityPanel.hidden) {
+            syncWalkingActions();
+        }
+    }
 );
-if (restored?.facilityTab) {
+const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, {
+    kindLabel: kind => categoryLabels[kind],
+    preview: (places, allowPaid) => {
+        const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid);
+        if (result.route) {
+            clearFacilitySelection();
+            scene?.reset();
+            sync();
+            return messageText('ui.walking.result', { count: places.length - 1 });
+        }
+        sync();
+        if (result.issue === 'unavailable' || result.issue === 'gateRequired') {
+            const name = (id: string) => places.find(place => place.id === id)!.name;
+            return messageText(`ui.walking.${result.issue}`, { from: name(result.from), to: name(result.to) });
+        }
+        return messageText(`ui.walking.${result.issue}`);
+    },
+    clear: () => {
+        if (session.state.route) {
+            session.state.route = null;
+            sync();
+        }
+    },
+    pick: (places, onPick) => {
+        if (places?.length) {
+            const first = places[0]!;
+            const group = floors.find(item => item.members.some(level => level.id === first.level));
+            const oneFloor = group && places.every(place => group.members.some(level => level.id === place.level));
+            session.state.level = oneFloor ? first.level : 'all';
+            session.state.focusStation = places.every(place => place.station === first.station) ? first.station : null;
+            session.state.roof = false;
+            session.state.explode = oneFloor ? 0 : Math.max(.6, session.state.explode);
+            clearFacilitySelection();
+            sync();
+        }
+        scene?.setWalkingPickTargets(places?.map(place => place.id), onPick);
+    }
+}, restored?.walkingDraft);
+closeWalkingEditor = walkingRoute.closeEditor;
+if (restored?.walkingTab) {
+    showSidebarTab(2);
+} else if (restored?.facilityTab) {
     showSidebarTab(1);
+}
+for (const role of facilityWalkingRoles) {
+    element(`#facility-walking-${role}`).addEventListener('click', () => {
+        const place = placeByFacility.get(selectedFacilityId);
+        if (place) {
+            walkingRoute.usePlace(place, role);
+            showSidebarTab(2);
+            element('#tab-walking').focus();
+        }
+    });
+}
+
+/** Show the route actions only when the currently selected facility is a route endpoint. */
+function syncWalkingActions(): void {
+    facilityWalkingActions.hidden = !placeByFacility.has(selectedFacilityId);
+    facilityWalkingStop.hidden = facilityWalkingActions.hidden || !walkingRoute.canAddStop();
 }
 const sidebar = element('.sidebar');
 const navigationToggle = element<HTMLButtonElement>('#navigation-toggle');
@@ -160,6 +250,8 @@ function saveLanguageChangeView(): void {
         filters: facilityFilter,
         facility: selectedFacilityId,
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
+        walkingTab: !walkingPanel.hidden,
+        walkingDraft: walkingRoute.snapshot(),
         navigationExpanded: !sidebar.hasAttribute('data-collapsed'),
         roadsVisible: groundPreference,
         categoryScroll: element('#poi-list').scrollLeft,
@@ -215,21 +307,6 @@ function refreshFacilities(dismissExcludedSelection = false): void {
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
     categoryList.replaceChildren();
-    const labels = {
-        all: messageText('facilities.types.all'),
-        entrance: messageText('facilities.types.entrance'),
-        platform: messageText('facilities.types.platform'),
-        gate: messageText('facilities.types.gate'),
-        ticket: messageText('facilities.types.ticket'),
-        escalator: messageText('facilities.types.escalator'),
-        elevator: messageText('facilities.types.elevator'),
-        stairs: messageText('facilities.types.stairs'),
-        information: messageText('facilities.types.information'),
-        'convenience-store': messageText('facilities.types.convenienceStore'),
-        police: messageText('facilities.types.police'),
-        'luggage-storage': messageText('facilities.types.luggageStorage'),
-        locker: messageText('facilities.types.locker')
-    };
     for (const kind of [
         'all',
         'entrance',
@@ -253,7 +330,7 @@ function refreshFacilities(dismissExcludedSelection = false): void {
         button.dataset.kind = kind;
         button.classList.toggle('selected', facilityKind === kind);
         button.setAttribute('aria-pressed', String(facilityKind === kind));
-        button.append(createFacilityIcon(kind), labels[kind]);
+        button.append(createFacilityIcon(kind), categoryLabels[kind]);
         button.addEventListener(
             'click',
             () => {
@@ -302,6 +379,7 @@ function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
     selectedFacilityId = f.id;
     facilityPicker.value = f.id;
     facilityClear.hidden = false;
+    syncWalkingActions();
     showSidebarTab(1);
     sync();
     if (scene) {
@@ -324,6 +402,7 @@ function clearFacilitySelection(): void {
     }
     facilityPicker.value = '';
     facilityClear.hidden = true;
+    syncWalkingActions();
     scene?.clearFacilitySelection();
 }
 
@@ -344,6 +423,10 @@ facilityClear.addEventListener('click', () => {
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !event.defaultPrevented && !event.isComposing &&
         !document.querySelector('dialog[open], [popover]:popover-open')) {
+        if (!walkingPanel.hidden && walkingRoute.cancelEditing()) {
+            event.preventDefault();
+            return;
+        }
         const fromClearButton = document.activeElement === facilityClear;
         if (fromClearButton) {
             facilityClear.click();
@@ -358,7 +441,6 @@ for (const b of floorButtons) {
         () => {
             session.state.level = b.dataset.level as LevelId | 'all';
             facilityFilter.level = session.state.level;
-            session.state.route = null;
             pendingFacility = undefined;
             refreshFacilities(true);
             sync();
@@ -386,7 +468,6 @@ facilityFloorButton.addEventListener(
     () => {
         facilityFilter.level = facilityFloor.value as LevelId | 'all';
         session.state.level = facilityFilter.level;
-        session.state.route = null;
         pendingFacility = undefined;
         refreshFacilities(true);
         sync();
@@ -435,6 +516,7 @@ facilityPickerButton.addEventListener(
  * Reset exploration, camera and manual filters, then return to the floor tab.
  */
 function reset(): void {
+    walkingRoute.reset();
     clearFacilitySelection();
     pendingFacility = undefined;
     savedCamera = undefined;
@@ -455,6 +537,7 @@ element('.brand').addEventListener('click', e => {
     reset();
 });
 refreshFacilities();
+syncWalkingActions();
 if (restored) {
     element('#poi-list').scrollLeft = restored.categoryScroll;
     element<HTMLSelectElement>('#language').focus({ preventScroll: true });
@@ -491,6 +574,7 @@ async function loadMap(): Promise<void> {
         }
         updateCompass();
         scene.renderFirstFrame();
+        walkingRoute.enableMap();
         zoomIn.disabled = false;
         zoomOut.disabled = false;
     }

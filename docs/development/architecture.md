@@ -25,6 +25,8 @@ H5 使用地理米制总图，车站、商业建筑及公共区域按独立板�
 
 MapScene 协调镜头、状态和生命周期；MapModels 构造网格并输出设备组及标签锚点；SceneLabels 管理 DOM 投影、遮挡和碰撞；MapGestures 管理指针及手势；RouteModel 渲染既有路线。通过明确参数及回调协作，不能将整个 MapScene 私有状态传给子模块。离线脚本直接使用 MapModels，不再伪造 MapScene 并反射调用私有方法。
 
+步行路线由 `application/navigation` 逐段计算，地点从显式接入的行走图节点装配。页面可以预览站内路线并按楼层查看。端点、地图选点和公开范围见[步行路线设计](../design/walking-routes.md)。
+
 - 每站交付同一套领域 `StationMap`，不复制类型、渲染器或服务。原始局部布局仍被地理站模复用，不能因采用新坐标就删除。
 - 设备坡度在 `application/connections/calibrate-equipment.ts` 校准；保留站厅／夹层端，更新实际站台端、路线节点及设施锚点。开口按实际承载楼板处理。
 - 门户在 `application/stations/public-interface-bindings.ts` 校验同标高公共落脚面；几何绑定不自动生成跨站寻路边。

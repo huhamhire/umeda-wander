@@ -25,6 +25,13 @@ test(
         assert(!css.includes('@import'));
         assert(!/url\(https?:/.test(css));
         assert.match(css, /\.sidebar\s*\{/);
+        for (const rules of css.matchAll(/\.(?:sidebar|sidebar-content)\s*\{([^}]*)\}/g)) {
+            assert.doesNotMatch(rules[1]!, /overflow-y:\s*auto/);
+        }
+        assert.match(css, /\.sidebar-tabs\s*\{[^}]*flex:\s*none/);
+        assert.match(css, /\.sidebar\s*\{[^}]*padding-block:\s*15px/);
+        assert.match(css, /\.sidebar-content > \[role=tabpanel\]\s*\{[^}]*padding-inline:\s*var\(--sidebar-inline-inset\);[^}]*overflow-y:\s*auto/);
+        assert(narrowStyles.some(rules => /\.sidebar-content\s*\{[^}]*padding-block:\s*6px 8px/.test(rules ?? '')));
         assert.match(css, /\.navigation-toggle\s*\{\s*display:\s*none/);
         assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{[^}]*min-height:\s*44px/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));

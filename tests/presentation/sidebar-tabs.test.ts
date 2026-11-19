@@ -51,12 +51,14 @@ test(
 );
 
 test(
-    'two navigation tabs share station focusing through the facility station dropdown',
+    'walking routes have their own tab and facility search precedes its filters',
     () => {
         const html = readFileSync(new URL('../../src/index.html', import.meta.url), 'utf8');
         assert(!html.includes('station-picker'));
         assert(!html.includes('data-route='));
-        assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m => m[1]), ['tab-layers', 'tab-facilities']);
+        assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m => m[1]), ['tab-layers', 'tab-facilities', 'tab-walking']);
+        assert(html.indexOf('id="facility-picker"') < html.indexOf('id="facility-station"'));
+        assert(html.includes('id="walking-pick"'));
         assert.equal([...html.matchAll(/id="facility-station"/g)].length, 1);
         assert(!html.includes('panel-stations'));
         assert(!html.includes('data-focus='));
