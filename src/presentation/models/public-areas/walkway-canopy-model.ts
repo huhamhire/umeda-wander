@@ -42,7 +42,13 @@ export function buildWalkwayCanopy(canopy: WalkwayCanopy): T.Group {
             }
             for (const side of [-1, 1]) {
                 const offset = side * (canopy.width / 2 - .25);
-                beam(x - Math.sin(angle) * offset, canopy.clearHeight / 2, z + Math.cos(angle) * offset, .14, canopy.clearHeight, .14, angle);
+                const postX = x - Math.sin(angle) * offset;
+                const postZ = z + Math.cos(angle) * offset;
+                // Preserve an adjoining bridge mouth while continuing the roof over it.
+                if (canopy.postClearances?.some(({ point, radius }) => Math.hypot(point.x - postX, point.z - postZ) < radius)) {
+                    continue;
+                }
+                beam(postX, canopy.clearHeight / 2, postZ, .14, canopy.clearHeight, .14, angle);
             }
         }
     }

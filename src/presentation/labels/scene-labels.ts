@@ -1,8 +1,9 @@
 import * as T from 'three';
-import type { Level, LevelId, StationId } from '../../domain/map/model.ts';
+import type { FacilityKind, Level, LevelId, StationId } from '../../domain/map/model.ts';
 import type { MapViewState } from '../../application/map-session.ts';
 import { viewLayerRole } from '../../application/exploration/view-layer.ts';
 import { isRegionMuted } from '../../application/exploration/region-focus.ts';
+import { createFacilityIcon } from '../components/facility-icon.ts';
 import { LabelOcclusion, visibleLabelOccluders } from './label-occlusion.ts';
 
 export interface SceneLabelDefinition {
@@ -11,6 +12,7 @@ export interface SceneLabelDefinition {
     level?: LevelId;
     roof?: boolean;
     emphasis?: boolean;
+    kind?: FacilityKind;
     owner?: StationId | null;
     surface?: T.Object3D;
 }
@@ -30,7 +32,7 @@ export interface SceneLabelView {
     height: number;
     zoom: number;
     occluders: T.Object3D[];
-    selection?: Pick<SceneLabelDefinition, 'text' | 'position'>;
+    selection?: Pick<SceneLabelDefinition, 'text' | 'position' | 'kind'>;
 }
 
 /** Own screen labels, their occlusion and collision ordering independently of scene geometry. */
@@ -39,6 +41,7 @@ export class SceneLabels {
     private readonly labels: MapLabel[] = [];
     private readonly labelOcclusion = new LabelOcclusion();
     private selectionElement?: HTMLDivElement;
+    private selectionKind?: FacilityKind;
 
     /** Create DOM labels from model-owned anchors without copying station layout logic. */
     constructor(host: HTMLElement, definitions: readonly SceneLabelDefinition[]) {
@@ -46,7 +49,12 @@ export class SceneLabels {
         for (const definition of definitions) {
             const element = document.createElement('div');
             element.className = 'map-label' + (definition.emphasis ? ' emphasis' : '');
-            element.textContent = definition.text;
+            if (definition.kind) {
+                element.classList.add('facility-symbol');
+                element.append(createFacilityIcon(definition.kind));
+            } else {
+                element.textContent = definition.text;
+            }
             host.append(element);
             this.labels.push({ ...definition, element });
         }
@@ -70,11 +78,16 @@ export class SceneLabels {
         }
         if (!this.selectionElement) {
             this.selectionElement = document.createElement('div');
-            this.selectionElement.className = 'map-label emphasis';
+            this.selectionElement.className = 'map-label emphasis facility-label';
             this.host.append(this.selectionElement);
         }
-        if (this.selectionElement.textContent !== definition.text) {
-            this.selectionElement.textContent = definition.text;
+        if (this.selectionElement.textContent !== definition.text || this.selectionKind !== definition.kind) {
+            this.selectionKind = definition.kind;
+            if (definition.kind) {
+                this.selectionElement.replaceChildren(createFacilityIcon(definition.kind), definition.text);
+            } else {
+                this.selectionElement.textContent = definition.text;
+            }
         }
         return { ...definition, element: this.selectionElement, emphasis: true };
     }
@@ -161,5 +174,6 @@ export class SceneLabels {
         this.labels.length = 0;
         this.selectionElement?.remove();
         this.selectionElement = undefined;
+        this.selectionKind = undefined;
     }
 }

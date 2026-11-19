@@ -5,9 +5,11 @@ import { planFloorOpenings } from '../../src/application/connections/connection-
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
 import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
+import { stationBuildingOpenings } from '../../src/application/stations/station-building-openings.ts';
 import { platformLocalPoint, platformPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import { edges, facilities, layout, levels, nodes } from '../../src/infrastructure/district/geographic-map.ts';
+import { createGeographicStation } from '../../src/infrastructure/district/geographic-stations.ts';
 import { hankyuStation } from '../../src/infrastructure/stations/hankyu-umeda/index.ts';
 import * as jr from '../../src/infrastructure/stations/jr-osaka/layout.ts';
 import { metroStation } from '../../src/infrastructure/stations/metro-umeda/index.ts';
@@ -107,6 +109,36 @@ test(
                 });
                 assert(supported, `${p.id}: missing landing support`);
             }
+        }
+    }
+);
+test(
+    'Hankyu has public main banks straight to 1F and a three-stop lift with clear landings',
+    () => {
+        const station = createGeographicStation('hankyu-umeda');
+        const banks = station.layout.connections.filter(c => c.id.startsWith('hankyu-umeda-direct-'));
+        const lift = station.layout.connections.filter(c => c.id.startsWith('hankyu-umeda-public-lift'));
+        const shell = stationBuildingOpenings([station]);
+        const openings = planFloorOpenings(station.layout.connections, station.levels, station.layout.platforms);
+        assert.equal(banks.filter(c => c.kind === 'escalator').length, 4);
+        assert.equal(banks.filter(c => c.kind === 'stairs').length, 3);
+        assert(banks.every(c => c.from.level === 'hankyu-ground' && c.to.level === 'hankyu-platform'));
+        assert.deepEqual(lift.map(c => [c.from.level, c.to.level]), [
+            ['hankyu-ground', 'hankyu-hall'],
+            ['hankyu-hall', 'hankyu-platform']
+        ]);
+        assert.deepEqual(lift[0]!.to, lift[1]!.from);
+        for (const c of [...banks, ...lift]) {
+            assert.equal(c.platformId, undefined, c.id);
+            assert(openings.some(o => o.connectionId === c.id && o.level === c.to.level), c.id);
+            for (const landing of [c.from, c.to]) {
+                const touching = station.layout.areas.filter(a => a.level === landing.level && pointInPolygon(landing, a.outline));
+                assert(touching.some(a => a.kind === 'public'), landing.id);
+                assert(!touching.some(a => a.kind === 'paid'), landing.id);
+            }
+            const middle = { x: (c.from.x + c.to.x) / 2, z: (c.from.z + c.to.z) / 2 };
+            const midY = (station.levels.find(l => l.id === c.from.level)!.y + station.levels.find(l => l.id === c.to.level)!.y) / 2;
+            assert(shell.some(o => o.evidence === c.evidence && o.base <= midY && o.top >= midY + 2 && pointInPolygon(middle, o.outline)), c.id);
         }
     }
 );

@@ -375,6 +375,14 @@ export class MapModels {
             if (!facility.id.startsWith('connection-')) {
                 this.buildFacility(facility);
             }
+            if (facility.kind === 'police' || facility.kind === 'luggage-storage' || facility.kind === 'locker') {
+                this.labels.push({
+                    text: facility.name,
+                    position: new T.Vector3(facility.x, 3.15, facility.z),
+                    level: facility.level,
+                    kind: facility.kind
+                });
+            }
         }
         for (const connection of this.layout.connections) {
             const model = new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
@@ -446,12 +454,31 @@ export class MapModels {
                 cabinet(offset, 3.1, 0, 1.4, 0.12, 0.88, 0x91b397);
             }
         }
-        else if (facility.kind === 'information') {
+        else if (facility.kind === 'information' || facility.kind === 'luggage-storage') {
             const rotation = -(facility.rotationRad ?? 0);
-            const base = this.primitives.box(group, facility.x, 1.17, facility.z, 4.2, 1.15, 1.25, 0x678984);
+            const color = facility.kind === 'luggage-storage' ? 0x987a52 : 0x678984;
+            const base = this.primitives.box(group, facility.x, 1.17, facility.z, 4.2, 1.15, 1.25, color);
             base.rotation.y = rotation;
             const top = this.primitives.box(group, facility.x, 1.83, facility.z, 4.6, 0.18, 1.55, colors.white);
             top.rotation.y = rotation;
+        }
+        else if (facility.kind === 'police') {
+            const rotation = -(facility.rotationRad ?? 0);
+            const office = this.primitives.box(group, facility.x, 1.65, facility.z, 2.7, 2.2, 1.65, 0x7c95aa);
+            office.rotation.y = rotation;
+            const fascia = this.primitives.box(group, facility.x, 2.78, facility.z, 2.85, 0.12, 1.8, 0x4b617b);
+            fascia.rotation.y = rotation;
+        }
+        else if (facility.kind === 'locker') {
+            const angle = facility.rotationRad ?? 0;
+            for (const offset of [-0.95, 0, 0.95]) {
+                const x = facility.x + offset * Math.cos(angle);
+                const z = facility.z + offset * Math.sin(angle);
+                const cabinet = this.primitives.box(group, x, 1.66, z, 0.85, 2.2, 0.78, 0x8e9d9d);
+                cabinet.rotation.y = -angle;
+                const divider = this.primitives.box(group, x, 1.66, z, 0.87, 0.06, 0.81, 0x5d7176);
+                divider.rotation.y = -angle;
+            }
         }
         else if (facility.kind === 'convenience-store') {
             this.label(facility.name, facility.x, 3.3, facility.z, facility.level, false, true);

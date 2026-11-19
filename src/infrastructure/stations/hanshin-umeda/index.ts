@@ -429,6 +429,33 @@ export function createStation(
             p.id
         );
     }
+    facility(
+        'west-lockers',
+        'hanshin-hall',
+        messageText('stations.hanshinUmeda.facilities.westLockers.name'),
+        'locker',
+        48,
+        -20,
+        'B1 西口外，靠西口站务室与洗手间所在一侧。'
+    );
+    facility(
+        'department-lockers',
+        'hanshin-hall',
+        messageText('stations.hanshinUmeda.facilities.departmentLockers.name'),
+        'locker',
+        0,
+        -27,
+        'B1 百货店口外，沿阪神百货店侧通道。'
+    );
+    facility(
+        'east-lockers',
+        'hanshin-platform',
+        messageText('stations.hanshinUmeda.facilities.eastLockers.name'),
+        'locker',
+        -75,
+        -30,
+        'B2 东口外往南出口的通道，靠证件照机一带。'
+    );
     // Two distinct public banks outside the B2 gate. Do not confuse the south
     // exit B2-to-B1 bank with its separate B1-to-ground flights below.
     const eastBank = connection(

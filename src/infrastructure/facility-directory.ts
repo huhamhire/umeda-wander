@@ -1,6 +1,18 @@
 import { messageText } from './i18n/index.ts';
 import type { Facility, Level, Platform, VerticalConnection } from '../domain/map/model.ts';
 
+const hankyuPublicLocations: Record<string, Parameters<typeof messageText>[0]> = {
+    'hankyu-umeda-direct-1f-3f': 'facilities.locations.hankyuMainEast',
+    'hankyu-umeda-direct-1f-3f-b': 'facilities.locations.hankyuMainCentreEast',
+    'hankyu-umeda-direct-1f-3f-d': 'facilities.locations.hankyuMainCentreWest',
+    'hankyu-umeda-direct-1f-3f-e': 'facilities.locations.hankyuMainWest',
+    'hankyu-umeda-direct-stairs-a': 'facilities.locations.hankyuMainEast',
+    'hankyu-umeda-direct-stairs-c': 'facilities.locations.hankyuMainCentre',
+    'hankyu-umeda-direct-stairs-e': 'facilities.locations.hankyuMainWest',
+    'hankyu-umeda-public-lift': 'facilities.locations.hankyuTerminalBuilding',
+    'hankyu-umeda-public-lift-upper': 'facilities.locations.hankyuTerminalBuilding'
+};
+
 /** Include each modeled vertical landing and platform without duplicating existing POIs. */
 export function completeFacilityDirectory(existing: Facility[], connections: VerticalConnection[], platforms: Platform[], levels: Level[]): Facility[] {
     const knownPlatforms: Record<string, string> = {
@@ -17,6 +29,10 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         stairs: messageText('facilities.types.stairs')
     };
     const caption = (id: string) => {
+        const hankyuLocation = hankyuPublicLocations[id];
+        if (hankyuLocation) {
+            return messageText(hankyuLocation);
+        }
         if (id.startsWith('public-north')) {
             return messageText('facilities.locations.northAtrium');
         }
@@ -95,6 +111,8 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
             let destination = from.label;
             if (platform) {
                 destination = platform.name ?? messageText('facilities.labels.platformTracks', { tracks: platform.tracks.join('/') });
+            } else if (c.id === 'hankyu-umeda-public-lift' || c.id === 'hankyu-umeda-public-lift-upper') {
+                destination = '1F ↔ 2F ↔ 3F';
             } else if (from.label !== to.label) {
                 destination = `${from.label} ↔ ${to.label}`;
             }

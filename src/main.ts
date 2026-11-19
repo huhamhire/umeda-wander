@@ -13,6 +13,7 @@ import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
+import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 
 interface FacilityFilters {
     station: StationId | null;
@@ -62,6 +63,7 @@ if (restored) {
 let scene: MapScene | undefined;
 let savedCamera = restored?.camera;
 let pendingFacility = restored?.pendingFacility;
+let selectedFacilityId = pendingFacility ?? savedCamera?.facility ?? restored?.facility ?? '';
 let screenDirection: typeof import('./presentation/camera/view-orientation.ts').screenDirection | undefined;
 /**
  * Project geographic north onto the screen and update the compass needle and cardinal labels.
@@ -91,6 +93,7 @@ const slider = element<HTMLInputElement>('#explode');
 const roof = element<HTMLInputElement>('#roof');
 const facilityPanel = element('#panel-facilities');
 const facilityPickerButton = element<HTMLButtonElement>('#facility-picker');
+const facilityClear = element<HTMLButtonElement>('#facility-clear');
 const facilityStationButton = element<HTMLButtonElement>('#facility-station');
 const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
 const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
@@ -147,7 +150,7 @@ function saveLanguageChangeView(): void {
     const snapshot: LanguageChangeView = {
         state: session.state,
         filters: facilityFilter,
-        facility: facilityPicker.value,
+        facility: selectedFacilityId,
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
         navigationExpanded: !sidebar.hasAttribute('data-collapsed'),
         roadsVisible: groundPreference,
@@ -174,7 +177,6 @@ new ResizeObserver(() => {
  */
 function refreshFacilities(): void {
     const { station, level, kind: facilityKind } = facilityFilter;
-    const previous = facilityPicker.value;
     facilityStation.setOptions([
         { value: 'all', label: messageText('ui.filters.allStations') },
         ...stations.map(s => ({ value: s.id, label: s.name }))
@@ -189,25 +191,13 @@ function refreshFacilities(): void {
     const visible = filterFacilities(facilities, levels, { ...filter, kind: facilityKind });
     const choices = visible.map(f => {
         const location = f.kind === 'convenience-store' ? (f.level === 'bridge' ? messageText('ui.facilities.bridgeStore') : messageText('ui.facilities.centralStore')) : '';
-        return { value: f.id, label: `${f.name}${location ? ' · ' + location : ''}`, code: facilityCodes[f.id] };
+        return { value: f.id, label: `${f.name}${location ? ' · ' + location : ''}`, code: facilityCodes[f.id], icon: () => createFacilityIcon(f.kind) };
     });
-    facilityPicker.setOptions(choices, previous, messageText(visible.length ? 'ui.facilities.placeholder' : 'ui.facilities.empty'));
+    facilityPicker.setOptions(choices, selectedFacilityId, messageText(visible.length ? 'ui.facilities.placeholder' : 'ui.facilities.empty'));
+    facilityClear.hidden = selectedFacilityId === '';
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
     categoryList.replaceChildren();
-    const icons = {
-        all: '▦',
-        entrance: '↪',
-        platform: '▰',
-        gate: '▥',
-        ticket: '▤',
-        'ticket-machine': '▣',
-        escalator: '↗',
-        elevator: '↕',
-        stairs: '▱',
-        information: 'ⓘ',
-        'convenience-store': '▧'
-    };
     const labels = {
         all: messageText('facilities.types.all'),
         entrance: messageText('facilities.types.entrance'),
@@ -218,7 +208,10 @@ function refreshFacilities(): void {
         elevator: messageText('facilities.types.elevator'),
         stairs: messageText('facilities.types.stairs'),
         information: messageText('facilities.types.information'),
-        'convenience-store': messageText('facilities.types.convenienceStore')
+        'convenience-store': messageText('facilities.types.convenienceStore'),
+        police: messageText('facilities.types.police'),
+        'luggage-storage': messageText('facilities.types.luggageStorage'),
+        locker: messageText('facilities.types.locker')
     };
     for (const kind of [
         'all',
@@ -230,7 +223,10 @@ function refreshFacilities(): void {
         'elevator',
         'stairs',
         'information',
-        'convenience-store'
+        'convenience-store',
+        'police',
+        'luggage-storage',
+        'locker'
     ] as const) {
         if (kind !== 'all' && kind !== facilityKind && !available.some(f => facilityCategory(f.kind) === kind)) {
             continue;
@@ -240,7 +236,7 @@ function refreshFacilities(): void {
         button.dataset.kind = kind;
         button.classList.toggle('selected', facilityKind === kind);
         button.setAttribute('aria-pressed', String(facilityKind === kind));
-        button.innerHTML = `<span aria-hidden="true">${icons[kind]}</span>${labels[kind]}`;
+        button.append(createFacilityIcon(kind), labels[kind]);
         button.addEventListener(
             'click',
             () => {
@@ -286,7 +282,9 @@ function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
     session.state.focusStation = owner;
     session.state.level = f.level;
     session.state.route = null;
+    selectedFacilityId = f.id;
     facilityPicker.value = f.id;
+    facilityClear.hidden = false;
     showSidebarTab(1);
     sync();
     if (scene) {
@@ -296,6 +294,47 @@ function select(f: Pick<FacilityOption, 'id' | 'level'>): void {
         savedCamera = undefined;
     }
 }
+
+/** Clear the facility independently of filters, floor selection and camera framing. */
+function clearFacilitySelection(): void {
+    if (!selectedFacilityId) {
+        return;
+    }
+    selectedFacilityId = '';
+    pendingFacility = undefined;
+    if (savedCamera) {
+        savedCamera = { ...savedCamera, facility: undefined, followFacility: false };
+    }
+    facilityPicker.value = '';
+    facilityClear.hidden = true;
+    scene?.clearFacilitySelection();
+}
+
+/** Treat a second tap on the same facility, or a tap on the background, as dismissal. */
+function selectFromMap(f?: Pick<FacilityOption, 'id' | 'level'>): void {
+    if (!f || f.id === selectedFacilityId) {
+        clearFacilitySelection();
+    } else {
+        select(f);
+    }
+}
+
+facilityClear.addEventListener('click', () => {
+    clearFacilitySelection();
+    const next = facilityPickerButton.disabled ? element('#poi-list').querySelector<HTMLButtonElement>('[aria-pressed="true"]') : facilityPickerButton;
+    next?.focus({ preventScroll: true });
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !event.defaultPrevented && !event.isComposing &&
+        !document.querySelector('dialog[open], [popover]:popover-open')) {
+        const fromClearButton = document.activeElement === facilityClear;
+        if (fromClearButton) {
+            facilityClear.click();
+        } else {
+            clearFacilitySelection();
+        }
+    }
+});
 for (const b of floorButtons) {
     b.addEventListener(
         'click',
@@ -313,6 +352,7 @@ facilityStationButton.addEventListener(
     'change',
     () => {
         facilityFilter.station = facilityStation.value === 'all' ? null : facilityStation.value as StationId;
+        clearFacilitySelection();
         pendingFacility = undefined;
         savedCamera = undefined;
         session.focusStation(facilityFilter.station);
@@ -378,6 +418,7 @@ facilityPickerButton.addEventListener(
  * Reset exploration, camera and manual filters, then return to the floor tab.
  */
 function reset(): void {
+    clearFacilitySelection();
     pendingFacility = undefined;
     savedCamera = undefined;
     session.reset();
@@ -398,7 +439,6 @@ element('.brand').addEventListener('click', e => {
 });
 refreshFacilities();
 if (restored) {
-    facilityPicker.value = restored.facility;
     element('#poi-list').scrollLeft = restored.categoryScroll;
     element<HTMLSelectElement>('#language').focus({ preventScroll: true });
 }
@@ -419,7 +459,7 @@ async function loadMap(): Promise<void> {
         const currentState = session.state;
         session = new MapSession(runtime.edges);
         session.state = currentState;
-        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, select);
+        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap);
         scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);
         scene.setDarkTheme(document.documentElement.dataset.theme === 'dark');
@@ -428,6 +468,8 @@ async function loadMap(): Promise<void> {
             pendingFacility = undefined;
         } else if (savedCamera) {
             scene.restoreCamera(savedCamera);
+        } else if (selectedFacilityId) {
+            scene.selectById(selectedFacilityId, false);
         }
         updateCompass();
         scene.renderFirstFrame();

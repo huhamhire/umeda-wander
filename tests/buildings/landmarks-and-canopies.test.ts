@@ -58,6 +58,43 @@ test('north and south bridge canopies leave a clear walking centreline under the
     }
 });
 
+test('Yodobashi gallery and eastern bridges have continuous coverage at their modeled mouths', () => {
+    const canopies = layout.canopies!;
+    const gallery = canopies.find(c => c.id === 'canopy-yodobashi-gallery')!;
+    const east = canopies.find(c => c.id === 'canopy-yodobashi-east:1313244355')!;
+    const west = canopies.find(c => c.id === 'canopy-yodobashi-west:850399264')!;
+    const hankyu = canopies.find(c => c.id === 'canopy-hankyu-link:330561953')!;
+    for (const canopy of [gallery, east, west, hankyu]) {
+        assert.equal(canopy.level, 'district-north-deck');
+    }
+
+    const yodobashi = geographicBuildings.find(b => b.id === 'yodobashi')!.galleries![0]!;
+    const meshes = [gallery, east, west, hankyu].map(buildWalkwayCanopy);
+    meshes.forEach(mesh => mesh.updateMatrixWorld(true));
+    for (let i = 1; i < gallery.points.length; i++) {
+        const a = gallery.points[i - 1]!;
+        const b = gallery.points[i]!;
+        const point = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
+        assert(pointInPolygon(point, yodobashi.outline) && !pointInPolygon(point, yodobashi.innerOutline));
+        const overhead = new T.Raycaster(new T.Vector3(point.x, 1.8, point.z), new T.Vector3(0, 1, 0), 0, 3);
+        assert(overhead.intersectObject(meshes[0]!, true).some(hit => hit.object.name === 'walkway-roof-panels'));
+    }
+    for (const [bridge, joinsAtStart] of [[east, false], [west, true]] as const) {
+        const join = joinsAtStart ? bridge.points[0]! : bridge.points.at(-1)!;
+        const outside = joinsAtStart ? bridge.points[1]! : bridge.points.at(-2)!;
+        const span = new T.Vector3(join.x - outside.x, 0, join.z - outside.z);
+        const origin = new T.Vector3(outside.x, 1.8, outside.z);
+        assert.equal(new T.Raycaster(origin, span.clone().normalize(), 0, span.length()).intersectObjects(meshes, true).length, 0);
+        for (const fraction of [.2, .5, .8]) {
+            const p = origin.clone().addScaledVector(span, fraction);
+            const overhead = new T.Raycaster(p, new T.Vector3(0, 1, 0), 0, 3);
+            assert(overhead.intersectObjects(meshes, true).some(hit => hit.object.name === 'walkway-roof-panels'));
+        }
+    }
+    const openFrontage = new T.Raycaster(new T.Vector3(480, 1.8, 354), new T.Vector3(0, 1, 0), 0, 3);
+    assert.equal(openFrontage.intersectObjects(meshes, true).length, 0);
+});
+
 test('Hanshin lift approaches stay on the door side and join the upper bridge', () => {
     const station = createGeographicStation('hanshin-umeda');
     const lift = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;

@@ -239,6 +239,33 @@ export function createStation(placement: {
         -2.3,
         '2 番线往新大阪、箕面萱野方向。资料注明 E 楼梯前与 1 番线站台连接。'
     );
+    facility(
+        'exit-3a-lockers',
+        'metro-hall',
+        messageText('stations.metroUmeda.facilities.exit3aLockers.name'),
+        'locker',
+        66,
+        -17,
+        'B1 北改札外靠 3A 出口的柜组。'
+    ).evidence.urls = ['https://subway.osakametro.co.jp/news/news/other/20261118_30station_locker.php'];
+    facility(
+        'exit-8-lockers',
+        'metro-hall',
+        messageText('stations.metroUmeda.facilities.exit8Lockers.name'),
+        'locker',
+        -1,
+        -28,
+        'B1 中北西改札外，靠往巴士总站的 8 号出口。'
+    ).evidence.urls = ['https://subway.osakametro.co.jp/station_guide/station/M16_%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf'];
+    facility(
+        'exit-9-lockers',
+        'metro-hall',
+        messageText('stations.metroUmeda.facilities.exit9Lockers.name'),
+        'locker',
+        17,
+        -21,
+        'B1 中北西改札外，靠 9 号出口楼梯。'
+    ).evidence.urls = ['https://subway.osakametro.co.jp/station_guide/station/M16_%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf'];
     for (const [key, x, z, hallX] of [
         ['A', 35, 2.3, 50],
         ['C', -8, 2.3, 7],

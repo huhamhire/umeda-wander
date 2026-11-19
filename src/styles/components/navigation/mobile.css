@@ -85,11 +85,6 @@
   padding: 7px 2px;
 }
 
-.poi-list button span {
-  font-size: 13px;
-  margin-bottom: 3px;
-}
-
 .layers {
   top: auto;
   bottom: 195px;
@@ -269,11 +264,6 @@
   padding: 8px 3px;
 }
 
-.sidebar .poi-list button span {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
 .sidebar .legend {
   display: flex;
   margin-top: 10px;
@@ -342,8 +332,8 @@
   scroll-snap-align: start;
 }
 
-.sidebar .poi-list button span {
-  display: inline;
-  font-size: 18px;
+.sidebar .poi-list .facility-icon {
+  width: 18px;
+  height: 18px;
   margin: 0;
 }

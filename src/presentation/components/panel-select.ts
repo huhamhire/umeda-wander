@@ -2,6 +2,7 @@ interface SelectOption {
     value: string;
     label: string;
     code?: string;
+    icon?: () => SVGSVGElement;
 }
 
 interface SelectSearch {
@@ -103,7 +104,7 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
             item.id = `${list.id}-${index}`;
             item.setAttribute('role', 'option');
             item.setAttribute('aria-selected', String(option.value === value));
-            item.textContent = option.label;
+            writeLabel(item, option.label, option.icon);
             if (option.code) {
                 item.dataset.code = option.code;
             }
@@ -120,8 +121,22 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     function setValue(next: string): void {
         const option = options.find(item => item.value === next);
         value = option?.value ?? '';
-        valueLabel.textContent = option?.label ?? placeholder;
+        writeLabel(valueLabel, option?.label ?? placeholder, option?.icon);
         trigger.setAttribute('aria-label', `${label} · ${valueLabel.textContent}`);
+    }
+
+    /** Keep optional decoration together with text so the selection tick stays at the edge. */
+    function writeLabel(container: HTMLElement, text: string, icon?: SelectOption['icon']): void {
+        if (!icon) {
+            container.textContent = text;
+            return;
+        }
+        const row = document.createElement('span');
+        row.className = 'panel-select-label';
+        const name = document.createElement('span');
+        name.textContent = text;
+        row.append(icon(), name);
+        container.replaceChildren(row);
     }
 
     /** Close the transient list and give keyboard focus back to its field when requested. */

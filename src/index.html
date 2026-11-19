@@ -146,9 +146,12 @@
               </div>
             </div>
             <div class="poi-list" id="poi-list" role="group" aria-label="{{ui.facilities.types}}"></div>
-            <button class="panel-select" id="facility-picker" type="button" aria-label="{{ui.facilities.select}}">
-              <span>{{ui.facilities.placeholder}}</span>
-            </button>
+            <div class="facility-selection">
+              <button class="panel-select" id="facility-picker" type="button" aria-label="{{ui.facilities.select}}">
+                <span>{{ui.facilities.placeholder}}</span>
+              </button>
+              <button id="facility-clear" class="facility-clear" type="button" aria-label="{{ui.facilities.clearSelection}}" title="{{ui.facilities.clearSelection}}" hidden>×</button>
+            </div>
             <div class="legend">
               <span><i class="public"></i>{{ui.legend.public}}</span>
               <span><i class="paid"></i>{{ui.legend.paid}}</span>

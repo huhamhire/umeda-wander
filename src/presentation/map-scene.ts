@@ -19,7 +19,9 @@ import { cameraEnvelope } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
 
-const facilityDetailKinds = new Set<FacilityKind>(['escalator', 'elevator', 'stairs', 'ticket-machine', 'information']);
+const facilityDetailKinds = new Set<FacilityKind>([
+    'escalator', 'elevator', 'stairs', 'ticket-machine', 'information', 'police', 'luggage-storage', 'locker'
+]);
 
 export interface MapCameraSnapshot {
     offset: [number, number, number];
@@ -105,7 +107,7 @@ export class MapScene {
         nodes: RouteNode[],
         private layout: StationLayout,
         initial: MapViewState,
-        private onSelect: (facility: Facility) => void
+        private onSelect: (facility?: Facility) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -239,9 +241,7 @@ export class MapScene {
         const candidates = this.models.pickables.filter(object => object.parent?.visible &&
             ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, (object.userData.facility as Facility).level)));
         const hit = this.raycaster.intersectObjects(candidates, false)[0];
-        if (hit) {
-            this.onSelect(hit.object.userData.facility as Facility);
-        }
+        this.onSelect(hit?.object.userData.facility as Facility | undefined);
     }
 
     /** Release input, labels, pending redraw and WebGL resources when this map is unmounted. */
@@ -335,17 +335,33 @@ export class MapScene {
     /**
      * Update the three-dimensional facility marker and start centring it in the usable viewport.
      */
-    selectById(id: string): void {
+    selectById(id: string, follow = true): void {
         const facility = this.facilities.find(candidate => candidate.id === id);
         if (!facility) {
             return;
         }
-        this.manualView = undefined;
-        this.gestures.cancelOrbit();
+        if (follow) {
+            this.manualView = undefined;
+            this.gestures.cancelOrbit();
+        }
         this.activeFacility = facility;
-        this.locatingFacility = true;
-        this.focusTransition = true;
+        this.locatingFacility = follow;
+        this.focusTransition = follow;
         this.selectionMarker.restart(performance.now());
+        this.invalidateModels();
+    }
+
+    /** Hide the marker and stop an interrupted facility transition at the current view. */
+    clearFacilitySelection(): void {
+        if (!this.activeFacility) {
+            return;
+        }
+        if (this.locatingFacility && this.focusTransition && this.framing) {
+            this.manualView = { center: this.framing.center.clone(), span: this.framing.span };
+        }
+        this.activeFacility = undefined;
+        this.locatingFacility = false;
+        this.focusTransition = false;
         this.invalidateModels();
     }
     /** Capture navigation intent and manual camera framing for a locale reload. */
@@ -657,7 +673,7 @@ export class MapScene {
         if (showLabels) {
             const facility = this.activeFacility;
             const selection = this.selected.visible && facility && facilityDetailKinds.has(facility.kind)
-                ? { text: facility.name, position: this.selectionMarker.labelAnchor() }
+                ? { text: facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
                 : undefined;
             this.labels.update({
                 state: this.state,

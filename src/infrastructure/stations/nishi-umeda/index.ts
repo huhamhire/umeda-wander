@@ -178,6 +178,42 @@ export function createStation(
             Math.PI
         );
     }
+    facility(
+        'north-lockers',
+        'y11-hall',
+        messageText('stations.nishiUmeda.facilities.northLockers.name'),
+        'locker',
+        27,
+        10,
+        'B1 北改札与中改札之间，靠北侧商铺。'
+    );
+    facility(
+        'middle-lockers',
+        'y11-hall',
+        messageText('stations.nishiUmeda.facilities.middleLockers.name'),
+        'locker',
+        9,
+        13,
+        'B1 中改札附近，靠往 6 号出口的公共通路。'
+    );
+    facility(
+        'opus-lockers',
+        'y11-hall',
+        messageText('stations.nishiUmeda.facilities.opusLockers.name'),
+        'locker',
+        -16,
+        11,
+        'B1 中改札往南改札的公共通路，靠 Metro Opus。'
+    );
+    facility(
+        'south-lockers',
+        'y11-hall',
+        messageText('stations.nishiUmeda.facilities.southLockers.name'),
+        'locker',
+        -56,
+        6,
+        'B1 南改札附近，往 7-A 出口方向。'
+    );
     area(
         'office',
         'y11-hall',

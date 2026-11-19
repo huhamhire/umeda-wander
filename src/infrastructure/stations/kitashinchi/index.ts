@@ -171,6 +171,24 @@ export function createStation(
         );
     }
     facility(
+        'west-lockers',
+        'kitashinchi-hall',
+        messageText('stations.kitashinchi.facilities.westLockers.name'),
+        'locker',
+        -64,
+        8,
+        'B1 西改札外，往西梅田方向的联络通道。'
+    );
+    facility(
+        'east-lockers',
+        'kitashinchi-hall',
+        messageText('stations.kitashinchi.facilities.eastLockers.name'),
+        'locker',
+        61,
+        -8,
+        'B1 东改札外，往御堂筋方向的联络通道。'
+    );
+    facility(
         'ticket',
         'kitashinchi-hall',
         messageText('stations.kitashinchi.facilities.ticket.name'),

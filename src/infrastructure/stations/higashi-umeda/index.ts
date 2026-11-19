@@ -182,6 +182,33 @@ export function createStation(
             z > 0 ? Math.PI : 0
         );
     }
+    facility(
+        'north-lockers',
+        't20-hall',
+        messageText('stations.higashiUmeda.facilities.northLockers.name'),
+        'locker',
+        46,
+        1.5,
+        'B1 北端公共通路，北东改札与 2 号出口一带。'
+    );
+    facility(
+        'central-lockers',
+        't20-hall',
+        messageText('stations.higashiUmeda.facilities.centralLockers.name'),
+        'locker',
+        -5,
+        2,
+        'B1 中西、中东改札外的自助寄存柜服务中心。'
+    ).evidence.urls = [sourceUrl, 'https://www.osakametro.co.jp/news/news/notice/20240913_coinlocker_service_center.php'];
+    facility(
+        'south-lockers',
+        't20-hall',
+        messageText('stations.higashiUmeda.facilities.southLockers.name'),
+        'locker',
+        -23,
+        -2,
+        'B1 南改札外公共通路的柜组。'
+    ).evidence.urls = [sourceUrl, 'https://subway.osakametro.co.jp/news/news/other/20261118_30station_locker.php'];
     area('office', 't20-hall', messageText('stations.higashiUmeda.areas.office.name'), 'service', -10, 14, 10, 5);
     facility(
         'office',
@@ -372,7 +399,7 @@ export function createStation(
     edge(high, low, 'escalator');
     edge(low, destination);
     for (const value of [...draft.facilities, ...draft.layout.areas, ...draft.layout.platforms, ...draft.layout.connections]) {
-        value.evidence.urls = [sourceUrl];
+        value.evidence.urls ??= [sourceUrl];
         value.evidence.detail += '; user T20 PDF p1, schematic dimensions and equipment positions; construction closures ignored';
     }
     return draft;

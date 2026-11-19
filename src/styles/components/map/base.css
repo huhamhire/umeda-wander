@@ -75,6 +75,17 @@
   background: var(--color-map-label-emphasis-background);
 }
 
+.map-label.facility-label:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-label.facility-symbol {
+  padding: 3px;
+  border-radius: 50%;
+}
+
 .map-label small {
   font-size: 8px;
   color: var(--color-map-label-hint);

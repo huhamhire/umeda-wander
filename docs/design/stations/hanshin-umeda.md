@@ -16,6 +16,8 @@
 
 ## 实现范围与核对边界
 
+寄存柜按本地构内图标在 B1 西口外、B1 百货店口外及 B2 东口往南出口的公共通路。落点按闸口和通路关系拟合。阪神对站内行李寄存的说明见[运营方问答](https://faq.hanshin.co.jp/category/show/40?page=1&site_domain=default&sort=sort_new&sort_order=asc)。
+
 1. 用地区方位图和地图锚点定位 JR/大丸以南、阪神百货前道路地下的东西向终端站，东端与御堂筋线南向轨道保留避让间隔；与阪急站的北向终端区别表达。
 2. PDF 放大后已读到 1–4 番线及降车区文字；采用四条轨道、1/2 番线岛台、2/3 番线降车区、3/4 番线岛台、南侧降车区。降车区不重复生成轨道，保留对应半高屏蔽门边。也参考[阪神新 1 番线资料](https://www.hanshin.co.jp/company/press/pdf/20211018-komu-oosakaumeda.pdf)及[4 番线屏蔽门说明](https://www.hanshin.co.jp/press/detail/001694.html)。
 3. 补 B1 西口/百货店口、售票处/机、站务室、直梯、扶梯、楼梯及真实开口；设施候选和内部编号同步追加。

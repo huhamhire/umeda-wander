@@ -22,6 +22,7 @@
   "ui.facilities.placeholder": "施設を選択…",
   "ui.facilities.search": "施設名で検索",
   "ui.facilities.searchEmpty": "一致する施設がありません",
+  "ui.facilities.clearSelection": "施設の選択を解除",
   "ui.facilities.select": "施設を選択",
   "ui.facilities.stationFilter": "駅で絞り込む",
   "ui.facilities.types": "施設の種類",

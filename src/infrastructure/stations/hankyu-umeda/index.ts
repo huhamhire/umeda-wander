@@ -25,7 +25,7 @@ export function createStation(placement: {
         -1,
         placement.planScale
     );
-    const { draft, area, facility, node, edge, connection, platform } = b;
+    const { draft, area, facility, node, edge, connection, platform, proof } = b;
     draft.levels = [
         {
             id: 'hankyu-ground',
@@ -43,7 +43,7 @@ export function createStation(placement: {
             name: messageText('stations.hankyuUmeda.entities.hankyuHall.name'),
             y: 8,
             stackIndex: 2,
-            description: '中央改札与茶屋町口改札分别建模，闸内通过多组楼梯、扶梯及直梯上至站台。'
+            description: '中央改札与茶屋町口改札分别建模，闸外公共站厅经阪急终端大楼直梯接 3F，闸内设独立的站台通道。'
         },
         {
             id: 'hankyu-platform',
@@ -96,6 +96,20 @@ export function createStation(placement: {
         18,
         76
     );
+    area(
+        'terminal-lift-approach',
+        'hankyu-hall',
+        messageText('stations.hankyuUmeda.areas.terminalLiftApproach.name'),
+        'public',
+        -52,
+        -12,
+        34,
+        12
+    );
+    const liftApproach = draft.layout.areas.at(-1)!;
+    liftApproach.label = false;
+    liftApproach.evidence = proof('The 2F public concourse reaches Terminal Building elevator 2; the landing and approach outline are fitted.');
+    liftApproach.evidence.urls = ['https://www.hankyu.co.jp/station/umeda_ev.html'];
     area(
         'chaya-paid',
         'hankyu-hall',
@@ -205,6 +219,69 @@ export function createStation(placement: {
         0,
         '地面入口及 BIGMAN 周边的公共通路示意，不表示与 JR 已建立完整可导航换乘。'
     );
+    facility(
+        'tourist-center-luggage',
+        'hankyu-ground',
+        messageText('stations.hankyuUmeda.facilities.touristCenterLuggage.name'),
+        'luggage-storage',
+        -48,
+        18,
+        '1F 公共通路的阪急游客中心提供人工行李寄存。'
+    ).evidence.urls = ['https://www.hankyu.co.jp/station/tourist_center/index.html'];
+    facility(
+        'bigman-lockers',
+        'hankyu-ground',
+        messageText('stations.hankyuUmeda.facilities.bigmanLockers.name'),
+        'locker',
+        -50,
+        -28,
+        '1F BIGMAN 前广场一带的多组柜集中标记。'
+    );
+    facility(
+        'bus-terminal-lockers',
+        'hankyu-ground',
+        messageText('stations.hankyuUmeda.facilities.busTerminalLockers.name'),
+        'locker',
+        46,
+        -18,
+        '1F 阪急三番街北馆高速巴士总站附近的柜组。'
+    );
+    facility(
+        'central-lockers',
+        'hankyu-hall',
+        messageText('stations.hankyuUmeda.facilities.centralLockers.name'),
+        'locker',
+        -23,
+        -29,
+        '2F 中央改札外公共站厅的多组柜集中标记。'
+    );
+    facility(
+        'chayamachi-lockers',
+        'hankyu-hall',
+        messageText('stations.hankyuUmeda.facilities.chayamachiLockers.name'),
+        'locker',
+        57,
+        -20,
+        '2F 茶屋町口改札旁公共侧的柜组。'
+    );
+    facility(
+        'kobe-lockers',
+        'hankyu-platform',
+        messageText('stations.hankyuUmeda.facilities.kobeLockers.name'),
+        'locker',
+        -64,
+        34,
+        '3F 神户线侧闸外寄存柜室。'
+    ).evidence.urls = ['https://multiecube.com/location/1339'];
+    facility(
+        'kyoto-lockers',
+        'hankyu-platform',
+        messageText('stations.hankyuUmeda.facilities.kyotoLockers.name'),
+        'locker',
+        -48,
+        -32,
+        '3F 闸内京都线 1 番线的站台端部。'
+    );
     // Ten platform strips flank nine tracks. The outermost strip is alighting-only.
     for (let i = 0; i < 10; i++) {
         const z = -32.85 + i * 7.3;
@@ -259,18 +336,38 @@ export function createStation(placement: {
         -32.85,
         '参考图中的 2F–3F 直梯，先到站台层再选择各线，不按每条线路虚构一座直梯。'
     );
-    const lift2a = node('public-lift-1', 'hankyu-ground', -25, -20);
-    const lift2b = node('public-lift-2', 'hankyu-hall', -25, -20);
-    connection('public-lift', 'elevator', lift2a, lift2b);
+    const lift2a = node('public-lift-1', 'hankyu-ground', -65, -12);
+    const lift2b = node('public-lift-2', 'hankyu-hall', -65, -12);
+    const lift2c = node('public-lift-3', 'hankyu-platform', -65, -12);
+    const liftEvidence = proof('Terminal Building elevator 2 has public 1F, 2F and 3F landings in the Hankyu (阪急) diagram; shaft position fitted.');
+    liftEvidence.urls = ['https://www.hankyu.co.jp/station/umeda_ev.html'];
+    connection('public-lift', 'elevator', lift2a, lift2b).evidence = liftEvidence;
+    connection('public-lift-upper', 'elevator', lift2b, lift2c).evidence = liftEvidence;
     const e = node('route-entry', 'hankyu-ground', -59, 0);
     const g0 = node('public-rise-lower', 'hankyu-ground', -30, 0);
     const g1 = node('public-rise-upper', 'hankyu-hall', -21, 0);
     connection('public-rise', 'escalator', g0, g1);
     edge(e, g0);
     edge(g0, g1, 'escalator');
-    const directLow = node('direct-low', 'hankyu-ground', -65, -19);
-    const directHigh = node('direct-high', 'hankyu-platform', -65, -36);
-    connection('direct-1f-3f', 'escalator', directLow, directHigh);
+    // Across the 3F gate frontage, the public banks descend past 2F to the ground concourse.
+    for (const [key, kind, z, reference, width] of [
+        ['direct-1f-3f', 'escalator', -31, 'A', undefined],
+        ['direct-1f-3f-b', 'escalator', -22, 'B', undefined],
+        ['direct-1f-3f-d', 'escalator', 8, 'D', undefined],
+        ['direct-1f-3f-e', 'escalator', 27, 'E', undefined],
+        ['direct-stairs-a', 'stairs', -36.5, 'A', 3.7],
+        ['direct-stairs-c', 'stairs', -2, 'C', 4.4],
+        ['direct-stairs-e', 'stairs', 34, 'E', 3.7],
+    ] as const) {
+        const low = node(`${key}-low`, 'hankyu-ground', -71, z);
+        const high = node(`${key}-high`, 'hankyu-platform', -57, z);
+        const bank = connection(key, kind, low, high);
+        if (width) {
+            bank.width = width;
+        }
+        bank.evidence = proof(`Public 3F–1F bank ${reference} in the Hankyu (阪急) station diagram; clearances and width fitted.`);
+        bank.evidence.urls = ['https://www.city.osaka.lg.jp/shimin/page/0000600942.html'];
+    }
     const out = node('gate-out', 'hankyu-hall', -15, 0);
     const inside = node('gate-in', 'hankyu-hall', -8, 0);
     edge(g1, out);

@@ -22,6 +22,7 @@
   "ui.facilities.placeholder": "选择设施…",
   "ui.facilities.search": "搜索设施名称",
   "ui.facilities.searchEmpty": "没有匹配的设施",
+  "ui.facilities.clearSelection": "取消选中设施",
   "ui.facilities.select": "选择设施",
   "ui.facilities.stationFilter": "筛选车站",
   "ui.facilities.types": "设施类型",

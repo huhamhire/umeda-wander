@@ -160,11 +160,18 @@
   border-color: var(--color-facility-border);
 }
 
-.poi-list button span {
+.facility-icon {
   display: block;
-  margin-bottom: 5px;
-  font-size: 17px;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
   color: var(--color-facility-icon);
+}
+
+.poi-list .facility-icon {
+  width: 21px;
+  height: 21px;
+  margin: 0 auto 5px;
 }
 
 .legend {
@@ -453,9 +460,37 @@
   color: var(--color-subtle-text);
 }
 
-#facility-picker {
+.facility-selection {
+  display: flex;
+  gap: 6px;
   margin-top: 12px;
+}
+
+#facility-picker {
   min-height: 48px;
+}
+
+.facility-clear {
+  flex: 0 0 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-field-border);
+  border-radius: 7px;
+  background: var(--color-field-background);
+  color: var(--color-field-text);
+  font: inherit;
+  font-size: 24px;
+}
+
+.facility-clear:hover {
+  background: var(--color-floor-hover);
+}
+
+.panel-select-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
 }
 
 .panel-select-menu {

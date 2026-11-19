@@ -765,6 +765,59 @@ export const facilities: Facility[] = [
         evidence: p1
     },
     {
+        id: 'railway-police',
+        name: messageText('stations.jrOsaka.facilities.railwayPolice.name'),
+        kind: 'police',
+        level: 'concourse',
+        x: 45.8,
+        z: -38,
+        note: '1F 御堂筋北侧，定位点放在警务室旁的闸外公共通路。',
+        evidence: source([5], 'Railway Police beside the north end of the JR Midosuji Gate (御堂筋口); public approach fitted')
+    },
+    {
+        id: 'crosta-luggage',
+        name: messageText('stations.jrOsaka.facilities.crostaLuggage.name'),
+        kind: 'luggage-storage',
+        level: 'concourse',
+        x: 6,
+        z: -31,
+        note: '1F 中央改札北侧闸外的人工行李寄存处，邻日本旅行 TiS。',
+        evidence: {
+            ...source([5], 'The station guide locates TiS; the operator places its staffed counter next to TiS on 1F'),
+            urls: ['https://handsfree-japan.com/osaka/']
+        }
+    },
+    {
+        id: 'sakurabashi-lockers',
+        name: messageText('stations.jrOsaka.facilities.sakurabashiLockers.name'),
+        kind: 'locker',
+        level: 'concourse',
+        x: -35,
+        z: 41,
+        note: '樱桥口改札外南侧公共通路的一组寄存柜。',
+        evidence: source([5], 'Coin locker symbols in the public passage outside Sakurabashi Gate (桜橋口); grouped into one marker')
+    },
+    {
+        id: 'midosuji-north-lockers',
+        name: messageText('stations.jrOsaka.facilities.midosujiLockers.name'),
+        kind: 'locker',
+        level: 'concourse',
+        x: 51,
+        z: -39,
+        note: '御堂筋北侧闸外公共通路的寄存柜。',
+        evidence: source([5], 'Coin locker symbol at the north end of Midosuji Gate (御堂筋口); public approach fitted')
+    },
+    {
+        id: 'bridge-lucua-lockers',
+        name: messageText('stations.jrOsaka.facilities.bridgeLockers.name'),
+        kind: 'locker',
+        level: 'bridge',
+        x: 27,
+        z: -42,
+        note: '3F 北侧公共区，位于大阪站城问讯台东侧、LUCUA 南侧。',
+        evidence: source([2], 'Coin locker symbol east of the Osaka Station City (大阪ステーションシティ) information desk, south of LUCUA (ルクア)')
+    },
+    {
         id: 'escalator',
         name: messageText('stations.jrOsaka.facilities.escalator.name'),
         kind: 'escalator',
