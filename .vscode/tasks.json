@@ -2,18 +2,15 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "地图：启动开发服务",
-      "type": "shell",
-      "command": "npm run dev",
-      "windows": { "command": "npm.cmd run dev" },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "umeda",
-        "pattern": { "regexp": "^$" },
-        "background": { "activeOnStart": true, "beginsPattern": "^Built ", "endsPattern": "^Local: http://127\\.0\\.0\\.1:5173" }
+      "label": "地图：等待预览服务就绪",
+      "type": "process",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/wait-for-dev-server.ts", "http://127.0.0.1:5173"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent"
       },
-      "presentation": { "reveal": "always", "panel": "dedicated" },
-      "runOptions": { "instanceLimit": 1 }
+      "hide": true
     },
     { "label": "地图：风格检查", "type": "shell", "command": "npm run check:style", "windows": { "command": "npm.cmd run check:style" }, "problemMatcher": [] },
     { "label": "地图：类型检查", "type": "shell", "command": "npm run typecheck", "windows": { "command": "npm.cmd run typecheck" }, "problemMatcher": "$tsc" },
