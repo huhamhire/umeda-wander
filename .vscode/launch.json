@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "JR 大阪站 · 启动服务",
+      "name": "梅田地图 · 启动服务",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/dev.ts",
@@ -11,7 +11,7 @@
       "skipFiles": ["<node_internals>/**"]
     },
     {
-      "name": "JR 大阪站 · 预览服务",
+      "name": "梅田地图 · 预览服务",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/dev.ts",
@@ -26,7 +26,7 @@
       }
     },
     {
-      "name": "JR 大阪站 · 预览 Chrome",
+      "name": "梅田地图 · 预览 Chrome",
       "type": "pwa-chrome",
       "request": "launch",
       "url": "http://127.0.0.1:5173",
@@ -39,8 +39,8 @@
   ],
   "compounds": [
     {
-      "name": "JR 大阪站 · 本地预览",
-      "configurations": ["JR 大阪站 · 预览服务", "JR 大阪站 · 预览 Chrome"],
+      "name": "梅田地图 · 本地预览",
+      "configurations": ["梅田地图 · 预览服务", "梅田地图 · 预览 Chrome"],
       "stopAll": true
     }
   ]
