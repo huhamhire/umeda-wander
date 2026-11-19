@@ -63,11 +63,11 @@ const bindings = publicInterfaceBindings.map(binding => {
 const output = 'build/geography';
 mkdirSync(output, { recursive: true });
 writeFileSync(
-    output + '/stage-two-stations.svg',
+    output + '/station-calibration.svg',
     `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="${Math.ceil(panels.length / 2) * 540}"><rect width="100%" height="100%" fill="#f4f2e7"/><g fill="#31524d" font-family="Microsoft YaHei,sans-serif" font-size="20">${panels.join('')}</g></svg>`
 );
 writeFileSync(
-    output + '/stage-two-calibration.json',
+    output + '/station-calibration.json',
     JSON.stringify(
         {
             calibrations: createRuntimeCalibrations(),
@@ -82,4 +82,4 @@ writeFileSync(
         2
     )
 );
-console.log('Wrote stage-two-stations.svg and stage-two-calibration.json');
+console.log('Wrote station-calibration.svg and station-calibration.json');

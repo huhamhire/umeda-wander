@@ -500,6 +500,7 @@ export const facilityCodes: Record<string, string> = {
     'connection-carillon-66-upper-flight-to': 'JR-212',
     'connection-carillon-66-lower-flight-from': 'JR-213',
     'connection-carillon-66-lower-flight-to': 'JR-214',
+    // Reserved after the duplicate 1F stop merged into JR lift B.
     'connection-public-north-lift-26-from': 'PUB-013',
     'connection-public-north-lift-26-to': 'PUB-014',
     'connection-public-north-lift-28-from': 'PUB-015',
@@ -524,4 +525,5 @@ export const facilityCodes: Record<string, string> = {
     'connection-grand-front-plaza-jr-east-escalator-to': 'PUB-034',
     'connection-grand-front-plaza-sunken-stairs-from': 'PUB-035',
     'connection-grand-front-plaza-sunken-stairs-to': 'PUB-036',
+    'connection-public-north-lift-26-bridge-to': 'PUB-037',
 };

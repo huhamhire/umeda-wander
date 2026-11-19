@@ -47,10 +47,6 @@ test(
     () => {
         for (const c of layout.connections) {
             for (const n of [c.from, c.to]) {
-                // This upper door is pending review of the existing position against the deck.
-                if (c.id === 'public-north-lift-26' && n === c.to) {
-                    continue;
-                }
                 const y = levels.find(l => l.id === n.level)!.y + (n.elevationOffset ?? 0);
                 const facing = c.doorFacingRad;
                 const door = facing === undefined ? n : {

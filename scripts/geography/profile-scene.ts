@@ -61,7 +61,7 @@ const result = {
     vertices,
     triangles
 };
-const output = process.argv.find(a => a.startsWith('--output='))?.slice('--output='.length) ?? 'stage-two-profile.json';
+const output = process.argv.find(a => a.startsWith('--output='))?.slice('--output='.length) ?? 'scene-profile.json';
 if (!/^[\w-]+\.json$/.test(output)) {
     throw new Error('Expected a JSON basename for profile output');
 }

@@ -92,7 +92,7 @@ for (const [name, box, w, h] of [
     ['west', '60 420 290 350', 870, 1050]
 ] as const) {
     writeFileSync(
-        `${out}/stage-four-${name}.svg`,
+        `${out}/elevated-network-${name}.svg`,
         `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#f4f2e7"/>${shapes.join('')}</svg>`
     );
 }
@@ -128,5 +128,5 @@ const report = {
         'No browser/WebGL/touch testing; offline plan only.'
     ]
 };
-writeFileSync(out + '/stage-four-audit.json', JSON.stringify(report, null, 2));
+writeFileSync(out + '/elevated-network-audit.json', JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

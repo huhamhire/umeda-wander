@@ -71,7 +71,12 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
     for (const bank of anchors.banks) {
         add('public-north-' + bank.reference, 'escalator', bank.b1, bank.ground, 'concourse', proof);
     }
-    const northLift = add('public-north-lift-b', 'elevator', anchors.lift, anchors.lift, 'concourse', proof);
+    const liftProof: Evidence = {
+        ...proof,
+        pages: [2, 3, 5, 6],
+        detail: 'JR North Gate building plans place lift B at the east side of the atrium on B1, 1F, 2F and 3F. Shaft and approach geometry are schematic.'
+    };
+    const northLift = add('public-north-lift-b', 'elevator', anchors.lift, anchors.lift, 'concourse', liftProof);
     areas.push({
         id: 'public-north-lift-ground-access',
         level: 'concourse',
@@ -80,7 +85,7 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
         kind: 'public',
         label: false,
         outline: elevatorDoorApproach(northLift.to, northLift.doorFacingRad!, passageOutline(anchors.lift, anchors.liftGroundJoin, 5)),
-        evidence: proof
+        evidence: liftProof
     });
     add(
         'district-jr-metro-stairs',
@@ -133,5 +138,5 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
             evidence: lift.evidence
         });
     }
-    return { connections, areas };
+    return { connections, areas, northLift };
 }

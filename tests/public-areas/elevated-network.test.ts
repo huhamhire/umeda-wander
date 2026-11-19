@@ -4,13 +4,15 @@ import clipping from 'polygon-clipping';
 import * as T from 'three';
 import ways from '../../data/geography/elevated/ways.json' with { type: 'json' };
 import { elevatorWellHalfWidth, planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { visibleElevatorConnections } from '../../src/application/connections/elevator-visibility.ts';
 import { deckBoundarySegments } from '../../src/application/public-areas/deck-boundaries.ts';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { FloorArea, PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
@@ -120,22 +122,18 @@ test(
     }
 );
 test(
-    'public lifts use the existing 2F deck at the door and overlapping slabs keep real equipment openings',
+    'public lifts use existing upper floors at the door and overlapping slabs keep real equipment openings',
     () => {
         const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-        assert.equal(deckAccess.connections.length, 10);
+        assert.equal(deckAccess.connections.length, 11);
         for (const c of deckAccess.connections) {
-            assert.ok(c.blockId && c.evidence.source === 'district');
+            assert.ok(c.blockId && c.evidence.urls?.length);
             if (c.kind === 'elevator') {
                 assert.ok(!deckAccess.areas.some(a => a.id === c.to.id + ':landing'), c.id + ' has a redundant upper landing');
             }
             for (const n of [c.from, c.to]) {
-                // The unaligned upper stop is retained for a separate position review.
-                if (c.id === 'public-north-lift-26' && n === c.to) {
-                    continue;
-                }
                 const y = levels.find(l => l.id === n.level)!.y;
-                const landingAreas = c.kind === 'elevator' && n === c.to ? elevatedAreas : layout.areas;
+                const landingAreas = c.kind === 'elevator' && n === c.to && n.level.startsWith('district-') ? elevatedAreas : layout.areas;
                 const floors = landingAreas.filter(a => a.kind === 'public' && levels.find(l => l.id === a.level)!.y === y);
                 const facing = c.doorFacingRad;
                 const samples = facing === undefined ? [n] : [-1, 0, 1].map(side => ({
@@ -171,6 +169,32 @@ test(
                 (mesh.material as T.Material).dispose();
             }
         }
+    }
+);
+test(
+    'JR lift B and city reference 26 share one shaft and one facility per served floor',
+    () => {
+        const ids = ['public-north-lift-b', 'public-north-lift-26', 'public-north-lift-26-bridge'];
+        const segments = ids.map(id => layout.connections.find(c => c.id === id)!);
+        const stops = [segments[0]!.from, ...segments.map(c => c.to)];
+        assert.deepEqual(stops.map(n => n.level), ['district-underground', 'concourse', 'platform', 'bridge']);
+        for (const c of segments) {
+            assert.equal(c.evidence.source, 'jr');
+            assert.deepEqual(c.evidence.pages, [2, 3, 5, 6]);
+            assert.equal(c.doorFacingRad, segments[0]!.doorFacingRad);
+            for (const n of [c.from, c.to]) {
+                assert.equal(n.x, stops[0]!.x);
+                assert.equal(n.z, stops[0]!.z);
+            }
+        }
+        const stopsInDirectory = facilities.filter(f => ids.includes(f.connectionId ?? ''));
+        assert.deepEqual(stopsInDirectory.map(f => f.level), stops.map(n => n.level));
+        assert.deepEqual(stopsInDirectory.map(f => facilityCodes[f.id]), ['PUB-005', 'PUB-006', 'PUB-014', 'PUB-037']);
+        const visible = visibleElevatorConnections(layout.connections, levels, 'district-underground');
+        assert.ok(ids.every(id => visible.has(id)));
+        const hostCuts = exteriorOpenings.filter(o => o.buildingId === 'lucua' && contains(o, stops[0]!));
+        assert.ok(hostCuts.some(o => o.base <= 0 && o.top > 8));
+        assert.ok(hostCuts.some(o => o.base <= 8 && o.top > 16));
     }
 );
 test(

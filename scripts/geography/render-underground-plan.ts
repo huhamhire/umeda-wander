@@ -134,7 +134,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1810" 
 <g clip-path="url(#extent)"><g opacity="0.22">${background}</g>${shapes.join('')}<g class="labels">${labels.join('')}</g></g>
 <text x="${width - 20}" y="20" style="font-size:18px">N ↑</text>
 <path d="M10 ${height + 12}h100m-100 -4v8m100 -8v8" stroke="#314c50"/>
-<text x="10" y="${height + 30}">100 m · JR 中央通路属 1F，未生成南北地下直通；站区内部与跨层设施后续设计</text>
+<text x="10" y="${height + 30}">100 m · JR 中央通路属 1F，未生成南北地下直通；运行时站体与跨层设施见公共网核查图</text>
 <text x="10" y="${height + 45}">位置底图 © OpenStreetMap contributors / ODbL 1.0 · 连接参考：用户提供 UMEDA CONNECT 地下图、JR 构内图</text>
 <text x="10" y="${height + 59}">资料几何整理的再发布授权待核实 · 本图用于项目内部设计核对，不用于现场导航</text></svg>`;
 mkdirSync('build/geography', { recursive: true });

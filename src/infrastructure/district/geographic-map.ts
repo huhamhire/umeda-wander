@@ -37,8 +37,8 @@ import { hankyuConcourses, hankyuConcourseAreas, hankyuConcourseOpenings, hankyu
 const stationMaps = createGeographicStations();
 export const publicInterfaces = stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages = stationFrontages(stationMaps);
-export const deckAccess = createDeckAccess();
 const northAccess = createNorthPublicAccess(publicInterfaces);
+export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
 export const publicAccess = {

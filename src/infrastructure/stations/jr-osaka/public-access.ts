@@ -9,7 +9,8 @@ export function jrPublicAccessAnchors() {
             { reference: '75', b1: jrGroundPoint({ x: 9, z: -51 }), ground: jrGroundPoint({ x: 9, z: -41 }) },
             { reference: '76', b1: jrGroundPoint({ x: 14, z: -51 }), ground: jrGroundPoint({ x: 14, z: -41 }) }
         ],
-        lift: jrGroundPoint({ x: 20, z: -51 }),
+        // Fit the east-side shaft to the existing 2F and 3F public floors.
+        lift: jrGroundPoint({ x: 20, z: -47.5 }),
         liftGroundJoin: jrGroundPoint({ x: 20, z: -41 }),
         metroStairs: { ground: jrGroundPoint({ x: 56, z: -18 }), b1: { x: 563, z: 521 } },
     };

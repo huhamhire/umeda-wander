@@ -4,7 +4,7 @@ import { elevatorDoorApproach } from '../../application/connections/connection-o
 import { deckEvidence } from './elevated-source.ts';
 
 /** Only public equipment explicitly marked by the supplied elevated/2F plans. */
-export function createDeckAccess() {
+export function createDeckAccess(atriumLift: VerticalConnection) {
     const connections: VerticalConnection[] = [];
     const areas: FloorArea[] = [];
     const pad = (p: Point2, w = 6) => [
@@ -53,7 +53,35 @@ export function createDeckAccess() {
             evidence
         })));
     };
-    add('public-north-lift-26', 'north-decks', 'district-north-deck', { x: 434, z: 501 });
+    // The city map's lift 26 serves the same upper stops as JR lift B.
+    const atriumDeck = {
+        ...atriumLift.to,
+        id: 'public-north-lift-26-deck',
+        level: 'platform' as const
+    };
+    const atriumUpperEvidence = {
+        ...atriumLift.evidence,
+        urls: [...atriumLift.evidence.urls!, ...deckEvidence.urls!],
+        detail: 'JR North Gate building plans and the Osaka city accessibility map (p1, ref. 26) identify the same lift at 1F, 2F and 3F. Both upper doors use existing JR public floors; shaft location is fitted.'
+    };
+    connections.push(
+        {
+            ...atriumLift,
+            id: 'public-north-lift-26',
+            blockId: 'north-decks',
+            from: { ...atriumLift.to, id: 'public-north-lift-26-ground' },
+            to: atriumDeck,
+            evidence: atriumUpperEvidence
+        },
+        {
+            ...atriumLift,
+            id: 'public-north-lift-26-bridge',
+            blockId: 'north-decks',
+            from: { ...atriumDeck, id: 'public-north-lift-26-bridge-deck' },
+            to: { ...atriumDeck, id: 'public-north-lift-26-bridge-upper', level: 'bridge' },
+            evidence: atriumUpperEvidence
+        }
+    );
     add('public-north-lift-28', 'north-decks', 'district-north-deck', { x: 526.4, z: 473.2 });
     for (const [ref, x, z] of [
         [6, 618.6, 607.7],
@@ -100,6 +128,8 @@ export function createDeckAccess() {
         connections,
         areas,
         buildingEquipment: [
+            { connectionId: 'public-north-lift-26', buildingId: 'lucua' },
+            { connectionId: 'public-north-lift-26-bridge', buildingId: 'lucua' },
             { connectionId: 'public-jp-deck-stairs', buildingId: 'jp-tower' },
             { connectionId: 'public-south-lift-9', buildingId: 'hankyu-dept' },
             { connectionId: 'public-south-lift-21', buildingId: 'hanshin-dept' },

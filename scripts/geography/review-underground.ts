@@ -88,9 +88,9 @@ for (const c of publicAccess.connections) {
 const panel = (name: string, box: string, w = 1200, h = 1500) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${box}"><rect x="-2000" y="-2000" width="6000" height="6000" fill="#f5f3e9"/><g font-family="Microsoft YaHei,sans-serif">${shapes.join('')}</g><title>${esc(name)}</title></svg>`;
 const output = 'build/geography';
 mkdirSync(output, { recursive: true });
-writeFileSync(output + '/stage-three-underground.svg', panel('阶段三地下公共区平面', '200 150 850 1100'));
-writeFileSync(output + '/stage-three-north.svg', panel('北侧地下接口及公共设备', '240 380 500 300', 1500, 900));
-writeFileSync(output + '/stage-three-south.svg', panel('南侧地下公共区及建筑占用', '300 660 650 510', 1300, 1020));
+writeFileSync(output + '/underground-network.svg', panel('地下公共区平面', '200 150 850 1100'));
+writeFileSync(output + '/underground-north.svg', panel('北侧地下接口及公共设备', '240 380 500 300', 1500, 900));
+writeFileSync(output + '/underground-south.svg', panel('南侧地下公共区及建筑占用', '300 660 650 510', 1300, 1020));
 const projection = sourceProjection();
 const pendingBuildings = basementOccupancies.filter(building => basements.contacts.some(c => c.buildingId === building.id && c.status === 'needs-review'));
 const basementGaps = basementBoundaryGaps(pendingBuildings, undergroundPublicAreas);
@@ -117,7 +117,7 @@ const report = {
     basementGaps,
     unconfirmed: 'Building contact means geometric adjacency/overlap of host envelopes only, not a verified door. PDF derivative permission and individual underground heights remain pending.',
 };
-writeFileSync(output + '/stage-three-audit.json', JSON.stringify(report, null, 2));
+writeFileSync(output + '/underground-network-audit.json', JSON.stringify(report, null, 2));
 const gapMarks = basementGaps.flatMap(gap => {
     if (gap.kind !== 'boundary-gap' || !gap.buildingPoint || !gap.publicPoint) {
         return [];
@@ -127,7 +127,7 @@ const gapMarks = basementGaps.flatMap(gap => {
 });
 shapes.push(...gapMarks);
 writeFileSync(
-    output + '/stage-three-basement-review.svg',
+    output + '/underground-basement-review.svg',
     panel('占位边界差距核查：虚线是诊断距离，不是通道', '200 720 650 340', 1500, 785)
 );
 console.log(JSON.stringify({

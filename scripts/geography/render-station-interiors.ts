@@ -59,9 +59,9 @@ for (const s of stations) {
 const base = readFileSync(underground ? 'build/geography/underground-plan.svg' : 'build/geography/ground-plan.svg', 'utf8');
 writeFileSync(
     'build/geography/' + output + '.svg',
-    base.replace('梅田 · 地下公共网络参考投影', '阶段二 · 地下车站与公共网络对照').replace('梅田 · 建筑与道路平面布局', '阶段二 · 七站内部平面校准')
+    base.replace('梅田 · 地下公共网络参考投影', '梅田 · 地下车站与公共网络对照').replace('梅田 · 建筑与道路平面布局', '梅田 · 七站内部平面校准')
         .replace(
-            '第一阶段校对稿 · 北向上 · 米制投影 · 道路宽度含估计值',
+            '地面位置参照 · 北向上 · 米制投影 · 道路宽度含估计值',
             '蓝：站台　虚线：各层站厅　绿：垂直设施　红：改札　位置为拟合 / 梅北为独立校准子区'
         )
         .replace(
