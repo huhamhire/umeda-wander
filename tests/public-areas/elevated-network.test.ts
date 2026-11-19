@@ -11,7 +11,7 @@ import { explorationElevation } from '../../src/application/exploration/explorat
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { FloorArea, PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels, publicWalkingRoutes } from '../../src/infrastructure/district/geographic-map.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
@@ -47,7 +47,7 @@ test(
         assert.ok(elevated.blocks.flatMap(b => b.paths).some(p => p.id === 'inogate-grand-green-bridge'));
         assert.deepEqual(
             edges,
-            createGeographicStations().flatMap(s => s.edges),
+            [...createGeographicStations().flatMap(s => s.edges), ...publicWalkingRoutes.edges],
             'new deck must not infer route edges'
         );
         assert.equal(layout.passages.filter(p => p.kind === 'deck' && p.label).length, 2);

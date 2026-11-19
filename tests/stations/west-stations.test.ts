@@ -41,12 +41,13 @@ test(
     'Y11 north gate permits exit only, middle gate entry only and south gate works both ways',
     () => {
         assert.equal(planGateBoundaries(nishiStation.facilities, nishiStation.layout.areas).length, 3);
-        assert(findRoute(edges, 'nishi-umeda-north-route-in', 'nishi-umeda-north-route-out', true));
-        assert.equal(findRoute(edges, 'nishi-umeda-north-route-out', 'nishi-umeda-north-route-in', true), null);
-        assert(findRoute(edges, 'nishi-umeda-middle-route-out', 'nishi-umeda-middle-route-in', true));
-        assert.equal(findRoute(edges, 'nishi-umeda-middle-route-in', 'nishi-umeda-middle-route-out', true), null);
-        assert(findRoute(edges, 'nishi-umeda-south-route-in', 'nishi-umeda-south-route-out', true));
-        assert(findRoute(edges, 'nishi-umeda-south-route-out', 'nishi-umeda-south-route-in', true));
+        const local = nishiStation.edges;
+        assert(findRoute(local, 'nishi-umeda-north-route-in', 'nishi-umeda-north-route-out', true));
+        assert.equal(findRoute(local, 'nishi-umeda-north-route-out', 'nishi-umeda-north-route-in', true), null);
+        assert(findRoute(local, 'nishi-umeda-middle-route-out', 'nishi-umeda-middle-route-in', true));
+        assert.equal(findRoute(local, 'nishi-umeda-middle-route-in', 'nishi-umeda-middle-route-out', true), null);
+        assert(findRoute(local, 'nishi-umeda-south-route-in', 'nishi-umeda-south-route-out', true));
+        assert(findRoute(local, 'nishi-umeda-south-route-out', 'nishi-umeda-south-route-in', true));
     }
 );
 test(
@@ -104,7 +105,8 @@ test(
             const route = findRoute(edges, `${s.id}-route-entry`, `${s.id}-destination`, true);
             assert(route && route.every(id => id.startsWith(s.id)));
         }
-        assert.equal(findRoute(edges, 'nishi-umeda-route-entry', 'kitashinchi-destination', true), null);
+        assert(findRoute(edges, 'nishi-umeda-route-entry', 'kitashinchi-destination', true));
+        assert.equal(findRoute(edges, 'nishi-umeda-route-entry', 'kitashinchi-destination', false), null);
         const hydraulic = nishiStation.layout.connections.find(c => c.id === 'nishi-umeda-hydraulic-lift')!;
         assert.equal(hydraulic.from.level, hydraulic.to.level);
         assert.equal(hydraulic.to.elevationOffset, 1.2);

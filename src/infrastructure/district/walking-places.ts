@@ -29,9 +29,11 @@ const definitions: PlaceDefinition[] = [
     { node: 'hanshin-umeda-destination', access: 'inside', caption: 'ui.walking.platform', kind: 'platform' },
     { node: 'higashi-umeda-route-entry', access: 'outside', caption: 'ui.walking.concourse' },
     { node: 'higashi-umeda-destination', access: 'inside', caption: 'ui.walking.platform', kind: 'platform' },
-    { node: 'nishi-umeda-route-entry', access: 'outside', caption: 'ui.walking.concourse' },
+    { node: 'nishi-umeda-route-entry', access: 'outside', caption: 'ui.walking.middleGateOutside', kind: 'gate' },
+    { node: 'nishi-umeda-north-route-out', access: 'outside', caption: 'ui.walking.northGateOutside', kind: 'gate' },
+    { node: 'nishi-umeda-south-route-out', access: 'outside', caption: 'ui.walking.southGateOutside', kind: 'gate' },
     { node: 'nishi-umeda-destination', access: 'inside', caption: 'ui.walking.platform', kind: 'platform' },
-    { node: 'kitashinchi-route-entry', access: 'outside', caption: 'ui.walking.concourse' },
+    { node: 'kitashinchi-route-entry', access: 'outside', caption: 'ui.walking.westGateOutside', kind: 'gate' },
     { node: 'kitashinchi-destination', access: 'inside', caption: 'ui.walking.platform', kind: 'platform' }
 ];
 

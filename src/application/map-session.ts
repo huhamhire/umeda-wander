@@ -1,4 +1,4 @@
-import type { LevelId, RouteEdge, StationId } from '../domain/map/model.ts';
+import type { Level, LevelId, RouteEdge, RouteNode, StationId } from '../domain/map/model.ts';
 import { findRoute } from '../domain/navigation/find-route.ts';
 import { stationFocusLevel } from './exploration/region-focus.ts';
 import { planWalkingRoute } from './navigation/walking-route.ts';
@@ -20,11 +20,13 @@ export class MapSession {
         focusStation: null
     };
     private readonly edges: RouteEdge[];
+    private readonly map?: { nodes: RouteNode[]; levels: Level[] };
     /**
      * Store the local navigation graph without calculating a route during initialization.
      */
-    constructor(edges: RouteEdge[]) {
+    constructor(edges: RouteEdge[], map?: { nodes: RouteNode[]; levels: Level[] }) {
         this.edges = edges;
+        this.map = map;
     }
     /**
      * Calculate an illustrative route and open an expanded overview; this is not verified cross-station navigation.
@@ -40,8 +42,16 @@ export class MapSession {
         const result = planWalkingRoute(this.edges, places, allowPaid);
         this.state.route = result.route ?? null;
         if (result.route) {
-            this.state.explode = 0.78;
-            this.state.level = 'all';
+            const map = this.map;
+            const districtB1 = map?.levels.find(level => level.id === 'district-underground');
+            const singlePublicFloor = map && districtB1 && result.route.some(id =>
+                map.nodes.find(node => node.id === id)?.level === districtB1.id) && result.route.every(id => {
+                const node = map.nodes.find(item => item.id === id);
+                const level = map.levels.find(item => item.id === node?.level);
+                return level && level.y + (node?.elevationOffset ?? 0) === districtB1.y;
+            });
+            this.state.explode = singlePublicFloor ? 0 : 0.78;
+            this.state.level = singlePublicFloor ? districtB1.id : 'all';
             this.state.roof = false;
             this.state.focusStation = null;
         }

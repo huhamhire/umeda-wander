@@ -7,7 +7,7 @@ import { partitionPublicAreas } from '../../src/application/public-areas/public-
 import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
-import { basements, edges, facilities, geographicPlan, layout, levels, nodes, publicAccess, publicFrontages, publicInterfaceBindings, publicInterfaces, undergroundBlocks, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { basements, edges, facilities, geographicPlan, layout, levels, nodes, publicAccess, publicFrontages, publicInterfaceBindings, publicInterfaces, publicWalkingRoutes, undergroundBlocks, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
@@ -171,8 +171,8 @@ test(
         assert.equal(new Set(nodes.map(n => n.id)).size, nodes.length);
         assert.deepEqual(
             edges,
-            createGeographicStations().flatMap(s => s.edges),
-            'public geometry must not infer route edges'
+            [...createGeographicStations().flatMap(s => s.edges), ...publicWalkingRoutes.edges],
+            'only authored station and public walking edges can enter the routing graph'
         );
     }
 );

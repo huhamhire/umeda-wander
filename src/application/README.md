@@ -4,7 +4,8 @@
 
 ```text
 application/
-├── map-session.ts      # 状态、聚焦、复位及本站路线用例
+├── map-session.ts      # 状态、聚焦、复位及路线预览
+├── navigation/         # 有序途经点与不可达分段
 ├── stations/           # 站模组装、包络、公共接口和建筑裁口
 ├── public-areas/       # 地下／高架、占位、边界及净空
 ├── connections/        # 设备校准、朝向、开口、闸机边界和完整井道

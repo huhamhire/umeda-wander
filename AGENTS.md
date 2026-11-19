@@ -69,7 +69,7 @@
 - 具体连接优先采用对应构内图；缺少明确依据的候选只记录在 `docs/design/buildings/README.md`，不渲染、不补最短捷径。北侧梅北公共通路按 JR 第 6 页绕 LUCUA 1100 北侧。
 - `references/district/station-area-orientation.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/design/buildings/README.md`。
 - 阪急 Grand Building 使用独立轮廓，不能合并进百货实体。已核对的 1F 南北/东西公共通廊是商业内部不展开规则的明确例外；`CommercialConcourse` 只表达公共空间，不展开店铺。南北挑高裁孔与东西通廊上方 2F 通道分别处理，造型由 `commercial-concourse-model.ts` 生成，商业裁孔同步避让外墙与压顶。
-- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口按 B1→地面→Deck 分段，B2 东口的连续公共斜行通路裁 B1 开口；坡度不代表实测。现役闸外接驳归公共板块，旧阪神地区连接已退役，不补跨站寻路边。来源边界见 `docs/design/stations/hanshin-umeda.md`。
+- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口按 B1→地面→Deck 分段，B2 东口的连续公共斜行通路裁 B1 开口；坡度不代表实测。现役闸外接驳归公共板块，阪神西口通往西梅田的 B1 路径由公共站间步行图维护。来源边界见 `docs/design/stations/hanshin-umeda.md`。
 - 北中庭 2/3、47/48 共用 `AtriumVoid` 开放天井，由 `atrium-openings.ts` 裁剪上层；南侧 15/16 斜向接公共区域，再经 50/T 接大丸 2F 前侧。组合地图的 `south-deck` 归 2F 探索，按南侧较低相邻层展示，原 JR 数据保留建筑楼层名称。
 - 地图标签被实际不透明楼板、商业体块或屋顶遮挡时隐藏；真实孔洞保留视线，玻璃与隐藏楼层不遮挡。便利店统一短标签 7-Eleven，设施页“便利店”可分别定位。设施页只保留分类、名称定位和图例，不显示参考图页码及设施说明详情；来源与注释继续保留在数据和文档中。
 - 阪急原图拟合与历史偏移在 `district-placement.ts`，现役定位在 `stations/hankyu-umeda/geographic.ts`；站体、平台、落点、连廊和轨道共用比例，层高不缩放。向南调整时同时检查 JR 东侧本线曲率与道床净距，不能靠把整站向北推远解决比例问题。
@@ -116,7 +116,7 @@
 - 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部 UMEDA 品牌与底部版权。
 - 梅北北端延伸向 Grand Front 西侧道路地下收转，不能穿入南北馆轮廓。修改站台长度时同步检查延伸线和商业体相对位置。
 - 南侧阪神／西梅田／东梅田／北新地的相对布局使用 `projectSouthReference` 共用步行图校准，以阪神为展示锚点；保留各站原始地理锚点，不恢复彼此独立的南移补丁。南侧建筑占位只画 B1 区域轮廓，`FloorArea.labelStyle: floor` 将文字平贴楼板，不生成悬浮标签。
-- 西梅田北端是尽头，仅南端延伸；北新地东西两端延伸，JR 东西线在四桥线下方通过。北新地站台物理 y=-24、stackIndex=-2，仍归 B2 探索；8 单位高差是展示值，不是实测净空。公共地下网络不加入跨站 `RouteEdge`。
+- 西梅田北端是尽头，仅南端延伸；北新地东西两端延伸，JR 东西线在四桥线下方通过。北新地站台物理 y=-24、stackIndex=-2，仍归 B2 探索；8 单位高差是展示值，不是实测净空。B1 跨站寻路仅加入已核对并显式登记的公共通道。
 - JR 北侧中庭 B1 公区与 LUCUA、梅北北侧公共通路及 M16 北改札外分别衔接，不把它延伸成到南侧 Crost 的未核验捷径。站台比例及待确认数据见 `docs/design/stations/README.md`。
 
 - Yodobashi 与阪急 RESPIRE 酒店作为同一商业综合体建模；酒店塔楼使用独立 OSM 部件，不能与新阪急酒店混淆。二层 `perimeterGallery` 外圈是公共回廊，内层轮廓才是裙楼墙体，原有连桥接外环，墙体与竖向立面不得封住回廊。
@@ -128,7 +128,7 @@
 
 - 谷町线东梅田数据在 `stations/higashi-umeda/index.ts`，独立站点 `higashi-umeda`、楼层 `t20-platform/hall/ground`、来源 `tanimachi` 和编号 T20。两座侧式站台的轨道朝内，1 番线电梯接南改札、2 番线接中西改札；公共站厅不得画成两侧站台闸内直通。现役 Whity 接驳归公共板块，不添加跨站导航边；临时施工关闭按用户约定忽略。
 
-- 西梅田使用 `stations/nishi-umeda/index.ts`、Y11 编号和来源 yotsubashi；北新地使用 `stations/kitashinchi/index.ts`、KS 编号和独立来源 kitashinchi。Y11 北端车挡用 `terminalEnd: end`，北改札只出、中改札只进；北新地是通行岛式站台。现役公共地下网按地区通道 PDF 连接 DIAMOR／阪神／西梅田／北新地，全部闸外，不加入跨站寻路边。
+- 西梅田使用 `stations/nishi-umeda/index.ts`、Y11 编号和来源 yotsubashi；北新地使用 `stations/kitashinchi/index.ts`、KS 编号和独立来源 kitashinchi。Y11 北端车挡用 `terminalEnd: end`，北改札只出、中改札只进；北新地是通行岛式站台。现役公共地下网按地区通道 PDF 连接 DIAMOR／阪神／西梅田／北新地。阪神、西梅田、北新地的闸外步行路线由 `south-diamor/walking-routes.ts` 显式登记。
 
 - “显示建筑轮廓”沿用内部 `roof` 状态，统一控制 JR 大屋顶与商业外观/上部体量；仅在总览显示。地下通路和入口不显示浮动标签，二层联络桥只有未画目标的延伸段显式启用 `PublicPassage.label`。
 - 阪神 B1 付费区在西半侧，闸机位于东西端，中部保留朝南公共通路；站台内部楼梯/扶梯向西上行。B2 东口主出口朝东，宽两段式阶梯居中、扶梯分列两侧；`stairLandingLength`、`laneSpacing`、`gateCount` 分别统一落台造型、扶梯模型/孔洞及闸机/围栏留口。

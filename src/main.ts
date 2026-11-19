@@ -610,7 +610,7 @@ async function loadMap(): Promise<void> {
             currentState.route = planWalkingRoute(runtime.edges, sharedItinerary.ids, sharedItinerary.allowPaid).route ?? null;
             sharedItinerary = undefined;
         }
-        session = new MapSession(runtime.edges);
+        session = new MapSession(runtime.edges, { nodes: runtime.nodes, levels: runtime.levels });
         session.state = currentState;
         scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap, queueMapUrl);
         syncFacilityLabels();

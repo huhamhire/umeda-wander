@@ -23,6 +23,7 @@ import plan from '../../../data/geography/runtime-plan.json' with { type: 'json'
 import { createElevatedBlocks } from '../public-areas/elevated-blocks.ts';
 import { createDeckAccess } from '../public-areas/deck-access.ts';
 import { createJpBasementAccess } from '../public-areas/south-diamor/jp-access.ts';
+import { southernWalkingRoutes } from '../public-areas/south-diamor/walking-routes.ts';
 import { createGrandFrontPlazaAccess } from '../public-areas/north-atrium/grand-front-plaza-access.ts';
 import { elevatedLevels, elevatedWidthEstimates } from '../public-areas/elevated-source.ts';
 import { assemblePublicDecks } from '../../application/public-areas/public-deck-assembly.ts';
@@ -136,8 +137,10 @@ const composed = composeStationMaps(
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
     }
 );
-export const { stations, edges } = composed;
-export const nodes = [...composed.nodes, ...externalConnections.flatMap(c => [c.from, c.to])];
+export const { stations } = composed;
+export const publicWalkingRoutes = southernWalkingRoutes(composed.nodes);
+export const edges = [...composed.edges, ...publicWalkingRoutes.edges];
+export const nodes = [...composed.nodes, ...externalConnections.flatMap(c => [c.from, c.to]), ...publicWalkingRoutes.nodes];
 export const levels = [...composed.levels, sharedUndergroundLevel, publicGroundLevel, ...elevatedLevels].map(level => ({
     ...level,
     name: resolveMessage(level.name),
