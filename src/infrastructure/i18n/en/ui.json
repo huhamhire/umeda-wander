@@ -88,6 +88,8 @@
   "ui.legend.public": "Public area",
   "ui.map.accessibleDescription": "Interactive 3D map of Umeda stations. Drag to pan, pinch to zoom, twist with two fingers to rotate, or use the level and facility controls.",
   "ui.map.controls": "Map controls",
+  "ui.map.fullscreen": "Fullscreen map",
+  "ui.map.exitFullscreen": "Exit fullscreen",
   "ui.map.north": "N",
   "ui.map.orientation": "Compass, projected from geographic north",
   "ui.map.reset": "Reset view",

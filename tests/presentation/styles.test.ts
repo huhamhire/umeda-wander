@@ -30,12 +30,19 @@ test(
         }
         assert.match(css, /\.sidebar-tabs\s*\{[^}]*flex:\s*none/);
         assert.match(css, /\.sidebar\s*\{[^}]*padding-block:\s*15px/);
-        assert.match(css, /\.sidebar-content > \[role=tabpanel\]\s*\{[^}]*padding-inline:\s*var\(--sidebar-inline-inset\);[^}]*overflow-y:\s*auto/);
+        assert.match(css, /\.sidebar-content > \[role=tabpanel\]\s*\{[^}]*padding-inline:\s*var\(--sidebar-inline-inset\);[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto/);
+        assert.match(css, /\.sidebar\s*\{[^}]*width:\s*clamp\(320px,\s*32vw,\s*344px\)/);
+        assert.match(css, /\.poi-list\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+        assert(narrowStyles.some(rules => /\.sidebar \.poi-list\s*\{[^}]*overflow-x:\s*auto/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar-content\s*\{[^}]*padding-block:\s*6px 8px/.test(rules ?? '')));
-        assert.match(css, /\.navigation-toggle\s*\{\s*display:\s*none/);
-        assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{[^}]*min-height:\s*44px/.test(rules ?? '')));
+        assert.match(css, /\.navigation-toggle\s*\{\s*display:\s*none;[^}]*min-height:\s*44px/);
+        assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{\s*display:\s*flex/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));
         assert.match(css, /\.map-tools\s*\{/);
+        assert(narrowStyles.some(rules => /\.header-preferences #map-fullscreen\s*\{\s*display:\s*grid/.test(rules ?? '')));
+        assert.match(css, /\.atlas\[data-map-fullscreen\] #map-fullscreen\s*\{\s*display:\s*grid/);
+        assert.match(css, /\.atlas\[data-map-fullscreen\] \.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/);
+        assert.match(css, /\.atlas\[data-map-fullscreen\] \.navigation-toggle\s*\{\s*display:\s*flex/);
         assert.match(css, /\.walking-itinerary\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) max-content/);
         assert.match(css, /\.walking-panel ol\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
         assert.match(css, /#walking-preview:enabled\s*\{[^}]*background:\s*var\(--color-tab-active\)/);

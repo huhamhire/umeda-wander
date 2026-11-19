@@ -12,6 +12,7 @@ import { filterFacilities, facilityCategory, type FacilityFilter } from './appli
 import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
+import { bindMapFullscreen } from './presentation/components/map-fullscreen.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
@@ -264,7 +265,7 @@ function syncWalkingActions(): void {
 const sidebar = element('.sidebar');
 const navigationToggle = element<HTMLButtonElement>('#navigation-toggle');
 
-/** Match the mobile drawer visibility to the disclosure state without affecting the desktop sidebar. */
+/** Match the navigation drawer visibility to its disclosure state. */
 function setNavigationExpanded(expanded: boolean): void {
     if (!expanded) {
         facilityPicker.close();
@@ -302,8 +303,20 @@ function saveLanguageChangeView(languageKeyboardFocus: boolean): void {
     }
 }
 bindPagePreferences(saveLanguageChangeView, dark => scene?.setDarkTheme(dark));
-// Keep floating controls clear of every tab's actual height.
 const atlas = element('.atlas');
+let navigationBeforeFullscreen: boolean | undefined;
+bindMapFullscreen(atlas, element<HTMLButtonElement>('#map-fullscreen'), active => {
+    if (active) {
+        navigationBeforeFullscreen = !sidebar.hasAttribute('data-collapsed');
+        setNavigationExpanded(false);
+    }
+    else if (navigationBeforeFullscreen !== undefined) {
+        setNavigationExpanded(navigationBeforeFullscreen);
+        navigationBeforeFullscreen = undefined;
+    }
+    scene?.refreshViewport();
+});
+// Keep floating controls clear of every tab's actual height.
 new ResizeObserver(() => {
     atlas.style.setProperty('--navigation-height', `${sidebar.getBoundingClientRect().height}px`);
     scene?.refreshViewport();

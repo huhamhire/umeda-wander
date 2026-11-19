@@ -2,6 +2,11 @@ import * as T from 'three';
 import type { Level, LevelId, StationId, StationLayout } from '../../domain/map/model.ts';
 import { platformPoint } from '../../domain/map/geometry.ts';
 
+/** Apply the normal zoom limits while keeping the manual frame's starting scale reachable. */
+export function clampCameraZoom(zoom: number, minimum: number, reference = minimum): number {
+    return T.MathUtils.clamp(zoom, Math.min(minimum, reference), Math.max(16, minimum * 16, reference));
+}
+
 /** Fit the full station envelope, so changing a floor cut never moves the camera. */
 export function cameraEnvelope(
     layout: StationLayout,

@@ -43,3 +43,7 @@
 .header-preferences button {
   width: 34px;
 }
+
+.header-preferences #map-fullscreen {
+  display: grid;
+}

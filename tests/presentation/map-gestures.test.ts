@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Vector3 } from 'three';
 import { MapGestures, type MapGestureActions } from '../../src/presentation/camera/map-gestures.ts';
+import { clampCameraZoom } from '../../src/presentation/camera/camera-framing.ts';
 
 class CanvasStub extends EventTarget {
     captures: number[] = [];
@@ -236,6 +237,36 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
         assert.deepEqual(pans, [[4, 3]]);
         assert.deepEqual(selections, []);
         assert(!gestures.isMoving);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('pinching out and back can restore a shared scale wider than the current viewport fit', () => {
+    const startingZoom = 0.75;
+    const minimumZoom = 1;
+    let zoom = startingZoom;
+    const { canvas, gestures } = setup({
+        zoom: factor => {
+            zoom = clampCameraZoom(zoom * factor, minimumZoom, startingZoom);
+        }
+    });
+    try {
+        dispatch(canvas, 'pointerdown', { pointerId: 1, pointerType: 'touch', clientX: 20 });
+        dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 60 });
+        dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 0 });
+        dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 80 });
+        gestures.applyTouchGesture();
+        assert.equal(zoom, 1.5);
+        dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 0 });
+        dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 80 });
+
+        dispatch(canvas, 'pointerdown', { pointerId: 3, pointerType: 'touch', clientX: 0 });
+        dispatch(canvas, 'pointerdown', { pointerId: 4, pointerType: 'touch', clientX: 80 });
+        dispatch(canvas, 'pointermove', { pointerId: 3, clientX: 20 });
+        dispatch(canvas, 'pointermove', { pointerId: 4, clientX: 60 });
+        gestures.applyTouchGesture();
+        assert.equal(zoom, startingZoom);
     } finally {
         gestures.dispose();
     }

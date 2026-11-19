@@ -150,40 +150,10 @@
 
 .navigation-toggle {
   display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 0;
-  background: transparent;
-  color: var(--color-field-text);
-  text-align: left;
-  font: inherit;
-  font-weight: 600;
 }
 
 .map-heading {
   display: none;
-}
-
-.navigation-toggle:focus-visible {
-  outline-offset: -2px;
-}
-
-.navigation-toggle svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.navigation-toggle[aria-expanded="true"] svg {
-  transform: rotate(180deg);
 }
 
 .sidebar-content {

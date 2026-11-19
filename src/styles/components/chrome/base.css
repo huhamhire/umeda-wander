@@ -132,8 +132,27 @@
 }
 
 .header-preferences button[aria-pressed="false"] .theme-sun,
-.header-preferences button[aria-pressed="true"] .theme-moon {
+.header-preferences button[aria-pressed="true"] .theme-moon,
+.header-preferences button[aria-pressed="false"] .fullscreen-exit,
+.header-preferences button[aria-pressed="true"] .fullscreen-enter {
   display: none;
+}
+
+.header-preferences #map-fullscreen {
+  display: none;
+  width: 44px;
+  min-height: 44px;
+}
+
+.atlas[data-map-fullscreen] .topbar {
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding-block-start: env(safe-area-inset-top, 0px);
+  padding-inline-start: max(16px, env(safe-area-inset-left, 0px));
+  padding-inline-end: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.atlas[data-map-fullscreen] #map-fullscreen {
+  display: grid;
 }
 
 .brand-mark {

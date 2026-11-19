@@ -15,7 +15,7 @@ import { LayerAppearance } from './appearance/layer-appearance.ts';
 import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts';
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
 import { advanceExplode } from './appearance/explode-transition.ts';
-import { cameraEnvelope } from './camera/camera-framing.ts';
+import { cameraEnvelope, clampCameraZoom } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
 import { visibleLabelOccluders } from './labels/label-occlusion.ts';
@@ -26,7 +26,7 @@ export interface MapCameraSnapshot {
     offset: [number, number, number];
     pan: [number, number, number];
     zoom: number;
-    manual?: { center: [number, number, number]; span: number };
+    manual?: { center: [number, number, number]; span: number; referenceZoom?: number };
     facility?: string;
     followFacility: boolean;
 }
@@ -78,6 +78,7 @@ export class MapScene {
     private manualView?: {
         center: T.Vector3;
         span: number;
+        referenceZoom?: number;
     };
     private framing?: {
         center: T.Vector3;
@@ -87,6 +88,7 @@ export class MapScene {
     private locatingFacility = false;
     private targetCenter?: T.Vector3;
     private zoomValue = 1;
+    private baseSpan = 1;
     private minimumZoom = 1;
     private pan = new T.Vector3();
     private frame = 0;
@@ -224,7 +226,7 @@ export class MapScene {
         }
         this.locatingFacility = false;
         this.focusTransition = false;
-        this.manualView = { center: this.framing.center.clone(), span: this.framing.span };
+        this.freezeFraming(this.framing);
         if (!touchMidpoint) {
             return this.framing.center;
         }
@@ -241,6 +243,16 @@ export class MapScene {
         const fallback = new T.Vector3();
         const plane = new T.Plane(new T.Vector3(0, 1, 0), -this.framing.center.y);
         return hit?.point ?? this.raycaster.ray.intersectPlane(plane, fallback) ?? this.framing.center;
+    }
+
+    /** Freeze the displayed frame and keep its starting scale reachable across gestures. */
+    private freezeFraming(frame: { center: T.Vector3; span: number }): void {
+        this.zoomValue = this.baseSpan / frame.span;
+        this.manualView = {
+            center: frame.center.clone(),
+            span: frame.span,
+            referenceZoom: this.manualView?.referenceZoom ?? this.zoomValue
+        };
     }
 
     /** Convert canvas coordinates into the shared raycaster used by orbit pivots and facility picking. */
@@ -366,7 +378,7 @@ export class MapScene {
             this.fitEnvelope = undefined;
         } else if (floorChanged && this.framing) {
             // Keep the frame actually on screen, including an interrupted facility transition.
-            this.manualView = { center: this.framing.center.clone(), span: this.framing.span };
+            this.freezeFraming(this.framing);
             this.focusTransition = false;
         }
         if (options.immediateExplode) {
@@ -414,7 +426,7 @@ export class MapScene {
             return;
         }
         if (this.locatingFacility && this.focusTransition && this.framing) {
-            this.manualView = { center: this.framing.center.clone(), span: this.framing.span };
+            this.freezeFraming(this.framing);
         }
         this.activeFacility = undefined;
         this.locatingFacility = false;
@@ -452,7 +464,11 @@ export class MapScene {
             offset: cameraOffset.toArray(),
             pan: this.pan.toArray(),
             zoom: this.zoomValue,
-            manual: this.manualView && { center: this.manualView.center.toArray(), span: this.manualView.span },
+            manual: this.manualView && {
+                center: this.manualView.center.toArray(),
+                span: this.manualView.span,
+                referenceZoom: this.manualView.referenceZoom
+            },
             facility: this.activeFacility?.id,
             followFacility: this.locatingFacility
         };
@@ -481,10 +497,10 @@ export class MapScene {
     }
 
     /** Notify the page once per settled camera change, including after a gesture ends. */
-    private reportShareCamera(center: T.Vector3, span: number, animating: boolean): void {
+    private reportShareCamera(center: T.Vector3, span: number, settled: boolean): void {
         const wasSettled = this.shareSettled;
-        this.shareSettled = !animating && !this.focusTransition && !this.gestures.isMoving && !this.draggingExplode;
-        if (!this.shareSettled || !this.onViewSettled) {
+        this.shareSettled = settled;
+        if (!settled || !this.onViewSettled) {
             return;
         }
         const yaw = T.MathUtils.radToDeg(Math.atan2(cameraOffset.x, cameraOffset.z));
@@ -507,8 +523,10 @@ export class MapScene {
         if (snapshot.manual) {
             this.manualView = {
                 center: new T.Vector3().fromArray(snapshot.manual.center),
-                span: snapshot.manual.span
+                span: snapshot.manual.span,
+                referenceZoom: snapshot.manual.referenceZoom ?? snapshot.zoom
             };
+            this.baseSpan = snapshot.zoom * snapshot.manual.span;
         }
         this.activeFacility = this.facilities.find(facility => facility.id === snapshot.facility);
         this.locatingFacility = snapshot.followFacility && this.activeFacility !== undefined;
@@ -521,10 +539,7 @@ export class MapScene {
     zoom(factor: number, pivot?: T.Vector3): void {
         const previousZoom = this.zoomValue;
         this.focusTransition = false;
-        // A shared frame may be outside the receiving viewport's normal range.
-        const min = Math.min(this.minimumZoom, previousZoom);
-        const max = Math.max(16, this.minimumZoom * 16, previousZoom);
-        this.zoomValue = T.MathUtils.clamp(this.zoomValue * factor, min, max);
+        this.zoomValue = clampCameraZoom(previousZoom * factor, this.minimumZoom, this.manualView?.referenceZoom);
         if (this.manualView) {
             const spanRatio = previousZoom / this.zoomValue;
             this.manualView.span *= spanRatio;
@@ -708,7 +723,6 @@ export class MapScene {
         }
         const mobile = this.width < 761;
         const viewportHeight = Math.max(1, this.height);
-        const usableWidth = mobile ? this.width * 0.91 : Math.max(this.width * 0.55, this.width - 380);
         const envelope = this.framingPoints();
         const center = new T.Box3().setFromPoints(envelope).getCenter(new T.Vector3());
         const { right, up } = viewBasis();
@@ -730,24 +744,22 @@ export class MapScene {
         const viewport = this.host.getBoundingClientRect();
         const sidebar = this.host.parentElement?.querySelector('.sidebar')?.getBoundingClientRect();
         const usable = facilityFocusRect(viewport, sidebar, mobile);
+        const usableWidth = mobile ? this.width * 0.91 : usable.width;
         const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * viewportHeight / Math.max(1, usableWidth) * 1.12);
+        this.baseSpan = baseSpan;
         this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
         if (this.refreshShareZoomBounds && this.manualView) {
             // The same world span can correspond to a different zoom ratio on the receiving viewport.
             this.zoomValue = baseSpan / this.manualView.span;
+            this.manualView.referenceZoom = this.zoomValue;
         }
         this.refreshShareZoomBounds = false;
         if (this.manualView) {
             return { center: this.manualView.center.clone(), span: this.manualView.span };
         }
-        this.zoomValue = T.MathUtils.clamp(this.zoomValue, this.minimumZoom, Math.max(16, this.minimumZoom * 16));
+        this.zoomValue = clampCameraZoom(this.zoomValue, this.minimumZoom);
         const span = baseSpan / this.zoomValue;
-        if (!mobile) {
-            center.addScaledVector(right, -Math.min(150, this.width * 0.13) * span / viewportHeight);
-        }
-        else {
-            center.copy(facilityCameraCenter(center, span, this.width, this.height, usable));
-        }
+        center.copy(facilityCameraCenter(center, span, this.width, this.height, usable));
         if (this.locatingFacility && this.activeFacility) {
             const target = facilityCameraCenter(this.selected.position, span, this.width, this.height, usable);
             this.pan.add(target.clone().sub(center));
@@ -813,10 +825,10 @@ export class MapScene {
         if (changedModels && this.hoverPoint) {
             this.setPointerHover(this.hoverPoint);
         }
-        // Skip label projection and occlusion throughout a pointer gesture at every zoom level.
-        const showLabels = !this.draggingExplode && !this.gestures.isMoving;
-        this.labels.setVisible(showLabels);
-        if (showLabels) {
+        // Label projection and view sharing both wait for the frame to settle.
+        const settled = !animate && !this.focusTransition && !this.draggingExplode && !this.gestures.isMoving;
+        this.labels.setVisible(settled);
+        if (settled) {
             const facility = this.activeFacility;
             const selection = this.selected.visible && facility
                 ? { text: facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
@@ -835,7 +847,7 @@ export class MapScene {
                 selection
             });
         }
-        this.reportShareCamera(center, span, animate);
+        this.reportShareCamera(center, span, settled);
         if (animate || this.focusTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
         }
