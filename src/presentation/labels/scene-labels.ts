@@ -32,7 +32,18 @@ export interface SceneLabelView {
     height: number;
     zoom: number;
     occluders: T.Object3D[];
-    selection?: Pick<SceneLabelDefinition, 'text' | 'position' | 'kind'>;
+    selection?: Pick<SceneLabelDefinition, 'text' | 'position'> & { kind: FacilityKind };
+}
+
+/** Apply the same icon and name treatment to every facility label. */
+function setLabelContent(element: HTMLDivElement, { text, kind }: Pick<SceneLabelDefinition, 'text' | 'kind'>): void {
+    element.classList.toggle('facility-label', kind !== undefined);
+    if (kind) {
+        element.replaceChildren(createFacilityIcon(kind), text);
+    }
+    else {
+        element.textContent = text;
+    }
 }
 
 /** Own screen labels, their occlusion and collision ordering independently of scene geometry. */
@@ -48,17 +59,17 @@ export class SceneLabels {
     constructor(host: HTMLElement, definitions: readonly SceneLabelDefinition[]) {
         this.host = host;
         for (const definition of definitions) {
-            const element = document.createElement('div');
-            element.className = 'map-label' + (definition.emphasis ? ' emphasis' : '');
-            if (definition.kind) {
-                element.classList.add('facility-symbol');
-                element.append(createFacilityIcon(definition.kind));
-            } else {
-                element.textContent = definition.text;
-            }
-            host.append(element);
-            this.labels.push({ ...definition, element });
+            this.labels.push(this.createLabel(definition));
         }
+    }
+
+    /** Attach a label and keep its DOM node together with its map anchor. */
+    private createLabel(definition: SceneLabelDefinition): MapLabel {
+        const element = document.createElement('div');
+        element.className = 'map-label' + (definition.emphasis ? ' emphasis' : '');
+        setLabelContent(element, definition);
+        this.host.append(element);
+        return { ...definition, element };
     }
 
     /** Hide or show the overlay as one layer without touching individual label styles. */
@@ -73,17 +84,14 @@ export class SceneLabels {
     setFacilityFilter(facilities?: readonly Facility[]): void {
         this.filteredLabels?.forEach(label => label.element.remove());
         this.filteredLabels = facilities?.map(facility => {
-            const element = document.createElement('div');
-            element.className = 'map-label facility-label';
-            element.hidden = true;
-            element.append(createFacilityIcon(facility.kind), facility.name);
-            this.host.append(element);
-            return {
+            const label = this.createLabel({
                 text: facility.name,
+                kind: facility.kind,
                 level: facility.level,
-                position: new T.Vector3(facility.x, 3.15 + (facility.elevationOffset ?? 0), facility.z),
-                element
-            };
+                position: new T.Vector3(facility.x, 3.15 + (facility.elevationOffset ?? 0), facility.z)
+            });
+            label.element.hidden = true;
+            return label;
         });
     }
 
@@ -96,17 +104,12 @@ export class SceneLabels {
             return undefined;
         }
         if (!this.selectionElement) {
-            this.selectionElement = document.createElement('div');
-            this.selectionElement.className = 'map-label emphasis facility-label';
-            this.host.append(this.selectionElement);
-        }
-        if (this.selectionElement.textContent !== definition.text || this.selectionKind !== definition.kind) {
+            this.selectionElement = this.createLabel({ ...definition, emphasis: true }).element;
             this.selectionKind = definition.kind;
-            if (definition.kind) {
-                this.selectionElement.replaceChildren(createFacilityIcon(definition.kind), definition.text);
-            } else {
-                this.selectionElement.textContent = definition.text;
-            }
+        }
+        else if (this.selectionElement.textContent !== definition.text || this.selectionKind !== definition.kind) {
+            this.selectionKind = definition.kind;
+            setLabelContent(this.selectionElement, definition);
         }
         return { ...definition, element: this.selectionElement, emphasis: true };
     }

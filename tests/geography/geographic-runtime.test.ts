@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { edges, facilities, geographicOsmData, layout, levels, nodes } from '../../src/infrastructure/district/geographic-map.ts';
+import { basements, edges, facilities, geographicOsmData, layout, levels, nodes } from '../../src/infrastructure/district/geographic-map.ts';
 import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { stationPalettes } from '../../src/presentation/appearance/station-palette.ts';
 import { MapModels } from '../../src/presentation/models/map-models.ts';
+import { visibleLabelOccluders } from '../../src/presentation/labels/label-occlusion.ts';
 
 /** Check vertex data on the meshes installed by the production model builders. */
 function assertFiniteMeshes(root: T.Object3D): void {
@@ -41,6 +42,13 @@ test(
             assert(label.text.trim());
             assert(label.position.toArray().every(Number.isFinite));
         }
+        const labelsWithIcons = scene.labels.filter(label => label.kind);
+        assert.equal(labelsWithIcons.filter(label => label.kind === 'platform').length, layout.platforms.length);
+        for (const kind of ['gate', 'ticket', 'convenience-store', 'police', 'luggage-storage', 'locker'] as const) {
+            assert(labelsWithIcons.some(label => label.kind === kind && facilities.some(facility =>
+                facility.kind === kind && facility.name === label.text && facility.level === label.level
+            )), kind);
+        }
         for (const p of layout.platforms.filter(p => p.level === 'hankyu-platform')) {
             const slab = scene.groups.get(p.level)!.getObjectByName('platform-slab-' + p.id) as T.Mesh;
             const material = slab.material as T.MeshStandardMaterial;
@@ -53,6 +61,20 @@ test(
                 '1F hall must follow the ground visibility switch'
             );
         }
+        const b1 = scene.groups.get('district-underground')!;
+        const basementFloors = scene.basementBuildingFloors;
+        assert.deepEqual(basementFloors.map(floor => floor.name), basements.areas.map(area => area.id));
+        assert(basementFloors.length && basementFloors.every(floor => floor.parent === b1));
+        const basementSlabs = basementFloors.flatMap(floor => floor.children.filter(mesh => mesh.userData.labelOccluder));
+        const publicSlabs = b1.children.filter(mesh => mesh.userData.labelOccluder);
+        assert(basementSlabs.length && publicSlabs.length);
+        scene.updateBuildingFloorVisibility(true, false);
+        assert(basementFloors.every(floor => !floor.visible));
+        assert(scene.geographicBuildingFloors.every(floor => floor.visible));
+        assert.deepEqual(visibleLabelOccluders([...basementSlabs, ...publicSlabs]), publicSlabs);
+        scene.updateBuildingFloorVisibility(false, true);
+        assert(scene.geographicBuildingFloors.every(floor => !floor.visible));
+        assert.deepEqual(visibleLabelOccluders(basementSlabs), basementSlabs);
     }
 );
 test(

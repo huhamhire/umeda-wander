@@ -1,17 +1,19 @@
 import type { Vector3 } from 'three';
 
-type PointerSample = { x: number; y: number; touch: boolean };
+type PointerPosition = { x: number; y: number };
+type PointerSample = PointerPosition & { touch: boolean };
 type TouchPair = { first: PointerSample; second: PointerSample };
 const orbitRadiansPerPixel = .006;
 const touchGestureThreshold = 4;
 
 export interface MapGestureActions {
-    beginOrbit: (clientX: number, clientY: number) => Vector3 | undefined;
+    beginOrbit: (touchMidpoint?: PointerPosition) => Vector3 | undefined;
     rotate: (pivot: Vector3, yawRadians: number, pitchRadians: number) => boolean;
     beginDrag: () => void;
     pan: (deltaX: number, deltaY: number) => void;
     zoom: (factor: number, pivot?: Vector3) => void;
     select: (clientX: number, clientY: number) => void;
+    hover: (point?: PointerPosition) => void;
     invalidate: () => void;
 }
 
@@ -37,15 +39,18 @@ export class MapGestures {
         const signal = this.lifetime.signal;
         canvas.addEventListener('pointerdown', event => this.pointerDown(event), { signal });
         canvas.addEventListener('pointermove', event => this.pointerMove(event), { signal });
+        canvas.addEventListener('pointerleave', () => actions.hover(), { signal });
         canvas.addEventListener('pointerup', event => this.pointerUp(event), { signal });
         canvas.addEventListener('pointercancel', event => {
+            const wasRotating = this.isRotating;
             this.cancelOrbit();
             this.pointers.delete(event.pointerId);
             this.dragged = true;
             this.down = null;
-            this.finishMovement();
+            this.finishMovement(wasRotating);
         }, { signal });
         canvas.addEventListener('lostpointercapture', event => {
+            const wasRotating = this.isRotating;
             if (this.pointers.delete(event.pointerId)) {
                 this.resetTouchGesture();
                 this.dragged = true;
@@ -56,7 +61,7 @@ export class MapGestures {
             if (!this.pointers.size) {
                 this.down = null;
             }
-            this.finishMovement();
+            this.finishMovement(wasRotating);
         }, { signal });
         canvas.addEventListener('auxclick', event => {
             if (event.button === 1) {
@@ -66,16 +71,27 @@ export class MapGestures {
         canvas.addEventListener('wheel', event => {
             event.preventDefault();
             actions.zoom(Math.exp(-event.deltaY * 0.001));
+            if (!this.pointers.size) {
+                actions.hover({ x: event.clientX, y: event.clientY });
+            }
         }, { passive: false, signal });
     }
 
-    /** Report actual pointer movement so distant views can defer label placement until release. */
+    /** Report actual pointer movement so labels and URL writes can wait for the gesture to finish. */
     get isMoving(): boolean {
         return this.moving;
     }
 
+    /** Report an active mouse orbit or two-finger rotation through the end of the gesture. */
+    get isRotating(): boolean {
+        return Boolean(this.orbit && this.moving || this.touchPivot && (this.touchMode === 'yaw' || this.touchMode === 'pitch'));
+    }
+
     /** Forget an active orbit after selecting a facility or resetting the view. */
     cancelOrbit(): void {
+        if (this.orbit) {
+            this.canvas.removeAttribute('data-orbiting');
+        }
         this.orbit = undefined;
         this.resetTouchGesture();
     }
@@ -86,15 +102,19 @@ export class MapGestures {
         this.pointers.clear();
         this.down = null;
         this.cancelOrbit();
+        this.setMoving(false);
     }
 
     /** Freeze an optional orbit pivot, then capture the pointer for click, drag or pinch tracking. */
     private pointerDown(event: PointerEvent): void {
+        const wasRotating = this.isRotating;
+        this.actions.hover();
         if (event.button === 1) {
-            const pivot = this.actions.beginOrbit(event.clientX, event.clientY);
+            const pivot = this.actions.beginOrbit();
             if (pivot) {
                 event.preventDefault();
                 this.orbit = { pointer: event.pointerId, pivot: pivot.clone() };
+                this.canvas.setAttribute('data-orbiting', '');
             }
         }
         if (this.pointers.size === 0) {
@@ -106,12 +126,16 @@ export class MapGestures {
         this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, touch: event.pointerType === 'touch' });
         this.resetTouchGesture();
         this.canvas.setPointerCapture(event.pointerId);
+        this.finishMovement(wasRotating);
     }
 
     /** Recognize mouse orbit, a two-touch transform, and single-pointer pan. */
     private pointerMove(event: PointerEvent): void {
         const old = this.pointers.get(event.pointerId);
         if (!old) {
+            if (!this.pointers.size && event.pointerType !== 'touch' && !event.buttons) {
+                this.actions.hover({ x: event.clientX, y: event.clientY });
+            }
             return;
         }
         this.actions.beginDrag();
@@ -120,7 +144,9 @@ export class MapGestures {
         }
         const deltaX = event.clientX - old.x;
         const deltaY = event.clientY - old.y;
-        this.moving ||= deltaX !== 0 || deltaY !== 0;
+        if (deltaX !== 0 || deltaY !== 0) {
+            this.setMoving(true);
+        }
         this.touchBaseline ??= this.currentTouchPair();
         this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, touch: old.touch });
         if (this.orbit?.pointer === event.pointerId && (event.buttons & 4) && this.actions.rotate(
@@ -178,10 +204,10 @@ export class MapGestures {
                 return;
             }
         }
-        this.touchPivot ??= this.actions.beginOrbit(
-            (baseline.first.x + baseline.second.x) / 2,
-            (baseline.first.y + baseline.second.y) / 2
-        )?.clone();
+        this.touchPivot ??= this.actions.beginOrbit({
+            x: (baseline.first.x + baseline.second.x) / 2,
+            y: (baseline.first.y + baseline.second.y) / 2
+        })?.clone();
         this.touchBaseline = pair;
         if (this.touchMode === 'pitch') {
             if (this.touchPivot && midpointY !== 0) {
@@ -222,6 +248,7 @@ export class MapGestures {
     /** Select only a primary click that has not become a drag, pinch or orbit. */
     private pointerUp(event: PointerEvent): void {
         this.applyTouchGesture(true);
+        const wasRotating = this.isRotating;
         if (this.orbit?.pointer === event.pointerId) {
             this.cancelOrbit();
         }
@@ -233,13 +260,24 @@ export class MapGestures {
         if (!this.pointers.size) {
             this.down = null;
         }
-        this.finishMovement();
+        this.finishMovement(wasRotating);
+        if (!this.pointers.size && event.pointerType !== 'touch' && !event.buttons) {
+            this.actions.hover({ x: event.clientX, y: event.clientY });
+        }
     }
 
-    /** Restore labels on the next frame when the last drag or pinch pointer leaves. */
-    private finishMovement(): void {
-        if (!this.pointers.size && this.moving) {
-            this.moving = false;
+    /** Keep the dragging cursor tied to the same movement state as the overlay. */
+    private setMoving(moving: boolean): void {
+        if (this.moving !== moving) {
+            this.moving = moving;
+            this.canvas.toggleAttribute('data-dragging', moving);
+        }
+    }
+
+    /** Schedule a settled frame when rotation ends or the last moving pointer leaves. */
+    private finishMovement(wasRotating: boolean): void {
+        if ((!this.pointers.size && this.moving) || (wasRotating && !this.isRotating)) {
+            this.setMoving(false);
             this.actions.invalidate();
         }
     }

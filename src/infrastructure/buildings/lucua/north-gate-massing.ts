@@ -53,11 +53,12 @@ export function eastWing(host: BuildingVolume): BuildingVolume[] {
     ];
 }
 
-/** Form the west office tower, stepped low roof, and raised lintel over the main atrium opening. */
+/** Form the west tower and high spans while leaving the atrium open on both sides. */
 export function westWing(host: BuildingVolume, tower: BuildingVolume): BuildingVolume[] {
     return [
-        part(host, [[-128, -104], [-27, -104], [-27, -47], [13, -47], [13, -37.5], [-128, -37.5]], 0, 56.3),
+        band(host, [-128, -27], [-104, -37.5], 0, 56.3),
         { ...band(host, [-28, 26], [-102.4, -65], 45, 49.9), support: 'over-atrium' },
+        { ...band(host, [-27, 13], [-47, -37.5], 45, 56.3), support: 'over-atrium' },
         band(host, [-128, -90], [-103, -41], 56.3, 62.6),
         band(host, [-90, -27], [-89.4, -37.5], 56.3, 61),
         band(host, [-90, -27], [-74, -37.5], 61, 67.3),

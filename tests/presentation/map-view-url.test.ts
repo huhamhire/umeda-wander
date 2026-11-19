@@ -14,56 +14,69 @@ const data: NavigationData = {
 };
 
 const view: SharedMapView = {
-    camera: { center: [694.12, 31.75, 350.961], yaw: -121.32, pitch: 62.14, zoom: 1.5, span: 342.248 },
+    camera: { center: [694.12, 31.75, 350.961], yaw: -121.32, pitch: 62.14, span: 342.248 },
     level: 'concourse',
     station: 'jr-osaka',
     facility: 'entry',
     explode: 0.75,
     buildings: false,
     ground: false,
-    tab: 'facilities',
-    filters: { station: 'jr-osaka', level: 'concourse', kind: 'entrance' },
-    itinerary: { ids: ['entry', 'hall'], allowPaid: false }
+    itinerary: { ids: ['entry', 'hall'], allowPaid: true }
 };
 
 test('shared map URLs round-trip the rendered frame and state without replacing other parameters', () => {
-    const address = new URL('https://example.test/maps/index.html?lang=ja&ref=a&ref=b#atlas');
+    const address = new URL('https://example.test/maps/index.html?lang=ja&ref=a&ref=b&view=1&view.yaw=12#atlas');
     const next = mapViewUrl(address, view);
     assert.equal(next.pathname, address.pathname);
     assert.equal(next.hash, address.hash);
     assert.equal(next.searchParams.get('lang'), 'ja');
     assert.deepEqual(next.searchParams.getAll('ref'), ['a', 'b']);
-    assert(!address.searchParams.has('view'));
+    assert.equal(address.searchParams.get('view.yaw'), '12');
+    assert(![...next.searchParams.keys()].some(key => key === 'view' || key.startsWith('view.')));
+    assert.equal(next.searchParams.get('yaw'), '-121.32');
+    assert.equal(next.searchParams.get('allow-paid'), '1');
+    assert.deepEqual(next.searchParams.getAll('stop'), ['entry', 'hall']);
     assert.deepEqual(readMapView(next, data), view);
     assert.equal(readMapView(mapViewUrl(address, { ...view, camera: { ...view.camera, yaw: -121.3199999 } }), data)?.camera.yaw, -121.32);
 });
 
-test('invalid camera or version cannot poison the shared view and obsolete IDs fall back in place', () => {
-    const address = mapViewUrl(new URL('https://example.test/'), view);
-    const original = JSON.parse(address.searchParams.get('view')!);
-    for (const invalid of [null, { ...original, v: 2 }, { ...original, camera: { ...view.camera, pitch: 90 } },
-        { ...original, camera: { ...view.camera, center: [1, '2', 3] } }, { ...original, camera: { ...view.camera, span: 0 } }]) {
-        address.searchParams.set('view', JSON.stringify(invalid));
+test('invalid or incomplete cameras are rejected and obsolete IDs fall back in place', () => {
+    const original = mapViewUrl(new URL('https://example.test/'), view);
+    for (const [key, value] of [
+        ['pitch', '90'], ['x', 'bad'], ['y', ''], ['yaw', 'Infinity'], ['span', '0']
+    ] as const) {
+        const address = new URL(original);
+        address.searchParams.set(key, value);
         assert.equal(readMapView(address, data), undefined);
     }
-    address.searchParams.set('view', 'bad json');
-    assert.equal(readMapView(address, data), undefined);
-    address.searchParams.set('view', JSON.stringify({
-        ...original,
-        station: 'missing',
-        level: 'missing',
-        facility: 'missing',
-        filters: { station: 'missing', level: 'missing', kind: 'missing' },
-        itinerary: { ids: ['entry', 'missing'] }
-    }));
-    assert.deepEqual(readMapView(address, data), {
+    assert.equal(readMapView(new URL('https://example.test/?view=1&view.x=1'), data), undefined);
+    for (const name of ['station', 'level', 'facility']) {
+        original.searchParams.set(name, 'missing');
+    }
+    original.searchParams.append('stop', 'missing');
+    assert.deepEqual(readMapView(original, data), {
         ...view,
         station: null,
         level: 'all',
         facility: undefined,
-        filters: { station: null, level: 'all', kind: 'all' },
         itinerary: undefined
     });
+});
+
+test('integrators can use camera-only parameters and replace individual settings', () => {
+    const address = new URL('https://example.test/?x=694&y=32&z=351&yaw=45&pitch=62&span=342');
+    const parsed = readMapView(address, data)!;
+    assert.equal(parsed.camera.yaw, 45);
+    assert.equal(parsed.level, 'all');
+    assert.equal(parsed.buildings, true);
+    const prior = mapViewUrl(address, view);
+    const edited = mapViewUrl(prior, parsed);
+    assert.deepEqual([...edited.searchParams.keys()], ['x', 'y', 'z', 'yaw', 'pitch', 'span']);
+    assert.deepEqual(readMapView(edited, data), parsed);
+    const itinerary = { ids: ['hall', 'entry'], allowPaid: false };
+    const route = mapViewUrl(prior, { ...parsed, itinerary });
+    assert(!route.searchParams.has('allow-paid'));
+    assert.deepEqual(readMapView(route, data)?.itinerary, itinerary);
 });
 
 test('rapid changes queue one address replacement and an unsettled frame never writes', () => {

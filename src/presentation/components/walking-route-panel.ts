@@ -8,7 +8,7 @@ import { floorOptions } from './floor-options.ts';
 import { createFacilityIcon } from './facility-icon.ts';
 
 interface WalkingActions {
-    preview(places: WalkingPlace[], allowPaid: boolean): string;
+    preview(places: WalkingPlace[], allowPaid: boolean): { message: string; gateRequired?: boolean };
     clear(): void;
     pick(places: WalkingPlace[] | undefined, onPick: (id: string) => void): void;
     kindLabel(kind: FacilityKind): string;
@@ -50,6 +50,8 @@ export function bindWalkingRoutePanel(
     const preview = panel.querySelector<HTMLButtonElement>('#walking-preview')!;
     const reset = panel.querySelector<HTMLButtonElement>('#walking-clear')!;
     const status = panel.querySelector<HTMLElement>('#walking-status')!;
+    const gateAction = panel.querySelector<HTMLElement>('#walking-gate-action')!;
+    const allowGates = panel.querySelector<HTMLButtonElement>('#walking-allow-gates')!;
     const floors = floorOptions(levels);
     const byId = new Map(places.map(place => [place.id, place]));
     const endpointKinds = [...new Set(places.flatMap(place => place.kind ? [facilityCategory(place.kind)] : []))];
@@ -109,7 +111,17 @@ export function bindWalkingRoutePanel(
     function changed(): void {
         actions.clear();
         status.hidden = true;
+        gateAction.hidden = true;
         refreshActions();
+    }
+
+    /** Offer a direct retry when crossing ticket gates would complete the blocked leg. */
+    function runPreview(): void {
+        closeEditor();
+        const result = actions.preview(stops.filter(place => place !== undefined), gates.checked);
+        status.textContent = result.message;
+        status.hidden = false;
+        gateAction.hidden = !result.gateRequired;
     }
 
     /** Update a field to show its confirmed place, rather than any abandoned search text. */
@@ -426,10 +438,11 @@ export function bindWalkingRoutePanel(
         pick.focus();
     });
     gates.addEventListener('change', changed);
-    preview.addEventListener('click', () => {
-        closeEditor();
-        status.textContent = actions.preview(stops.filter(place => place !== undefined), gates.checked);
-        status.hidden = false;
+    preview.addEventListener('click', runPreview);
+    allowGates.addEventListener('click', () => {
+        gates.checked = true;
+        runPreview();
+        preview.focus();
     });
     reset.addEventListener('click', () => {
         closeEditor();

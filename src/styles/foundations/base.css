@@ -33,7 +33,10 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 
-button {
+a[href],
+button,
+select:enabled,
+summary {
   cursor: pointer;
 }
 
@@ -56,7 +59,8 @@ button {
   color: inherit;
 }
 
-button:disabled {
+button:disabled,
+input[type=checkbox]:disabled {
   cursor: default;
 }
 

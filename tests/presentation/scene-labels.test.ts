@@ -10,6 +10,7 @@ class LabelStub {
     hidden = false;
     style = { left: '', top: '' };
     removed = false;
+    icon?: { attributes: Map<string, string> };
     offsetWidth = 80;
     offsetHeight = 24;
     classList = {
@@ -29,8 +30,9 @@ class LabelStub {
         this.removed = true;
     }
 
-    append(_icon: unknown, text: string): void {
-        this.textContent += text;
+    replaceChildren(icon: NonNullable<LabelStub['icon']>, text: string): void {
+        this.icon = icon;
+        this.textContent = text;
     }
 }
 
@@ -46,7 +48,10 @@ function withLabels(definitions: SceneLabelDefinition[], run: (labels: SceneLabe
         configurable: true,
         value: {
             createElement: () => new LabelStub(),
-            createElementNS: () => ({ setAttribute() {} })
+            createElementNS: () => {
+                const attributes = new Map<string, string>();
+                return { attributes, setAttribute: (name: string, value: string) => attributes.set(name, value) };
+            }
         }
     });
     const host = { append: (element: LabelStub) => elements.push(element) } as unknown as HTMLElement;
@@ -106,19 +111,27 @@ test('current-floor labels win collisions, context labels mute, hidden roofs do 
 
 test('detail labels are lazy, take priority on selection and reuse a single DOM node', () => {
     const position = new T.Vector3();
-    withLabels([{ text: 'platform', position, level: 'platform', emphasis: true }], (labels, elements) => {
+    withLabels([{ text: 'platform', position, level: 'platform', kind: 'platform', emphasis: true }], (labels, elements) => {
         render(labels);
         assert.equal(elements.length, 1);
         assert(!elements[0]!.hidden);
-        render(labels, { text: 'escalator', position });
+        assert.equal(elements[0]!.textContent, 'platform');
+        assert(elements[0]!.classList.contains('facility-label'));
+        assert.equal(elements[0]!.icon?.attributes.get('aria-hidden'), 'true');
+        render(labels, { text: 'escalator', position, kind: 'escalator' });
         assert.equal(elements.length, 2);
         assert(elements[0]!.hidden);
         const detail = elements[1]!;
         assert.equal(detail.textContent, 'escalator');
         assert(!detail.hidden);
-        render(labels, { text: 'elevator', position });
+        assert.equal(detail.icon?.attributes.get('aria-hidden'), 'true');
+        const icon = detail.icon;
+        render(labels, { text: 'escalator', position, kind: 'escalator' });
+        assert.equal(detail.icon, icon);
+        render(labels, { text: 'elevator', position, kind: 'elevator' });
         assert.equal(elements.length, 2);
         assert.equal(detail.textContent, 'elevator');
+        assert.notEqual(detail.icon, icon);
         render(labels);
         assert(detail.hidden);
         assert(!elements[0]!.hidden);
@@ -146,7 +159,8 @@ test('facility filtering replaces general labels and selection temporarily repla
         labels.setFacilityFilter(filtered);
         render(labels);
         assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Lockers']);
-        render(labels, { text: 'Selected gate', position });
+        assert(elements.find(e => e.textContent === 'Lockers')?.icon);
+        render(labels, { text: 'Selected gate', position, kind: 'gate' });
         assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Selected gate']);
         render(labels);
         assert.deepEqual(elements.filter(e => !e.hidden).map(e => e.textContent), ['Lockers']);
@@ -156,5 +170,6 @@ test('facility filtering replaces general labels and selection temporarily repla
         labels.setFacilityFilter();
         render(labels);
         assert.deepEqual(elements.filter(e => !e.hidden && !e.removed).map(e => e.textContent), ['platform']);
+        assert.equal(elements[0]!.icon, undefined);
     });
 });

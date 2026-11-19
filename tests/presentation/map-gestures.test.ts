@@ -5,9 +5,27 @@ import { MapGestures, type MapGestureActions } from '../../src/presentation/came
 
 class CanvasStub extends EventTarget {
     captures: number[] = [];
+    attributes = new Set<string>();
 
     setPointerCapture(id: number): void {
         this.captures.push(id);
+    }
+
+    setAttribute(name: string): void {
+        this.attributes.add(name);
+    }
+
+    removeAttribute(name: string): void {
+        this.attributes.delete(name);
+    }
+
+    toggleAttribute(name: string, enabled: boolean): void {
+        if (enabled) {
+            this.setAttribute(name);
+        }
+        else {
+            this.removeAttribute(name);
+        }
     }
 }
 
@@ -41,6 +59,7 @@ function setup(overrides: Partial<MapGestureActions> = {}) {
         select: (x, y) => {
             selections.push([x, y]);
         },
+        hover: () => {},
         invalidate: () => {},
         ...overrides
     };
@@ -48,22 +67,32 @@ function setup(overrides: Partial<MapGestureActions> = {}) {
     return { canvas, gestures, pivot, pans, zooms, selections, rotations };
 }
 
-test('middle-button orbit freezes its pivot and never invokes pan, zoom or facility selection', () => {
+test('middle-button orbit freezes the viewport pivot without picking the cursor point', () => {
     let redraws = 0;
+    const pivot = new Vector3(1, 2, 3);
     const fixture = setup({
+        beginOrbit: touchMidpoint => {
+            assert.equal(touchMidpoint, undefined);
+            return pivot;
+        },
         invalidate: () => {
             redraws++;
         }
     });
-    const { canvas, gestures, pivot, pans, zooms, selections, rotations } = fixture;
+    const { canvas, gestures, pans, zooms, selections, rotations } = fixture;
     try {
         const down = dispatch(canvas, 'pointerdown', { button: 1, buttons: 4, clientX: 10, clientY: 20 });
         assert(!gestures.isMoving);
+        assert(!gestures.isRotating);
+        assert(canvas.attributes.has('data-orbiting'));
         pivot.set(99, 99, 99);
         dispatch(canvas, 'pointermove', { buttons: 4, clientX: 22, clientY: 27 });
         assert(gestures.isMoving);
+        assert(gestures.isRotating);
         dispatch(canvas, 'pointerup', { button: 1, buttons: 0, clientX: 22, clientY: 27 });
         assert(!gestures.isMoving);
+        assert(!gestures.isRotating);
+        assert.equal(canvas.attributes.size, 0);
         assert.equal(redraws, 2);
         assert(down.defaultPrevented);
         assert.deepEqual(rotations, [[1, 2, 3, 12 * .006, 7 * .006]]);
@@ -83,12 +112,39 @@ test('primary clicks select while drags and lost captures cannot trigger a stale
         dispatch(canvas, 'pointerup', { clientX: 5, clientY: 7 });
         dispatch(canvas, 'pointerdown', { clientX: 5, clientY: 7 });
         dispatch(canvas, 'pointermove', { clientX: 25, clientY: 14 });
+        assert(gestures.isMoving);
+        assert(!gestures.isRotating);
+        assert(canvas.attributes.has('data-dragging'));
         dispatch(canvas, 'pointerup', { clientX: 25, clientY: 14 });
+        assert(!gestures.isMoving);
+        assert(!canvas.attributes.has('data-dragging'));
         dispatch(canvas, 'pointerdown', { pointerId: 2 });
         dispatch(canvas, 'lostpointercapture', { pointerId: 2 });
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 100 });
         assert.deepEqual(selections, [[5, 7]]);
         assert.deepEqual(pans, [[20, 7]]);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('idle mouse hover probes selectable map targets and pauses during active gestures', () => {
+    const points: ({ x: number; y: number } | undefined)[] = [];
+    const { canvas, gestures } = setup({ hover: point => points.push(point) });
+    try {
+        dispatch(canvas, 'pointermove', { buttons: 0, clientX: 10 });
+        dispatch(canvas, 'pointerdown', { clientX: 10 });
+        dispatch(canvas, 'pointermove', { clientX: 20 });
+        dispatch(canvas, 'pointermove', { pointerId: 2, buttons: 0, clientX: 30 });
+        dispatch(canvas, 'pointerup', { buttons: 0, clientX: 20 });
+        dispatch(canvas, 'pointermove', { pointerType: 'touch', buttons: 0, clientX: 30 });
+        dispatch(canvas, 'pointerleave', {});
+        assert.deepEqual(points, [{ x: 10, y: 0 }, undefined, { x: 20, y: 0 }, undefined]);
+        dispatch(canvas, 'pointerdown', { button: 1, buttons: 4 });
+        dispatch(canvas, 'pointermove', { buttons: 4, clientX: 50 });
+        dispatch(canvas, 'lostpointercapture', {});
+        assert.equal(canvas.attributes.size, 0);
+        assert(!gestures.isMoving);
     } finally {
         gestures.dispose();
     }
@@ -100,6 +156,7 @@ test('pinch and wheel zoom retain their scale factors, cancellation and disposal
     dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 10 });
     dispatch(canvas, 'pointermove', { pointerId: 1, clientX: -10 });
     gestures.applyTouchGesture();
+    assert(!gestures.isRotating);
     dispatch(canvas, 'pointercancel', { pointerId: 1 });
     assert(gestures.isMoving);
     dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 10 });
@@ -122,13 +179,18 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
     const starts: number[][] = [];
     const zoomPivots: number[][] = [];
     const pivot = new Vector3(4, 5, 6);
+    let redraws = 0;
     const { canvas, gestures, rotations, pans, selections } = setup({
-        beginOrbit: (x, y) => {
-            starts.push([x, y]);
+        beginOrbit: midpoint => {
+            assert(midpoint);
+            starts.push([midpoint.x, midpoint.y]);
             return pivot;
         },
         zoom: (factor, anchor) => {
             zoomPivots.push([factor, ...anchor!.toArray()]);
+        },
+        invalidate: () => {
+            redraws++;
         }
     });
     try {
@@ -136,9 +198,11 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
         dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 30 });
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 31, clientY: 1 });
         gestures.applyTouchGesture();
+        assert(!gestures.isRotating);
         assert.deepEqual(starts, []);
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 10, clientY: 22 });
         gestures.applyTouchGesture();
+        assert(gestures.isRotating);
         assert.deepEqual(rotations, [[4, 5, 6, -Math.PI / 2, 0]]);
         assert.equal(zoomPivots.length, 0);
         pivot.set(7, 8, 9);
@@ -149,11 +213,16 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
         assert.equal(rotations[1]![4], 0);
         assert.equal(zoomPivots.length, 0);
         assert.deepEqual(starts, [[20, 0]]);
+        const beforeRelease = redraws;
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 6, clientY: 44 });
+        assert(!gestures.isRotating);
+        assert(!gestures.isMoving);
+        assert.equal(redraws, beforeRelease + 1);
 
         dispatch(canvas, 'pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 30 });
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 50, clientY: 4 });
         gestures.applyTouchGesture();
+        assert(!gestures.isRotating);
         assert.deepEqual(zoomPivots, [[Math.hypot(40, 4) / 20, 7, 8, 9]]);
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 4, clientY: 60 });
         gestures.applyTouchGesture();
@@ -175,8 +244,9 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
 test('parallel two-finger movement changes pitch in both directions without zoom or yaw', () => {
     const starts: number[][] = [];
     const { canvas, gestures, rotations, zooms, pans, selections } = setup({
-        beginOrbit: (x, y) => {
-            starts.push([x, y]);
+        beginOrbit: midpoint => {
+            assert(midpoint);
+            starts.push([midpoint.x, midpoint.y]);
             return new Vector3(1, 2, 3);
         }
     });
@@ -189,11 +259,13 @@ test('parallel two-finger movement changes pitch in both directions without zoom
         assert.deepEqual(zooms, []);
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 30, clientY: 52 });
         gestures.applyTouchGesture();
+        assert(gestures.isRotating);
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 31, clientY: 40 });
         dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 10, clientY: 38 });
         gestures.applyTouchGesture();
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 31, clientY: 40 });
         dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 10, clientY: 38 });
+        assert(!gestures.isRotating);
         assert.deepEqual(starts, [[20, 40]]);
         assert.deepEqual(rotations, [[1, 2, 3, 0, 12 * .006], [1, 2, 3, 0, -13 * .006]]);
         assert.deepEqual(zooms, []);

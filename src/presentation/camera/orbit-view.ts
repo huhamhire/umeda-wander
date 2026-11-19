@@ -10,7 +10,7 @@ function orientation(offset: T.Vector3): T.Quaternion {
     return new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(right, up, back));
 }
 
-/** Rotate the camera and its look-at target rigidly about a picked world point.
+/** Rotate the camera and its look-at target rigidly about a world point.
  * The orthographic span is deliberately outside this function and stays fixed. */
 export function orbitAboutPoint(offset: T.Vector3, center: T.Vector3, pivot: T.Vector3, yawRadians: number, pitchRadians: number): void {
     const previous = orientation(offset);

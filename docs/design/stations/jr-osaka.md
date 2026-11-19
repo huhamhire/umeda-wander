@@ -145,6 +145,8 @@ JR 构内图第 5 页标出 1F 御堂筋北侧的铁路警务室和寄存柜，�
 
 北中庭 2F 广场在 LUCUA 两翼之间向北延伸至挑高门廊下，与中央北口及 Grand Front 连桥连续。中央天井、两侧通路和 2/3、47/48 的梯段边缘共用站体坐标。广场关系依据[大阪站城中庭广场介绍](https://osakastationcity.com/green/atrium/)及[站城 2F 图](../../../references/connections/osaka-station-city/2f-map.png)，楼板和梯段长度按两翼及现有桥轴拟合。
 
+中庭朝轨道的南侧同样挑空。两翼之间的上部跨接体量位于 3F 联络桥和通往时空广场的扶梯之上，南侧开口的高度按展示拟合。建筑体量的依据见[白模校对](../buildings/model-calibration.md)。
+
 [站城 3F 图](../../../references/connections/osaka-station-city/3f-map.png)标出通往[5F 时空广场](https://osakastationcity.com/green/toki/)的扶梯。模型从 3F 北侧公共楼板向北上行，接 5F 局部落台，保留独立物理标高并随 3F 探索显示。扶梯斜向、标高与落台边界是示意拟合。JR 构内图第 2 页和[大阪站城问讯台说明](https://osakastationcity.com/guide/information/)确认 OSC 问讯台在南北联络桥北端，模型在闸外公共楼板上绘制柜台，并在设施目录中单独登记。
 
 地面站台西端依据俯视照片拟合。本线四股、环状线两股在约 280 米的收束段内同步向北缓转，接入共用的西向切线。出站轨道从本股站台切线逐步转向，收束后沿该切线延伸。东端 1 番线沿阪急百货北侧提前向内收，进入环状线外股后继续向东，东侧总计保留六股。长度、线间距与道岔位置为地图拟合值。

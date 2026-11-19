@@ -10,6 +10,22 @@ function camera(offset: T.Vector3, center: T.Vector3) {
     c.updateMatrixWorld(true);
     return c;
 }
+
+test('viewport-centered orbit keeps the look-at point centered through yaw and pitch', () => {
+    const offset = new T.Vector3(0, 170, 273);
+    const center = new T.Vector3(400, 10, 600);
+    const pivot = center.clone();
+    const initial = camera(offset, center);
+    orbitAboutPoint(offset, center, pivot, .25, -.12);
+    orbitAboutPoint(offset, center, pivot, -.1, .35);
+    const current = camera(offset, center);
+    assert.deepEqual(center.toArray(), pivot.toArray());
+    const screen = pivot.clone().project(current);
+    assert(Math.hypot(screen.x, screen.y) < 1e-9);
+    assert.notDeepEqual(current.position.toArray(), initial.position.toArray());
+    assert.equal(current.top - current.bottom, initial.top - initial.bottom);
+});
+
 test(
     'yaw/pitch orbit keeps an off-centre picked point fixed without changing orthographic scale',
     () => {

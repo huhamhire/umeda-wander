@@ -230,7 +230,9 @@ test(
         assert.equal(session.state.level, 'hanshin-hall');
         const route = findRoute(edges, 'hanshin-umeda-route-entry', 'hanshin-umeda-destination', true)!;
         assert(route && route.every(id => id.startsWith('hanshin-umeda')));
-        assert.equal(findRoute(edges, 'hanshin-umeda-route-entry', 'destination', true), null);
+        assert.equal(findRoute(edges, 'hanshin-umeda-route-entry', 'destination', false), null);
+        const transfer = findRoute(edges, 'hanshin-umeda-route-entry', 'destination', true);
+        assert(transfer?.includes('crost68-b1') && transfer.includes('gate-in'));
         assert(facilities.some(f => f.id === 'hanshin-umeda-east-gate'));
         assert(facilities.filter(f => f.level.startsWith('hanshin-')).every(f => f.evidence.source === 'hanshin'));
     }

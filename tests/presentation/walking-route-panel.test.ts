@@ -32,7 +32,8 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     const ids = [
         'walking-places', 'walking-add', 'walking-station', 'walking-floor', 'walking-kind',
         'walking-pick', 'walking-map-choice', 'walking-confirm', 'walking-cancel', 'walking-pick-status',
-        'walking-results', 'walking-search-status', 'walking-gates', 'walking-preview', 'walking-clear', 'walking-status'
+        'walking-results', 'walking-search-status', 'walking-gates', 'walking-preview', 'walking-clear', 'walking-status',
+        'walking-gate-action', 'walking-allow-gates'
     ];
     const elements = new Map(ids.map(id => [id, Object.assign(new Field(), { id })]));
     const panel = { querySelector: (selector: string) => elements.get(selector.slice(1)) };
@@ -59,12 +60,16 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
         { id: 'b', name: '南改札外', level: 'concourse', station: 'jr-osaka', access: 'outside' }
     ];
     let pickPoint: ((id: string) => void) | undefined;
+    const gatePolicies: boolean[] = [];
     const planner = bindWalkingRoutePanel(
         panel as unknown as HTMLElement, places,
         [{ id: 'concourse', label: '1F', name: 'Concourse', y: 0, station: 'jr-osaka', description: '' }],
         [{ id: 'jr-osaka', name: 'JR 大阪站' }],
         {
-            preview: () => 'Route',
+            preview: (_places, allowPaid) => {
+                gatePolicies.push(allowPaid);
+                return allowPaid ? { message: 'Route' } : { message: 'Ticket gate required', gateRequired: true };
+            },
             clear: () => {},
             pick: (candidates, onPick) => { pickPoint = candidates && onPick; },
             kindLabel: () => 'Entrance'
@@ -98,6 +103,15 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     elements.get('walking-confirm')!.click();
     assert.deepEqual(planner.snapshot().ids, ['a', 'b']);
     assert(!elements.get('walking-preview')!.disabled);
+    const gateAction = elements.get('walking-gate-action')!;
+    assert(gateAction.hidden);
+    elements.get('walking-preview')!.click();
+    assert(!gateAction.hidden);
+    assert(!planner.snapshot().allowPaid);
+    elements.get('walking-allow-gates')!.click();
+    assert(planner.snapshot().allowPaid);
+    assert(gateAction.hidden);
+    assert.deepEqual(gatePolicies, [false, true]);
     clear!.click();
     assert.deepEqual(planner.snapshot().ids, [null, 'b']);
     assert(elements.get('walking-preview')!.disabled);

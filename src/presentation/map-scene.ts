@@ -64,6 +64,9 @@ export class MapScene {
     private appearance = new LayerAppearance();
     private labelOccluders: T.Object3D[] = [];
     private raycaster = new T.Raycaster();
+    private facilityPickables: T.Object3D[] = [];
+    private hoverPoint?: { x: number; y: number };
+    private hoverFrame = 0;
     private state: MapViewState;
     private displayedExplode: number;
     private immediateExplode = false;
@@ -180,7 +183,7 @@ export class MapScene {
             }
         });
         this.gestures = new MapGestures(this.renderer.domElement, {
-            beginOrbit: (x, y) => this.beginOrbit(x, y),
+            beginOrbit: touchMidpoint => this.beginOrbit(touchMidpoint),
             rotate: (pivot, yawRadians, pitchRadians) => {
                 if (!this.manualView) {
                     return false;
@@ -206,6 +209,7 @@ export class MapScene {
             },
             zoom: (factor, pivot) => this.zoom(factor, pivot),
             select: (x, y) => this.selectAt(x, y),
+            hover: point => this.setPointerHover(point),
             invalidate: () => this.requestRender()
         });
         this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -213,15 +217,18 @@ export class MapScene {
         this.resize();
     }
 
-    /** Freeze the orthographic span and pick the gesture pivot from visible geometry. */
-    private beginOrbit(clientX: number, clientY: number): T.Vector3 | undefined {
+    /** Freeze the current frame. Mouse orbit uses its center and touch uses a picked midpoint. */
+    private beginOrbit(touchMidpoint?: { x: number; y: number }): T.Vector3 | undefined {
         if (!this.framing) {
             return undefined;
         }
         this.locatingFacility = false;
         this.focusTransition = false;
         this.manualView = { center: this.framing.center.clone(), span: this.framing.span };
-        this.setPointerRay(clientX, clientY);
+        if (!touchMidpoint) {
+            return this.framing.center;
+        }
+        this.setPointerRay(touchMidpoint.x, touchMidpoint.y);
         const hit = this.raycaster.intersectObjects(this.scene.children, true).find(item => {
             for (let object: T.Object3D | null = item.object; object; object = object.parent) {
                 if (!object.visible || object === this.selected || object === this.routeModel.group) {
@@ -245,31 +252,54 @@ export class MapScene {
         );
     }
 
-    /** Pick only facilities on current or normal floors; lower context floors cannot intercept clicks. */
-    private selectAt(clientX: number, clientY: number): void {
+    /** Resolve the same visible pick target for the cursor and for a click. */
+    private pickAt(clientX: number, clientY: number): T.Object3D | undefined {
         this.setPointerRay(clientX, clientY);
-        if (this.onWalkingPick) {
-            const hit = this.raycaster.intersectObjects(this.walkingMarkers.children.filter(marker => marker.visible), false)[0];
-            if (hit) {
-                this.raycaster.far = Math.max(0, hit.distance - .1);
-                const blocked = this.raycaster.intersectObjects(visibleLabelOccluders(this.labelOccluders), false).length > 0;
-                this.raycaster.far = Infinity;
-                if (blocked) {
-                    return;
-                }
-                for (const marker of this.walkingMarkers.children) {
-                    marker.scale.setScalar(marker === hit.object ? 1.45 : 1);
-                }
-                this.walkingMarkers.updateMatrixWorld();
-                this.onWalkingPick(hit.object.name);
-                this.requestRender();
-            }
-            return;
+        if (!this.onWalkingPick) {
+            return this.raycaster.intersectObjects(this.facilityPickables, false)[0]?.object;
         }
-        const candidates = this.models.pickables.filter(object => object.parent?.visible &&
-            ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, (object.userData.facility as Facility).level)));
-        const hit = this.raycaster.intersectObjects(candidates, false)[0];
-        this.onSelect(hit?.object.userData.facility as Facility | undefined);
+        const hit = this.raycaster.intersectObjects(this.walkingMarkers.children.filter(marker => marker.visible), false)[0];
+        if (!hit) {
+            return undefined;
+        }
+        this.raycaster.far = Math.max(0, hit.distance - .1);
+        const blocked = this.raycaster.intersectObjects(visibleLabelOccluders(this.labelOccluders), false).length > 0;
+        this.raycaster.far = Infinity;
+        return blocked ? undefined : hit.object;
+    }
+
+    /** Coalesce hover hit tests to one per frame without scheduling a WebGL draw. */
+    private setPointerHover(point?: { x: number; y: number }): void {
+        const canvas = this.renderer.domElement;
+        this.hoverPoint = point;
+        if (!point) {
+            cancelAnimationFrame(this.hoverFrame);
+            this.hoverFrame = 0;
+            canvas.removeAttribute('data-clickable');
+        }
+        else if (!this.hoverFrame) {
+            this.hoverFrame = requestAnimationFrame(() => {
+                this.hoverFrame = 0;
+                const { x, y } = this.hoverPoint!;
+                canvas.toggleAttribute('data-clickable', Boolean(this.pickAt(x, y)));
+            });
+        }
+    }
+
+    /** Select a facility or highlight a walking point in its dedicated picking mode. */
+    private selectAt(clientX: number, clientY: number): void {
+        const target = this.pickAt(clientX, clientY);
+        if (!this.onWalkingPick) {
+            this.onSelect(target?.userData.facility as Facility | undefined);
+        }
+        else if (target) {
+            for (const marker of this.walkingMarkers.children) {
+                marker.scale.setScalar(marker === target ? 1.45 : 1);
+            }
+            this.walkingMarkers.updateMatrixWorld();
+            this.onWalkingPick(target.name);
+            this.requestRender();
+        }
     }
 
     /** Release input, labels, pending redraw and WebGL resources when this map is unmounted. */
@@ -279,6 +309,7 @@ export class MapScene {
         }
         this.disposed = true;
         this.gestures.dispose();
+        this.setPointerHover();
         this.labels.dispose();
         this.walkingMarkers.clear();
         this.walkingMarkerGeometry.dispose();
@@ -447,7 +478,7 @@ export class MapScene {
         this.restoreCamera({
             offset: [Math.sin(yaw) * horizontal, Math.sin(pitch) * length, Math.cos(yaw) * horizontal],
             pan: [0, 0, 0],
-            zoom: snapshot.zoom,
+            zoom: 1,
             manual: { center: snapshot.center, span: snapshot.span },
             facility,
             followFacility: false
@@ -466,10 +497,10 @@ export class MapScene {
         const previous = this.sharedCamera;
         if (previous && wasSettled && previous.center.every((value, i) => Math.abs(value - center.getComponent(i)) < .00001) &&
             Math.abs(previous.span - span) < .00001 && Math.abs(previous.yaw - yaw) < .00001 &&
-            Math.abs(previous.pitch - pitch) < .00001 && Math.abs(previous.zoom - this.zoomValue) < .00001) {
+            Math.abs(previous.pitch - pitch) < .00001) {
             return;
         }
-        this.sharedCamera = { center: center.toArray(), span, yaw, pitch, zoom: this.zoomValue };
+        this.sharedCamera = { center: center.toArray(), span, yaw, pitch };
         this.onViewSettled();
     }
 
@@ -572,11 +603,16 @@ export class MapScene {
      */
     private updateModels(): void {
         this.modelsDirty = false;
+        const activeFloors = new Set<T.Object3D>();
         for (const [id, group] of this.models.groups) {
             const role = viewLayerRole(this.levels, this.state, id);
             group.visible = role !== 'hidden';
+            if (role === 'normal' || role === 'current') {
+                activeFloors.add(group);
+            }
             this.appearance.apply(group, role === 'context', this.state.focusStation);
         }
+        this.facilityPickables = this.models.pickables.filter(object => object.parent && activeFloors.has(object.parent));
         this.fullShafts = visibleElevatorConnections(this.layout.connections, this.levels, this.state.level);
         for (const connector of this.models.connectors) {
             const fullShaft = this.fullShafts.has(connector.connection.id);
@@ -601,9 +637,7 @@ export class MapScene {
         const groundVisible = this.roadsVisible && canShowGround;
         this.context.roads.visible = groundVisible;
         this.context.buildings.visible = groundVisible;
-        for (const floor of this.models.geographicBuildingFloors) {
-            floor.visible = groundVisible;
-        }
+        this.models.updateBuildingFloorVisibility(groundVisible, this.state.roof);
         this.geographicExteriors.visible = groundVisible && this.state.roof && this.state.level === 'all';
         this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
         this.models.roof.visible = canShowGround && this.state.roof && this.state.level === 'all';
@@ -703,6 +737,10 @@ export class MapScene {
         const usable = facilityFocusRect(viewport, sidebar, mobile);
         const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * viewportHeight / Math.max(1, usableWidth) * 1.12);
         this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
+        if (this.refreshShareZoomBounds && this.manualView) {
+            // The same world span can correspond to a different zoom ratio on the receiving viewport.
+            this.zoomValue = baseSpan / this.manualView.span;
+        }
         this.refreshShareZoomBounds = false;
         if (this.manualView) {
             return { center: this.manualView.center.clone(), span: this.manualView.span };
@@ -777,8 +815,11 @@ export class MapScene {
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
         this.renderer.render(this.scene, this.camera);
-        // Far views expose many more labels and occluders during a drag. Restore them when it ends.
-        const showLabels = !this.draggingExplode && (!this.gestures.isMoving || worldUnitsPerPixel < 0.7);
+        if (changedModels && this.hoverPoint) {
+            this.setPointerHover(this.hoverPoint);
+        }
+        // Skip label projection and occlusion throughout a pointer gesture at every zoom level.
+        const showLabels = !this.draggingExplode && !this.gestures.isMoving;
         this.labels.setVisible(showLabels);
         if (showLabels) {
             const facility = this.activeFacility;

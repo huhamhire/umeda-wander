@@ -7,7 +7,7 @@ import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { maxWalkingStops, planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
 import type { RouteEdge } from '../../src/domain/map/model.ts';
 import { passageOutline } from '../../src/domain/map/geometry.ts';
-import { edges, levels, nodes, publicWalkingRoutes, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, layout, levels, nodes, publicWalkingRoutes, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
 
@@ -63,21 +63,48 @@ test('the cross-station route mesh stays continuous across B1 owners and hides o
     assert.equal(model.group.children.length, 0);
 });
 
-test('authored transfer edges leave a continuous 3 m strip inside the rendered public B1 area', () => {
-    const region = clipping.union(undergroundPublicAreas.filter(area => !area.elevationOffset).map(area =>
+const routeFromCrost = planWalkingRoute(edges, ['crost68-b1', 'hanshin-umeda-route-entry'], false).route!;
+
+test('authored transfers follow public floors and use the modeled Crost stair for the 1F/B1 transition', () => {
+    const publicSurface = (areas: typeof undergroundPublicAreas) => clipping.union(areas.filter(area => !area.elevationOffset).map(area =>
         [area.outline, ...area.holes ?? []].map(ring => ring.map(({ x, z }) => [x, z])) as Polygon
     ));
+    const ground = publicSurface(layout.areas.filter(area => area.level === 'concourse' && area.kind === 'public'));
+    const underground = publicSurface(undergroundPublicAreas);
+    const stair = layout.connections.find(connection => connection.id === 'crost-stairs-68')!;
     const lookup = new Map(nodes.map(node => [node.id, node]));
     const byLevel = new Map(levels.map(level => [level.id, level.y]));
     for (const edge of publicWalkingRoutes.edges) {
         const from = lookup.get(edge.from)!;
         const to = lookup.get(edge.to)!;
-        assert.equal(edge.kind, 'walk');
         assert(!edge.directed);
-        assert.equal(byLevel.get(from.level), -8);
-        assert.equal(byLevel.get(to.level), -8);
-        const strip: Polygon = [passageOutline(from, to, 3).map(({ x, z }) => [x, z])];
+        const elevation = byLevel.get(from.level);
+        if (edge.kind === 'stairs') {
+            assert.deepEqual([from, to], [stair.from, stair.to]);
+            assert.equal(elevation, 0);
+            assert.equal(byLevel.get(to.level), -8);
+            continue;
+        }
+        assert.equal(edge.kind, 'walk');
+        assert.equal(byLevel.get(to.level), elevation);
+        const crost = elevation === 0 || routeFromCrost.slice(0, -1).includes(from.id);
+        const strip: Polygon = [passageOutline(from, to, crost ? 2.5 : 3).map(({ x, z }) => [x, z])];
+        const region = elevation === 0 ? ground : underground;
         assert.equal(clipping.difference(strip, region).length, 0, `${edge.from} → ${edge.to}`);
+    }
+});
+
+test('JR Central Gate connects to Hanshin and the southern transfer network via Crost', () => {
+    const west = 'hanshin-umeda-route-entry';
+    const session = new MapSession(edges, { nodes, levels });
+    assert.deepEqual(session.previewWalkingRoute(['entry', west], false).route, ['entry', 'crost68-1', ...routeFromCrost]);
+    assert.equal(session.state.level, 'all');
+    assert(session.previewWalkingRoute(['entry', west, 'kitashinchi-route-entry'], false).route?.includes(west));
+    for (const [from, to] of [['lower', west], [west, 'lower']] as const) {
+        assert.deepEqual(session.previewWalkingRoute([from, to], false), { issue: 'gateRequired', from, to });
+        assert.equal(session.state.route, null);
+        const { route } = session.previewWalkingRoute([from, to], true);
+        assert(route?.includes('crost68-1') && route.includes('gate-in') && route.includes('gate-out'));
     }
 });
 

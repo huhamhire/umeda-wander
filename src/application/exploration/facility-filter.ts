@@ -1,6 +1,12 @@
 import type { Facility, FacilityKind, Level, LevelId, StationId } from '../../domain/map/model.ts';
 import { explorationElevation } from './exploration-level.ts';
 
+export interface FacilityFilter {
+    station: StationId | null;
+    level: LevelId | 'all';
+    kind: FacilityKind | 'all';
+}
+
 /**
  * Group ticket machines and ticket offices under one filter without changing their entity types.
  */
@@ -14,11 +20,7 @@ export function facilityCategory(kind: FacilityKind): FacilityKind {
 export function filterFacilities<F extends Pick<Facility, 'level' | 'kind'>>(
     facilities: readonly F[],
     levels: Level[],
-    filter: {
-        station: StationId | null;
-        level: LevelId | 'all';
-        kind: FacilityKind | 'all';
-    }
+    filter: FacilityFilter
 ): F[] {
     const selected = levels.find(l => l.id === filter.level);
     return facilities.filter(f => {

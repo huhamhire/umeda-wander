@@ -9,6 +9,27 @@ import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
+import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
+
+test('North Gate atrium is open toward the tracks below the upper span', () => {
+    const wings = new T.Group();
+    for (const id of ['lucua', 'lucua-1100']) {
+        wings.add(buildGeographicBuilding(geographicBuildings.find(building => building.id === id)!, exteriorOpenings));
+    }
+    wings.updateMatrixWorld(true);
+    for (const along of [-15, 0, 9]) {
+        const south = jrAxisPoint(along, -34);
+        const north = jrAxisPoint(along, -56);
+        const direction = new T.Vector3(north.x - south.x, 0, north.z - south.z).normalize();
+        for (const y of [2, 10, 18, 26]) {
+            const ray = new T.Raycaster(new T.Vector3(south.x, y, south.z), direction, 0, 22);
+            assert.equal(ray.intersectObject(wings, true).length, 0, `South opening obstructed at y=${y}`);
+        }
+        const ray = new T.Raycaster(new T.Vector3(south.x, 48, south.z), direction, 0, 22);
+        assert(ray.intersectObject(wings, true).length, 'Upper span should still cross the atrium');
+    }
+});
+
 test(
     'Hanshin has a continuous retail podium and an inset office, without overlapping transfer shafts',
     () => {

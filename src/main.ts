@@ -8,19 +8,19 @@ import { bindSidebarTabs } from './presentation/components/sidebar-tabs.ts';
 import { bindPanelSelect } from './presentation/components/panel-select.ts';
 import { stationPalettes } from './presentation/appearance/station-palette.ts';
 import { floorOptions } from './presentation/components/floor-options.ts';
-import { filterFacilities, facilityCategory } from './application/exploration/facility-filter.ts';
+import { filterFacilities, facilityCategory, type FacilityFilter } from './application/exploration/facility-filter.ts';
 import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
-import { bindMapViewUrl, readMapView, type ShareFilters, type SharedMapView } from './presentation/camera/map-view-url.ts';
+import { bindMapViewUrl, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
 import { planWalkingRoute } from './application/navigation/walking-route.ts';
 
 interface LanguageChangeView {
     state: MapViewState;
-    filters: ShareFilters;
+    filters: FacilityFilter;
     facility: string;
     facilityTab: boolean;
     walkingTab?: boolean;
@@ -136,7 +136,7 @@ const facilityPicker = bindPanelSelect(facilityPickerButton, facilityPanel, {
 });
 const facilityStation = bindPanelSelect(facilityStationButton, facilityPanel);
 const facilityFloor = bindPanelSelect(facilityFloorButton, facilityPanel);
-const facilityFilter: ShareFilters = restored?.filters ?? shared?.filters ?? { station: null, level: 'all', kind: 'all' };
+const facilityFilter: FacilityFilter = restored?.filters ?? { station: null, level: 'all', kind: 'all' };
 let filteredLabelIds: ReadonlySet<string> | undefined;
 
 /** Apply manual facility filters to the label overlay while the facility tab is active. */
@@ -174,9 +174,6 @@ const showSidebarTab = bindSidebarTabs(
         if (!facilityPanel.hidden) {
             syncWalkingActions();
         }
-        if (scene) {
-            queueMapUrl();
-        }
     }
 );
 const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, {
@@ -187,14 +184,17 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
             clearFacilitySelection();
             scene?.reset();
             sync();
-            return messageText('ui.walking.result', { count: places.length - 1 });
+            return { message: messageText('ui.walking.result', { count: places.length - 1 }) };
         }
         sync();
         if (result.issue === 'unavailable' || result.issue === 'gateRequired') {
             const name = (id: string) => places.find(place => place.id === id)!.name;
-            return messageText(`ui.walking.${result.issue}`, { from: name(result.from), to: name(result.to) });
+            return {
+                message: messageText(`ui.walking.${result.issue}`, { from: name(result.from), to: name(result.to) }),
+                gateRequired: result.issue === 'gateRequired'
+            };
         }
-        return messageText(`ui.walking.${result.issue}`);
+        return { message: messageText(`ui.walking.${result.issue}`) };
     },
     clear: () => {
         sharedItinerary = undefined;
@@ -219,13 +219,13 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
     }
 }, restored?.walkingDraft ?? shared?.itinerary);
 closeWalkingEditor = walkingRoute.closeEditor;
-if (restored?.walkingTab || shared?.tab === 'walking') {
+if (restored?.walkingTab || shared?.itinerary) {
     showSidebarTab(2);
-} else if (restored?.facilityTab || shared?.tab === 'facilities') {
+} else if (restored?.facilityTab || shared?.facility) {
     showSidebarTab(1);
 }
 
-/** Capture the visible route and visual filters alongside the exact settled camera frame. */
+/** Capture the settled camera frame and the map state needed to share it. */
 function currentSharedView(): SharedMapView | undefined {
     const camera = scene?.snapshotShareCamera();
     if (!camera) {
@@ -241,8 +241,6 @@ function currentSharedView(): SharedMapView | undefined {
         explode: session.state.explode,
         buildings: session.state.roof,
         ground: groundPreference,
-        tab: !walkingPanel.hidden ? 'walking' : !facilityPanel.hidden ? 'facilities' : 'layers',
-        filters: facilityFilter,
         itinerary
     };
 }
@@ -340,9 +338,6 @@ function refreshFacilities(dismissExcludedSelection = false): void {
         searchPrompt: station ? undefined : messageText('ui.facilities.searchPrompt')
     });
     facilityClear.hidden = selectedFacilityId === '';
-    if (scene) {
-        queueMapUrl();
-    }
     const categoryList = element('#poi-list');
     const categoryScroll = categoryList.scrollLeft;
     categoryList.replaceChildren();

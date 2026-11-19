@@ -37,6 +37,7 @@ export class MapModels {
     readonly roof = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
     readonly geographicBuildingFloors: T.Group[] = [];
+    readonly basementBuildingFloors: T.Group[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
     readonly canopies: T.Group[] = [];
     readonly pickables: T.Object3D[] = [];
@@ -65,6 +66,16 @@ export class MapModels {
         this.buildStation();
     }
 
+    /** Apply the ground layer and building switches without changing the parent floor's cutaway visibility. */
+    updateBuildingFloorVisibility(groundVisible: boolean, buildingsVisible: boolean): void {
+        for (const floor of this.geographicBuildingFloors) {
+            floor.visible = groundVisible;
+        }
+        for (const floor of this.basementBuildingFloors) {
+            floor.visible = buildingsVisible;
+        }
+    }
+
     /** Store label anchors independently of DOM creation and screen placement. */
     private label(
         text: string,
@@ -78,6 +89,17 @@ export class MapModels {
         surface?: T.Object3D
     ): void {
         this.labels.push({ text, position: new T.Vector3(x, y, z), level, roof, emphasis, owner, surface });
+    }
+
+    /** Preserve the facility category and local elevation on a floating map label. */
+    private labelFacility(facility: Facility, height: number, emphasis = false): void {
+        this.labels.push({
+            text: facility.name,
+            kind: facility.kind,
+            position: new T.Vector3(facility.x, height + (facility.elevationOffset ?? 0), facility.z),
+            level: facility.level,
+            emphasis
+        });
     }
 
     /**
@@ -119,11 +141,15 @@ export class MapModels {
             roughness: 0.3
         });
         for (const area of this.layout.areas) {
-            const buildingContext = area.id.startsWith('deck-context-') || area.blockId === 'building:hankyu-concourse';
-            const floorGroup = buildingContext ? new T.Group() : this.groups.get(area.level)!;
-            if (buildingContext) {
-                this.groups.get(area.level)!.add(floorGroup);
-                this.geographicBuildingFloors.push(floorGroup);
+            const groundContext = area.id.startsWith('deck-context-') || area.blockId === 'building:hankyu-concourse';
+            const basement = area.level === 'district-underground' && area.blockId?.startsWith('building:');
+            const buildingFloors = groundContext ? this.geographicBuildingFloors : basement ? this.basementBuildingFloors : undefined;
+            const levelGroup = this.groups.get(area.level)!;
+            const floorGroup = buildingFloors ? new T.Group() : levelGroup;
+            if (buildingFloors) {
+                floorGroup.name = area.id;
+                levelGroup.add(floorGroup);
+                buildingFloors.push(floorGroup);
             }
             const cuts = [
                 ...area.holes ?? [],
@@ -172,7 +198,7 @@ export class MapModels {
                     false,
                     area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised',
                     owner,
-                    buildingContext ? floorGroup : undefined
+                    buildingFloors ? floorGroup : undefined
                 );
             }
         }
@@ -305,15 +331,13 @@ export class MapModels {
             block(length / 5, 0.9, 0, 3, 0.65, 0.85, 0x789887);
             block(-6, 3, 0, 5, 0.75, 0.35, 0x416c67);
             const label = position(-length / 2 + 8, 0);
-            this.label(
-                platform.name ?? (tracks.join(' / ') + messageText('facilities.labels.trackSuffix')),
-                label.x,
-                3.7,
-                label.z,
+            this.labels.push({
+                text: platform.name ?? (tracks.join(' / ') + messageText('facilities.labels.trackSuffix')),
+                kind: 'platform',
+                position: new T.Vector3(label.x, 3.7, label.z),
                 level,
-                false,
-                true
-            );
+                emphasis: true
+            });
         }
         for (const approach of this.layout.railApproaches ?? []) {
             this.groups.get(approach.level)!.add(buildRailApproachModel(approach));
@@ -376,12 +400,7 @@ export class MapModels {
                 this.buildFacility(facility);
             }
             if (facility.kind === 'police' || facility.kind === 'luggage-storage' || facility.kind === 'locker') {
-                this.labels.push({
-                    text: facility.name,
-                    position: new T.Vector3(facility.x, 3.15, facility.z),
-                    level: facility.level,
-                    kind: facility.kind
-                });
+                this.labelFacility(facility, 3.15);
             }
         }
         for (const connection of this.layout.connections) {
@@ -427,7 +446,7 @@ export class MapModels {
                 this.primitives.box(group, x, 2.09, z, 0.6, 0.1, 2, palette.gateTop).rotation.y = -rotation;
             }
             if (!['gate', 'bridge'].includes(facility.id)) {
-                this.label(facility.name, facility.x, 3, facility.z, facility.level);
+                this.labelFacility(facility, 3);
             }
         }
         else if (facility.kind === 'ticket') {
@@ -435,7 +454,7 @@ export class MapModels {
             for (let i = 0; i < 4; i++) {
                 this.primitives.box(group, facility.x - 5 + i * 2.3, 3.5, facility.z, 1.2, 1, 0.3, 0x69877a);
             }
-            this.label(facility.name, facility.x, 4.7, facility.z, facility.level);
+            this.labelFacility(facility, 4.7);
         }
         else if (facility.kind === 'ticket-machine') {
             const angle = facility.rotationRad ?? 0;
@@ -481,7 +500,7 @@ export class MapModels {
             }
         }
         else if (facility.kind === 'convenience-store') {
-            this.label(facility.name, facility.x, 3.3, facility.z, facility.level, false, true);
+            this.labelFacility(facility, 3.3, true);
         }
     }
 
