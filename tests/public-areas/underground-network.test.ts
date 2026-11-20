@@ -368,6 +368,109 @@ test('North Mall 2 street stairs join the Whity floor and open their respective 
     }
 });
 
+test('Whity central exits connect to B1 and keep independent street cuts beneath their canopies', () => {
+    const component = union.map(polygon => ({
+        outline: polygon[0]!.map(([x, z]) => ({ x, z })),
+        holes: polygon.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    })).find(polygon => contains(polygon, { x: 781.5, z: 627.3 }))!;
+    assert(component);
+    const lower = publicAccess.connections.find(c => c.id === 'whity-exit-h-49-lower')!;
+    const landing = undergroundPublicAreas.find(a => a.id === 'whity-h-49-h-51-turn')!;
+    assert(contains(component, lower.from));
+    assert(contains(landing, lower.to));
+    assert.equal(landing.elevationOffset, lower.to.elevationOffset);
+
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const [number, x, z, roof] of [
+        [49, 761.89, 618.68, 'whity-h-49-h-51-canopy'],
+        [51, 759.82, 635.77, 'whity-h-49-h-51-canopy'],
+        [58, 794.32, 686.88, 'whity-exit-h-58-canopy'],
+        [60, 776.28, 713.79, 'whity-exit-h-60-canopy']
+    ] as const) {
+        const id = 'whity-exit-h-' + number;
+        const flight = publicAccess.connections.find(c => c.id === id)!;
+        assert(Math.hypot(flight.to.x - x, flight.to.z - z) < .02);
+        if (number === 49 || number === 51) {
+            assert.equal(flight.from, lower.to);
+        }
+        else {
+            assert(contains(component, flight.from));
+        }
+        assert(layout.canopies.find(c => c.id === roof)?.postClearances?.some(c => c.point === flight.to));
+        const cut = openings.find(o => o.connectionId === id && o.level === 'district-ground')!;
+        assert(cut);
+        assert(!geographicBuildings.some(b => b.volumes.some(v =>
+            v.base === 0 && clipping.intersection(geometry(v), geometry(cut)).length > 0)));
+    }
+});
+
+test('Puchishan street anchors join the same Hankyu basement floor and clear the correct ground geometry', () => {
+    const h1 = publicAccess.connections.find(c => c.id === 'whity-exit-h-1')!;
+    const h16 = publicAccess.connections.find(c => c.id === 'whity-exit-h-16')!;
+    const component = union.map(polygon => ({
+        outline: polygon[0]!.map(([x, z]) => ({ x, z })),
+        holes: polygon.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    })).find(polygon => contains(polygon, { x: 743.1, z: 291.1 }))!;
+    assert(component);
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const [stair, x, z] of [[h1, 722.91, 286.70], [h16, 785.71, 397.30]] as const) {
+        assert(Math.hypot(stair.to.x - x, stair.to.z - z) < .02);
+        assert(contains(component, stair.from));
+        assert(undergroundPublicAreas.some(a => a.blockId === 'hankyu-basements' && contains(a, stair.from)));
+        assert(openings.some(o => o.connectionId === stair.id && o.level === 'district-ground'));
+    }
+    assert(layout.canopies.some(c => c.id === h16.id + '-canopy' && c.points.includes(h16.to)));
+    assert(!layout.exteriorOpenings.some(o => o.evidence === h16.evidence));
+    const exterior = layout.exteriorOpenings.find(o => o.evidence === h1.evidence)!;
+    assert.equal(exterior.buildingId, 'hankyu-sanbangai');
+    const building = geographicBuildings.find(b => b.id === exterior.buildingId)!;
+    const original = buildGeographicBuilding(building, layout.exteriorOpenings.filter(o => o !== exterior));
+    const opened = buildGeographicBuilding(building, layout.exteriorOpenings);
+    original.updateMatrixWorld(true);
+    opened.updateMatrixWorld(true);
+    const portal = new T.Raycaster(new T.Vector3(726, 2, 286.95), new T.Vector3(-1, 0, 0), 0, 8);
+    const adjacent = new T.Raycaster(new T.Vector3(726, 2, 280.5), new T.Vector3(-1, 0, 0), 0, 8);
+    assert(portal.intersectObject(original, true).length > 0);
+    assert.equal(portal.intersectObject(opened, true).length, 0);
+    assert(adjacent.intersectObject(opened, true).length > 0);
+});
+
+test('H-40 and 3-31 keep their B1 approaches on the public floor', () => {
+    for (const [id, block, inner, outer] of [
+        ['whity-h-40-b1-approach', 'whity-b1', { x: 782.1, z: 553.24 }, { x: 786.8, z: 553.64 }],
+        ['whity-3-31-b1-approach', 'hankyu-basements', { x: 762.2, z: 399.8 }, { x: 753.9, z: 401.95 }]
+    ] as const) {
+        const approach = publicAccess.areas.find(a => a.id === id)!;
+        assert.equal(approach.level, 'district-underground');
+        assert.equal(approach.blockId, block);
+        assert(approach.evidence.pages.includes(54));
+        assert(contains(approach, outer));
+        assert(flat.some(floor => floor.blockId === block && contains(floor, inner) && contains(floor, outer)));
+        assert(!layout.connections.some(stair => stair.evidence === approach.evidence));
+        assert(!layout.exteriorOpenings.some(opening => opening.evidence === approach.evidence));
+    }
+});
+
+test('Whity hotel connections mark opposite B1 approaches on the East Mall corridor', () => {
+    const hall = flat.find(a => a.blockId === 'whity-b1' && contains(a, { x: 914, z: 666.8 }))!;
+    assert(hall);
+    for (const [number, x, z, node] of [
+        ['7-72', 910.31, 655.93, '5024365349'],
+        ['7-75', 924.50, 674.23, '5024365348']
+    ] as const) {
+        const id = 'whity-building-access-' + number;
+        const facility = facilities.find(f => f.id === id)!;
+        assert.equal(facility.kind, 'entrance');
+        assert.equal(facility.level, 'district-underground');
+        assert(Math.hypot(facility.x - x, facility.z - z) < .02);
+        assert(contains(hall, facility));
+        assert(facility.evidence.urls?.includes('https://www.openstreetmap.org/node/' + node));
+        assert(!nodes.some(n => n.id === id));
+        assert(!layout.connections.some(c => c.evidence === facility.evidence));
+        assert(!layout.exteriorOpenings.some(o => o.evidence === facility.evidence));
+    }
+});
+
 test('Izumi plaza keeps shared stair landings, a vertical passenger lift and a B1 Water Tree', () => {
     const tree = layout.landmarks.find(item => item.id === 'whity-izumi-water-tree')!;
     assert.equal(tree.level, 'district-underground');
@@ -384,7 +487,7 @@ test('Izumi plaza keeps shared stair landings, a vertical passenger lift and a B
     const stops = [lift.from, lift.to];
     assert(Math.hypot(lift.from.x - tree.x, lift.from.z - tree.z) > 8);
     const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-    for (const number of [9, 13]) {
+    for (const number of [9, 10, 13, 14]) {
         const id = 'whity-exit-m-' + number;
         const lower = publicAccess.connections.find(c => c.id === id)!;
         const middle = undergroundPublicAreas.find(a => a.id === id + '-middle-landing')!;
@@ -403,4 +506,23 @@ test('Izumi plaza keeps shared stair landings, a vertical passenger lift and a B
         }
     }
     assert(!edges.some(edge => stops.some(stop => edge.from === stop.id || edge.to === stop.id)));
+});
+
+test('Izumi east stair mouths match their individual roofs and street approaches', () => {
+    for (const [number, x, z, sidewalk, roof] of [
+        ['10-1', 1025.26, 643.34, { x: 1029.38, z: 642.53 }, '618516673'],
+        ['10-2', 1010.61, 628.88, { x: 1011.04, z: 626.92 }, '618516672'],
+        ['14-1', 1014.28, 682.42, { x: 1014.58, z: 687.19 }, '618713381'],
+        ['14-2', 1024.80, 665.68, { x: 1031.05, z: 665.3 }, '618713382']
+    ] as const) {
+        const id = 'whity-exit-m-' + number;
+        const stair = publicAccess.connections.find(c => c.id === id)!;
+        assert(Math.hypot(stair.to.x - x, stair.to.z - z) < .02);
+        const canopy = layout.canopies.find(c => c.id === id.replace(/-(1|2)$/, '-canopy-$1'))!;
+        assert(canopy.evidence.urls?.includes('https://www.openstreetmap.org/way/' + roof));
+        assert.deepEqual(canopy.points.at(-1), { x: stair.to.x, z: stair.to.z });
+        const apron = layout.areas.find(a => a.id === id + '-street-apron')!;
+        const approach = { x: (stair.to.x + sidewalk.x) / 2, z: (stair.to.z + sidewalk.z) / 2 };
+        assert(contains(apron, approach));
+    }
 });

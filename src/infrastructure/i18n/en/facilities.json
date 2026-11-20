@@ -32,6 +32,7 @@
   "facilities.locations.sonechikaExit": "Sonechika Exit {number}",
   "facilities.locations.sonechikaLift": "Sonechika near Exit 11-41",
   "facilities.locations.whityExit": "Whity Umeda Exit {number}",
+  "facilities.locations.whityBuildingAccess": "{building} · Whity {number} connection",
   "facilities.locations.whityIzumi": "Whity Umeda · Izumi-no-hiroba",
   "facilities.locations.umekitaPublic": "Umekita outside the gates",
   "facilities.locations.umekitaWalkway": "West Gate–Umekita walkway",

@@ -32,6 +32,7 @@
   "facilities.locations.sonechikaExit": "曾根地下道 {number} 号出口",
   "facilities.locations.sonechikaLift": "曾根地下道 11-41 号出口旁",
   "facilities.locations.whityExit": "Whity 梅田 {number} 号出口",
+  "facilities.locations.whityBuildingAccess": "{building} · Whity {number} 接入口",
   "facilities.locations.whityIzumi": "Whity 梅田 · 泉之广场",
   "facilities.locations.umekitaPublic": "梅北闸外",
   "facilities.locations.umekitaWalkway": "西口—梅北通路",

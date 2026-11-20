@@ -9,10 +9,23 @@ const operatorPlan = 'https://whity.osaka-chikagai.jp/front/common/img/whity_eva
 const cityPlan = 'https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-1%28202303%29.pdf';
 const aerial = 'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/18/229741/104099.jpg';
 
+interface ForkedStair {
+    number: string;
+    bottom: Point2;
+    join: Point2;
+    apronEnd?: Point2;
+    fork: Point2;
+    landing: Point2[];
+    nodes: string[];
+    sidewalkWays?: string[];
+    branches: { start: Point2; mouth: Point2; street?: Point2 }[];
+    roofs: { way: string; points: Point2[]; width: number; mouth?: Point2 }[];
+}
+
 /** Project the reviewed street entrance nodes into district metres. */
 const project = (lon: number, lat: number) => toGeographicPlan({ lon, lat }, geographicFrame);
 
-/** Model the west-side forked stairs and public lift at Izumi-no-hiroba (泉の広場). */
+/** Model the four forked stairs and public lift at Izumi-no-hiroba (泉の広場). */
 export function createIzumiPlazaAccess() {
     const areas: FloorArea[] = [];
     const connections: VerticalConnection[] = [];
@@ -25,7 +38,11 @@ export function createIzumiPlazaAccess() {
     const mouth92 = project(135.5015787, 34.7021653);
     const mouth131 = project(135.5015937, 34.7019696);
     const mouth132 = project(135.5017356, 34.7018506);
-    for (const group of [
+    const mouth101 = project(135.5022035, 34.7022208);
+    const mouth102 = project(135.5020434, 34.7023507);
+    const mouth141 = project(135.5020835, 34.7018697);
+    const mouth142 = project(135.5021985, 34.7020201);
+    const groups: ForkedStair[] = [
         {
             number: 'M-9',
             bottom: { x: 990.4, z: 650.5 },
@@ -64,8 +81,53 @@ export function createIzumiPlazaAccess() {
                 { way: '618713380', points: [{ x: 975.7, z: 673.9 }, mouth131], width: 2.6 },
                 { way: '618713379', points: [{ x: 980, z: 678.2 }, { x: 981.4, z: 680.7 }, mouth132], width: 2.35 }
             ]
+        },
+        {
+            number: 'M-10',
+            bottom: { x: 1006.7, z: 651.5 },
+            join: { x: 1003.5, z: 654.4 },
+            apronEnd: { x: 1007.6, z: 650.4 },
+            fork: project(135.5020929, 34.7022520),
+            landing: [
+                { x: 1010.6, z: 637.4 }, { x: 1013.4, z: 635.7 }, { x: 1015.2, z: 637.7 },
+                { x: 1019.65, z: 640.15 }, { x: 1018.9, z: 643.5 }, { x: 1015.4, z: 643.2 },
+                { x: 1012.15, z: 640.8 }
+            ],
+            nodes: ['2715291684', '5846147483', '5846147484'],
+            sidewalkWays: ['618516667', '618516668'],
+            branches: [
+                { start: { x: 1018.1, z: 641.45 }, mouth: mouth101, street: { x: 1029.38, z: 642.53 } },
+                { start: { x: 1012.9, z: 637.25 }, mouth: mouth102, street: { x: 1011.04, z: 626.92 } }
+            ],
+            roofs: [
+                { way: '618516673', points: [{ x: 1018.04, z: 641.49 }, { x: 1021.59, z: 642.84 }, mouth101], width: 3.05, mouth: mouth101 },
+                { way: '618516672', points: [{ x: 1013.07, z: 636.4 }, { x: 1011.23, z: 632.93 }, mouth102], width: 2.85, mouth: mouth102 }
+            ]
+        },
+        {
+            number: 'M-14',
+            bottom: { x: 1009.5, z: 665.35 },
+            join: { x: 1004.5, z: 665.2 },
+            apronEnd: { x: 1010.65, z: 666.2 },
+            fork: project(135.5021115, 34.7019719),
+            landing: [
+                { x: 1013.5, z: 669.15 }, { x: 1017.8, z: 667.4 }, { x: 1020.7, z: 668.9 },
+                { x: 1018.55, z: 672.25 }, { x: 1016.6, z: 676.15 }, { x: 1013.5, z: 676.3 },
+                { x: 1013.25, z: 672.85 }
+            ],
+            nodes: ['5018031050', '5847763275', '5847763274'],
+            sidewalkWays: ['618713378', '618713377'],
+            branches: [
+                { start: { x: 1015.1, z: 675.65 }, mouth: mouth141, street: { x: 1014.58, z: 687.19 } },
+                { start: { x: 1019.3, z: 669.15 }, mouth: mouth142, street: { x: 1031.05, z: 665.3 } }
+            ],
+            roofs: [
+                { way: '618713381', points: [{ x: 1015.13, z: 675.28 }, { x: 1014.28, z: 679.47 }, mouth141], width: 2.95, mouth: mouth141 },
+                { way: '618713382', points: [{ x: 1019.13, z: 669.28 }, { x: 1022.17, z: 666.9 }, mouth142], width: 2.85, mouth: mouth142 }
+            ]
         }
-    ]) {
+    ];
+    for (const group of groups) {
         const id = 'whity-exit-' + group.number.toLowerCase();
         const name = messageText('facilities.locations.whityExit', { number: group.number });
         const evidence: Evidence = {
@@ -74,7 +136,8 @@ export function createIzumiPlazaAccess() {
             urls: [
                 operatorPlan,
                 ...group.nodes.map(node => 'https://www.openstreetmap.org/node/' + node),
-                ...group.roofs.map(roof => 'https://www.openstreetmap.org/way/' + roof.way)
+                ...group.roofs.map(roof => 'https://www.openstreetmap.org/way/' + roof.way),
+                ...(group.sidewalkWays ?? []).map(way => 'https://www.openstreetmap.org/way/' + way)
             ],
             detail: 'Operator diagrams show the shared stair from Izumi-no-hiroba (泉の広場) and the divided street mouths. The OSM roof ends locate both branches. The shared landing height, widths and underground coordinates are fitted.'
         };
@@ -82,7 +145,7 @@ export function createIzumiPlazaAccess() {
         const from = { id: id + '-b1', level: 'district-underground' as const, ...group.bottom };
         const fork = { id: id + '-fork', level: from.level, elevationOffset, ...group.fork };
         connections.push({ id, kind: 'stairs', blockId, from, to: fork, placement: 'exterior', width: 3.1, evidence });
-        floor(id + '-b1-apron', name, from.level, passageOutline(group.join, group.bottom, 5), evidence);
+        floor(id + '-b1-apron', name, from.level, passageOutline(group.join, group.apronEnd ?? group.bottom, 5), evidence);
         floor(id + '-middle-landing', name, fork.level, group.landing, evidence, elevationOffset);
         for (const [i, branch] of group.branches.entries()) {
             const branchId = id + '-' + (i + 1);
@@ -94,7 +157,7 @@ export function createIzumiPlazaAccess() {
             const dz = top.z - low.z;
             const run = Math.hypot(dx, dz);
             const behind = { x: top.x - dx / run, z: top.z - dz / run };
-            const ahead = { x: top.x + 3 * dx / run, z: top.z + 3 * dz / run };
+            const ahead = branch.street ?? { x: top.x + 3 * dx / run, z: top.z + 3 * dz / run };
             floor(branchId + '-street-apron', name, top.level, passageOutline(behind, ahead, width + 1.4), evidence);
         }
         for (const [i, roof] of group.roofs.entries()) {
@@ -104,6 +167,7 @@ export function createIzumiPlazaAccess() {
                 points: roof.points,
                 width: roof.width,
                 clearHeight: 2.9,
+                postClearances: roof.mouth ? [{ point: roof.mouth, radius: 2 }] : undefined,
                 evidence
             });
         }

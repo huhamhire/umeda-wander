@@ -26,6 +26,9 @@ import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
 import { createWhityNorthMallAccess } from '../public-areas/whity/north-mall-access.ts';
 import { createWhityNorthMall2Access } from '../public-areas/whity/north-mall-2-access.ts';
+import { createWhityCentralAccess } from '../public-areas/whity/central-access.ts';
+import { createWhityPuchishanAccess } from '../public-areas/whity/puchishan-access.ts';
+import { createWhityEastMallAccess } from '../public-areas/whity/east-mall-access.ts';
 import { southernWalkingRoutes } from '../public-areas/south-diamor/walking-routes.ts';
 import { northernWalkingRoutes } from '../public-areas/north-decks/walking-routes.ts';
 import { createGrandFrontPlazaAccess } from '../public-areas/north-atrium/grand-front-plaza-access.ts';
@@ -50,7 +53,11 @@ const sonechikaAccess = createSonechikaAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
 const whityNorth2Access = createWhityNorthMall2Access();
-const whityAccess = [createWhityStreetExits(), izumiAccess, whityNorthAccess, whityNorth2Access];
+const puchishanAccess = createWhityPuchishanAccess();
+const eastMallAccess = createWhityEastMallAccess();
+const whityAccess = [
+    createWhityStreetExits(), izumiAccess, whityNorthAccess, whityNorth2Access, createWhityCentralAccess(), puchishanAccess
+];
 const streetConnections = [
     ...northAccess.connections,
     ...jpAccess.connections,
@@ -63,7 +70,7 @@ export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
-        ...sonechikaAccess.areas, ...whityAccess.flatMap(access => access.areas)
+        ...sonechikaAccess.areas, ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas
     ],
 };
 const patchFloors = undergroundPatches.map(p => ({
@@ -105,6 +112,7 @@ export const exteriorOpenings = [
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorth2Access.connections, whityNorth2Access.buildingEquipment, assemblyLevels),
+    ...equipmentBuildingOpenings(puchishanAccess.connections, puchishanAccess.buildingEquipment, assemblyLevels),
     ...stationBuildingOpenings(shared.stations),
     ...hankyuConcourseOpenings,
 ];
@@ -195,7 +203,7 @@ export const layout = {
     })),
 };
 export const facilities = completeFacilityDirectory(
-    [...composed.sourceFacilities, ...sonechikaAccess.facilities],
+    [...composed.sourceFacilities, ...sonechikaAccess.facilities, ...eastMallAccess.facilities],
     layout.connections,
     layout.platforms,
     levels

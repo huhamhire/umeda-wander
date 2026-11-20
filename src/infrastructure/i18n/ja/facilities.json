@@ -32,6 +32,7 @@
   "facilities.locations.sonechikaExit": "そねちか {number}出口",
   "facilities.locations.sonechikaLift": "そねちか 11-41出口付近",
   "facilities.locations.whityExit": "ホワイティうめだ {number}出口",
+  "facilities.locations.whityBuildingAccess": "{building} · ホワイティ {number}連絡口",
   "facilities.locations.whityIzumi": "ホワイティうめだ・泉の広場",
   "facilities.locations.umekitaPublic": "うめきた改札外",
   "facilities.locations.umekitaWalkway": "西口・うめきた連絡通路",

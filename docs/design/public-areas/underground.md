@@ -33,11 +33,21 @@
 - **公共客梯**连接 B1 与新御堂筋高架下方的街面中央分隔岛。运营方图区分客用与货运井道，[大阪市无障碍详图及照片](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-1%28202303%29.pdf)给出公共接入，[国土地理院正射影像](https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/18/229741/104099.jpg)用于拟合地面位置。井道与楼板开口共用中心，门向按公共落台拟合。模型表达客梯。
 - **水之树**位于 B1 广场中心，按[大阪地下街说明](https://www.osaka-chikagai.jp/facility/whity)与[设计团队资料](https://naked.co.jp/works/6817/)制作静态银色树干、放射状枝条与蓝白镜面树冠。圆形广场以 [OSM 广场节点](https://www.openstreetmap.org/node/5018031057)定中心，边界与造型尺寸为展示拟合。地标随 B1 显隐，广场保持连续公共楼板。
 
-这些几何由 `whity/izumi-plaza-access.ts` 登记，归 `whity-b1`。M-10、M-14 的双出口关系在运营方图上可辨，街面分支位置未纳入本批模型。
+- **M-10、M-14** 按官方图分别从广场东北和东南两侧接出，均由 B1 先到分岔平台，再分向两个街面梯口。街面四处节点位于原 OSM 快照东界之外，用补查到的梯口、步道和顶棚定位。M-10-1 沿扇町通向东、M-10-2 沿新御堂筋向北，M-14-1 沿新御堂筋向南、M-14-2 沿扇町通向东。模型在广场东缘补齐两条独立 B1 接驳。平台标高、梯宽和 B1 梯脚为展示拟合。 [运营方编号图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53)
+
+| 街面梯口 | 顶棚 | 街面衔接 |
+| --- | --- | --- |
+| [M-10-1](https://www.openstreetmap.org/node/5846147483) | [顶棚](https://www.openstreetmap.org/way/618516673) | [步道](https://www.openstreetmap.org/way/618516667) |
+| [M-10-2](https://www.openstreetmap.org/node/5846147484) | [顶棚](https://www.openstreetmap.org/way/618516672) | [步道](https://www.openstreetmap.org/way/618516668) |
+| [M-14-1](https://www.openstreetmap.org/node/5847763275) | [顶棚](https://www.openstreetmap.org/way/618713381) | [步道](https://www.openstreetmap.org/way/618713378) |
+| [M-14-2](https://www.openstreetmap.org/node/5847763274) | [顶棚](https://www.openstreetmap.org/way/618713382) | [步道](https://www.openstreetmap.org/way/618713377) |
+
+这些几何由 `whity/izumi-plaza-access.ts` 登记，归 `whity-b1`。
 
 ### Whity 梅田 · North Mall 1
 
 - **H-28 和 H-30** 按运营方的 North Mall 1 平面图及设施指南，通过 Sunny Terrace 接入同一片公共通道。H-28 以室外梯口和街面步道方向定位。H-30 以 HEP FIVE 南立面的梯口与巷道接点定位，首层楼板和墙体按设备轴线局部裁口，明确绑定 `hep-five`。模型保留从巷道进入公共楼梯的关系。 [运营方平面图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53) · [设施指南](https://whity.osaka-chikagai.jp/service) · [H-28 街面楼梯](https://www.openstreetmap.org/way/1208420372) · [H-30 梯口](https://www.openstreetmap.org/node/5865318036) · [巷道接点](https://www.openstreetmap.org/way/1458907022)
+- **H-40** 按运营方详图，把 North Mall 1 东侧通向楼梯的 B1 短接驳接回主通道。接驳的横向位置和宽度为展示拟合。街面门位的公开资料只给出 HEP NAVIO 一侧的大致区域，模型表达至 B1 梯前。 [运营方详图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=54) · [大阪市地下街图](https://www.city.osaka.lg.jp/kita/cmsfiles/contents/0000419/419991/10_en.pdf#page=2)
 - **H-41** 位于 North Mall 1 西侧。街面梯口和独立顶棚定位上端，地下步道的折角与轴线定位下端。模型将 B1 西向支路接回公共面，并在折角处用平台连接两段楼梯。 [运营方出口图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=50) · [梯口](https://www.openstreetmap.org/node/5865318493) · [顶棚](https://www.openstreetmap.org/way/620835761) · [地下步道](https://www.openstreetmap.org/way/1322885763)
 
 `whity/north-mall-access.ts` 根据这些街面控制点局部修正 Sunny Terrace 的 B1 横向接驳面和 H-41 的西向支路，合并进 `whity-b1`。Sunny Terrace 梯脚及通道宽度、H-41 的折角平台标高、三处梯段尺寸和首层净空均为展示拟合。三处设备进入设施目录，步行路线仍使用已登记的公共边。
@@ -47,6 +57,29 @@
 **J-2、J-3、J-4** 是运营方图上从 North Mall 2 支廊通往地面的三处楼梯。OSM 梯口节点同时落在建筑轮廓和街面步道上，J-2、J-4 对应 OS 大楼，J-3 对应 HEP NAVIO。三处首层墙体和楼板分别按所属楼体裁口。OS 大楼沿 HEP NAVIO 一侧补画约 60 米的广场顶棚，按广场图的 4.5 米檐下标高表达，支柱避开梯口。 [Whity 运营方出口图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=50) · [J-2](https://www.openstreetmap.org/node/8878597296) · [J-3](https://www.openstreetmap.org/node/8878597300) · [J-4](https://www.openstreetmap.org/node/8878597302) · [OS 广场平面与立面](https://www.osgroup.co.jp/business/assets/os_guidance.pdf)
 
 `whity/north-mall-2-access.ts` 用三处街面梯口校正 B1 支廊的末段及分支，接回现役 `whity-b1` 公共面。B1 梯脚、分叉点、通道宽度、梯段尺寸与顶棚端点均为展示拟合。OS 大楼用 OSM 外轮廓与估算高度表达。现役步行图使用已登记的公共路径。 [OS 大楼轮廓](https://www.openstreetmap.org/way/162157817) · [OS 大楼资料](https://www.hhp.co.jp/services/lease/office/)
+
+### Whity 梅田 · Center Mall 与曾根崎警察署前
+
+- **H-49、H-51** 从 Center Mall 经图中的 H-50 接驳段上行，到路边共用梯亭后分向南北。B1 接驳从现役通廊向西延伸至分岔平台，平台平面位置受已标绘的地下轴线与梯亭轮廓约束。 [运营方出口图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53) · [地下轴线](https://www.openstreetmap.org/way/1322885774) · [共用梯亭](https://www.openstreetmap.org/way/618516677)
+- **H-58、H-60** 分别接到警察署北侧和西侧的街面步道。模型用各自的街面梯口和遮盖轮廓定位，分别接回 B1 公共面，首层开口与梯段采用同一定位。 [H-58 梯口](https://www.openstreetmap.org/node/5024365373) · [H-58 顶棚](https://www.openstreetmap.org/way/620835758) · [H-60 梯口](https://www.openstreetmap.org/node/5024365375) · [H-60 梯亭](https://www.openstreetmap.org/way/620835755)
+
+`whity/central-access.ts` 负责这四处梯口、三个街面遮盖及对应的 B1 局部接驳。下端落点、分岔平台标高、梯宽及净高均为展示拟合。四处出口归 `whity-b1`，步行图继续使用已登记的公共路径。
+
+### Whity 梅田 · Puchishan
+
+- **H-1** 位于北广场通往茶屋町方向的一侧。按带编号的街面梯口和地面步道定位，校正 B1 北端的西向接驳，并在三番街现役外壳的临街边缘局部裁口。 [H-1 梯口](https://www.openstreetmap.org/node/8872207243) · [街面步道](https://www.openstreetmap.org/way/958843695) · [地下步道](https://www.openstreetmap.org/way/1010195568)
+- **H-16** 位于南端 ABC-MART 梅田楼外侧。按街面梯口、梯段和独立顶棚定位，校正 B1 东向短接驳并补上首层开口。 [H-16 梯口](https://www.openstreetmap.org/node/4609280782) · [梯段](https://www.openstreetmap.org/way/466035093) · [顶棚](https://www.openstreetmap.org/way/466035113)
+
+- **3-31** 按运营方详图及大阪市地下街图定位为 Puchishan 南端的西向短支路，区别于独立编号的 3-27。模型接通 B1 梯前公共面，街面门位的资料精度仅够定位到阪急侧通廊一带。 [运营方详图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=54) · [大阪市地下街图](https://www.city.osaka.lg.jp/kita/cmsfiles/contents/0000419/419991/10_en.pdf#page=2)
+
+`whity/puchishan-access.ts` 维护这三处 B1 接驳，接入 `hankyu-basements` 公共面。梯脚、梯段尺寸和局部通廊宽度为展示拟合。
+
+### Whity 梅田 · East Mall 酒店接入口
+
+- **7-72 · 宜必思大阪梅田酒店** 从 East Mall 北侧接入。按酒店到达说明、运营方编号图及街面参考点，校正 Whity 一侧的 B1 前庭。 [酒店到达说明](https://ibisosakaumeda.com/access/) · [街面参考点](https://www.openstreetmap.org/node/5024365349)
+- **7-75 · Hotel Dans le Coeur 大阪梅田** 从 East Mall 南侧接入。按运营方编号图、业主直连说明及街面参考点，校正 Whity 一侧的 B1 前庭。 [业主说明](https://www.isereality.co.jp/2019/12/05/post-60/) · [街面参考点](https://www.openstreetmap.org/node/5024365348)
+
+`whity/east-mall-access.ts` 维护两处公共通道侧的接入口，两处均可在设施目录中定位。前庭宽度与 B1 落点为展示拟合。街面编号点用于平面配准，两处归运营方清单中的楼体连接项。 [运营方出口与接入清单](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=6) · [运营方编号图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53)
 
 ### 曾根地下道
 

@@ -64,6 +64,20 @@ export function createWhityNorthMallAccess() {
         floor(id + '-street-apron', name, to.level, passageOutline(along(to, -1.1), along(to, 4), 4.2), evidence);
     }
 
+    const h40Proof: Evidence = {
+        source: 'district',
+        pages: [50, 53, 54],
+        urls: [operatorPlan, 'https://www.city.osaka.lg.jp/kita/cmsfiles/contents/0000419/419991/10_en.pdf#page=2'],
+        detail: 'The Whity flood plan shows the H-40 approach leaving the east side of North Mall 1 and turning at the stairs. Fit only the level approach to the B1 corridor; the street end has no independently located mouth.'
+    };
+    floor(
+        'whity-h-40-b1-approach',
+        northMallName,
+        'district-underground',
+        passageOutline({ x: 781.7, z: 553.2 }, { x: 787.2, z: 553.7 }, 3.2),
+        h40Proof
+    );
+
     const h41Name = messageText('facilities.locations.whityExit', { number: 'H-41' });
     const h41Proof: Evidence = {
         source: 'district',
