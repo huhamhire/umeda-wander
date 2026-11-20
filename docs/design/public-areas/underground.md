@@ -14,6 +14,40 @@
 
 设备用 `blockId` 标明归属；上下层落点进入设施目录，内部编号不进入界面名称。井道保持竖直，上层楼板、铺装与遮盖使用共用孔洞。
 
+### Whity 梅田 · 泉之广场北侧
+
+首批为 NOMOKA／泉之广场北侧的 **M-1、M-2、M-5、M-6**。[Whity 运营方出口清单和别图 2](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=50)确认四处为自管地面出口，下端从北侧 B1 通廊两边接入。图中另标示的 B2 范围不用于这四组楼梯。
+
+| 出口 | 街面梯口与顶棚 |
+| --- | --- |
+| M-1 | [梯口](https://www.openstreetmap.org/node/2330458903) · [顶棚](https://www.openstreetmap.org/way/618516676) |
+| M-2 | [梯口](https://www.openstreetmap.org/node/5018031053) · [顶棚](https://www.openstreetmap.org/way/618516665) |
+| M-5 | [梯口](https://www.openstreetmap.org/node/5018031052) · [顶棚](https://www.openstreetmap.org/way/618516675) |
+| M-6 | [梯口](https://www.openstreetmap.org/node/2715291801) · [顶棚](https://www.openstreetmap.org/way/618516664) |
+
+`whity/street-exits.ts` 按 OSM 梯口及顶棚定地面位置。B1 局部接驳以运营方平面图和 [OSM 地下步道](https://www.openstreetmap.org/way/1010195578)拟合，合并至 `whity-b1` 的现役公共面。阶梯宽度、坡度、地下落点及中间平台为展示拟合。四处顶棚与相邻建筑轮廓分离，1F 裁孔用在各自的独立落台。后续若资料明确显示穿过楼体，应通过具名宿主绑定同时裁剪该建筑的首层楼板和阻挡入口的墙体。
+
+### Whity 梅田 · 泉之广场
+
+- **M-9、M-13** 按[运营方别图 2 和别图 5](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53)表达从 B1 上行至共用平台，再分成两个地面梯口。M-9 的两支共用 [OSM 顶棚](https://www.openstreetmap.org/way/618516674)，M-13 的两支各有[西支顶棚](https://www.openstreetmap.org/way/618713380)和[东支顶棚](https://www.openstreetmap.org/way/618713379)。分叉平台高差、梯段轴线和宽度为展示拟合。梯口落在街面，首层开口绑定各自落台。
+- **公共客梯**连接 B1 与新御堂筋高架下方的街面中央分隔岛。运营方图区分客用与货运井道，[大阪市无障碍详图及照片](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-1%28202303%29.pdf)给出公共接入，[国土地理院正射影像](https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/18/229741/104099.jpg)用于拟合地面位置。井道与楼板开口共用中心，门向按公共落台拟合。模型表达客梯。
+- **水之树**位于 B1 广场中心，按[大阪地下街说明](https://www.osaka-chikagai.jp/facility/whity)与[设计团队资料](https://naked.co.jp/works/6817/)制作静态银色树干、放射状枝条与蓝白镜面树冠。圆形广场以 [OSM 广场节点](https://www.openstreetmap.org/node/5018031057)定中心，边界与造型尺寸为展示拟合。地标随 B1 显隐，广场保持连续公共楼板。
+
+这些几何由 `whity/izumi-plaza-access.ts` 登记，归 `whity-b1`。M-10、M-14 的双出口关系在运营方图上可辨，街面分支位置未纳入本批模型。
+
+### Whity 梅田 · North Mall 1
+
+- **H-28 和 H-30** 按运营方的 North Mall 1 平面图及设施指南，通过 Sunny Terrace 接入同一片公共通道。H-28 以室外梯口和街面步道方向定位。H-30 以 HEP FIVE 南立面的梯口与巷道接点定位，首层楼板和墙体按设备轴线局部裁口，明确绑定 `hep-five`。模型保留从巷道进入公共楼梯的关系。 [运营方平面图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53) · [设施指南](https://whity.osaka-chikagai.jp/service) · [H-28 街面楼梯](https://www.openstreetmap.org/way/1208420372) · [H-30 梯口](https://www.openstreetmap.org/node/5865318036) · [巷道接点](https://www.openstreetmap.org/way/1458907022)
+- **H-41** 位于 North Mall 1 西侧。街面梯口和独立顶棚定位上端，地下步道的折角与轴线定位下端。模型将 B1 西向支路接回公共面，并在折角处用平台连接两段楼梯。 [运营方出口图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=50) · [梯口](https://www.openstreetmap.org/node/5865318493) · [顶棚](https://www.openstreetmap.org/way/620835761) · [地下步道](https://www.openstreetmap.org/way/1322885763)
+
+`whity/north-mall-access.ts` 根据这些街面控制点局部修正 Sunny Terrace 的 B1 横向接驳面和 H-41 的西向支路，合并进 `whity-b1`。Sunny Terrace 梯脚及通道宽度、H-41 的折角平台标高、三处梯段尺寸和首层净空均为展示拟合。三处设备进入设施目录，步行路线仍使用已登记的公共边。
+
+### Whity 梅田 · North Mall 2
+
+**J-2、J-3、J-4** 是运营方图上从 North Mall 2 支廊通往地面的三处楼梯。OSM 梯口节点同时落在建筑轮廓和街面步道上，J-2、J-4 对应 OS 大楼，J-3 对应 HEP NAVIO。三处首层墙体和楼板分别按所属楼体裁口。OS 大楼沿 HEP NAVIO 一侧补画约 60 米的广场顶棚，按广场图的 4.5 米檐下标高表达，支柱避开梯口。 [Whity 运营方出口图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=50) · [J-2](https://www.openstreetmap.org/node/8878597296) · [J-3](https://www.openstreetmap.org/node/8878597300) · [J-4](https://www.openstreetmap.org/node/8878597302) · [OS 广场平面与立面](https://www.osgroup.co.jp/business/assets/os_guidance.pdf)
+
+`whity/north-mall-2-access.ts` 用三处街面梯口校正 B1 支廊的末段及分支，接回现役 `whity-b1` 公共面。B1 梯脚、分叉点、通道宽度、梯段尺寸与顶棚端点均为展示拟合。OS 大楼用 OSM 外轮廓与估算高度表达。现役步行图使用已登记的公共路径。 [OS 大楼轮廓](https://www.openstreetmap.org/way/162157817) · [OS 大楼资料](https://www.hhp.co.jp/services/lease/office/)
+
 ### 曾根地下道
 
 - **11-43** 按[凤凰厅到达指引](https://phoenixhall.jp/access/)表达扶梯。采用 [OSM 地面梯口](https://www.openstreetmap.org/node/3499801000)、[顶棚](https://www.openstreetmap.org/way/618802454)和[地下折角支路](https://www.openstreetmap.org/way/1322885750)。地下落点和支路宽度是拟合值。

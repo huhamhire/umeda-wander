@@ -149,6 +149,16 @@ export interface StationLayout {
     concourses?: CommercialConcourse[];
     exteriorOpenings?: BuildingOpening[];
     canopies?: WalkwayCanopy[];
+    landmarks?: PublicLandmark[];
+}
+
+/** A public visual reference attached to a floor, without navigation semantics. */
+export interface PublicLandmark extends Point2 {
+    id: string;
+    name: string;
+    kind: 'water-tree';
+    level: LevelId;
+    evidence: Evidence;
 }
 
 /** Roof over a confirmed public approach, independent of its floor and walking graph. */

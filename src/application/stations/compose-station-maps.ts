@@ -21,6 +21,7 @@ export function composeStationMaps(stations: StationMap[], district: StationLayo
         concourses: parts.flatMap(p => p.concourses ?? []),
         exteriorOpenings: parts.flatMap(p => p.exteriorOpenings ?? []),
         canopies: parts.flatMap(p => p.canopies ?? []),
+        landmarks: parts.flatMap(p => p.landmarks ?? []),
     };
     return {
         stations: stations.map(({ id, name }) => ({ id, name })),

@@ -8,12 +8,15 @@ import { partitionPublicAreas } from '../../src/application/public-areas/public-
 import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
+import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { basements, edges, facilities, geographicPlan, layout, levels, nodes, publicAccess, publicFrontages, publicInterfaceBindings, publicInterfaces, publicWalkingRoutes, undergroundBlocks, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+import { buildWaterTree } from '../../src/presentation/models/public-areas/water-tree-model.ts';
 
 const geometry = (a: PlanRegion) => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
     number,
@@ -139,14 +142,20 @@ test(
             assert.ok(c.blockId);
             assert.ok(c.evidence.urls?.length);
             assert.ok([c.from, c.to].some(n => n.level === 'district-underground'));
-            const upper = [c.from, c.to].find(n => levels.find(l => l.id === n.level)!.y === 0)!;
+            const fromY = levels.find(l => l.id === c.from.level)!.y + (c.from.elevationOffset ?? 0);
+            const toY = levels.find(l => l.id === c.to.level)!.y + (c.to.elevationOffset ?? 0);
+            const upper = fromY > toY ? c.from : c.to;
             const facing = c.doorFacingRad;
             const landing = facing === undefined ? upper : {
                 x: upper.x + 2 * Math.cos(facing),
                 z: upper.z + 2 * Math.sin(facing)
             };
-            const surfaces = layout.areas.filter(a => a.level === upper.level);
+            const surfaces = layout.areas.filter(a => a.level === upper.level && (a.elevationOffset ?? 0) === (upper.elevationOffset ?? 0));
             assert.ok(surfaces.some(a => contains(a, landing)), c.id + ' unsupported upper landing');
+            if (c.placement === 'exterior') {
+                assert(!openings.some(o => o.connectionId === c.id), c.id + ' cuts an exterior landing');
+                continue;
+            }
             const cuts = openings.filter(o => o.level === upper.level);
             assert.ok(cuts.some(o => o.connectionId === c.id));
             const cut = cuts.find(o => o.connectionId === c.id)!;
@@ -246,4 +255,152 @@ test('Sonechika public equipment stays on its documented approaches and 11-44 st
     for (const number of ['11-43', '11-44']) {
         assert(layout.canopies.some(c => c.id === 'sonechika-' + number + '-canopy'));
     }
+});
+
+test('Whity northern entrances join the Izumi public floor and use independent street openings', () => {
+    const plaza = { x: 998, z: 658 };
+    const publicFloor = union.map(polygon => ({
+        outline: polygon[0]!.map(([x, z]) => ({ x, z })),
+        holes: polygon.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    })).find(polygon => contains(polygon, plaza))!;
+    assert(publicFloor);
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const [number, x, z, roof] of [
+        ['M-1', 974.69, 592.03, '618516676'],
+        ['M-2', 1007.34, 588.36, '618516665'],
+        ['M-5', 975.46, 603.30, '618516675'],
+        ['M-6', 1007.73, 596.37, '618516664']
+    ] as const) {
+        const id = 'whity-exit-' + number.toLowerCase();
+        const stairs = publicAccess.connections.find(c => c.id === id)!;
+        assert.equal(stairs.kind, 'stairs');
+        assert.equal(stairs.blockId, 'whity-b1');
+        assert.equal(stairs.from.level, 'district-underground');
+        assert.equal(stairs.to.level, 'district-ground');
+        assert(contains(publicFloor, stairs.from), id);
+        assert(Math.hypot(stairs.to.x - x, stairs.to.z - z) < .02, id);
+        const canopy = layout.canopies.find(c => c.id === id + '-canopy')!;
+        assert(canopy.evidence.urls?.includes('https://www.openstreetmap.org/way/' + roof), id);
+        assert(openings.some(o => o.connectionId === id && o.level === 'district-ground'), id);
+        assert(!layout.exteriorOpenings.some(o => contains(o, stairs.to)), id);
+        assert(!edges.some(e => [stairs.from.id, stairs.to.id].some(stop => e.from === stop || e.to === stop)));
+    }
+});
+
+test('Whity North Mall street anchors correct the common B1 floor and open only the HEP FIVE stair mouth', () => {
+    const component = union.map(polygon => ({
+        outline: polygon[0]!.map(([x, z]) => ({ x, z })),
+        holes: polygon.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    })).find(polygon => contains(polygon, { x: 777, z: 468 }))!;
+    assert(component);
+    const h28 = publicAccess.connections.find(c => c.id === 'whity-exit-h-28')!;
+    const h30 = publicAccess.connections.find(c => c.id === 'whity-exit-h-30')!;
+    const h41Lower = publicAccess.connections.find(c => c.id === 'whity-exit-h-41-lower')!;
+    const h41Upper = publicAccess.connections.find(c => c.id === 'whity-exit-h-41')!;
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const [connection, x, z] of [
+        [h28, 792.54, 455.88],
+        [h30, 810.60, 478.20],
+        [h41Upper, 770.44, 571.61]
+    ] as const) {
+        assert(Math.hypot(connection.to.x - x, connection.to.z - z) < .02);
+        assert(openings.some(o => o.connectionId === connection.id && o.level === 'district-ground'));
+    }
+    for (const point of [h28.from, h30.from, h41Lower.from, { x: 779.5, z: 567.6 }]) {
+        assert(contains(component, point));
+    }
+    assert.equal(h41Lower.to, h41Upper.from);
+    const turningFloor = undergroundPublicAreas.find(a => a.id === 'whity-h-41-turn-apron')!;
+    assert.equal(turningFloor.elevationOffset, h41Lower.to.elevationOffset);
+    assert(contains(turningFloor, h41Lower.to));
+    assert(layout.canopies.some(c => c.id === 'whity-h-41-canopy'));
+    for (const stair of [h28, h41Upper]) {
+        assert(!layout.exteriorOpenings.some(o => contains(o, stair.to)));
+    }
+    const building = geographicBuildings.find(b => b.id === 'hep-five')!;
+    const original = buildGeographicBuilding(building);
+    const withDoor = buildGeographicBuilding(building, layout.exteriorOpenings);
+    original.updateMatrixWorld(true);
+    withDoor.updateMatrixWorld(true);
+    const entrance = new T.Raycaster(new T.Vector3(811.45, 2, 480), new T.Vector3(-.45, 0, -1).normalize(), 0, 4);
+    const slab = new T.Raycaster(new T.Vector3(810, 4.4, 476), new T.Vector3(0, -1, 0), 0, 4.7);
+    const adjacent = new T.Raycaster(new T.Vector3(816, 2, 480), new T.Vector3(0, 0, -1), 0, 5);
+    for (const ray of [entrance, slab]) {
+        assert(ray.intersectObject(original, true).length > 0);
+        assert.equal(ray.intersectObject(withDoor, true).length, 0);
+    }
+    assert(adjacent.intersectObject(withDoor, true).length > 0);
+});
+
+test('North Mall 2 street stairs join the Whity floor and open their respective host facades', () => {
+    const component = union.map(polygon => ({
+        outline: polygon[0]!.map(([x, z]) => ({ x, z })),
+        holes: polygon.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    })).find(polygon => contains(polygon, { x: 803, z: 614.4 }))!;
+    assert(component);
+    assert(contains(component, { x: 818, z: 594 }));
+    const canopy = layout.canopies.find(c => c.id === 'whity-os-plaza-canopy')!;
+    assert.equal(canopy.clearHeight, 4.5);
+    for (const [number, host, x, z, dx, dz] of [
+        ['2', 'os-building', 853.31, 565.90, -.8, -.6],
+        ['3', 'hep-navio', 809.37, 576.40, .6, .8],
+        ['4', 'os-building', 823.12, 596.55, -.71, -.71]
+    ] as const) {
+        const connection = publicAccess.connections.find(c => c.id === 'whity-exit-j-' + number)!;
+        assert(Math.hypot(connection.to.x - x, connection.to.z - z) < .02);
+        assert(contains(component, connection.from));
+        assert.deepEqual(layout.exteriorOpenings.filter(o => contains(o, connection.to)).map(o => o.buildingId), [host]);
+        assert.equal(canopy.postClearances?.some(clearance => clearance.point === connection.to), host === 'os-building');
+
+        const building = geographicBuildings.find(b => b.id === host)!;
+        const original = buildGeographicBuilding(building);
+        const withDoors = buildGeographicBuilding(building, layout.exteriorOpenings);
+        original.updateMatrixWorld(true);
+        withDoors.updateMatrixWorld(true);
+        const opening = new T.Raycaster(new T.Vector3(x + dx * 3, 2, z + dz * 3), new T.Vector3(-dx, 0, -dz).normalize(), 0, 4.5);
+        const slab = new T.Raycaster(new T.Vector3(x - dx, -1, z - dz), new T.Vector3(0, 1, 0), 0, 4);
+        for (const ray of [opening, slab]) {
+            assert(ray.intersectObject(original, true).length > 0);
+            assert.equal(ray.intersectObject(withDoors, true).length, 0);
+        }
+        const adjacent = new T.Raycaster(new T.Vector3(x - dz * 5 + dx * 3, 2, z + dx * 5 + dz * 3), new T.Vector3(-dx, 0, -dz).normalize(), 0, 7);
+        assert(adjacent.intersectObject(withDoors, true).length > 0);
+    }
+});
+
+test('Izumi plaza keeps shared stair landings, a vertical passenger lift and a B1 Water Tree', () => {
+    const tree = layout.landmarks.find(item => item.id === 'whity-izumi-water-tree')!;
+    assert.equal(tree.level, 'district-underground');
+    assert(flat.some(floor => contains(floor, tree)));
+    const model = buildWaterTree(tree);
+    assert(model.getObjectByName('water-tree-trunk'));
+    assert(model.getObjectByName('water-tree-mirrored-leaves') instanceof T.InstancedMesh);
+    const size = new T.Box3().setFromObject(model).getSize(new T.Vector3());
+    assert(size.x > 6 && size.x < 8 && size.y > 3 && size.y < 4.5);
+
+    const lift = publicAccess.connections.find(c => c.id === 'whity-izumi-public-lift')!;
+    assert.equal(lift.kind, 'elevator');
+    assert.deepEqual([lift.from.x, lift.from.z], [lift.to.x, lift.to.z]);
+    const stops = [lift.from, lift.to];
+    assert(Math.hypot(lift.from.x - tree.x, lift.from.z - tree.z) > 8);
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    for (const number of [9, 13]) {
+        const id = 'whity-exit-m-' + number;
+        const lower = publicAccess.connections.find(c => c.id === id)!;
+        const middle = undergroundPublicAreas.find(a => a.id === id + '-middle-landing')!;
+        assert.equal(lower.to.elevationOffset, middle.elevationOffset);
+        assert(contains(middle, lower.to));
+        assert(flat.some(floor => contains(floor, lower.from)));
+        assert(Math.hypot(lower.from.x - tree.x, lower.from.z - tree.z) > 8);
+        stops.push(lower.from, lower.to);
+        for (const suffix of ['-1', '-2']) {
+            const branch = publicAccess.connections.find(c => c.id === id + suffix)!;
+            assert.equal(branch.from.elevationOffset, middle.elevationOffset);
+            assert(contains(middle, branch.from));
+            assert(openings.some(o => o.connectionId === branch.id && o.level === 'district-ground'));
+            assert(!layout.exteriorOpenings.some(o => contains(o, branch.to)));
+            stops.push(branch.from, branch.to);
+        }
+    }
+    assert(!edges.some(edge => stops.some(stop => edge.from === stop.id || edge.to === stop.id)));
 });

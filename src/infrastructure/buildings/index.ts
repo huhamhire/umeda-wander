@@ -11,6 +11,7 @@ import { building as b9 } from './jp-tower/index.ts';
 import { building as sanbangai } from './hankyu-sanbangai/index.ts';
 import { building as hepFive } from './hep-five/index.ts';
 import { building as hepNavio } from './hep-navio/index.ts';
+import { building as osBuilding } from './os-building/index.ts';
 
 export const geographicBuildings = [
     b0,
@@ -25,5 +26,6 @@ export const geographicBuildings = [
     b9,
     sanbangai,
     hepFive,
-    hepNavio
+    hepNavio,
+    osBuilding
 ];

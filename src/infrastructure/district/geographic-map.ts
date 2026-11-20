@@ -22,6 +22,10 @@ import { createElevatedBlocks } from '../public-areas/elevated-blocks.ts';
 import { createDeckAccess } from '../public-areas/deck-access.ts';
 import { createJpBasementAccess } from '../public-areas/south-diamor/jp-access.ts';
 import { createSonechikaAccess } from '../public-areas/south-diamor/sonechika-access.ts';
+import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
+import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
+import { createWhityNorthMallAccess } from '../public-areas/whity/north-mall-access.ts';
+import { createWhityNorthMall2Access } from '../public-areas/whity/north-mall-2-access.ts';
 import { southernWalkingRoutes } from '../public-areas/south-diamor/walking-routes.ts';
 import { northernWalkingRoutes } from '../public-areas/north-decks/walking-routes.ts';
 import { createGrandFrontPlazaAccess } from '../public-areas/north-atrium/grand-front-plaza-access.ts';
@@ -43,16 +47,24 @@ export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
 const sonechikaAccess = createSonechikaAccess();
+const izumiAccess = createIzumiPlazaAccess();
+const whityNorthAccess = createWhityNorthMallAccess();
+const whityNorth2Access = createWhityNorthMall2Access();
+const whityAccess = [createWhityStreetExits(), izumiAccess, whityNorthAccess, whityNorth2Access];
 const streetConnections = [
     ...northAccess.connections,
     ...jpAccess.connections,
     ...grandFrontPlazaAccess.connections,
     ...metroAccess.connections,
-    ...sonechikaAccess.connections
+    ...sonechikaAccess.connections,
+    ...whityAccess.flatMap(access => access.connections)
 ];
 export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
-    areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas, ...sonechikaAccess.areas],
+    areas: [
+        ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
+        ...sonechikaAccess.areas, ...whityAccess.flatMap(access => access.areas)
+    ],
 };
 const patchFloors = undergroundPatches.map(p => ({
     id: p.id,
@@ -81,7 +93,7 @@ export const basements = buildBasementOccupancies(
     shared.stations.flatMap(s => s.layout.areas.filter(a => a.kind !== 'public' && s.levels.find(l => l.id === a.level)?.y === -8))
 );
 export const elevated = createElevatedBlocks(shared.stations);
-const assemblyLevels = [...shared.stations.flatMap(s => s.levels), ...elevatedLevels, publicGroundLevel];
+const assemblyLevels = [...shared.stations.flatMap(s => s.levels), ...elevatedLevels, sharedUndergroundLevel, publicGroundLevel];
 // Stair landings join their block before union; lift doors meet the existing deck.
 for (const b of elevated.blocks) {
     b.regions.push(...deckAccess.areas.filter(a => a.level === b.level && a.blockId === b.id));
@@ -91,6 +103,8 @@ export const elevatedAreas = assemblePublicDecks(elevated.blocks, shared.station
 export const exteriorOpenings = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
+    ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
+    ...equipmentBuildingOpenings(whityNorth2Access.connections, whityNorth2Access.buildingEquipment, assemblyLevels),
     ...stationBuildingOpenings(shared.stations),
     ...hankyuConcourseOpenings,
 ];
@@ -140,7 +154,11 @@ const composed = composeStationMaps(
         platforms: [],
         connections: externalConnections,
         exteriorOpenings,
-        canopies: [...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies, ...sonechikaAccess.canopies],
+        canopies: [
+            ...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies, ...sonechikaAccess.canopies,
+            ...whityAccess.flatMap(access => access.canopies)
+        ],
+        landmarks: izumiAccess.landmarks,
         concourses: hankyuConcourses,
         atria: hankyuConcourseAtria,
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
@@ -154,7 +172,9 @@ export const publicWalkingRoutes = {
     edges: [...southWalking.edges, ...northWalking.edges]
 };
 export const edges = [...composed.edges, ...publicWalkingRoutes.edges];
-export const nodes = [...composed.nodes, ...externalConnections.flatMap(c => [c.from, c.to]), ...publicWalkingRoutes.nodes];
+// A landing shared by successive public stair flights is one graph node.
+const externalNodes = new Map(externalConnections.flatMap(c => [c.from, c.to]).map(node => [node.id, node]));
+export const nodes = [...composed.nodes, ...externalNodes.values(), ...publicWalkingRoutes.nodes];
 export const levels = [...composed.levels, sharedUndergroundLevel, publicGroundLevel, ...elevatedLevels].map(level => ({
     ...level,
     name: resolveMessage(level.name),

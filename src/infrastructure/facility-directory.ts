@@ -57,6 +57,13 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id === 'sonechika-public-lift') {
             return messageText('facilities.locations.sonechikaLift');
         }
+        const whityExit = /^whity-exit-([a-z]-\d+(?:-\d+)?)(?:-lower)?$/.exec(id)?.[1];
+        if (whityExit) {
+            return messageText('facilities.locations.whityExit', { number: whityExit.toUpperCase() });
+        }
+        if (id === 'whity-izumi-public-lift') {
+            return messageText('facilities.locations.whityIzumi');
+        }
         if (id === 'district-jr-metro-stairs') {
             return messageText('facilities.locations.midosujiExit', { number: '3A' });
         }

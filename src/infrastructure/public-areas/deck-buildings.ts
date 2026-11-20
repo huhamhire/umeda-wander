@@ -14,6 +14,8 @@ export const deckBuildingOccupancies: {
     const definitions: BuildingOccupancy[] = geographicBuildings
         // Sanbangai (阪急三番街) is already represented by its station's floors, not a second slab.
         .filter(b => b.id !== 'hankyu-sanbangai')
+        // OS Building (ＯＳビル) is a B1-to-street access host outside the public deck network.
+        .filter(b => b.id !== 'os-building')
         .filter(b => ['daimaru', 'hankyu-dept', 'hanshin-dept', 'jp-tower'].includes(b.id) === (level === 'district-south-deck'))
         .map(b => ({
             id: b.id,

@@ -22,6 +22,7 @@ import { areaColor } from '../appearance/area-palette.ts';
 import { ModelPrimitives } from './model-primitives.ts';
 import { colors } from '../appearance/scene-palette.ts';
 import { buildWalkwayCanopy } from './public-areas/walkway-canopy-model.ts';
+import { buildWaterTree } from './public-areas/water-tree-model.ts';
 import type { SceneLabelDefinition } from '../labels/scene-labels.ts';
 
 export interface MapModelOptions {
@@ -351,6 +352,11 @@ export class MapModels {
             const model = setRegionOwner(buildWalkwayCanopy(canopy), null);
             this.groups.get(canopy.level)!.add(model);
             this.canopies.push({ model, ground: this.levels.find(level => level.id === canopy.level)!.y === 0 });
+        }
+        for (const landmark of this.layout.landmarks ?? []) {
+            const model = setRegionOwner(buildWaterTree(landmark), null);
+            this.groups.get(landmark.level)!.add(model);
+            this.label(landmark.name, landmark.x, 4.45, landmark.z, landmark.level, false, false, null, model);
         }
         for (const guide of this.layout.guides ?? []) {
             for (const p of guide.points) {
