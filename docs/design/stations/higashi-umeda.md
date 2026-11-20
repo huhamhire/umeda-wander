@@ -24,6 +24,25 @@ B1 公共通路按北改札区、中改札区和南改札外分组标注寄存�
 
 [大阪市换乘资料 D](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda01-5-2%28202109%29.pdf)确认从御堂筋线南改札附近经 Whity 梅田前往东梅田 B1 改札。现役 `public-areas/whity/` 与站点公共接口据此表达接驳，从 M16 南改札外的东侧离开，避开付费区，接 T20 北侧公共接口。它代表已知公共连接拓扑，具体宽度、拐点、坡道与商业入口仍需更细平面资料，暂不建立跨运营者 `RouteEdge`。
 
+## 南侧 8／9 号口
+
+- **8 号**是往大阪站前第 4 大楼的地下接入。大阪市道案内明确上行后仍可进该楼 B1，另有从同一地下区域下到 B2 的通路。地理模型使用同一 B1 探索层内的局部高差，画楼梯、相邻扶梯和闸外落台。OSM F54 用于平面位置参照，梯向与 2.2 米高差是拟合。[大阪市第 4 大楼 B1 路线](https://www.city.osaka.lg.jp/zaisei/page/0000419949.html) · [第 4 大楼 B2 路线](https://www.city.osaka.lg.jp/shimin/page/0000600984.html) · [OSM F54](https://www.openstreetmap.org/node/5024365377)
+- **9 号**通往街面。地面锚点采用标成 9 号的节点 5024365378（34.700314° N，135.4992444° E），两段折返楼梯及横向平台采用同节点相连的 OSM way 1329514174，独立顶棚参照 way 619026238。构内图标记 F51，OSM 另有同名工程号节点，两个来源点相隔约 21 米。地面口以带顶棚和楼梯线位的一组为准，梯宽和中间标高为模型估计。[9 号地面路线照片](https://mcs-webcontents.s3.ap-northeast-1.amazonaws.com/contents/access_umeda_tanimachi_line.pdf) · [折返轴线](https://www.openstreetmap.org/way/1329514174) · [顶棚轮廓](https://www.openstreetmap.org/way/619026238)
+
+两处都保留原出入口设施记录。局部模型只表达接入层级和梯口，原站内及跨站步行边保留现有范围。
+
+## Whity 侧 1／3 号口
+
+- **1 号**从北东、北西改札外直通 Whity 地下街。站模保留 B1 出入口及公共通路，已移除原示意地面梯段。富国生命大楼电梯属于独立楼内接入。[Whity 官方交通图](https://whity.osaka-chikagai.jp/index.php/access)
+- **3 号**经短楼梯接 Whity／DIAMOR 方向的地下通路，按 B1 同一探索层内的局部高差表达。拟合值为 1.6 米，保留原设施编号。[带照片路线](https://mcs-webcontents.s3.ap-northeast-1.amazonaws.com/contents/access_umeda_tanimachi_line.pdf)
+
+## 东侧 2／4 号楼宇入口
+
+- **2 号**在清和梅田大楼一侧独立表达楼梯、扶梯和 B1–1F 电梯。井道依 OSM 电梯及接入足道拟合，梯组依据构内图的排列与楼宇临街面拟合。[Osaka Metro 无障碍出入口](https://subway.osakametro.co.jp/station_guide/T/t20/index.php) · [OSM 电梯](https://www.openstreetmap.org/node/10959644129)
+- **4 号**在中东改札外接 Cofre 梅田。楼梯上端取该建筑的 OSM 入口节点，电梯按公开照片显示的相邻关系拟合，沿用原地面电梯的设施编号。真实井道中心、门向、梯宽和中间平台尺寸未由资料确定。[OSM 建筑入口](https://www.openstreetmap.org/node/10959644128) · [4 号照片及动线](https://route.tsunagood.net/accea-cafe-umeda/)
+
+两座电梯各自保留 B1 和 1F 的门前承接与开口。楼宇接入只画公共梯口、井道和落台，步行图沿用现况。
+
 ## 验证
 
 检查两侧站台和轨道内侧关系、四组改札边界、各层落点支撑、站台电梯归属、真实楼板开口、菜单编号、默认聚焦 B1、站内示意路线以及 Whity 接驳的付费区避让。沿用移动端浮动菜单、分层与镜头取景，无新增 UI 流程；不操作浏览器。

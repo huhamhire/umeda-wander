@@ -10,7 +10,7 @@ import { platformLocalPoint, pointInPolygon } from '../../src/domain/map/geometr
 import { platformRail } from '../../src/domain/map/rail-geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import { districtPlacements } from '../../src/infrastructure/district-placement.ts';
-import { edges, facilities, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, facilities, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
 import { higashiStation } from '../../src/infrastructure/stations/higashi-umeda/index.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 test(
@@ -38,6 +38,55 @@ test(
         assert(higashiStation.facilities.every(f => f.evidence.source === 'tanimachi' && f.evidence.pages[0] === 1));
     }
 );
+test('T20 exit 8 stays underground while roofed exit 9 turns back to reach the street', () => {
+    for (const suffix of ['stairs', 'escalator']) {
+        const bank = layout.connections.find(c => c.id === 'higashi-umeda-exit-8-' + suffix)!;
+        assert.equal(bank.from.level, 't20-hall');
+        assert.equal(bank.to.level, 't20-hall');
+        assert(bank.to.elevationOffset! > 0);
+    }
+    assert(!layout.areas.some(a => a.id === 'higashi-umeda-exit-8-ground'));
+    const lower = layout.connections.find(c => c.id === 'higashi-umeda-exit-9-lower-stairs')!;
+    const upper = layout.connections.find(c => c.id === 'higashi-umeda-exit-9-stairs')!;
+    assert(lower.to.x < lower.from.x && upper.to.x > upper.from.x);
+    assert.equal(lower.to.elevationOffset, upper.from.elevationOffset);
+    assert.equal(upper.to.level, 't20-ground');
+    assert(Math.hypot(upper.to.x - 754.464, upper.to.z - 855.606) < .01);
+    assert(layout.canopies.some(c => c.id === 'higashi-umeda-exit-9-canopy'));
+    for (const bank of [lower, upper]) {
+        const stops = [bank.from.id, bank.to.id];
+        assert(!edges.some(edge => stops.includes(edge.from) || stops.includes(edge.to)));
+    }
+});
+
+test('T20 exits 1 and 3 connect to the underground mall without opening street slabs', () => {
+    assert(!layout.connections.some(c => c.id === 'higashi-umeda-exit-1-stairs'));
+    assert(!layout.areas.some(a => a.id === 'higashi-umeda-exit-1-ground' || a.id === 'higashi-umeda-exit-3-ground'));
+    const stair = layout.connections.find(c => c.id === 'higashi-umeda-exit-3-stairs')!;
+    assert.equal(stair.from.level, 't20-hall');
+    assert.equal(stair.to.level, 't20-hall');
+    assert(stair.to.elevationOffset! > 0);
+    assert(planFloorOpenings([stair], levels, []).every(o => levels.find(l => l.id === o.level)!.y < 0));
+    assert(facilities.filter(f => /higashi-umeda-exit-[13]$/.test(f.id)).every(f => f.level === 't20-hall'));
+});
+
+test('T20 exits 2 and 4 have separate public shafts and retained street openings', () => {
+    const lift2 = layout.connections.find(c => c.id === 'higashi-umeda-exit-2-lift')!;
+    const lift4 = layout.connections.find(c => c.id === 'higashi-umeda-street-lift')!;
+    const stair4 = layout.connections.find(c => c.id === 'higashi-umeda-exit-4-stairs')!;
+    assert(layout.connections.some(c => c.id === 'higashi-umeda-exit-2-escalator'));
+    assert(Math.hypot(lift2.to.x - 791.233, lift2.to.z - 733.3205) < .002);
+    assert(Math.hypot(stair4.to.x - 810.945, stair4.to.z - 801.448) < .002);
+    assert(Math.hypot(lift2.to.x - lift4.to.x, lift2.to.z - lift4.to.z) > 30);
+    for (const lift of [lift2, lift4]) {
+        assert.equal(lift.from.x, lift.to.x);
+        assert.equal(lift.from.z, lift.to.z);
+        const openings = planFloorOpenings([lift], levels, []);
+        assert(openings.some(o => o.level === 'district-underground'));
+        assert(openings.some(o => o.level === 't20-ground'));
+        assert(facilities.some(f => f.id === 'connection-' + lift.id + '-to'));
+    }
+});
 test(
     'T20 landing nodes are supported, vertical equipment follows each platform and upper openings include every flight',
     () => {

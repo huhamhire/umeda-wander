@@ -17,7 +17,7 @@ const core: Record<StationId, string[]> = {
         'south-public'
     ],
     'hanshin-umeda': ['west-public', 'central-public', 'east-hall-public', 'south-b1-lift-door-approach', 'f23-b1-approach'],
-    'higashi-umeda': ['public-spine', 'whity-public'],
+    'higashi-umeda': ['public-spine', 'whity-public', 'exit-2-lift-b1:door-approach', 'street-lift-low:door-approach'],
     'nishi-umeda': ['public-hall', 'north-west-public', 'south-public'],
     // The southern exits have local equipment bays, not a confirmed full-length hall.
     'kitashinchi': ['north-public'],
@@ -46,7 +46,7 @@ export function stationFrontages(stations: StationMap[]): FloorArea[] {
             const zs = a.outline.map(p => p.z);
             if (Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) < 90) {
                 return a.elevationOffset ? [
-                    { ...a, blockId: s.id === 'nishi-umeda' ? 'hanshin-west-b1' : undefined },
+                    { ...a, blockId: a.blockId ?? (s.id === 'nishi-umeda' ? 'hanshin-west-b1' : undefined) },
                     { ...a, id: a.id + ':lower-apron', elevationOffset: 0 }
                 ] : [a];
             }

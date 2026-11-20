@@ -63,6 +63,10 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('hanshin')) {
             return messageText('facilities.locations.hanshin');
         }
+        const higashiBuildingExit = /^higashi-umeda-exit-([24])-/.exec(id)?.[1];
+        if (higashiBuildingExit || id === 'higashi-umeda-street-lift') {
+            return messageText('stations.higashiUmeda.labels.entrance', { number: higashiBuildingExit ?? '4' });
+        }
         if (id.startsWith('higashi')) {
             return messageText('facilities.locations.higashiUmeda');
         }
