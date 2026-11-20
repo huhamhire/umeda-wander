@@ -13,6 +13,7 @@ import { createGeographicStations } from '../../src/infrastructure/district/geog
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 
 const geometry = (a: PlanRegion) => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
     number,
@@ -209,5 +210,40 @@ test('M16 street exits preserve their geographic anchors, lane openings and publ
             assert(flat.some(a => contains(a, lane.to)));
         }
         assert(!edges.some(edge => [exit.from.id, exit.to.id].some(stop => edge.from === stop || edge.to === stop)));
+    }
+});
+
+test('Sonechika public equipment stays on its documented approaches and 11-44 stays at street level', () => {
+    const exit = publicAccess.connections.find(c => c.id === 'sonechika-exit-11-43')!;
+    const lift = publicAccess.connections.find(c => c.id === 'sonechika-public-lift')!;
+    const streetOnly = facilities.find(f => f.id === 'sonechika-exit-11-44')!;
+    const main = union.find(p => contains({ outline: p[0]!.map(([x, z]) => ({ x, z })) }, { x: 735, z: 1088 }))!;
+    const publicFloor = {
+        outline: main[0]!.map(([x, z]) => ({ x, z })),
+        holes: main.slice(1).map(ring => ring.map(([x, z]) => ({ x, z })))
+    };
+    assert.equal(exit.kind, 'escalator');
+    assert(Math.hypot(exit.to.x - 767.87, exit.to.z - 1102.05) < .02);
+    for (const c of [exit, lift]) {
+        assert.equal(c.blockId, 'kitashinchi-public-b1');
+        assert.equal(c.evidence.source, 'district');
+        assert(contains(publicFloor, c.from));
+        assert(!edges.some(e => [c.from.id, c.to.id].some(id => e.from === id || e.to === id)));
+    }
+    assert(contains(publicFloor, { x: lift.from.x - 2, z: lift.from.z }));
+    assert(Math.hypot(lift.to.x - 719.62, lift.to.z - 1102.02) < .02);
+    const model = new VerticalConnectionModel(lift, levels, []);
+    model.update(id => levels.find(l => l.id === id)!.y, 'all');
+    model.group.updateMatrixWorld(true);
+    const lowerDoor = model.group.getObjectByName('lower-landing')!;
+    const groundDoor = model.group.getObjectByName('upper-landing')!;
+    for (const [door, x, z] of [[lowerDoor, -1, 0], [groundDoor, 0, 1]] as const) {
+        assert(door.getWorldDirection(new T.Vector3()).distanceTo(new T.Vector3(x, 0, z)) < 1e-8);
+    }
+    assert.equal(streetOnly.level, 'district-ground');
+    assert(Math.hypot(streetOnly.x - 768.43, streetOnly.z - 1070.03) < .02);
+    assert(!layout.connections.some(c => c.id.includes('11-44')));
+    for (const number of ['11-43', '11-44']) {
+        assert(layout.canopies.some(c => c.id === 'sonechika-' + number + '-canopy'));
     }
 });

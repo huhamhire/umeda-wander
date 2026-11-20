@@ -51,6 +51,12 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('jp-garden')) {
             return messageText('facilities.locations.jpGarden');
         }
+        if (id === 'sonechika-exit-11-43') {
+            return messageText('facilities.locations.sonechikaExit', { number: '11-43' });
+        }
+        if (id === 'sonechika-public-lift') {
+            return messageText('facilities.locations.sonechikaLift');
+        }
         if (id === 'district-jr-metro-stairs') {
             return messageText('facilities.locations.midosujiExit', { number: '3A' });
         }

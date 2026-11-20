@@ -29,6 +29,8 @@
   "facilities.locations.sakurabashi": "桜橋口",
   "facilities.locations.southBridge": "南側歩道橋",
   "facilities.locations.southPublic": "南側公共通路",
+  "facilities.locations.sonechikaExit": "そねちか {number}出口",
+  "facilities.locations.sonechikaLift": "そねちか 11-41出口付近",
   "facilities.locations.umekitaPublic": "うめきた改札外",
   "facilities.locations.umekitaWalkway": "西口・うめきた連絡通路",
   "facilities.locations.westGate": "西口",

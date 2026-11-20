@@ -14,6 +14,16 @@
 
 设备用 `blockId` 标明归属；上下层落点进入设施目录，内部编号不进入界面名称。井道保持竖直，上层楼板、铺装与遮盖使用共用孔洞。
 
+### 曾根地下道
+
+- **11-43** 按[凤凰厅到达指引](https://phoenixhall.jp/access/)表达扶梯。采用 [OSM 地面梯口](https://www.openstreetmap.org/node/3499801000)、[顶棚](https://www.openstreetmap.org/way/618802454)和[地下折角支路](https://www.openstreetmap.org/way/1322885750)。地下落点和支路宽度是拟合值。
+- **11-44** 依据 [OSM 节点](https://www.openstreetmap.org/node/5024365381)和[顶棚轮廓](https://www.openstreetmap.org/way/618802450)表达街面标记和遮盖。地下门位和跨层设备缺少足够依据，模型只表达地面部分。
+- **11-41 东侧公共直梯**按 [OSM 电梯点](https://www.openstreetmap.org/node/5865318044)定位。依据[地下步道](https://www.openstreetmap.org/way/1322885752)和[街面步道](https://www.openstreetmap.org/way/1551653211)将门向分别拟合为西向、南向。[国土交通省资料第 1 页](https://www.kkr.mlit.go.jp/plan/happyou/thesises/2021/ol9a8v000004bznv-att/aka-11.pdf)区分地面、地下 1 层桜橋停车场与地下 2 层步道。模型中的 `district-underground` 是地区公共步道的 B1 展示层，井道只表达公共步道与地面两处落点，停车层未建模。
+
+上述设施归 `kitashinchi-public-b1`。11-43 扶梯和公共直梯的地下落点接入现役公共楼板，两处 1F 开口与设备共用坐标。步行图继续采用已登记的公共路径。
+
+### 其他区域
+
 | 区域 | 设施和依据 |
 | --- | --- |
 | JR 北中庭 | JR 构内图第 5、6 页标出 75／76 扶梯和 B 直梯。B 直梯的上部停靠见[二层连廊](./elevated.md)。 |

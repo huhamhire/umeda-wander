@@ -21,6 +21,7 @@ import plan from '../../../data/geography/runtime-plan.json' with { type: 'json'
 import { createElevatedBlocks } from '../public-areas/elevated-blocks.ts';
 import { createDeckAccess } from '../public-areas/deck-access.ts';
 import { createJpBasementAccess } from '../public-areas/south-diamor/jp-access.ts';
+import { createSonechikaAccess } from '../public-areas/south-diamor/sonechika-access.ts';
 import { southernWalkingRoutes } from '../public-areas/south-diamor/walking-routes.ts';
 import { northernWalkingRoutes } from '../public-areas/north-decks/walking-routes.ts';
 import { createGrandFrontPlazaAccess } from '../public-areas/north-atrium/grand-front-plaza-access.ts';
@@ -41,10 +42,17 @@ const metroAccess = createMetroStreetExits();
 export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
-const streetConnections = [...northAccess.connections, ...jpAccess.connections, ...grandFrontPlazaAccess.connections, ...metroAccess.connections];
+const sonechikaAccess = createSonechikaAccess();
+const streetConnections = [
+    ...northAccess.connections,
+    ...jpAccess.connections,
+    ...grandFrontPlazaAccess.connections,
+    ...metroAccess.connections,
+    ...sonechikaAccess.connections
+];
 export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
-    areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas],
+    areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas, ...sonechikaAccess.areas],
 };
 const patchFloors = undergroundPatches.map(p => ({
     id: p.id,
@@ -132,7 +140,7 @@ const composed = composeStationMaps(
         platforms: [],
         connections: externalConnections,
         exteriorOpenings,
-        canopies: [...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies],
+        canopies: [...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies, ...sonechikaAccess.canopies],
         concourses: hankyuConcourses,
         atria: hankyuConcourseAtria,
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
@@ -166,5 +174,10 @@ export const layout = {
         })),
     })),
 };
-export const facilities = completeFacilityDirectory(composed.sourceFacilities, layout.connections, layout.platforms, levels);
+export const facilities = completeFacilityDirectory(
+    [...composed.sourceFacilities, ...sonechikaAccess.facilities],
+    layout.connections,
+    layout.platforms,
+    levels
+);
 export const geographicPlan = plan;

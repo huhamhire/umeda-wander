@@ -128,6 +128,8 @@ export interface VerticalConnection {
     laneSpacing?: number;
     stairLandingLength?: number;
     doorFacingRad?: number;
+    /** Explicit lower elevator door heading when the two landings use different shaft faces. */
+    lowerDoorFacingRad?: number;
     /** The lower elevator door faces the opposite side of the shaft. */
     reverseLowerDoor?: boolean;
     placement?: 'exterior';

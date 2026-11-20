@@ -281,7 +281,10 @@ export class VerticalConnectionModel {
         box(this.cabin, 'cabin-door-seam', 0, 1.2, 1.45, 0.04, 2.3, 0.04, 0x5c8072);
         this.landing(this.lowLanding, true);
         this.landing(this.highLanding, true);
-        if (this.connection.reverseLowerDoor) {
+        if (this.connection.lowerDoorFacingRad !== undefined) {
+            this.lowLanding.rotation.y = this.heading + Math.PI / 2 - this.connection.lowerDoorFacingRad;
+        }
+        else if (this.connection.reverseLowerDoor) {
             this.lowLanding.rotation.y = Math.PI;
         }
     }
