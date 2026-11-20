@@ -1,6 +1,6 @@
 import { build } from 'esbuild';
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -80,15 +80,24 @@ export async function buildPage(): Promise<void> {
     if (!app) {
         throw new Error('Missing application entry module');
     }
-    await mkdir('dist/chunks', { recursive: true });
+    const chunkDirectory = resolve('dist/chunks');
+    const chunks = result.outputFiles.filter(file => file !== app);
+    await mkdir(chunkDirectory, { recursive: true });
     // Publish chunks before the entry starts pointing to them during a dev rebuild.
-    await Promise.all(result.outputFiles.filter(file => file !== app).map(file => writeFile(file.path, file.contents)));
+    await Promise.all(chunks.map(file => writeFile(file.path, file.contents)));
     await Promise.all([
         writeFile('dist/index.html', html),
         writeFile(app.path, app.contents),
         writeFile('dist/styles.css', css),
         writeFile('dist/osm-derived-data.json', JSON.stringify(geographicOsmData()))
     ]);
+    // Prune only obsolete hashed JavaScript once the current page and all its chunks are in place.
+    const activeChunks = new Set(chunks.map(file => file.path));
+    const oldChunks = (await readdir(chunkDirectory, { withFileTypes: true }))
+        .filter(file => file.isFile() && /^[\w-]+-[A-Z0-9]{8}\.js$/.test(file.name))
+        .map(file => resolve(chunkDirectory, file.name))
+        .filter(path => !activeChunks.has(path));
+    await Promise.all(oldChunks.map(path => rm(path, { force: true })));
     console.log('Built dist/index.html, application modules, styles and OSM derived data');
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

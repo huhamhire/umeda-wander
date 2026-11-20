@@ -1,6 +1,7 @@
 import type { LevelId, StationId } from '../../domain/map/model.ts';
 import type { NavigationData } from '../../application/exploration/navigation-data.ts';
 import { maxWalkingStops } from '../../application/navigation/walking-route.ts';
+import { cameraPitchDegrees } from './pitch-limits.ts';
 
 export interface ShareCamera {
     center: [number, number, number];
@@ -39,7 +40,7 @@ export function readMapView(url: URL, data: NavigationData): SharedMapView | und
         span: numericField('span')
     };
     if (!camera.center.every(value => between(value, -100000, 100000)) ||
-        !between(camera.yaw, -180, 180) || !between(camera.pitch, 15, 80) ||
+        !between(camera.yaw, -180, 180) || !between(camera.pitch, cameraPitchDegrees.min, cameraPitchDegrees.max) ||
         !between(camera.span, .01, 100000)) {
         return undefined;
     }

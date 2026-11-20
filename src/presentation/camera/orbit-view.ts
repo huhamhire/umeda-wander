@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { cameraPitchDegrees } from './pitch-limits.ts';
 
 /**
  * Build the viewing-basis quaternion from the camera offset.
@@ -16,7 +17,11 @@ export function orbitAboutPoint(offset: T.Vector3, center: T.Vector3, pivot: T.V
     const previous = orientation(offset);
     const distance = offset.length();
     const yaw = Math.atan2(offset.x, offset.z) - yawRadians;
-    const pitch = T.MathUtils.clamp(Math.asin(offset.y / distance) + pitchRadians, 15 * Math.PI / 180, 80 * Math.PI / 180);
+    const pitch = T.MathUtils.clamp(
+        Math.asin(offset.y / distance) + pitchRadians,
+        T.MathUtils.degToRad(cameraPitchDegrees.min),
+        T.MathUtils.degToRad(cameraPitchDegrees.max)
+    );
     offset.set(
         Math.sin(yaw) * Math.cos(pitch) * distance,
         Math.sin(pitch) * distance,

@@ -50,7 +50,9 @@ test(
             assert.ok(Math.abs(offset.length() - distance) < 1e-9);
             assert.equal(current.top, initial.top);
             assert.equal(current.right, initial.right);
-            assert.ok(offset.y / distance >= Math.sin(15 * Math.PI / 180) - 1e-9 && offset.y / distance <= Math.sin(80 * Math.PI / 180) + 1e-9);
+            const pitch = T.MathUtils.radToDeg(Math.asin(offset.y / distance));
+            assert.ok(pitch >= 5 - 1e-9 && pitch <= 80 + 1e-9);
         }
+        assert.ok(Math.abs(T.MathUtils.radToDeg(Math.asin(offset.y / distance)) - 5) < 1e-9);
     }
 );

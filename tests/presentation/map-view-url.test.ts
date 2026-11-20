@@ -41,6 +41,8 @@ test('shared map URLs round-trip the rendered frame and state without replacing 
     assert(!next.searchParams.has('allow-paid'));
     assert.deepEqual(next.searchParams.getAll('stop'), ['entry', 'hall']);
     assert.deepEqual(readMapView(next, data), view);
+    const lowPitch = { ...view, camera: { ...view.camera, pitch: 5 } };
+    assert.deepEqual(readMapView(mapViewUrl(address, lowPitch), data), lowPitch);
     const nearby = { ids: ['entry', 'locker'], allowPaid: false };
     assert.deepEqual(readMapView(mapViewUrl(address, { ...view, itinerary: nearby }), data)?.itinerary, nearby);
     assert.equal(readMapView(mapViewUrl(address, { ...view, camera: { ...view.camera, yaw: -121.3199999 } }), data)?.camera.yaw, -121.32);
@@ -49,7 +51,7 @@ test('shared map URLs round-trip the rendered frame and state without replacing 
 test('invalid or incomplete cameras are rejected and obsolete IDs fall back in place', () => {
     const original = mapViewUrl(new URL('https://example.test/'), view);
     for (const [key, value] of [
-        ['pitch', '90'], ['x', 'bad'], ['y', ''], ['yaw', 'Infinity'], ['span', '0']
+        ['pitch', '4.999'], ['pitch', '90'], ['x', 'bad'], ['y', ''], ['yaw', 'Infinity'], ['span', '0']
     ] as const) {
         const address = new URL(original);
         address.searchParams.set(key, value);
