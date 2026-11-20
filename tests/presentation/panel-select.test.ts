@@ -112,4 +112,22 @@ test('unscoped candidates wait for committed text, with debounce and no stale se
     trigger.bounds = { ...trigger.bounds, top: -32, bottom: -2 };
     window.dispatchEvent(new Event('scroll'));
     assert(!panel.children[0]!.opened);
+
+    const stationTrigger = new ElementStub();
+    const stationPanel = new ElementStub();
+    stationTrigger.append(new ElementStub());
+    const station = bindPanelSelect(stationTrigger as unknown as HTMLButtonElement, stationPanel as unknown as HTMLElement);
+    const choicesWithAll = [
+        { value: 'all', label: 'All stations', notifyOnReselect: true },
+        { value: 'jr-osaka', label: 'Osaka' }
+    ];
+    station.setOptions(choicesWithAll, 'all');
+    const stationList = stationPanel.children[0]!.children[0]!;
+    const changes: string[] = [];
+    stationTrigger.addEventListener('change', () => changes.push(station.value));
+    for (const index of [0, 1, 1, 0]) {
+        stationTrigger.dispatchEvent(new Event('click'));
+        stationList.children[index]!.dispatchEvent(new Event('click'));
+    }
+    assert.deepEqual(changes, ['all', 'jr-osaka', 'all']);
 });

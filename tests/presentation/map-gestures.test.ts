@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Vector3 } from 'three';
 import { MapGestures, type MapGestureActions } from '../../src/presentation/camera/map-gestures.ts';
-import { clampCameraZoom } from '../../src/presentation/camera/camera-framing.ts';
+import { manualZoomSpan } from '../../src/presentation/camera/camera-framing.ts';
 
 class CanvasStub extends EventTarget {
     captures: number[] = [];
@@ -30,7 +30,7 @@ class CanvasStub extends EventTarget {
     }
 }
 
-function dispatch(canvas: CanvasStub, type: string, values: Record<string, number | string>): Event {
+function dispatch(canvas: CanvasStub, type: string, values: Record<string, number | string | boolean>): Event {
     const event = new Event(type, { cancelable: true });
     Object.assign(event, { pointerId: 1, button: 0, buttons: 1, clientX: 0, clientY: 0 }, values);
     canvas.dispatchEvent(event);
@@ -101,6 +101,52 @@ test('middle-button orbit freezes the viewport pivot without picking the cursor 
         assert.deepEqual(zooms, []);
         assert.deepEqual(selections, []);
         assert.deepEqual(canvas.captures, [1]);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('Alt trackpad scroll uses one centre pivot until settling and Ctrl pinch still zooms', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const pivot = new Vector3(1, 2, 3);
+    let starts = 0;
+    let redraws = 0;
+    const { canvas, gestures, rotations, zooms } = setup({
+        beginOrbit: midpoint => {
+            assert.equal(midpoint, undefined);
+            starts++;
+            return pivot;
+        },
+        invalidate: () => {
+            redraws++;
+        }
+    });
+    try {
+        const wheel = (dx: number, dy: number, ctrlKey = false) => dispatch(canvas, 'wheel', {
+            deltaX: dx, deltaY: dy, deltaMode: 0, altKey: true, ctrlKey
+        });
+        assert(wheel(20, -10).defaultPrevented);
+        assert(gestures.isMoving && gestures.isRotating);
+        assert(canvas.attributes.has('data-orbiting'));
+        t.mock.timers.tick(100);
+        pivot.set(4, 5, 6);
+        wheel(-5, 8);
+        t.mock.timers.tick(100);
+        assert(gestures.isMoving);
+        assert.equal(starts, 1);
+        assert.deepEqual(rotations, [[1, 2, 3, -20 * .006, 10 * .006], [1, 2, 3, 5 * .006, -8 * .006]]);
+        assert.deepEqual(zooms, []);
+        t.mock.timers.tick(100);
+        assert(!gestures.isMoving && !gestures.isRotating);
+        assert(!canvas.attributes.has('data-orbiting'));
+        assert.equal(redraws, 3);
+
+        wheel(5, 10);
+        assert.equal(starts, 2);
+        assert.deepEqual(rotations[2]!.slice(0, 3), [4, 5, 6]);
+        wheel(0, -50, true);
+        assert.deepEqual(zooms, [Math.exp(0.05)]);
+        assert(!gestures.isMoving);
     } finally {
         gestures.dispose();
     }
@@ -243,12 +289,11 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
 });
 
 test('pinching out and back can restore a shared scale wider than the current viewport fit', () => {
-    const startingZoom = 0.75;
-    const minimumZoom = 1;
-    let zoom = startingZoom;
+    const startingSpan = 200;
+    let span = startingSpan;
     const { canvas, gestures } = setup({
         zoom: factor => {
-            zoom = clampCameraZoom(zoom * factor, minimumZoom, startingZoom);
+            span = manualZoomSpan(span, factor, startingSpan, 150, 1);
         }
     });
     try {
@@ -257,7 +302,7 @@ test('pinching out and back can restore a shared scale wider than the current vi
         dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 0 });
         dispatch(canvas, 'pointermove', { pointerId: 2, clientX: 80 });
         gestures.applyTouchGesture();
-        assert.equal(zoom, 1.5);
+        assert.equal(span, startingSpan / 2);
         dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 0 });
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 80 });
 
@@ -266,7 +311,7 @@ test('pinching out and back can restore a shared scale wider than the current vi
         dispatch(canvas, 'pointermove', { pointerId: 3, clientX: 20 });
         dispatch(canvas, 'pointermove', { pointerId: 4, clientX: 60 });
         gestures.applyTouchGesture();
-        assert.equal(zoom, startingZoom);
+        assert.equal(span, startingSpan);
     } finally {
         gestures.dispose();
     }

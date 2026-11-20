@@ -15,7 +15,7 @@ import { LayerAppearance } from './appearance/layer-appearance.ts';
 import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts';
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
 import { advanceExplode } from './appearance/explode-transition.ts';
-import { cameraEnvelope, clampCameraZoom } from './camera/camera-framing.ts';
+import { cameraEnvelope, clampCameraZoom, manualZoomSpan } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
 import { visibleLabelOccluders } from './labels/label-occlusion.ts';
@@ -25,7 +25,7 @@ export interface MapCameraSnapshot {
     offset: [number, number, number];
     pan: [number, number, number];
     zoom: number;
-    manual?: { center: [number, number, number]; span: number; referenceZoom?: number };
+    manual?: { center: [number, number, number]; span: number; referenceSpan?: number };
     facility?: string;
     followFacility: boolean;
 }
@@ -77,7 +77,7 @@ export class MapScene {
     private manualView?: {
         center: T.Vector3;
         span: number;
-        referenceZoom?: number;
+        referenceSpan: number;
     };
     private framing?: {
         center: T.Vector3;
@@ -249,7 +249,7 @@ export class MapScene {
         this.manualView = {
             center: frame.center.clone(),
             span: frame.span,
-            referenceZoom: this.manualView?.referenceZoom ?? this.zoomValue
+            referenceSpan: this.manualView?.referenceSpan ?? frame.span
         };
     }
 
@@ -493,7 +493,7 @@ export class MapScene {
             manual: this.manualView && {
                 center: this.manualView.center.toArray(),
                 span: this.manualView.span,
-                referenceZoom: this.manualView.referenceZoom
+                referenceSpan: this.manualView.referenceSpan
             },
             facility: this.activeFacility?.id,
             followFacility: this.locatingFacility
@@ -550,7 +550,7 @@ export class MapScene {
             this.manualView = {
                 center: new T.Vector3().fromArray(snapshot.manual.center),
                 span: snapshot.manual.span,
-                referenceZoom: snapshot.manual.referenceZoom ?? snapshot.zoom
+                referenceSpan: snapshot.manual.referenceSpan ?? snapshot.manual.span
             };
             this.baseSpan = snapshot.zoom * snapshot.manual.span;
         }
@@ -563,15 +563,29 @@ export class MapScene {
      * Scale the orthographic view within the limits of the currently usable viewport.
      */
     zoom(factor: number, pivot?: T.Vector3): void {
-        const previousZoom = this.zoomValue;
         this.focusTransition = false;
-        this.zoomValue = clampCameraZoom(previousZoom * factor, this.minimumZoom, this.manualView?.referenceZoom);
-        if (this.manualView) {
-            const spanRatio = previousZoom / this.zoomValue;
-            this.manualView.span *= spanRatio;
-            if (pivot) {
-                this.manualView.center.lerp(pivot, 1 - spanRatio);
+        const nextZoom = clampCameraZoom(this.zoomValue * factor, this.minimumZoom);
+        const beyondAutomaticFit = factor < 1 && nextZoom >= this.zoomValue ? this.framing : undefined;
+        const current = this.manualView ?? beyondAutomaticFit;
+        if (current) {
+            const { baseSpan, minimumZoom } = this.cameraFit();
+            this.baseSpan = baseSpan;
+            this.minimumZoom = minimumZoom;
+            const span = manualZoomSpan(current.span, factor, this.manualView?.referenceSpan ?? current.span, baseSpan, minimumZoom);
+            if (!this.manualView && span !== current.span) {
+                this.freezeFraming(current);
+                this.locatingFacility = false;
             }
+            if (this.manualView) {
+                if (pivot) {
+                    this.manualView.center.lerp(pivot, 1 - span / current.span);
+                }
+                this.manualView.span = span;
+                this.zoomValue = baseSpan / span;
+            }
+        }
+        else {
+            this.zoomValue = nextZoom;
         }
         this.requestRender();
     }
@@ -756,6 +770,30 @@ export class MapScene {
         if (this.draggingExplode && this.framing) {
             return { center: this.framing.center.clone(), span: this.framing.span };
         }
+        const { center, usable, baseSpan, minimumZoom } = this.cameraFit();
+        this.baseSpan = baseSpan;
+        this.minimumZoom = minimumZoom;
+        if (this.refreshShareZoomBounds && this.manualView) {
+            // The same world span can correspond to a different zoom ratio on the receiving viewport.
+            this.zoomValue = baseSpan / this.manualView.span;
+        }
+        this.refreshShareZoomBounds = false;
+        if (this.manualView) {
+            return { center: this.manualView.center.clone(), span: this.manualView.span };
+        }
+        this.zoomValue = clampCameraZoom(this.zoomValue, this.minimumZoom);
+        const span = baseSpan / this.zoomValue;
+        center.copy(facilityCameraCenter(center, span, this.width, this.height, usable));
+        if (this.locatingFacility && this.activeFacility) {
+            const target = facilityCameraCenter(this.selected.position, span, this.width, this.height, usable);
+            this.pan.add(target.clone().sub(center));
+            center.copy(target);
+        }
+        return { center, span };
+    }
+
+    /** Project the current envelope onto the actual camera and visible viewport before limiting zoom. */
+    private cameraFit() {
         const mobile = this.width < 761;
         const viewportHeight = Math.max(1, this.height);
         const envelope = this.framingPoints();
@@ -781,26 +819,8 @@ export class MapScene {
         const usable = facilityFocusRect(viewport, sidebar, mobile);
         const usableWidth = mobile ? this.width * 0.91 : usable.width;
         const baseSpan = Math.max(55, (maxY - minY) * 1.18, (maxX - minX) * viewportHeight / Math.max(1, usableWidth) * 1.12);
-        this.baseSpan = baseSpan;
-        this.minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
-        if (this.refreshShareZoomBounds && this.manualView) {
-            // The same world span can correspond to a different zoom ratio on the receiving viewport.
-            this.zoomValue = baseSpan / this.manualView.span;
-            this.manualView.referenceZoom = this.zoomValue;
-        }
-        this.refreshShareZoomBounds = false;
-        if (this.manualView) {
-            return { center: this.manualView.center.clone(), span: this.manualView.span };
-        }
-        this.zoomValue = clampCameraZoom(this.zoomValue, this.minimumZoom);
-        const span = baseSpan / this.zoomValue;
-        center.copy(facilityCameraCenter(center, span, this.width, this.height, usable));
-        if (this.locatingFacility && this.activeFacility) {
-            const target = facilityCameraCenter(this.selected.position, span, this.width, this.height, usable);
-            this.pan.add(target.clone().sub(center));
-            center.copy(target);
-        }
-        return { center, span };
+        const minimumZoom = minimumMapZoom(baseSpan, maxY - minY, viewportHeight, usable.height);
+        return { center, usable, baseSpan, minimumZoom };
     }
 
     /** Render camera motion independently of static geometry, shading and layer visibility. */

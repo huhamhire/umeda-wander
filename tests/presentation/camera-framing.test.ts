@@ -5,7 +5,24 @@ import { test } from 'node:test';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import type { StationId } from '../../src/domain/map/model.ts';
 import { edges, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
-import { cameraEnvelope } from '../../src/presentation/camera/camera-framing.ts';
+import { cameraEnvelope, manualZoomSpan } from '../../src/presentation/camera/camera-framing.ts';
+
+test('a shallow wide view can zoom out past the automatic vertical fit and zoom in again', () => {
+    // The wide desktop overview at 5° needs a larger span than the vertical fit alone allows.
+    const baseSpan = 1080;
+    const verticalSpan = 380;
+    const minimumZoom = baseSpan / verticalSpan;
+    const zoomedOut = manualZoomSpan(verticalSpan, 1 / 1.18, verticalSpan, baseSpan, minimumZoom);
+    assert(zoomedOut > verticalSpan);
+    assert(Math.abs(manualZoomSpan(zoomedOut, 1.18, verticalSpan, baseSpan, minimumZoom) - verticalSpan) < 1e-9);
+    assert.equal(manualZoomSpan(verticalSpan, 0.1, verticalSpan, baseSpan, minimumZoom), 760);
+});
+
+test('changing viewport fit cannot cause zoom to move in the opposite direction', () => {
+    const existingSpan = 1200;
+    assert.equal(manualZoomSpan(existingSpan, 0.9, 500, 600, 1.2), existingSpan);
+    assert.equal(manualZoomSpan(existingSpan, 2, 500, 600, 1.2), 600);
+});
 test(
     'floor cuts retain an identical camera envelope within each station focus',
     () => {

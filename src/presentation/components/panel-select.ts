@@ -3,6 +3,7 @@ interface SelectOption {
     label: string;
     code?: string;
     icon?: () => SVGSVGElement;
+    notifyOnReselect?: boolean;
 }
 
 interface SelectSearch {
@@ -201,7 +202,7 @@ export function bindPanelSelect(trigger: HTMLButtonElement, panel: HTMLElement, 
     /** Commit an explicit choice, then notify existing filter or facility handlers. */
     function choose(option: SelectOption): void {
         close(true);
-        if (option.value !== value) {
+        if (option.value !== value || option.notifyOnReselect) {
             setValue(option.value);
             trigger.dispatchEvent(new Event('change', { bubbles: true }));
         }

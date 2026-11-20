@@ -89,7 +89,7 @@
   "ui.legend.paid": "付费区域",
   "ui.legend.platform": "站台",
   "ui.legend.public": "公共区域",
-  "ui.map.accessibleDescription": "大阪梅田多站立体地图，可拖动平移、双指缩放和旋转，或使用楼层与设施按钮。",
+  "ui.map.accessibleDescription": "大阪梅田多站立体地图，可拖动平移、双指缩放和旋转，或使用楼层与设施按钮。电脑触控板可按住 Alt 或 Option 并双指滑动来旋转或俯仰。",
   "ui.map.controls": "地图视图",
   "ui.map.fullscreen": "全屏地图",
   "ui.map.exitFullscreen": "退出全屏",

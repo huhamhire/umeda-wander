@@ -89,7 +89,7 @@
   "ui.legend.paid": "Paid area",
   "ui.legend.platform": "Platforms",
   "ui.legend.public": "Public area",
-  "ui.map.accessibleDescription": "Interactive 3D map of Umeda stations. Drag to pan, pinch to zoom, twist with two fingers to rotate, or use the level and facility controls.",
+  "ui.map.accessibleDescription": "Interactive 3D map of Umeda stations. Drag to pan, pinch to zoom, twist with two fingers to rotate, or use the level and facility controls. On a trackpad, hold Alt or Option and slide two fingers to rotate or tilt.",
   "ui.map.controls": "Map controls",
   "ui.map.fullscreen": "Fullscreen map",
   "ui.map.exitFullscreen": "Exit fullscreen",

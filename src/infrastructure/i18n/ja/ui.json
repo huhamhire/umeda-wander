@@ -89,7 +89,7 @@
   "ui.legend.paid": "改札内",
   "ui.legend.platform": "ホーム",
   "ui.legend.public": "公共エリア",
-  "ui.map.accessibleDescription": "梅田各駅の立体マップ。ドラッグで移動し、2本指で拡大・縮小や回転ができます。フロアや施設からも探索できます。",
+  "ui.map.accessibleDescription": "梅田各駅の立体マップ。ドラッグで移動し、2本指で拡大・縮小や回転ができます。フロアや施設からも探索できます。タッチパッドでは Alt または Option キーを押しながら2本指でスライドすると、回転や傾きの調整ができます。",
   "ui.map.controls": "マップ操作",
   "ui.map.fullscreen": "マップを全画面表示",
   "ui.map.exitFullscreen": "全画面表示を終了",

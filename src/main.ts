@@ -345,7 +345,7 @@ new ResizeObserver(() => {
 function refreshFacilities(dismissExcludedSelection = false): void {
     const { station, level, kind: facilityKind } = facilityFilter;
     facilityStation.setOptions([
-        { value: 'all', label: messageText('ui.filters.allStations') },
+        { value: 'all', label: messageText('ui.filters.allStations'), notifyOnReselect: true },
         ...stations.map(s => ({ value: s.id, label: s.name }))
     ], station ?? 'all');
     const current = floors.find(f => f.members.some(l => l.id === level));
@@ -523,7 +523,11 @@ for (const b of floorButtons) {
 facilityStationButton.addEventListener(
     'change',
     () => {
-        facilityFilter.station = facilityStation.value === 'all' ? null : facilityStation.value as StationId;
+        const station = facilityStation.value === 'all' ? null : facilityStation.value as StationId;
+        if (station === facilityFilter.station && station === (session.state.focusStation ?? null)) {
+            return;
+        }
+        facilityFilter.station = station;
         clearFacilitySelection();
         pendingFacility = undefined;
         savedCamera = undefined;

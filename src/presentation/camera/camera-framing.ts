@@ -2,9 +2,22 @@ import * as T from 'three';
 import type { Level, LevelId, StationId, StationLayout } from '../../domain/map/model.ts';
 import { platformPoint } from '../../domain/map/geometry.ts';
 
-/** Apply the normal zoom limits while keeping the manual frame's starting scale reachable. */
-export function clampCameraZoom(zoom: number, minimum: number, reference = minimum): number {
-    return T.MathUtils.clamp(zoom, Math.min(minimum, reference), Math.max(16, minimum * 16, reference));
+/** Clamp automatic framing to the vertical fit and its supported range of zoom. */
+export function clampCameraZoom(zoom: number, minimum: number): number {
+    return T.MathUtils.clamp(zoom, minimum, Math.max(16, minimum * 16));
+}
+
+/** Give wide, shallow views more room to zoom out while keeping the current and starting spans reachable. */
+export function manualZoomSpan(span: number, factor: number, reference: number, baseSpan: number, minimumZoom: number): number {
+    const verticalLimit = baseSpan / minimumZoom;
+    // A width-based fit can make the map tiny on a narrow screen. Allow at most one extra doubling of span.
+    const wideLimit = Math.min(baseSpan, verticalLimit * 2);
+    const closest = baseSpan / Math.max(16, minimumZoom * 16);
+    return T.MathUtils.clamp(
+        span / factor,
+        Math.min(closest, span, reference),
+        Math.max(verticalLimit, wideLimit, span, reference)
+    );
 }
 
 /** Fit the full station envelope, so changing a floor cut never moves the camera. */
