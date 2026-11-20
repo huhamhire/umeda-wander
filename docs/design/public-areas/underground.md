@@ -113,6 +113,16 @@
 
 18 个编号均已有街面定位和楼梯模型。D-40 的公共主通道接驳未计入完整覆盖率。
 
+### 堂岛地下中心（ドーチカ）
+
+- **C-60 北、C-60 南** 在西梅田南侧接入。运营方平面图显示两处街梯在东侧共用一段 B1 上行梯，随后分向北、南。本轮按两个 OSM 梯口和梯亭轮廓固定街面位置，补齐共享平台、两处 1F 开口及顶棚。 [运营方平面图，PDF 第 47 页](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [北梯亭](https://www.openstreetmap.org/way/619294244) · [南梯亭](https://www.openstreetmap.org/way/619294243)
+- **C-69** 从 B1 主通道西侧接出，转向后向北上到街面。按 OSM 的梯口、梯亭和街面步道建模，B1 梯脚、梯宽与平台高度为展示拟合。C-60 与 C-69 共用地区地下层，落点分别由 `kitashinchi-public-b1` 和 `outer-underground` 承接。既有步行图保持原有边。 [运营方平面图](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [街面梯亭](https://www.openstreetmap.org/way/619294237) · [人行道](https://www.openstreetmap.org/way/619294235)
+
+- **C-83** 接近铁堂岛大厦南端一带。运营方图和到达照片共同支持街梯及旁侧扶梯。模型从 B1 向西并排上至共用转向平台，再由街梯向南接 1F 梯亭。按 OSM 梯口、顶棚和步道固定街面位置。同编号的近铁堂岛大厦内部接入口另列。 [运营方平面图](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [到达照片 ⑪–⑭](https://www.dojima-hari.com/our-hospital/pdf/nishi_umeda.pdf) · [街面梯口](https://www.openstreetmap.org/node/5024365391) · [梯亭](https://www.openstreetmap.org/way/619294234)
+- **C-93** 位于 B1 主通道南端西侧，转向后向南上到纪阳大厦旁的人行道。按 OSM 梯口、步道和梯亭核对上端，B1 梯脚、跑段宽度和段间标高为模型拟合。同编号的纪阳大厦内部接入口另列。 [运营方平面图](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [三得利到达指引](https://www.sps.sgn.ne.jp/company/profile/) · [街面梯口](https://www.openstreetmap.org/node/5024365393) · [梯亭](https://www.openstreetmap.org/way/621688356)
+
+运营方自管街面出入口 **5／5（100%）** 已完成街面定位、楼梯模型和 B1 接驳。C-60 北、南按两处独立街梯计数。楼体接入口、邻接设施出口及西梅田 8 号地下接驳另计。C-83、C-93 的 OSM 梯口和梯亭取自地区快照南界以外的公开 OSM 查询，梯口均采用第 4 版节点，梯亭均采用第 2 版轮廓。两处沿现役 `outer-underground` 公共面补局部接驳，未新增寻路边。 [运营方清单，第 5 条](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf)
+
 ### 曾根地下道
 
 - **11-43** 按[凤凰厅到达指引](https://phoenixhall.jp/access/)表达扶梯。采用 [OSM 地面梯口](https://www.openstreetmap.org/node/3499801000)、[顶棚](https://www.openstreetmap.org/way/618802454)和[地下折角支路](https://www.openstreetmap.org/way/1322885750)。地下落点和支路宽度是拟合值。

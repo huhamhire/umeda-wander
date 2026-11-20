@@ -61,6 +61,17 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (diamorExit) {
             return messageText('facilities.locations.diamorExit', { number: diamorExit.toUpperCase() });
         }
+        const doticaExit = /^dotica-exit-(c-\d+)(?:-(north|south|lower|escalator))?$/.exec(id);
+        if (doticaExit) {
+            const number = doticaExit[1]!.toUpperCase();
+            if (doticaExit[2] === 'north') {
+                return messageText('facilities.locations.doticaExitNorth', { number });
+            }
+            if (doticaExit[2] === 'south') {
+                return messageText('facilities.locations.doticaExitSouth', { number });
+            }
+            return messageText('facilities.locations.doticaExit', { number });
+        }
         const whityExit = /^whity-exit-([a-z]-\d+(?:-\d+)?)(?:-lower)?$/.exec(id)?.[1];
         if (whityExit) {
             return messageText('facilities.locations.whityExit', { number: whityExit.toUpperCase() });

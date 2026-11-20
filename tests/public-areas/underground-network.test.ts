@@ -257,6 +257,77 @@ test('Sonechika public equipment stays on its documented approaches and 11-44 st
     }
 });
 
+test('Dotica C-60 branches from one B1 stair and C-69 joins the west side of the underground hall', () => {
+    const prefix = 'dotica-exit-';
+    const lower60 = publicAccess.connections.find(c => c.id === prefix + 'c-60-lower')!;
+    const north60 = publicAccess.connections.find(c => c.id === prefix + 'c-60-north')!;
+    const south60 = publicAccess.connections.find(c => c.id === prefix + 'c-60-south')!;
+    const lower69 = publicAccess.connections.find(c => c.id === prefix + 'c-69-lower')!;
+    const upper69 = publicAccess.connections.find(c => c.id === prefix + 'c-69')!;
+    assert.equal(north60.from, lower60.to);
+    assert.equal(south60.from, lower60.to);
+    assert.equal(upper69.from, lower69.to);
+    assert(north60.to.z < lower60.to.z && south60.to.z > lower60.to.z);
+    assert(lower60.from.x < lower60.to.x && lower69.from.x > lower69.to.x);
+    for (const [lower, hall, landingId] of [
+        [lower60, { x: 412, z: 1100 }, prefix + 'c-60-turn-apron'],
+        [lower69, { x: 406, z: 1175 }, prefix + 'c-69-turn-apron']
+    ] as const) {
+        assert(flat.some(a => a.blockId === lower.blockId && contains(a, hall) && contains(a, lower.from)));
+        const landing = undergroundPublicAreas.find(a => a.id === landingId)!;
+        assert.equal(landing.elevationOffset, lower.to.elevationOffset);
+        assert(contains(landing, lower.to));
+    }
+    const wells = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'district-ground');
+    for (const [upper, x, z, roof] of [
+        [north60, 426.25, 1093.91, '619294244'],
+        [south60, 424.23, 1116.72, '619294243'],
+        [upper69, 398.46, 1156.84, '619294237']
+    ] as const) {
+        assert(Math.hypot(upper.to.x - x, upper.to.z - z) < .02);
+        const well = wells.find(o => o.connectionId === upper.id)!;
+        assert(contains(well, upper.to));
+        assert(!wells.some(o => o !== well && clipping.intersection(geometry(o), geometry(well)).length));
+        assert(!layout.exteriorOpenings.some(o => contains(o, upper.to)));
+        const canopy = layout.canopies.find(c => c.id === upper.id + '-canopy')!;
+        assert(canopy.evidence.urls?.includes('https://www.openstreetmap.org/way/' + roof));
+    }
+    assert(!edges.some(e => e.from.startsWith(prefix) || e.to.startsWith(prefix)));
+});
+
+test('Dotica C-83 and C-93 join the west side of the B1 hall and open into their own street canopies', () => {
+    const wells = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'district-ground');
+    for (const [number, x, z, hall, roof] of [
+        [83, 387.46, 1264.04, { x: 405, z: 1259.8 }, '619294234'],
+        [93, 407.06, 1349.44, { x: 418.2, z: 1336.4 }, '621688356']
+    ] as const) {
+        const id = 'dotica-exit-c-' + number;
+        const lower = publicAccess.connections.find(c => c.id === id + '-lower')!;
+        const upper = publicAccess.connections.find(c => c.id === id)!;
+        assert.equal(upper.from, lower.to);
+        assert(lower.from.x > lower.to.x && upper.to.z > upper.from.z);
+        assert(flat.some(a => a.blockId === lower.blockId && contains(a, hall) && contains(a, lower.from)));
+        const turn = undergroundPublicAreas.find(a => a.id === id + '-turn-apron')!;
+        assert.equal(turn.elevationOffset, lower.to.elevationOffset);
+        assert(contains(turn, lower.to));
+        assert(Math.hypot(upper.to.x - x, upper.to.z - z) < .02);
+        const well = wells.find(o => o.connectionId === upper.id)!;
+        assert(contains(well, upper.to));
+        assert(!wells.some(o => o !== well && clipping.intersection(geometry(o), geometry(well)).length));
+        assert(!layout.exteriorOpenings.some(o => contains(o, upper.to)));
+        assert(layout.canopies.find(c => c.id === id + '-canopy')?.evidence.urls?.includes('https://www.openstreetmap.org/way/' + roof));
+        if (number === 83) {
+            const escalator = publicAccess.connections.find(c => c.id === id + '-escalator')!;
+            assert.equal(escalator.kind, 'escalator');
+            assert.equal(escalator.to.elevationOffset, turn.elevationOffset);
+            assert(contains(turn, escalator.to));
+            assert(flat.some(a => a.blockId === lower.blockId && contains(a, lower.from) && contains(a, escalator.from)));
+            assert(!wells.some(o => o.connectionId === escalator.id));
+        }
+        assert(!edges.some(e => e.from.startsWith(id) || e.to.startsWith(id)));
+    }
+});
+
 test('Diamor D-23 and D-24 join the north B1 hall and keep their street wells distinct', () => {
     const lower = publicAccess.connections.find(c => c.id === 'diamor-exit-d-23-lower')!;
     const d23 = publicAccess.connections.find(c => c.id === 'diamor-exit-d-23')!;

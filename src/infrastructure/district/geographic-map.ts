@@ -25,6 +25,7 @@ import { createSonechikaAccess } from '../public-areas/south-diamor/sonechika-ac
 import { createDiamorCentralAccess } from '../public-areas/south-diamor/diamor-central-access.ts';
 import { createDiamorNorthAccess } from '../public-areas/south-diamor/diamor-north-access.ts';
 import { createDiamorSouthAccess } from '../public-areas/south-diamor/diamor-south-access.ts';
+import { createDoticaAccess } from '../public-areas/south-diamor/dotica-access.ts';
 import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
 import { createWhityNorthMallAccess } from '../public-areas/whity/north-mall-access.ts';
@@ -56,6 +57,7 @@ const sonechikaAccess = createSonechikaAccess();
 const diamorNorthAccess = createDiamorNorthAccess();
 const diamorCentralAccess = createDiamorCentralAccess();
 const diamorSouthAccess = createDiamorSouthAccess();
+const doticaAccess = createDoticaAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
 const whityNorth2Access = createWhityNorthMall2Access();
@@ -73,6 +75,7 @@ const streetConnections = [
     ...diamorNorthAccess.connections,
     ...diamorCentralAccess.connections,
     ...diamorSouthAccess.connections,
+    ...doticaAccess.connections,
     ...whityAccess.flatMap(access => access.connections)
 ];
 export const publicAccess = {
@@ -80,6 +83,7 @@ export const publicAccess = {
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
+        ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas
     ],
 };
@@ -178,6 +182,7 @@ const composed = composeStationMaps(
             ...diamorNorthAccess.canopies,
             ...diamorCentralAccess.canopies,
             ...diamorSouthAccess.canopies,
+            ...doticaAccess.canopies,
             ...whityAccess.flatMap(access => access.canopies)
         ],
         landmarks: izumiAccess.landmarks,
