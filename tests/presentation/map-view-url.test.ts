@@ -6,11 +6,15 @@ import { bindMapViewUrl, mapViewUrl, readMapView, type SharedMapView } from '../
 const data: NavigationData = {
     levels: [{ id: 'concourse', label: '1F', name: 'Hall', y: 0, description: '' }],
     stations: [{ id: 'jr-osaka', name: 'Osaka' }],
-    facilities: [{ id: 'entry', level: 'concourse', name: 'Entrance', kind: 'entrance' }],
+    facilities: [
+        { id: 'entry', level: 'concourse', name: 'Entrance', kind: 'entrance' },
+        { id: 'locker', level: 'concourse', name: 'Locker', kind: 'locker' }
+    ],
     walkingPlaces: [
         { id: 'entry', name: 'Entrance', level: 'concourse', station: 'jr-osaka', access: 'outside' },
         { id: 'hall', name: 'Hall', level: 'concourse', station: 'jr-osaka', access: 'outside' }
-    ]
+    ],
+    walkingApproaches: [['locker', [{ id: 'hall', distance: 6 }]]]
 };
 
 const view: SharedMapView = {
@@ -37,6 +41,8 @@ test('shared map URLs round-trip the rendered frame and state without replacing 
     assert(!next.searchParams.has('allow-paid'));
     assert.deepEqual(next.searchParams.getAll('stop'), ['entry', 'hall']);
     assert.deepEqual(readMapView(next, data), view);
+    const nearby = { ids: ['entry', 'locker'], allowPaid: false };
+    assert.deepEqual(readMapView(mapViewUrl(address, { ...view, itinerary: nearby }), data)?.itinerary, nearby);
     assert.equal(readMapView(mapViewUrl(address, { ...view, camera: { ...view.camera, yaw: -121.3199999 } }), data)?.camera.yaw, -121.32);
 });
 

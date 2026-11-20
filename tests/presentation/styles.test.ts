@@ -37,6 +37,7 @@ test(
         assert(narrowStyles.some(rules => /\.sidebar-content\s*\{[^}]*padding-block:\s*6px 8px/.test(rules ?? '')));
         assert.match(css, /\.navigation-toggle\s*\{\s*display:\s*none;[^}]*min-height:\s*44px/);
         assert(narrowStyles.some(rules => /\.navigation-toggle\s*\{\s*display:\s*flex/.test(rules ?? '')));
+        assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\]\s*\{[^}]*right:\s*auto;[^}]*width:\s*fit-content/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));
         assert.match(css, /\.map-tools\s*\{/);
         assert(narrowStyles.some(rules => /\.header-preferences #map-fullscreen\s*\{\s*display:\s*grid/.test(rules ?? '')));

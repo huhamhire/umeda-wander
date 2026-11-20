@@ -637,9 +637,21 @@
 }
 
 .walking-point-role {
+  display: flex;
   flex: none;
+  align-items: center;
+  gap: 4px;
   color: var(--color-field-label);
   white-space: nowrap;
+}
+
+.walking-point-icon .facility-icon {
+  width: 15px;
+  height: 15px;
+}
+
+#walking-status {
+  white-space: pre-line;
 }
 
 .walking-field input {
@@ -796,14 +808,9 @@
   text-align: left;
 }
 
-.walking-results [role="option"]:not([aria-disabled="true"]):hover,
+.walking-results [role="option"]:hover,
 .walking-results [aria-selected="true"] {
   background: var(--color-selection-background);
-}
-
-.walking-results [aria-disabled="true"] {
-  color: var(--color-subtle-text);
-  cursor: default;
 }
 
 .walking-results [role="option"] div {

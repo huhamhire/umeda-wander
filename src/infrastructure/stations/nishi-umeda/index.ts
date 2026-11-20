@@ -155,7 +155,7 @@ export function createStation(
         facility(
             `${key}-gate`,
             'y11-hall',
-            `Y11 · ${name}`,
+            messageText('stations.nishiUmeda.labels.gate', { name }),
             'gate',
             geographic && key === 'south' ? -47 : x,
             geographic ? (key === 'south' ? -4 : 3) : 6,
@@ -380,7 +380,15 @@ export function createStation(
                 12
             );
         }
-        facility(`exit-${key}`, 'y11-hall', `Y11 · ${key} / ${name}`, 'entrance', x, z, '仅表达构内图明确的地下连接，不推断商业内部路线。');
+        facility(
+            `exit-${key}`,
+            'y11-hall',
+            messageText('stations.nishiUmeda.labels.namedExit', { key, name }),
+            'entrance',
+            x,
+            z,
+            '仅表达构内图明确的地下连接，不推断商业内部路线。'
+        );
     }
     // Gate directions are retained in the local preview, without inter-station edges.
     const common = node('paid-route', 'y11-hall', 0, 0);

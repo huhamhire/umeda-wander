@@ -1,5 +1,5 @@
 import type { FacilityKind, Level, StationId } from '../../domain/map/model.ts';
-import type { WalkingPlace } from '../../application/navigation/walking-route.ts';
+import type { WalkingApproaches, WalkingPlace } from '../../application/navigation/walking-route.ts';
 import type { FacilityOption } from '../../application/exploration/navigation-data.ts';
 import { maxWalkingStops } from '../../application/navigation/walking-route.ts';
 import { facilityCategory } from '../../application/exploration/facility-filter.ts';
@@ -9,10 +9,15 @@ import { floorOptions } from './floor-options.ts';
 import { createFacilityIcon } from './facility-icon.ts';
 
 interface WalkingActions {
-    preview(places: WalkingPlace[], allowPaid: boolean): { message: string; gateRequired?: boolean };
+    preview(places: readonly Pick<WalkingCandidate, 'id' | 'name'>[], allowPaid: boolean): WalkingPreview;
     clear(): void;
-    pick(places: WalkingPlace[] | undefined, onPick: (id: string) => void): void;
+    pick(targets: readonly WalkingCandidate[] | undefined, onPick: (id: string) => void): void;
     kindLabel(kind: FacilityKind): string;
+}
+
+interface WalkingPreview {
+    message: string;
+    gateRequired?: boolean;
 }
 
 interface WalkingField {
@@ -21,6 +26,7 @@ interface WalkingField {
     input: HTMLInputElement;
     clear: HTMLButtonElement;
     grip: HTMLElement;
+    icon: HTMLElement;
 }
 
 interface StopDrag {
@@ -30,9 +36,10 @@ interface StopDrag {
     target?: number;
 }
 
-interface WalkingCandidate extends Omit<FacilityOption, 'id' | 'kind'> {
+interface WalkingCandidate extends Omit<FacilityOption, 'kind'> {
     station: StationId | null;
     kind?: FacilityKind;
+    facilityId?: string;
     place?: WalkingPlace;
 }
 
@@ -49,7 +56,8 @@ export function bindWalkingRoutePanel(
     stations: { id: StationId; name: string }[],
     facilities: readonly FacilityOption[],
     actions: WalkingActions,
-    restored?: WalkingDraft
+    restored?: WalkingDraft,
+    approaches?: WalkingApproaches
 ) {
     const rows = panel.querySelector<HTMLOListElement>('#walking-places')!;
     const add = panel.querySelector<HTMLButtonElement>('#walking-add')!;
@@ -66,18 +74,24 @@ export function bindWalkingRoutePanel(
     const gateAction = panel.querySelector<HTMLElement>('#walking-gate-action')!;
     const allowGates = panel.querySelector<HTMLButtonElement>('#walking-allow-gates')!;
     const floors = floorOptions(levels);
-    const byId = new Map(places.map(place => [place.id, place]));
+    const facilityById = new Map(facilities.map(facility => [facility.id, facility]));
     const routableFacilities = new Set(places.map(place => place.facilityId));
     const stationByLevel = new Map(levels.map(level => [level.id, level.station ?? null]));
     const candidates: WalkingCandidate[] = [
-        ...places.map(place => ({ ...place, place })),
+        ...places.map(place => ({
+            ...place,
+            place,
+            mapLabel: place.facilityId ? facilityById.get(place.facilityId)?.mapLabel : undefined
+        })),
         ...facilities.filter(facility => !routableFacilities.has(facility.id)).map(facility => ({
             ...facility,
+            facilityId: facility.id,
             station: stationByLevel.get(facility.level) ?? null
         }))
     ];
+    const byId = new Map(candidates.map(candidate => [candidate.id, candidate]));
     const endpointKinds = [...new Set(candidates.flatMap(candidate => candidate.kind ? [facilityCategory(candidate.kind)] : []))];
-    let stops: (WalkingPlace | undefined)[] = restored && restored.ids.length >= 2 && restored.ids.length <= maxWalkingStops + 2
+    let stops: (WalkingCandidate | undefined)[] = restored && restored.ids.length >= 2 && restored.ids.length <= maxWalkingStops + 2
         ? restored.ids.map(id => id ? byId.get(id) : undefined)
         : [undefined, undefined];
     let fields: WalkingField[] = [];
@@ -111,7 +125,13 @@ export function bindWalkingRoutePanel(
         }
         const owner = stations.find(item => item.id === candidate.station)?.name;
         const level = levels.find(item => item.id === candidate.level)!.label;
-        return [owner, level, messageText('ui.walking.notRoutable')].filter(Boolean).join(' · ');
+        const statusKey = canRoute(candidate) ? 'ui.walking.nearbyApproach' : 'ui.walking.notRoutable';
+        return [owner, level, messageText(statusKey)].filter(Boolean).join(' · ');
+    }
+
+    /** A graph endpoint or a validated nearby approach can serve as a route destination. */
+    function canRoute(candidate: WalkingCandidate | undefined): boolean {
+        return !!candidate && (!!candidate.place || approaches?.has(candidate.id) === true);
     }
 
     /** Apply the optional filters to every facility shown in the search list. */
@@ -120,11 +140,6 @@ export function bindWalkingRoutePanel(
         return candidates.filter(candidate => (!station.value || candidate.station === station.value) &&
             (!members || members.some(level => level.id === candidate.level)) &&
             (!kind.value || candidate.kind && facilityCategory(candidate.kind) === kind.value));
-    }
-
-    /** Only graph destinations can be selected on the map. */
-    function matchingPlaces(): WalkingPlace[] {
-        return matchingCandidates().flatMap(candidate => candidate.place ? [candidate.place] : []);
     }
 
     /** Create a compact action with an explicit accessible name. */
@@ -137,25 +152,41 @@ export function bindWalkingRoutePanel(
         return result;
     }
 
-    /** Keep the route button disabled until all displayed slots hold real endpoints. */
+    /** Require a connected endpoint in every slot before allowing route preview. */
     function refreshActions(): void {
         add.disabled = stops.length >= maxWalkingStops + 2;
-        preview.disabled = !mapReady || stops.some(stop => !stop);
-        pick.disabled = !picking && (!mapReady || !matchingPlaces().length);
+        preview.disabled = !mapReady || stops.some(stop => !canRoute(stop));
+        pick.disabled = !picking && (!mapReady || !matchingCandidates().length);
+    }
+
+    /** Identify the first selected facility that still needs a walking graph connection. */
+    function showDraftStatus(): void {
+        const unconnected = stops.find(stop => stop && !canRoute(stop));
+        status.hidden = !unconnected;
+        gateAction.hidden = true;
+        if (unconnected) {
+            status.textContent = messageText('ui.walking.facilityNotRoutable', { name: unconnected.name });
+        }
     }
 
     /** Invalidate the drawn route when the itinerary or gate policy changes. */
     function changed(): void {
         actions.clear();
-        status.hidden = true;
-        gateAction.hidden = true;
+        showDraftStatus();
         refreshActions();
     }
 
     /** Offer a direct retry when crossing ticket gates would complete the blocked leg. */
     function runPreview(): void {
+        if (preview.disabled) {
+            return;
+        }
         closeEditor();
-        const result = actions.preview(stops.filter(place => place !== undefined), gates.checked);
+        showPreviewResult(actions.preview(stops.filter(stop => stop !== undefined), gates.checked));
+    }
+
+    /** Announce the result and any route approaches resolved by the graph. */
+    function showPreviewResult(result: WalkingPreview): void {
         status.textContent = result.message;
         status.hidden = false;
         gateAction.hidden = !result.gateRequired;
@@ -165,10 +196,12 @@ export function bindWalkingRoutePanel(
     function showPlace(index: number): void {
         const field = fields[index]!;
         const place = stops[index];
-        field.input.value = place?.name ?? '';
-        field.input.title = place ? `${place.name} · ${context(place)}` : '';
+        field.input.value = place?.mapLabel ?? place?.name ?? '';
+        field.input.title = place ? `${place.name} · ${candidateContext(place)}` : '';
         field.clear.hidden = !place && (index === 0 || index === stops.length - 1);
         field.grip.setAttribute('aria-disabled', String(!place));
+        field.icon.hidden = !place?.kind;
+        field.icon.replaceChildren(...(place?.kind ? [createFacilityIcon(place.kind)] : []));
     }
 
     /** Render only itinerary structure changes; typing never replaces the focused field. */
@@ -185,6 +218,10 @@ export function bindWalkingRoutePanel(
             const label = document.createElement('label');
             label.className = 'walking-point-role';
             label.textContent = role;
+            const icon = document.createElement('span');
+            icon.className = 'walking-point-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            label.append(icon);
             const input = document.createElement('input');
             input.type = 'text';
             input.id = `walking-point-${index}`;
@@ -229,7 +266,7 @@ export function bindWalkingRoutePanel(
                     }
                 });
             }
-            fields.push({ row, element: field, input, clear, grip });
+            fields.push({ row, element: field, input, clear, grip, icon });
             showPlace(index);
             input.addEventListener('focus', () => {
                 activate(index);
@@ -296,14 +333,10 @@ export function bindWalkingRoutePanel(
             return;
         }
         for (const [index, candidate] of visible.entries()) {
-            const { place } = candidate;
             const option = document.createElement('div');
             option.id = `${results.id}-${index}`;
             option.setAttribute('role', 'option');
             option.setAttribute('aria-selected', 'false');
-            if (!place) {
-                option.setAttribute('aria-disabled', 'true');
-            }
             const text = document.createElement('div');
             const name = document.createElement('strong');
             name.textContent = candidate.name;
@@ -314,9 +347,7 @@ export function bindWalkingRoutePanel(
                 option.append(createFacilityIcon(candidate.kind));
             }
             option.append(text);
-            if (place) {
-                option.addEventListener('click', () => accept(place));
-            }
+            option.addEventListener('click', () => accept(candidate));
             results.append(option);
         }
         results.hidden = false;
@@ -382,7 +413,7 @@ export function bindWalkingRoutePanel(
                 timer = undefined;
                 refreshResults();
             } else {
-                const place = visible[active]?.place ?? visible.find(option => option.place)?.place;
+                const place = visible[active] ?? visible[0];
                 if (place) {
                     accept(place);
                 }
@@ -390,11 +421,8 @@ export function bindWalkingRoutePanel(
         } else if (visible.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
             event.preventDefault();
             const step = event.key === 'ArrowDown' ? 1 : -1;
-            let next = active < 0 && step === -1 ? visible.length - 1 : active + step;
-            while (visible[next] && !visible[next]!.place) {
-                next += step;
-            }
-            if (!visible[next]?.place) {
+            const next = active < 0 && step === -1 ? visible.length - 1 : active + step;
+            if (!visible[next]) {
                 return;
             }
             results.children[active]?.setAttribute('aria-selected', 'false');
@@ -494,7 +522,7 @@ export function bindWalkingRoutePanel(
     }
 
     /** Save a result in the active row without moving keyboard focus to another field. */
-    function accept(place: WalkingPlace): void {
+    function accept(place: WalkingCandidate): void {
         if (editing !== undefined) {
             stops[editing] = place;
             closeEditor();
@@ -508,7 +536,7 @@ export function bindWalkingRoutePanel(
         window.clearTimeout(timer);
         timer = undefined;
         if (picking) {
-            actions.pick(matchingPlaces(), onMapPoint);
+            actions.pick(matchingCandidates(), onMapPoint);
         }
         refreshResults();
     }
@@ -536,7 +564,7 @@ export function bindWalkingRoutePanel(
         picking = true;
         pick.setAttribute('aria-pressed', 'true');
         pick.title = messageText('ui.walking.cancel');
-        actions.pick(matchingPlaces(), onMapPoint);
+        actions.pick(matchingCandidates(), onMapPoint);
     });
     gates.addEventListener('change', changed);
     preview.addEventListener('click', runPreview);
@@ -554,9 +582,11 @@ export function bindWalkingRoutePanel(
         render();
     });
     render();
+    showDraftStatus();
 
     return {
         closeEditor,
+        showPreviewResult,
         /** Dismiss the current interaction on Escape. */
         cancelEditing(): boolean {
             const wasEditing = editing !== undefined;
@@ -573,15 +603,19 @@ export function bindWalkingRoutePanel(
             refreshActions();
         },
         /** Import a supported facility as an endpoint or append it before the destination. */
-        usePlace(place: WalkingPlace, role: 'start' | 'end' | 'stop'): void {
+        usePlace(id: string, role: 'start' | 'end' | 'stop'): void {
+            const candidate = byId.get(id);
+            if (!candidate) {
+                return;
+            }
             closeEditor();
             if (role === 'stop') {
                 if (add.disabled) {
                     return;
                 }
-                stops.splice(stops.length - 1, 0, place);
+                stops.splice(stops.length - 1, 0, candidate);
             } else {
-                stops[role === 'start' ? 0 : stops.length - 1] = place;
+                stops[role === 'start' ? 0 : stops.length - 1] = candidate;
             }
             changed();
             render();

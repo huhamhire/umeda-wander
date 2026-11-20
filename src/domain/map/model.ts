@@ -31,6 +31,7 @@ export interface Evidence {
 export interface Facility {
     id: string;
     name: string;
+    mapLabel?: string;
     kind: FacilityKind;
     level: LevelId;
     x: number;

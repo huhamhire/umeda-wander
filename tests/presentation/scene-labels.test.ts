@@ -4,7 +4,7 @@ import * as T from 'three';
 import type { Facility, Level } from '../../src/domain/map/model.ts';
 import { SceneLabels, type SceneLabelDefinition, type SceneLabelView } from '../../src/presentation/labels/scene-labels.ts';
 
-class LabelStub {
+class LabelStub extends EventTarget {
     className = '';
     textContent = '';
     hidden = false;
@@ -15,6 +15,7 @@ class LabelStub {
     offsetHeight = 24;
     classList = {
         contains: (value: string) => this.className.split(' ').includes(value),
+        add: (value: string) => this.className += ` ${value}`,
         toggle: (value: string, force: boolean) => {
             const names = new Set(this.className.split(' '));
             if (force) {
@@ -25,6 +26,8 @@ class LabelStub {
             this.className = [...names].join(' ');
         }
     };
+
+    setAttribute(): void {}
 
     remove(): void {
         this.removed = true;
@@ -54,7 +57,7 @@ function withLabels(definitions: SceneLabelDefinition[], run: (labels: SceneLabe
             }
         }
     });
-    const host = { append: (element: LabelStub) => elements.push(element) } as unknown as HTMLElement;
+    const host = { append: (element: LabelStub) => elements.push(element), setAttribute: () => {} } as unknown as HTMLElement;
     const labels = new SceneLabels(host, definitions);
     try {
         run(labels, elements);
@@ -106,6 +109,27 @@ test('current-floor labels win collisions, context labels mute, hidden roofs do 
         assert(elements[3]!.hidden);
         assert(Math.abs(Number.parseFloat(elements[1]!.style.left) - 500) < 1e-9);
         assert(Math.abs(Number.parseFloat(elements[1]!.style.top) - 400) < 1e-9);
+    });
+});
+
+test('walking targets are clickable labels and are removed when map picking ends', () => {
+    const position = new T.Vector3();
+    const picked: string[] = [];
+    withLabels([{ text: 'Default label', position, level: 'platform' }], (labels, elements) => {
+        labels.setWalkingTargets([
+            { id: 'locker', text: 'Locker', position, level: 'platform', kind: 'locker' }
+        ], id => picked.push(id));
+        render(labels);
+        assert(elements[0]!.hidden);
+        const target = elements[1]!;
+        assert(!target.hidden);
+        assert(target.classList.contains('map-label-pick'));
+        target.dispatchEvent(new Event('click'));
+        assert.deepEqual(picked, ['locker']);
+        labels.setWalkingTargets();
+        render(labels);
+        assert(target.removed);
+        assert(!elements[0]!.hidden);
     });
 });
 

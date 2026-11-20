@@ -8,6 +8,7 @@ import { LabelOcclusion, visibleLabelOccluders } from './label-occlusion.ts';
 
 export interface SceneLabelDefinition {
     text: string;
+    accessibleName?: string;
     position: T.Vector3;
     level?: LevelId;
     roof?: boolean;
@@ -18,7 +19,7 @@ export interface SceneLabelDefinition {
 }
 
 interface MapLabel extends SceneLabelDefinition {
-    element: HTMLDivElement;
+    element: HTMLElement;
 }
 
 export interface SceneLabelView {
@@ -36,7 +37,7 @@ export interface SceneLabelView {
 }
 
 /** Apply the same icon and name treatment to every facility label. */
-function setLabelContent(element: HTMLDivElement, { text, kind }: Pick<SceneLabelDefinition, 'text' | 'kind'>): void {
+function setLabelContent(element: HTMLElement, { text, kind }: Pick<SceneLabelDefinition, 'text' | 'kind'>): void {
     element.classList.toggle('facility-label', kind !== undefined);
     if (kind) {
         element.replaceChildren(createFacilityIcon(kind), text);
@@ -51,8 +52,9 @@ export class SceneLabels {
     private readonly host: HTMLElement;
     private readonly labels: MapLabel[] = [];
     private filteredLabels?: MapLabel[];
+    private walkingLabels?: MapLabel[];
     private readonly labelOcclusion = new LabelOcclusion();
-    private selectionElement?: HTMLDivElement;
+    private selectionElement?: HTMLElement;
     private selectionKind?: FacilityKind;
 
     /** Create DOM labels from model-owned anchors without copying station layout logic. */
@@ -64,9 +66,15 @@ export class SceneLabels {
     }
 
     /** Attach a label and keep its DOM node together with its map anchor. */
-    private createLabel(definition: SceneLabelDefinition): MapLabel {
-        const element = document.createElement('div');
+    private createLabel(definition: SceneLabelDefinition, pick?: () => void): MapLabel {
+        const element = pick ? document.createElement('button') : document.createElement('div');
         element.className = 'map-label' + (definition.emphasis ? ' emphasis' : '');
+        if (pick) {
+            element.setAttribute('type', 'button');
+            element.setAttribute('aria-label', definition.accessibleName ?? definition.text);
+            element.classList.add('map-label-pick');
+            element.addEventListener('click', pick);
+        }
         setLabelContent(element, definition);
         this.host.append(element);
         return { ...definition, element };
@@ -85,7 +93,7 @@ export class SceneLabels {
         this.filteredLabels?.forEach(label => label.element.remove());
         this.filteredLabels = facilities?.map(facility => {
             const label = this.createLabel({
-                text: facility.name,
+                text: facility.mapLabel ?? facility.name,
                 kind: facility.kind,
                 level: facility.level,
                 position: new T.Vector3(facility.x, 3.15 + (facility.elevationOffset ?? 0), facility.z)
@@ -93,6 +101,17 @@ export class SceneLabels {
             label.element.hidden = true;
             return label;
         });
+    }
+
+    /** Temporarily expose labelled map targets as buttons in walking pick mode. */
+    setWalkingTargets(targets?: readonly (SceneLabelDefinition & { id: string })[], onPick?: (id: string) => void): void {
+        this.walkingLabels?.forEach(label => label.element.remove());
+        this.walkingLabels = onPick && targets?.map(target => {
+            const label = this.createLabel(target, () => onPick(target.id));
+            label.element.hidden = true;
+            return label;
+        });
+        this.host.setAttribute('aria-hidden', String(!this.walkingLabels));
     }
 
     /** Create one reusable detail label only when a facility is selected. */
@@ -131,17 +150,18 @@ export class SceneLabels {
         );
         const priority = (label: MapLabel) => Number(!labelMuted(label)) * 8 + Number(label.level && viewLayerRole(levels, state, label.level) === 'current') * 4 + Number(label.element.classList.contains('emphasis'));
         const selection = this.selectionLabel(view.selection);
-        if (selection || this.filteredLabels) {
+        if (selection || this.walkingLabels || this.filteredLabels) {
             for (const label of this.labels) {
                 label.element.hidden = true;
             }
         }
-        if (selection) {
+        if (selection || this.walkingLabels) {
             for (const label of this.filteredLabels ?? []) {
                 label.element.hidden = true;
             }
         }
-        const orderedLabels = selection ? [selection] : [...this.filteredLabels ?? this.labels].sort((a, b) => priority(b) - priority(a));
+        const orderedLabels = selection ? [selection]
+            : [...this.walkingLabels ?? this.filteredLabels ?? this.labels].sort((a, b) => priority(b) - priority(a));
         const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
@@ -152,7 +172,7 @@ export class SceneLabels {
             if (role === 'context' && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
-            if (!this.filteredLabels && (mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
+            if (!this.walkingLabels && !this.filteredLabels && (mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
             if (!visible) {
@@ -197,6 +217,7 @@ export class SceneLabels {
 
     /** Remove only labels owned by this instance when the scene is released. */
     dispose(): void {
+        this.setWalkingTargets();
         this.setFacilityFilter();
         for (const label of this.labels) {
             label.element.remove();

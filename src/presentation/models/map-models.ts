@@ -41,6 +41,7 @@ export class MapModels {
     readonly connectors: VerticalConnectionModel[] = [];
     readonly canopies: T.Group[] = [];
     readonly pickables: T.Object3D[] = [];
+    readonly platformSurfaces = new Map<string, T.Mesh>();
     readonly labels: SceneLabelDefinition[] = [];
     readonly openings: FloorOpening[];
     private readonly gateBoundaries: GateBoundary[];
@@ -94,7 +95,7 @@ export class MapModels {
     /** Preserve the facility category and local elevation on a floating map label. */
     private labelFacility(facility: Facility, height: number, emphasis = false): void {
         this.labels.push({
-            text: facility.name,
+            text: facility.mapLabel ?? facility.name,
             kind: facility.kind,
             position: new T.Vector3(facility.x, height + (facility.elevationOffset ?? 0), facility.z),
             level: facility.level,
@@ -238,6 +239,7 @@ export class MapModels {
             slab.receiveShadow = true;
             platformGroup.add(slab);
             slab.userData.labelOccluder = true;
+            this.platformSurfaces.set(platform.id, slab);
             for (const [index, number] of tracks.entries()) {
                 const { side, across, length: railLength, center: railCenter } = platformRail(platform, index);
                 block(railCenter, -0.62, across, railLength, 0.3, 2.5, 0xb9bcae);
@@ -421,8 +423,11 @@ export class MapModels {
             this.primitives.batchStaticMeshes(group);
         }
         for (const facility of this.facilities) {
-            const target = new T.Mesh(new T.BoxGeometry(7, 5, 7), new T.MeshBasicMaterial({ visible: false }));
-            target.position.set(facility.x, 2.5 + (facility.elevationOffset ?? 0), facility.z);
+            const gate = this.gateBoundaries.find(boundary => boundary.gateId === facility.id);
+            const width = gate ? Math.max(7, (facility.gateCount ?? 6) * 1.7) : facility.kind === 'ticket' ? 12 : 7;
+            const target = new T.Mesh(new T.BoxGeometry(width, 5, 7), new T.MeshBasicMaterial({ visible: false }));
+            target.position.set(gate?.center.x ?? facility.x, 2.5 + (facility.elevationOffset ?? 0), gate?.center.z ?? facility.z);
+            target.rotation.y = -(gate?.rotationRad ?? 0);
             target.userData.facility = facility;
             this.groups.get(facility.level)!.add(target);
             this.pickables.push(target);

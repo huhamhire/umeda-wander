@@ -88,6 +88,11 @@
   background: var(--color-map-label-emphasis-background);
 }
 
+.map-label-pick {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .map-label.facility-label:not([hidden]) {
   display: flex;
   align-items: center;

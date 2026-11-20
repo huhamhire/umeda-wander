@@ -7,7 +7,7 @@ import { geographicBuildings } from '../infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
 import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
 import * as T from 'three';
-import type { Facility, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
+import type { Facility, FacilityKind, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
 import { allowsGroundLayer, viewLayerRole } from '../application/exploration/view-layer.ts';
@@ -19,7 +19,6 @@ import { cameraEnvelope, clampCameraZoom } from './camera/camera-framing.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
 import { visibleLabelOccluders } from './labels/label-occlusion.ts';
-import { colors } from './appearance/scene-palette.ts';
 import type { ShareCamera } from './camera/map-view-url.ts';
 
 export interface MapCameraSnapshot {
@@ -99,10 +98,9 @@ export class MapScene {
     private facilityLabelIds?: ReadonlySet<string>;
     private selected = this.selectionMarker.group;
     private activeFacility?: Facility;
-    private readonly walkingMarkers = new T.Group();
     private readonly walkingNodes: Map<string, RouteNode>;
-    private readonly walkingMarkerGeometry = new T.SphereGeometry(2.5, 12, 8);
-    private readonly walkingMarkerMaterial = new T.MeshBasicMaterial({ color: colors.route });
+    private walkingFacilityTargets = new Map<string, string>();
+    private walkingPlatforms = new Map<T.Object3D, Facility[]>();
     private onWalkingPick?: (id: string) => void;
     private sharedCamera?: ShareCamera;
     private shareSettled = false;
@@ -173,7 +171,7 @@ export class MapScene {
             this.geographicExteriors.add(model);
         }
         this.scene.add(this.geographicExteriors);
-        this.scene.add(this.models.roof, this.routeModel.group, this.selected, this.walkingMarkers);
+        this.scene.add(this.models.roof, this.routeModel.group, this.selected);
         this.scene.traverse(object => {
             if (object.userData.labelOccluder) {
                 this.labelOccluders.push(object);
@@ -265,19 +263,35 @@ export class MapScene {
     }
 
     /** Resolve the same visible pick target for the cursor and for a click. */
-    private pickAt(clientX: number, clientY: number): T.Object3D | undefined {
+    private pickAt(clientX: number, clientY: number): Facility | undefined {
         this.setPointerRay(clientX, clientY);
+        const hits = this.raycaster.intersectObjects(this.facilityPickables, false);
         if (!this.onWalkingPick) {
-            return this.raycaster.intersectObjects(this.facilityPickables, false)[0]?.object;
+            return hits[0]?.object.userData.facility as Facility | undefined;
         }
-        const hit = this.raycaster.intersectObjects(this.walkingMarkers.children.filter(marker => marker.visible), false)[0];
+        const hit = hits.find(({ object }) => this.walkingFacilityTargets.has((object.userData.facility as Facility).id));
+        const slab = this.raycaster.intersectObjects([...this.walkingPlatforms.keys()], false)[0];
+        if (slab && (!hit || slab.distance < hit.distance)) {
+            if (this.isPickOccluded(slab.distance)) {
+                return undefined;
+            }
+            return this.walkingPlatforms.get(slab.object)!.reduce((closest, facility) => {
+                const distance = (candidate: Facility) => Math.hypot(slab.point.x - candidate.x, slab.point.z - candidate.z);
+                return distance(facility) < distance(closest) ? facility : closest;
+            });
+        }
         if (!hit) {
             return undefined;
         }
-        this.raycaster.far = Math.max(0, hit.distance - .1);
+        return this.isPickOccluded(hit.distance) ? undefined : hit.object.userData.facility as Facility;
+    }
+
+    /** Reject targets behind the same visible opaque geometry that conceals map labels. */
+    private isPickOccluded(distance: number): boolean {
+        this.raycaster.far = Math.max(0, distance - .1);
         const blocked = this.raycaster.intersectObjects(visibleLabelOccluders(this.labelOccluders), false).length > 0;
         this.raycaster.far = Infinity;
-        return blocked ? undefined : hit.object;
+        return blocked;
     }
 
     /** Coalesce hover hit tests to one per frame without scheduling a WebGL draw. */
@@ -302,10 +316,10 @@ export class MapScene {
     private selectAt(clientX: number, clientY: number): void {
         const target = this.pickAt(clientX, clientY);
         if (!this.onWalkingPick) {
-            this.onSelect(target?.userData.facility as Facility | undefined);
+            this.onSelect(target);
         }
         else if (target) {
-            this.onWalkingPick(target.name);
+            this.onWalkingPick(this.walkingFacilityTargets.get(target.id)!);
         }
     }
 
@@ -318,9 +332,6 @@ export class MapScene {
         this.gestures.dispose();
         this.setPointerHover();
         this.labels.dispose();
-        this.walkingMarkers.clear();
-        this.walkingMarkerGeometry.dispose();
-        this.walkingMarkerMaterial.dispose();
         this.renderer.domElement.removeEventListener('webglcontextrestored', this.restoreContext);
         this.appearance.dispose(this.scene);
         this.resizeObserver.disconnect();
@@ -444,18 +455,33 @@ export class MapScene {
         this.requestRender();
     }
 
-    /** Temporarily pick only authored walking points instead of ordinary map facilities. */
-    setWalkingPickTargets(ids?: readonly string[], onPick?: (id: string) => void): void {
-        this.walkingMarkers.clear();
-        this.onWalkingPick = ids ? onPick : undefined;
-        for (const id of ids ?? []) {
-            const node = this.walkingNodes.get(id);
-            if (node) {
-                const marker = new T.Mesh(this.walkingMarkerGeometry, this.walkingMarkerMaterial);
-                marker.name = id;
-                this.walkingMarkers.add(marker);
+    /** Reuse the facility hit targets and label standalone graph nodes without adding map geometry. */
+    setWalkingPickTargets(
+        targets?: readonly { id: string; facilityId?: string; name: string; kind?: FacilityKind }[],
+        onPick?: (id: string) => void
+    ): void {
+        this.onWalkingPick = targets ? onPick : undefined;
+        this.walkingFacilityTargets.clear();
+        const facilities = new Map(this.facilities.map(facility => [facility.id, facility]));
+        const labels = targets?.flatMap(target => {
+            const facility = target.facilityId && facilities.get(target.facilityId);
+            const anchor = facility || this.walkingNodes.get(target.id);
+            if (!anchor) {
+                return [];
             }
-        }
+            if (facility) {
+                this.walkingFacilityTargets.set(facility.id, target.id);
+            }
+            return [{
+                id: target.id,
+                text: facility ? facility.mapLabel ?? facility.name : target.name,
+                accessibleName: target.name,
+                kind: target.kind,
+                level: anchor.level,
+                position: new T.Vector3(anchor.x, 3.15 + (anchor.elevationOffset ?? 0), anchor.z)
+            }];
+        });
+        this.labels.setWalkingTargets(labels, this.onWalkingPick);
         this.invalidateModels();
     }
     /** Capture navigation intent and manual camera framing for a locale reload. */
@@ -623,6 +649,20 @@ export class MapScene {
             this.appearance.apply(group, role === 'context', this.state.focusStation);
         }
         this.facilityPickables = this.models.pickables.filter(object => object.parent && activeFloors.has(object.parent));
+        this.walkingPlatforms.clear();
+        if (this.onWalkingPick) {
+            for (const facility of this.facilities) {
+                if (facility.kind !== 'platform' || !facility.platformId || !this.walkingFacilityTargets.has(facility.id)) {
+                    continue;
+                }
+                const slab = this.models.platformSurfaces.get(facility.platformId);
+                if (slab?.parent && activeFloors.has(slab.parent)) {
+                    const platforms = this.walkingPlatforms.get(slab) ?? [];
+                    platforms.push(facility);
+                    this.walkingPlatforms.set(slab, platforms);
+                }
+            }
+        }
         this.fullShafts = visibleElevatorConnections(this.layout.connections, this.levels, this.state.level);
         for (const connector of this.models.connectors) {
             const fullShaft = this.fullShafts.has(connector.connection.id);
@@ -674,11 +714,6 @@ export class MapScene {
             this.routeModel.update(this.state.route, levelY, id => ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, id)));
         }
         this.routeModel.group.visible = !!this.state.route;
-        for (const marker of this.walkingMarkers.children) {
-            const node = this.walkingNodes.get(marker.name)!;
-            marker.visible = ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, node.level));
-            marker.position.set(node.x, levelY(node.level) + (node.elevationOffset ?? 0) + 2, node.z);
-        }
         if (this.activeFacility) {
             this.selected.position.set(
                 this.activeFacility.x,
@@ -831,7 +866,7 @@ export class MapScene {
         if (settled) {
             const facility = this.activeFacility;
             const selection = this.selected.visible && facility
-                ? { text: facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
+                ? { text: facility.mapLabel ?? facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
                 : undefined;
             this.labels.update({
                 state: this.state,

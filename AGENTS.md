@@ -113,7 +113,7 @@
 - 阪急百货与大丸的外观同样只在总览显示，现役建筑模型绘制层带、窗格及大丸南侧“大阪駅”立面标识；大丸上方长条酒店体量的两处屋顶内庭保留真实孔洞。上部轮廓与压缩高度参考用户照片示意，不新增可通行楼层。
 - 阪神百货和 Twin Towers South 是同一综合体；现役 `buildings/hanshin-dept/` 独立维护 L 形裙楼及临街长条办公塔楼，原始 OSM 轮廓保留在地理快照。现役公共板块维护 B1/1F 公共接入，旧商业及连接模块已退役，二层连桥须落到百货墙面；外观由地理建筑模型绘制，服从“显示建筑轮廓”开关与选层隐藏规则。来源与示意尺寸见 `docs/design/buildings/hanshin-dept.md`。
 - JP Tower／KITTE 是旧大阪中央邮便局地块的现有综合体，建筑位于 `buildings/jp-tower/`，现役接入归公共板块，旧 JP 总图与连接已退役；下沉广场连接 B1/1F/2F，地下经 Garden Avenue 接西梅田闸外。JR 南侧二层弧形退避在 `stations/jr-osaka/south-forecourt.ts`，真实裁空须同时作用于商业楼板。新增目录 `references/connections/` 用于详细连接核对，Inogate 西端新连桥不能误接成 LUCUA 连桥或地下站台；范围见 `docs/design/buildings/jp-tower.md`。
-- 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部 UMEDA 品牌与底部版权。
+- 画布铺满 `.atlas`，顶部 header 和底部 footer 为透明悬浮元素，空白区域允许拖动地图；移动端隐藏内层 `.map-heading`，保留顶部大阪梅田品牌与底部版权。
 - 梅北北端延伸向 Grand Front 西侧道路地下收转，不能穿入南北馆轮廓。修改站台长度时同步检查延伸线和商业体相对位置。
 - 南侧阪神／西梅田／东梅田／北新地的相对布局使用 `projectSouthReference` 共用步行图校准，以阪神为展示锚点；保留各站原始地理锚点，不恢复彼此独立的南移补丁。南侧建筑占位只画 B1 区域轮廓，`FloorArea.labelStyle: floor` 将文字平贴楼板，不生成悬浮标签。
 - 西梅田北端是尽头，仅南端延伸；北新地东西两端延伸，JR 东西线在四桥线下方通过。北新地站台物理 y=-24、stackIndex=-2，仍归 B2 探索；8 单位高差是展示值，不是实测净空。B1 跨站寻路仅加入已核对并显式登记的公共通道。

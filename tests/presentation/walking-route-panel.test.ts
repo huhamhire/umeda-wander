@@ -8,6 +8,7 @@ class Field extends EventTarget {
     attributes = new Map<string, string>();
     value: string;
     textContent: string;
+    title = '';
     hidden = false;
     disabled = false;
     checked = false;
@@ -65,22 +66,31 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
         { id: 'c', name: '联络通道', level: 'concourse', station: 'jr-osaka', access: 'outside' }
     ];
     let pickPoint: ((id: string) => void) | undefined;
+    let pickIds: string[] = [];
     const gatePolicies: boolean[] = [];
     let clears = 0;
     const planner = bindWalkingRoutePanel(
         panel as unknown as HTMLElement, places,
         [{ id: 'concourse', label: '1F', name: 'Concourse', y: 0, station: 'jr-osaka', description: '' }],
         [{ id: 'jr-osaka', name: 'JR 大阪站' }],
-        [{ id: 'locker', name: '存包柜', level: 'concourse', kind: 'locker' }],
+        [
+            { id: 'locker', name: '存包柜', level: 'concourse', kind: 'locker' },
+            { id: 'info', name: '北侧咨询台', mapLabel: '北侧大厅', level: 'concourse', kind: 'information' }
+        ],
         {
             preview: (_places, allowPaid) => {
                 gatePolicies.push(allowPaid);
                 return allowPaid ? { message: 'Route' } : { message: 'Ticket gate required', gateRequired: true };
             },
             clear: () => { clears++; },
-            pick: (candidates, onPick) => { pickPoint = candidates && onPick; },
+            pick: (candidates, onPick) => {
+                pickPoint = candidates && onPick;
+                pickIds = candidates?.map(candidate => candidate.id) ?? [];
+            },
             kindLabel: () => 'Entrance'
-        }
+        },
+        undefined,
+        new Map([['info', [{ id: 'a', distance: 6 }]]])
     );
     const rows = elements.get('walking-places')!;
     const results = elements.get('walking-results')!;
@@ -143,22 +153,25 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     const station = elements.get('walking-station')!;
     station.value = 'jr-osaka';
     station.dispatchEvent(new Event('change'));
-    assert.equal(results.children.length, 4);
-    const unavailable = results.children.find(option => option.attributes.get('aria-disabled') === 'true');
+    assert.equal(results.children.length, 5);
+    const unavailable = results.children.find(option => option.children[1]?.children[0]?.textContent === '存包柜');
     assert(unavailable);
     assert.equal(unavailable.children[1]!.children[0]!.textContent, '存包柜');
     assert.match(unavailable.children[1]!.children[1]!.textContent, /暂未接入路线/);
-    unavailable.click();
-    assert.deepEqual(planner.snapshot().ids, [null, 'b']);
     const kind = elements.get('walking-kind')!;
     pick.click();
     kind.value = 'locker';
     kind.dispatchEvent(new Event('change'));
     assert(!pick.disabled);
-    pick.click();
-    assert.equal(results.children.length, 1);
-    assert(pick.disabled);
-    field(0)[1]!.dispatchEvent(Object.assign(new Event('keydown', { cancelable: true }), { key: 'Enter' }));
+    assert.deepEqual(pickIds, ['locker']);
+    pickPoint!('locker');
+    assert.deepEqual(planner.snapshot().ids, ['locker', 'b']);
+    assert.equal(field(0)[1]!.value, '存包柜');
+    assert.match(elements.get('walking-status')!.textContent, /存包柜.*暂未接入/);
+    assert(elements.get('walking-preview')!.disabled);
+    elements.get('walking-preview')!.click();
+    assert.deepEqual(gatePolicies, [true, false, true]);
+    field(0)[2]!.click();
     assert.deepEqual(planner.snapshot().ids, [null, 'b']);
     elements.get('walking-add')!.click();
     assert.deepEqual(planner.snapshot().ids, [null, null, 'b']);
@@ -168,9 +181,9 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     planner.reset();
     assert(planner.snapshot().allowPaid);
 
-    planner.usePlace(places[0]!, 'start');
-    planner.usePlace(places[1]!, 'end');
-    planner.usePlace(places[2]!, 'stop');
+    planner.usePlace(places[0]!.id, 'start');
+    planner.usePlace(places[1]!.id, 'end');
+    planner.usePlace(places[2]!.id, 'stop');
     const gesture = (grip: Field, type: string, clientY: number) => {
         grip.dispatchEvent(Object.assign(new Event(type, { cancelable: true }), { button: 0, pointerId: 3, clientY }));
     };
@@ -207,4 +220,10 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     pickPoint!('b');
     assert.deepEqual(planner.snapshot().ids, ['c', 'b', 'b']);
     assert.equal(field(1)[1]!.value, '南改札外');
+
+    planner.usePlace('info', 'start');
+    assert.equal(field(0)[1]!.value, '北侧大厅');
+    assert.equal(field(0)[0]!.children[0]!.children.length, 1);
+    assert.match(field(0)[1]!.title, /北侧咨询台.*附近接入点/);
+    assert(!elements.get('walking-preview')!.disabled);
 });

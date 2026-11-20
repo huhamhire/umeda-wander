@@ -116,13 +116,15 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
             } else if (from.label !== to.label) {
                 destination = `${from.label} ↔ ${to.label}`;
             }
+            const location = caption(c.id);
             result.push({
                 id: `connection-${c.id}-${side}`,
                 connectionId: c.id,
                 name: messageText(
                     'facilities.labels.connection',
-                    { location: caption(c.id), kind: names[c.kind], destination: destination }
+                    { location, kind: names[c.kind], destination }
                 ),
+                mapLabel: messageText('facilities.labels.connectionMapLabel', { location, destination }),
                 kind: c.kind,
                 level: p.level,
                 x: p.x,

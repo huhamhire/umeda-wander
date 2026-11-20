@@ -17,7 +17,7 @@ import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
 import { bindMapViewUrl, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
-import { planWalkingRoute } from './application/navigation/walking-route.ts';
+import { planWalkingRoute, type WalkingApproximation } from './application/navigation/walking-route.ts';
 
 interface LanguageChangeView {
     state: MapViewState;
@@ -51,6 +51,8 @@ function takeLanguageChangeView(): LanguageChangeView | undefined {
 mountLocalizedPage();
 const navigation = JSON.parse(element('#navigation-data').textContent!) as NavigationData;
 const { facilities, levels, stations, walkingPlaces } = navigation;
+const walkingApproaches = new Map(navigation.walkingApproaches);
+const walkingNames = new Map([...facilities, ...walkingPlaces].map(({ id, name }) => [id, name]));
 bindCreditsDialog(
     element<HTMLDialogElement>('#credits-dialog'),
     element('#credits-open'),
@@ -116,6 +118,22 @@ const facilityWalkingActions = element('#facility-walking-actions');
 const facilityWalkingStop = element<HTMLButtonElement>('#facility-walking-stop');
 const facilityWalkingRoles = ['start', 'end', 'stop'] as const;
 const placeByFacility = new Map(walkingPlaces.flatMap(place => place.facilityId ? [[place.facilityId, place] as const] : []));
+
+/** Keep the selected facility ID when its approach still needs to be resolved at preview time. */
+function walkingPlaceId(facilityId: string): string | undefined {
+    return placeByFacility.get(facilityId)?.id ?? (walkingApproaches.has(facilityId) ? facilityId : undefined);
+}
+
+/** Name each substituted endpoint while keeping the user's original places in the itinerary. */
+function walkingPreviewMessage(count: number, approximations: readonly WalkingApproximation[] = []): string {
+    return [
+        messageText('ui.walking.result', { count }),
+        ...approximations.map(({ requested, via }) => messageText('ui.walking.approachResult', {
+            place: walkingNames.get(requested) ?? requested,
+            approach: walkingNames.get(via) ?? via
+        }))
+    ].join('\n');
+}
 const categoryLabels = {
     all: messageText('facilities.types.all'),
     entrance: messageText('facilities.types.entrance'),
@@ -181,12 +199,12 @@ const showSidebarTab = bindSidebarTabs(
 const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, facilities, {
     kindLabel: kind => categoryLabels[kind],
     preview: (places, allowPaid) => {
-        const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid);
+        const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid, walkingApproaches);
         if (result.route) {
             clearFacilitySelection();
             scene?.reset();
             sync();
-            return { message: messageText('ui.walking.result', { count: places.length - 1 }) };
+            return { message: walkingPreviewMessage(places.length - 1, result.approximations) };
         }
         sync();
         if (result.issue === 'unavailable' || result.issue === 'gateRequired') {
@@ -217,9 +235,9 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
             clearFacilitySelection();
             sync();
         }
-        scene?.setWalkingPickTargets(places?.map(place => place.id), onPick);
+        scene?.setWalkingPickTargets(places, onPick);
     }
-}, restored?.walkingDraft ?? shared?.itinerary);
+}, restored?.walkingDraft ?? shared?.itinerary, walkingApproaches);
 closeWalkingEditor = walkingRoute.closeEditor;
 if (restored?.walkingTab || shared?.itinerary) {
     showSidebarTab(2);
@@ -248,7 +266,7 @@ function currentSharedView(): SharedMapView | undefined {
 }
 for (const role of facilityWalkingRoles) {
     element(`#facility-walking-${role}`).addEventListener('click', () => {
-        const place = placeByFacility.get(selectedFacilityId);
+        const place = walkingPlaceId(selectedFacilityId);
         if (place) {
             walkingRoute.usePlace(place, role);
             showSidebarTab(2);
@@ -259,7 +277,7 @@ for (const role of facilityWalkingRoles) {
 
 /** Show the route actions only when the currently selected facility is a route endpoint. */
 function syncWalkingActions(): void {
-    facilityWalkingActions.hidden = !placeByFacility.has(selectedFacilityId);
+    facilityWalkingActions.hidden = !walkingPlaceId(selectedFacilityId);
     facilityWalkingStop.hidden = facilityWalkingActions.hidden || !walkingRoute.canAddStop();
 }
 const sidebar = element('.sidebar');
@@ -618,8 +636,14 @@ async function loadMap(): Promise<void> {
         const runtime = await import('./presentation/map-runtime.ts');
         screenDirection = runtime.screenDirection;
         const currentState = session.state;
-        if (sharedItinerary) {
-            currentState.route = planWalkingRoute(runtime.edges, sharedItinerary.ids, sharedItinerary.allowPaid).route ?? null;
+        const savedItinerary = sharedItinerary ?? (currentState.route ? restored?.walkingDraft : undefined);
+        let restoredPreview: string | undefined;
+        if (savedItinerary?.ids.every(id => id !== null)) {
+            const result = planWalkingRoute(runtime.edges, savedItinerary.ids, savedItinerary.allowPaid, walkingApproaches);
+            currentState.route = result.route ?? null;
+            if (result.route) {
+                restoredPreview = walkingPreviewMessage(savedItinerary.ids.length - 1, result.approximations);
+            }
             sharedItinerary = undefined;
         }
         session = new MapSession(runtime.edges, { nodes: runtime.nodes, levels: runtime.levels });
@@ -642,6 +666,9 @@ async function loadMap(): Promise<void> {
         updateCompass();
         scene.renderFirstFrame();
         walkingRoute.enableMap();
+        if (restoredPreview) {
+            walkingRoute.showPreviewResult({ message: restoredPreview });
+        }
         zoomIn.disabled = false;
         zoomOut.disabled = false;
     }

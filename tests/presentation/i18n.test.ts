@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import ts from 'typescript';
 import { formatMessage } from '../../src/application/i18n/format-message.ts';
 import { showAreaLabel } from '../../src/application/exploration/area-label-policy.ts';
-import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { availableLocales, messageText, preferredLocale, sourceLocale } from '../../src/infrastructure/i18n/index.ts';
 import { chineseMessages } from '../../src/infrastructure/i18n/zh-CN/index.ts';
 import { englishMessages } from '../../src/infrastructure/i18n/en/index.ts';
@@ -69,6 +69,23 @@ test('localized catalogs cover the same keys and named parameters', () => {
     }
     assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'ja'), '21 番のりば');
     assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'en'), 'Track 21');
+});
+
+test('station labels use localized station names in place of station-number prefixes', () => {
+    const stationNumber = /\b(?:T20|M16|Y11)\b/;
+    for (const messages of [chineseMessages, japaneseMessages, englishMessages]) {
+        for (const [key, value] of Object.entries(messages)) {
+            if (/^(stations\.(higashiUmeda|metroUmeda|nishiUmeda)\.|facilities\.locations\.|publicAreas\.metroInterchange\.)/.test(key)) {
+                assert.doesNotMatch(value, stationNumber, key);
+            }
+        }
+    }
+    assert.equal(messageText('stations.higashiUmeda.labels.passageShop', {}, 'ja'), '東梅田・通路沿い店舗');
+    for (const feature of [...layout.areas, ...facilities]) {
+        if (/^(t20|m16|y11|metro)-/.test(feature.level) && feature.name) {
+            assert.doesNotMatch(feature.name, stationNumber, feature.id);
+        }
+    }
 });
 
 test('level captions and facility filters keep their meaning in each locale', () => {
@@ -149,7 +166,9 @@ test(
         const html = renderHtmlMessages(template);
         assert(!html.includes('{{'));
         assert(html.includes(`<html lang="${sourceLocale}">`));
-        assert(html.includes('<title>车站漫游 · UMEDA STATION</title>'));
+        assert(html.includes('<title>车站漫游 · UMEDA</title>'));
+        assert.equal(messageText('ui.page.title', {}, 'ja'), '駅巡り · UMEDA');
+        assert.equal(messageText('ui.page.title', {}, 'en'), 'Station Explorer · UMEDA');
         assert(html.includes('aria-label="放大"'));
         assert(html.includes('数据来源与版权 · © OpenStreetMap contributors'));
         assert.throws(() => renderHtmlMessages('{{ui.unknown.key}}'), /Unknown HTML message key/);

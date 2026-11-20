@@ -2,6 +2,7 @@ import type { Level, LevelId, RouteEdge, RouteNode, StationId } from '../domain/
 import { findRoute } from '../domain/navigation/find-route.ts';
 import { stationFocusLevel } from './exploration/region-focus.ts';
 import { planWalkingRoute } from './navigation/walking-route.ts';
+import type { WalkingApproaches } from './navigation/walking-route.ts';
 
 export interface MapViewState {
     explode: number;
@@ -38,8 +39,8 @@ export class MapSession {
         this.state.roof = false;
     }
     /** Draw a complete itinerary only when each ordered leg is present in the graph. */
-    previewWalkingRoute(places: readonly string[], allowPaid: boolean) {
-        const result = planWalkingRoute(this.edges, places, allowPaid);
+    previewWalkingRoute(places: readonly string[], allowPaid: boolean, approaches?: WalkingApproaches) {
+        const result = planWalkingRoute(this.edges, places, allowPaid, approaches);
         this.state.route = result.route ?? null;
         if (result.route) {
             const map = this.map;

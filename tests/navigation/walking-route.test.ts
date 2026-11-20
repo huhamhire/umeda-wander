@@ -7,9 +7,10 @@ import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
 import { maxWalkingStops, planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
-import type { RouteEdge } from '../../src/domain/map/model.ts';
+import { walkingApproaches } from '../../src/application/navigation/walking-approaches.ts';
+import type { Facility, FloorArea, RouteEdge } from '../../src/domain/map/model.ts';
 import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
-import { edges, layout, levels, nodes, northWalking, southWalking, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, facilities, layout, levels, nodes, northWalking, southWalking, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
 
@@ -27,6 +28,80 @@ test('walking routes concatenate ordered legs and name the first blocked leg wit
     assert.deepEqual(planWalkingRoute(graph, ['c', 'b'], true), { issue: 'unavailable', from: 'c', to: 'b' });
     assert.deepEqual(planWalkingRoute(graph, ['a', 'b', 'b'], true), { issue: 'duplicate', from: 'b', to: 'b' });
     assert.deepEqual(planWalkingRoute(graph, [...itinerary, 'd'], true), { issue: 'incomplete' });
+});
+
+test('an approximate waypoint uses the nearest approach reachable on both legs with the selected gate policy', () => {
+    const graph: RouteEdge[] = [
+        { from: 'start', to: 'near', kind: 'gate', directed: true, cost: 1 },
+        { from: 'near', to: 'end', kind: 'walk', directed: true, cost: 1 },
+        { from: 'start', to: 'through', kind: 'walk', directed: true, cost: 2 },
+        { from: 'through', to: 'end', kind: 'walk', directed: true, cost: 2 },
+        { from: 'start', to: 'dead-end', kind: 'walk', directed: true, cost: 1 }
+    ];
+    const approaches = new Map([['locker', [
+        { id: 'dead-end', distance: 1 }, { id: 'near', distance: 2 }, { id: 'through', distance: 6 }
+    ]]]);
+    const stops = ['start', 'locker', 'end'];
+    for (const [allowPaid, via] of [[true, 'near'], [false, 'through']] as const) {
+        assert.deepEqual(planWalkingRoute(graph, stops, allowPaid, approaches), {
+            route: ['start', via, 'end'],
+            approximations: [{ requested: 'locker', via }]
+        });
+    }
+    const closed = new Map([['locker', [{ id: 'near', distance: 2 }]]]);
+    assert.deepEqual(planWalkingRoute(graph, stops, false, closed), { issue: 'gateRequired', from: 'start', to: 'locker' });
+});
+
+test('facility approaches stay on a continuous same-height walkable face and the same gate side', () => {
+    const rectangle = (left: number, right: number, top: number, bottom: number) => [
+        { x: left, z: top }, { x: right, z: top }, { x: right, z: bottom }, { x: left, z: bottom }
+    ];
+    const evidence = facilities.find(facility => facility.id === 'entry')!.evidence;
+    const locker: Facility = {
+        id: 'locker', name: 'Locker', kind: 'locker', level: 'concourse', x: 5, z: 5, note: '', evidence
+    };
+    const areas: FloorArea[] = [
+        { id: 'hall', level: 'concourse', name: 'Hall', kind: 'public', outline: rectangle(0, 100, 0, 20),
+            holes: [rectangle(8, 10, 4, 6)], evidence },
+        { id: 'shops', level: 'concourse', name: 'Shops', kind: 'service', outline: rectangle(4, 6, 8, 10), evidence },
+        { id: 'paid', level: 'concourse', name: 'Paid', kind: 'paid', outline: rectangle(0, 3, 3, 7), evidence }
+    ];
+    const anchors = [
+        { id: 'near', level: 'concourse', x: 6, z: 5 },
+        { id: 'hole', level: 'concourse', x: 12, z: 5 },
+        { id: 'wall', level: 'concourse', x: 5, z: 12 },
+        { id: 'gate', level: 'concourse', x: 2, z: 5 },
+        { id: 'opening', level: 'concourse', x: 5, z: 0.5 },
+        { id: 'raised', level: 'concourse', x: 6, z: 5, elevationOffset: 0.5 },
+        { id: 'far', level: 'concourse', x: 70, z: 18 },
+        { id: 'other', level: 'platform', x: 6, z: 5 }
+    ] as const;
+    const options = anchors.map(({ id, level }) => ({
+        id, level, name: id, station: 'jr-osaka', access: id === 'gate' ? 'inside' : 'outside'
+    }) as const);
+    const openings = [{ connectionId: 'stairs', level: 'concourse', kind: 'stairs', outline: rectangle(4, 6, 2, 3) }] as const;
+    assert.deepEqual(walkingApproaches([locker], options, anchors, areas, [], openings), [
+        ['locker', [{ id: 'near', distance: 1 }]]
+    ]);
+});
+
+test('the geographic map routes to a named public approach for the JR west ticket machines', () => {
+    const places = walkingPlaces();
+    const openings = [...planFloorOpenings(layout.connections, levels, layout.platforms), ...planAtriumOpenings(layout.atria ?? [])];
+    const approaches = new Map(walkingApproaches(facilities, places, nodes, layout.areas, layout.platforms, openings));
+    const result = planWalkingRoute(edges, ['entry', 'machines-west'], false, approaches);
+    assert(result.route);
+    assert(result.route.includes('west-entry'));
+    assert.deepEqual(result.approximations, [{ requested: 'machines-west', via: 'west-entry' }]);
+    assert(!approaches.has('entry'));
+});
+
+test('generated vertical facilities retain their full name and offer a compact map label', () => {
+    const stairs = facilities.find(facility => facility.id === 'connection-crost-stairs-68-from');
+    assert(stairs?.mapLabel);
+    assert.match(stairs.name, /楼梯/);
+    assert.doesNotMatch(stairs.mapLabel, /楼梯/);
+    assert.match(stairs.mapLabel, /Crost.*1F.*B1/);
 });
 
 test('the B1 transfer connects all three public stations in both directions and opens B1 on preview', () => {
