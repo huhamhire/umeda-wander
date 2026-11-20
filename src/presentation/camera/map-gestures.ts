@@ -3,12 +3,13 @@ import type { Vector3 } from 'three';
 type PointerPosition = { x: number; y: number };
 type PointerSample = PointerPosition & { touch: boolean };
 type TouchPair = { first: PointerSample; second: PointerSample };
+export type OrbitAnchor = PointerPosition | 'canvas-center';
 const orbitRadiansPerPixel = .006;
 const touchGestureThreshold = 4;
 const wheelIdleMs = 140;
 
 export interface MapGestureActions {
-    beginOrbit: (touchMidpoint?: PointerPosition) => Vector3 | undefined;
+    beginOrbit: (anchor?: OrbitAnchor) => Vector3 | undefined;
     rotate: (pivot: Vector3, yawRadians: number, pitchRadians: number) => boolean;
     beginDrag: () => void;
     pan: (deltaX: number, deltaY: number) => void;
@@ -280,10 +281,11 @@ export class MapGestures {
                 return;
             }
         }
-        this.touchPivot ??= this.actions.beginOrbit({
+        const anchor: OrbitAnchor = this.touchMode === 'zoom' ? {
             x: (baseline.first.x + baseline.second.x) / 2,
             y: (baseline.first.y + baseline.second.y) / 2
-        })?.clone();
+        } : 'canvas-center';
+        this.touchPivot ??= this.actions.beginOrbit(anchor)?.clone();
         this.touchBaseline = pair;
         if (this.touchMode === 'pitch') {
             if (this.touchPivot && midpointY !== 0) {

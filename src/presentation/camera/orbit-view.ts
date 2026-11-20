@@ -1,6 +1,12 @@
 import * as T from 'three';
 import { cameraPitchDegrees } from './pitch-limits.ts';
 
+/** Project an orbit ray onto a fixed horizontal elevation without consulting visible meshes. */
+export function orbitPointOnPlane(ray: T.Ray, elevation: number): T.Vector3 | null {
+    const plane = new T.Plane(new T.Vector3(0, 1, 0), -elevation);
+    return ray.intersectPlane(plane, new T.Vector3());
+}
+
 /**
  * Build the viewing-basis quaternion from the camera offset.
  */

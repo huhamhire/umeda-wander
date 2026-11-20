@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { orbitAboutPoint } from '../../src/presentation/camera/orbit-view.ts';
+import { orbitAboutPoint, orbitPointOnPlane } from '../../src/presentation/camera/orbit-view.ts';
 
 function camera(offset: T.Vector3, center: T.Vector3) {
     const c = new T.OrthographicCamera(-240, 240, 160, -160, .1, 6000);
@@ -23,6 +23,22 @@ test('viewport-centered orbit keeps the look-at point centered through yaw and p
     const screen = pivot.clone().project(current);
     assert(Math.hypot(screen.x, screen.y) < 1e-9);
     assert.notDeepEqual(current.position.toArray(), initial.position.toArray());
+    assert.equal(current.top - current.bottom, initial.top - initial.bottom);
+});
+
+test('the centre ray supplies a ground pivot without a visible ground mesh', () => {
+    const offset = new T.Vector3(45, 170, 273);
+    const center = new T.Vector3(400, -24, 600);
+    const initial = camera(offset, center);
+    const raycaster = new T.Raycaster();
+    raycaster.setFromCamera(new T.Vector2(0, 0), initial);
+    const pivot = orbitPointOnPlane(raycaster.ray, 0)!;
+    assert.equal(pivot.y, 0);
+    assert.notEqual(pivot.z, center.z);
+    orbitAboutPoint(offset, center, pivot, .65, -.2);
+    const current = camera(offset, center);
+    const screen = pivot.clone().project(current);
+    assert(Math.hypot(screen.x, screen.y) < 1e-9);
     assert.equal(current.top - current.bottom, initial.top - initial.bottom);
 });
 

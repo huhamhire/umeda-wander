@@ -1,8 +1,8 @@
 import { MapModels } from './models/map-models.ts';
 import { SceneLabels } from './labels/scene-labels.ts';
-import { MapGestures } from './camera/map-gestures.ts';
+import { MapGestures, type OrbitAnchor } from './camera/map-gestures.ts';
 import { RouteModel } from './models/stations/route-model.ts';
-import { orbitAboutPoint } from './camera/orbit-view.ts';
+import { orbitAboutPoint, orbitPointOnPlane } from './camera/orbit-view.ts';
 import { geographicBuildings } from '../infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
 import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
@@ -184,7 +184,7 @@ export class MapScene {
             }
         });
         this.gestures = new MapGestures(this.renderer.domElement, {
-            beginOrbit: touchMidpoint => this.beginOrbit(touchMidpoint),
+            beginOrbit: anchor => this.beginOrbit(anchor),
             rotate: (pivot, yawRadians, pitchRadians) => {
                 if (!this.manualView) {
                     return false;
@@ -219,18 +219,24 @@ export class MapScene {
         this.resize();
     }
 
-    /** Freeze the current frame. Mouse orbit uses its center and touch uses a picked midpoint. */
-    private beginOrbit(touchMidpoint?: { x: number; y: number }): T.Vector3 | undefined {
+    /** Freeze the frame, then resolve the touch orbit or pinch anchor from the current camera. */
+    private beginOrbit(anchor?: OrbitAnchor): T.Vector3 | undefined {
         if (!this.framing) {
             return undefined;
         }
         this.locatingFacility = false;
         this.focusTransition = false;
         this.freezeFraming(this.framing);
-        if (!touchMidpoint) {
+        if (!anchor) {
             return this.framing.center;
         }
-        this.setPointerRay(touchMidpoint.x, touchMidpoint.y);
+        let fallbackY = this.framing.center.y;
+        if (anchor === 'canvas-center') {
+            this.raycaster.setFromCamera(new T.Vector2(0, 0), this.camera);
+            fallbackY = this.levelY('district-ground');
+        } else {
+            this.setPointerRay(anchor.x, anchor.y);
+        }
         const hit = this.raycaster.intersectObjects(this.scene.children, true).find(item => {
             for (let object: T.Object3D | null = item.object; object; object = object.parent) {
                 if (!object.visible || object === this.selected || object === this.routeModel.group) {
@@ -240,9 +246,7 @@ export class MapScene {
             const material = (item.object as T.Mesh).material;
             return material && !Array.isArray(material) && material.visible && !(material instanceof T.ShadowMaterial);
         });
-        const fallback = new T.Vector3();
-        const plane = new T.Plane(new T.Vector3(0, 1, 0), -this.framing.center.y);
-        return hit?.point ?? this.raycaster.ray.intersectPlane(plane, fallback) ?? this.framing.center;
+        return hit?.point ?? orbitPointOnPlane(this.raycaster.ray, fallbackY) ?? this.framing.center;
     }
 
     /** Freeze the displayed frame and keep its starting scale reachable across gestures. */

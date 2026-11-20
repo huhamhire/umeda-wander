@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Vector3 } from 'three';
-import { MapGestures, type MapGestureActions } from '../../src/presentation/camera/map-gestures.ts';
+import { MapGestures, type MapGestureActions, type OrbitAnchor } from '../../src/presentation/camera/map-gestures.ts';
 import { manualZoomSpan } from '../../src/presentation/camera/camera-framing.ts';
 
 class CanvasStub extends EventTarget {
@@ -248,15 +248,15 @@ test('pinch and wheel zoom retain their scale factors, cancellation and disposal
     assert.deepEqual(selections, []);
 });
 
-test('twist and pinch ignore competing motion until a finger is lifted', () => {
-    const starts: number[][] = [];
+test('twist uses the canvas centre and pinch uses the finger midpoint until a finger is lifted', () => {
+    const starts: OrbitAnchor[] = [];
     const zoomPivots: number[][] = [];
     const pivot = new Vector3(4, 5, 6);
     let redraws = 0;
     const { canvas, gestures, rotations, pans, selections } = setup({
-        beginOrbit: midpoint => {
-            assert(midpoint);
-            starts.push([midpoint.x, midpoint.y]);
+        beginOrbit: anchor => {
+            assert(anchor);
+            starts.push(anchor);
             return pivot;
         },
         zoom: (factor, anchor) => {
@@ -285,7 +285,7 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
         assert(Math.abs(rotations[1]![3]! + Math.atan2(4, 44)) < 1e-9);
         assert.equal(rotations[1]![4], 0);
         assert.equal(zoomPivots.length, 0);
-        assert.deepEqual(starts, [[20, 0]]);
+        assert.deepEqual(starts, ['canvas-center']);
         const beforeRelease = redraws;
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 6, clientY: 44 });
         assert(!gestures.isRotating);
@@ -302,7 +302,7 @@ test('twist and pinch ignore competing motion until a finger is lifted', () => {
         assert(Math.abs(zoomPivots[1]![0]! - 1.5) < 1e-9);
         assert.deepEqual(zoomPivots[1]!.slice(1), [7, 8, 9]);
         assert.equal(rotations.length, 2);
-        assert.deepEqual(starts, [[20, 0], [20, 0]]);
+        assert.deepEqual(starts, ['canvas-center', { x: 20, y: 0 }]);
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 4, clientY: 60 });
         dispatch(canvas, 'pointermove', { pointerId: 1, clientX: 14, clientY: 3 });
         dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 14, clientY: 3 });
@@ -343,12 +343,12 @@ test('pinching out and back can restore a shared scale wider than the current vi
     }
 });
 
-test('parallel two-finger movement changes pitch in both directions without zoom or yaw', () => {
-    const starts: number[][] = [];
+test('parallel two-finger movement pitches around the canvas centre without zoom or yaw', () => {
+    const starts: OrbitAnchor[] = [];
     const { canvas, gestures, rotations, zooms, pans, selections } = setup({
-        beginOrbit: midpoint => {
-            assert(midpoint);
-            starts.push([midpoint.x, midpoint.y]);
+        beginOrbit: anchor => {
+            assert(anchor);
+            starts.push(anchor);
             return new Vector3(1, 2, 3);
         }
     });
@@ -368,7 +368,7 @@ test('parallel two-finger movement changes pitch in both directions without zoom
         dispatch(canvas, 'pointerup', { pointerId: 2, clientX: 31, clientY: 40 });
         dispatch(canvas, 'pointerup', { pointerId: 1, clientX: 10, clientY: 38 });
         assert(!gestures.isRotating);
-        assert.deepEqual(starts, [[20, 40]]);
+        assert.deepEqual(starts, ['canvas-center']);
         assert.deepEqual(rotations, [[1, 2, 3, 0, 12 * .006], [1, 2, 3, 0, -13 * .006]]);
         assert.deepEqual(zooms, []);
         assert.deepEqual(pans, []);
