@@ -178,6 +178,8 @@ export interface BuildingOpening {
     outline: Point2[];
     base: number;
     top: number;
+    /** Clearance along a deck can preserve its edge railings. */
+    suppressRailings?: boolean;
     evidence: Evidence;
 }
 

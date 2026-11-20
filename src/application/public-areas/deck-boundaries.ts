@@ -26,7 +26,8 @@ export function deckBoundarySegments(
         const q = closestPolygonPoint(p, r);
         return Math.hypot(q.x - p.x, q.z - p.z) < .12;
     });
-    const open = (p: Point2) => neighbours.some(a => atSeam(p, a)) || doors.some(d => d.base <= y + .55 && d.top > y && contains(p, d)) ||
+    const open = (p: Point2) => neighbours.some(a => atSeam(p, a)) ||
+        doors.some(d => d.suppressRailings !== false && d.base <= y + .55 && d.top > y && contains(p, d)) ||
         endpoints.some(({ node, clearance }) => Math.hypot(node.x - p.x, node.z - p.z) < clearance);
     const result: {
         from: Point2;

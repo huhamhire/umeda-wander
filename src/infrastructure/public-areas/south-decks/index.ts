@@ -1,8 +1,11 @@
+import clipping from 'polygon-clipping';
 import { messageText } from '../../i18n/index.ts';
-import type { StationMap, PlanRegion } from '../../../domain/map/model.ts';
+import type { BuildingOpening, StationMap, PlanRegion } from '../../../domain/map/model.ts';
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
+import { joinedPassageOutlines } from '../../../domain/map/geometry.ts';
 import { building as daimaru } from '../../buildings/daimaru/index.ts';
-import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
+import { building as hanshinDept } from '../../buildings/hanshin-dept/index.ts';
+import { deckEvidence, sourceDeckPaths, deckPath, elevatedLevels } from '../elevated-source.ts';
 import { cityLiftMap, southLiftDeckApproach } from '../../stations/hanshin-umeda/south-exit.ts';
 import { midosujiSouthLift } from '../metro-interchange/street-exits.ts';
 
@@ -12,6 +15,7 @@ import { midosujiSouthLift } from '../metro-interchange/street-exits.ts';
 export function southDecks(stations: StationMap[]): {
     blocks: DeckBlock[];
     portals: DeckPortal[];
+    buildingOpenings: BuildingOpening[];
 } {
     const e = daimaru.entrance!;
     const co = Math.cos(e.angle);
@@ -32,14 +36,13 @@ export function southDecks(stations: StationMap[]): {
     };
     const hanshin = stations.find(s => s.id === 'hanshin-umeda')!;
     const lift = hanshin.layout.connections.find(c => c.id === 'hanshin-umeda-south-lift-ground-deck')!;
-    const paths = sourceDeckPaths([
+    const hanshinPaths = sourceDeckPaths(['hanshin-approach', 'southeast-extension']);
+    const paths = [...sourceDeckPaths([
         'south-skywalk',
         'bridge-north',
         'bridge-spine',
-        'bridge-south',
-        'hanshin-approach',
-        'southeast-extension'
-    ]);
+        'bridge-south'
+    ]), ...hanshinPaths];
     paths.push(
         {
             ...deckPath('midosuji-south-lift-approach', messageText('facilities.locations.midosuji'), [
@@ -82,7 +85,27 @@ export function southDecks(stations: StationMap[]): {
         level: 'district-south-deck',
         evidence: deckEvidence
     });
+    const deckY = elevatedLevels.find(level => level.id === 'district-south-deck')!.y;
+    const podium = hanshinDept.volumes[0]!;
+    const host: clipping.Polygon = [podium.outline.map(p => [p.x, p.z])];
+    const slots = hanshinPaths.flatMap(path => joinedPassageOutlines(path.points, path.width + 1.1)
+        .map(outline => [outline.map(p => [p.x, p.z])] as clipping.Polygon));
+    const buildingOpenings = clipping.union(slots[0]!, ...slots.slice(1))
+        .filter(region => clipping.intersection(region, host).length)
+        .map(([outline]) => ({
+            buildingId: hanshinDept.id,
+            outline: outline!.map(([x, z]) => ({ x, z })),
+            base: deckY - .6,
+            top: deckY + 4.5,
+            suppressRailings: false,
+            evidence: {
+                ...deckEvidence,
+                urls: [...new Set(hanshinPaths.flatMap(path => path.evidence.urls ?? [])), 'https://www.hanshin-dept.jp/hshonten/floor/floor2f.html'],
+                detail: 'Display clearance along the registered Hanshin department store (阪神梅田本店) deck axes. The retail envelope above the passage remains continuous.'
+            }
+        }));
     return {
+        buildingOpenings,
         blocks: [{
             id: 'south-decks',
             name: messageText('publicAreas.southDecks.entities.southDecks.name'),

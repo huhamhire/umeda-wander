@@ -5,11 +5,12 @@ import * as T from 'three';
 import { building as hanshin } from '../../src/infrastructure/buildings/hanshin-dept/index.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { layout, deckBuildingAreas, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
-import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
 import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
+import { sourceDeckPaths } from '../../src/infrastructure/public-areas/elevated-source.ts';
 
 test('North Gate atrium is open toward the tracks below the upper span', () => {
     const wings = new T.Group();
@@ -59,6 +60,27 @@ test(
         );
     }
 );
+test('Hanshin lower podium clears the full width of the 2F bridge while keeping its upper cover', () => {
+    const ring = (points: typeof hanshin.volumes[0]['outline']): clipping.Ring => points.map(p => [p.x, p.z]);
+    const podium = [ring(hanshin.volumes[0]!.outline)];
+    const slots = exteriorOpenings.filter(o => o.buildingId === hanshin.id && o.suppressRailings === false);
+    assert(slots.length);
+    for (const path of sourceDeckPaths(['hanshin-approach', 'southeast-extension'])) {
+        for (const [i, start] of path.points.slice(0, -1).entries()) {
+            const inside = clipping.intersection(podium, [ring(passageOutline(start, path.points[i + 1]!, path.width))]);
+            assert.equal(clipping.difference(inside, ...slots.map(slot => [ring(slot.outline)])).length, 0, path.id);
+        }
+    }
+    const model = buildGeographicBuilding(hanshin, exteriorOpenings);
+    model.updateMatrixWorld(true);
+    for (const { x, z } of [{ x: 683.8, z: 736 }, { x: 719.9, z: 765.1 }, { x: 752.4, z: 795.1 }]) {
+        const corridor = new T.Raycaster(new T.Vector3(x, 8, z), new T.Vector3(0, -1, 0), 0, 4);
+        const cover = new T.Raycaster(new T.Vector3(x, 8, z), new T.Vector3(0, 1, 0), 0, 3);
+        assert.equal(corridor.intersectObject(model, true).length, 0);
+        assert(cover.intersectObject(model, true).length > 0);
+    }
+});
+
 test(
     'current geographic Hankyu halls retain arches and leave both walking axes open through the shells',
     () => {

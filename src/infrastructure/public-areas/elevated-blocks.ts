@@ -8,6 +8,7 @@ import { inogateDecks } from './west-decks/inogate.ts';
  * Assemble the north, south, west and Inogate (イノゲート大阪) public deck blocks and portals.
  */
 export function createElevatedBlocks(stations: StationMap[]) {
-    const parts = [northDecks(stations), southDecks(stations), westDecks(), inogateDecks()];
-    return { blocks: parts.flatMap(p => p.blocks), portals: parts.flatMap(p => p.portals) };
+    const south = southDecks(stations);
+    const parts = [northDecks(stations), south, westDecks(), inogateDecks()];
+    return { blocks: parts.flatMap(p => p.blocks), portals: parts.flatMap(p => p.portals), buildingOpenings: south.buildingOpenings };
 }

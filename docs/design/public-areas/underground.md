@@ -81,6 +81,38 @@
 
 `whity/east-mall-access.ts` 维护两处公共通道侧的接入口，两处均可在设施目录中定位。前庭宽度与 B1 落点为展示拟合。街面编号点用于平面配准，两处归运营方清单中的楼体连接项。 [运营方出口与接入清单](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=6) · [运营方编号图](https://whity.osaka-chikagai.jp/front/common/img/whity_evacuation_plan_2025.pdf#page=53)
 
+### DIAMOR 大阪 · 北侧接驳
+
+**D-23、D-24** 位于运营方图上的同一条北侧 B1 通道两边，公共面归现役 `hanshin-west-b1`。用各自的 OpenStreetMap 梯口、顶棚和街面步道定位，分别补齐到 B1 主通道的接驳及 1F 独立开口。D-23 表达带转向平台的两段楼梯，D-24 表达带中间平台的直行双跑楼梯。梯脚、转向和中间平台高差为展示拟合。 [DIAMOR 运营方平面图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40) · [D-23 顶棚](https://www.openstreetmap.org/way/618802492) · [D-24 顶棚](https://www.openstreetmap.org/way/618802490)
+
+**D-22** 在阪神百货一侧，依据 OSM 梯线及其明确标为地下 1 层的步道接入北侧公共面。**D-27** 按第一生命大厦侧梯线、地下步道和顶棚拟合，顶棚只覆盖中段。两处采用带中间平台的楼梯。 [D-22 地上出口记录](https://ocu-omu.repo.nii.ac.jp/record/2011144/files/111G0000009-2013-018.pdf) · [D-22 地下步道](https://www.openstreetmap.org/way/1053003665) · [D-27 地下步道](https://www.openstreetmap.org/way/1322885769) · [D-27 顶棚](https://www.openstreetmap.org/way/618802485)
+
+### DIAMOR 大阪 · 圆形广场至梅田 DT 塔
+
+- **D-31、D-33** 分别接圆形广场西侧支路和南向主通道西缘。D-31 采用街面梯线及巴士运营方指引，D-33 采用梯亭轮廓及西侧出入步道，并补顶棚。 [运营方 B1 图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40) · [D-31 交通指引](https://www.hankyu-kankobus.co.jp/limousine/busstop/12322/) · [D-33 梯亭](https://www.openstreetmap.org/way/618802475)
+- **D-39、D-41、D-44** 按街面梯线定位。D-39、D-41 接 DT 塔西侧的南北公共通道，两组楼梯的上行方向相反。D-44 接横向通道北侧，依 B1 图与街面梯线补短接驳。上述出口的梯宽、中间平台和 B1 接驳形状为展示拟合。 [运营方 B1 图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40) · [D-39 梯线](https://www.openstreetmap.org/way/618802442) · [D-41 梯线](https://www.openstreetmap.org/way/618802441) · [D-44 梯线](https://www.openstreetmap.org/way/619294225)
+- **D-40** 按 OSM 共用节点定位 1F 梯口、转向点和通向 B1 步道的梯脚。模型补两段转向楼梯、街面开口和局部 B1 步道，梯宽、平台尺寸与标高为展示拟合。研究资料确认 DT 塔有地下开放空间。模型的地下边界止于可定位的步道段，与 DIAMOR 主通道的接口缺少位置依据。 [街面梯线](https://www.openstreetmap.org/way/623086751) · [B1 步道](https://www.openstreetmap.org/way/1313639762) · [京都美术工艺大学研究纪要 §2.1.5](https://www.kyobi.ac.jp/img/pdf/kyobikiyou2022.pdf)
+
+### DIAMOR 大阪 · 北新地方向
+
+**D-49／50** 分别接在北新地方向通道北端交会口的西、东两侧，街面梯口按 OSM 节点定位。D-49 按西侧梯亭轮廓拟合顶棚，地面开口接南侧人行道。D-50 按东西向梯线拟合带平台的两段梯，从北侧步道接入街面梯口。B1 仅补接入各自梯脚的短段。D-49 的折返、两处梯脚、平台尺寸和段间标高均为模型拟合。 [运营方 B1 图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40) · [D-49 梯亭](https://www.openstreetmap.org/way/623086721) · [D-50 梯线](https://www.openstreetmap.org/way/623086724) · [D-50 接驳步道](https://www.openstreetmap.org/way/623086725)
+
+运营方图把 **D-51／52、D-55／56、D-57／58** 标在南北公共通道两侧。按 OSM 街面梯口、步道和梯段方向拟合三组 B1 梯脚与接驳。D-51／52、D-55／56 的街面上端向北，D-57／58 向南。D-55、D-56 用已有梯亭轮廓拟合顶棚。六处均表达独立首层开口和带中间平台的楼梯，梯段宽度、平台尺寸和地下落点为展示拟合。 [运营方 B1 图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40) · [D-55 梯亭](https://www.openstreetmap.org/way/623086716) · [D-56 梯亭](https://www.openstreetmap.org/way/623086712)
+
+#### 校准覆盖率
+
+以运营方别图 3 第 40 页明确标出的 **16 个 D 编号**为基准，并保留 **D-22、D-40** 两个补充项。每个编号计一次，具备街面梯口、跨层设备并接入 B1 公共主通道的模型计为完整校准。E 编号、EV、建筑接入口和同图其他编号采用各自的资料核对口径。 [统计底图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40)
+
+| 范围 | 完整校准 | 已建局部楼梯和步道 | 完整覆盖率 |
+| --- | --- | --- | --- |
+| 运营方图 · 北侧及中段 | D-23、D-24、D-27、D-31、D-33、D-39、D-41、D-44 | — | 8／8（100%） |
+| 运营方图 · 北新地方向 | D-49、D-50、D-51、D-52、D-55、D-56、D-57、D-58 | — | 8／8（100%） |
+| 运营方图小计 | 16 处 | — | **16／16（100%）** |
+| 补充编号 | D-22 | D-40 | 1／2（50%） |
+| 合计 | 17 处 | 1 处 | **17／18（94.4%）** |
+
+18 个编号均已有街面定位和楼梯模型。D-40 的公共主通道接驳未计入完整覆盖率。
+
 ### 曾根地下道
 
 - **11-43** 按[凤凰厅到达指引](https://phoenixhall.jp/access/)表达扶梯。采用 [OSM 地面梯口](https://www.openstreetmap.org/node/3499801000)、[顶棚](https://www.openstreetmap.org/way/618802454)和[地下折角支路](https://www.openstreetmap.org/way/1322885750)。地下落点和支路宽度是拟合值。

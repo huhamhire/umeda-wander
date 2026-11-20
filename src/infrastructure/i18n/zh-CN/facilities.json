@@ -30,6 +30,7 @@
   "facilities.locations.southBridge": "南侧步道桥",
   "facilities.locations.southPublic": "南侧公共通道",
   "facilities.locations.sonechikaExit": "曾根地下道 {number} 号出口",
+  "facilities.locations.diamorExit": "DIAMOR 大阪 {number} 号出口",
   "facilities.locations.sonechikaLift": "曾根地下道 11-41 号出口旁",
   "facilities.locations.whityExit": "Whity 梅田 {number} 号出口",
   "facilities.locations.whityBuildingAccess": "{building} · Whity {number} 接入口",

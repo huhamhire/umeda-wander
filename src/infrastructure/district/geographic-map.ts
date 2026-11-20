@@ -22,6 +22,9 @@ import { createElevatedBlocks } from '../public-areas/elevated-blocks.ts';
 import { createDeckAccess } from '../public-areas/deck-access.ts';
 import { createJpBasementAccess } from '../public-areas/south-diamor/jp-access.ts';
 import { createSonechikaAccess } from '../public-areas/south-diamor/sonechika-access.ts';
+import { createDiamorCentralAccess } from '../public-areas/south-diamor/diamor-central-access.ts';
+import { createDiamorNorthAccess } from '../public-areas/south-diamor/diamor-north-access.ts';
+import { createDiamorSouthAccess } from '../public-areas/south-diamor/diamor-south-access.ts';
 import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
 import { createWhityNorthMallAccess } from '../public-areas/whity/north-mall-access.ts';
@@ -50,6 +53,9 @@ export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
 const sonechikaAccess = createSonechikaAccess();
+const diamorNorthAccess = createDiamorNorthAccess();
+const diamorCentralAccess = createDiamorCentralAccess();
+const diamorSouthAccess = createDiamorSouthAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
 const whityNorth2Access = createWhityNorthMall2Access();
@@ -64,13 +70,17 @@ const streetConnections = [
     ...grandFrontPlazaAccess.connections,
     ...metroAccess.connections,
     ...sonechikaAccess.connections,
+    ...diamorNorthAccess.connections,
+    ...diamorCentralAccess.connections,
+    ...diamorSouthAccess.connections,
     ...whityAccess.flatMap(access => access.connections)
 ];
 export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
-        ...sonechikaAccess.areas, ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas
+        ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
+        ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas
     ],
 };
 const patchFloors = undergroundPatches.map(p => ({
@@ -109,6 +119,7 @@ for (const b of elevated.blocks) {
 export const elevatedAreas = assemblePublicDecks(elevated.blocks, shared.stations, assemblyLevels);
 export const exteriorOpenings = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
+    ...elevated.buildingOpenings,
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorth2Access.connections, whityNorth2Access.buildingEquipment, assemblyLevels),
@@ -164,6 +175,9 @@ const composed = composeStationMaps(
         exteriorOpenings,
         canopies: [
             ...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies, ...sonechikaAccess.canopies,
+            ...diamorNorthAccess.canopies,
+            ...diamorCentralAccess.canopies,
+            ...diamorSouthAccess.canopies,
             ...whityAccess.flatMap(access => access.canopies)
         ],
         landmarks: izumiAccess.landmarks,
@@ -203,7 +217,7 @@ export const layout = {
     })),
 };
 export const facilities = completeFacilityDirectory(
-    [...composed.sourceFacilities, ...sonechikaAccess.facilities, ...eastMallAccess.facilities],
+    [...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities, ...eastMallAccess.facilities],
     layout.connections,
     layout.platforms,
     levels
