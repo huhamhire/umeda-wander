@@ -82,7 +82,7 @@ export function planFloorOpenings(
                     outline = passageOutline(
                         { x: center.x - direction.x * sign * clearance, z: center.z - direction.z * sign * clearance },
                         { x: center.x + direction.x * sign * 0.8, z: center.z + direction.z * sign * 0.8 },
-                        connection.width ? connection.width + 0.5 : connection.kind === 'escalator' ? escalatorWidth + 0.5 : 3.4
+                        connection.openingWidth ?? ((connection.width ?? (connection.kind === 'escalator' ? escalatorWidth : 2.9)) + 0.5)
                     );
                 }
                 openings.push({

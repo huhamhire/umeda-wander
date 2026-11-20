@@ -4,6 +4,7 @@ import { joinedPassageOutlines, passageOutline } from '../../../domain/map/geome
 import type { Point2, StationMap } from '../../../domain/map/model.ts';
 import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
 import { cityLiftMap, exitPhoto, f23EscalatorTracks, f23Stair, southLiftDeckApproach, southLiftHallApproach, southLiftPoint } from './south-exit.ts';
+import { calibrateHanshinWestConcourse } from './west-concourse.ts';
 // Manual endpoint fit to the reviewed road / underground plan, not surveyed coordinates.
 export const hanshinAxis = {
     negativeEnd: { x: 612, z: 718 },
@@ -20,8 +21,6 @@ export function createGeographicHanshin() {
     for (const platform of station.layout.platforms) {
         platform.width *= hanshinAxis.acrossScale;
     }
-    // The main exit continues east along the terminal axis, not north across it.
-    // Move the gate west first so the double escalator / wide stair bank has its own apron.
     const placement = axisPlacement(hanshinAxis);
     const point = (x: number, z: number) => ({
         x: placement.origin.x + Math.cos(placement.angle) * x * placement.planScale.along - Math.sin(placement.angle) * z * placement.planScale.across,
@@ -31,18 +30,38 @@ export function createGeographicHanshin() {
         point(x - w / 2, z - d / 2), point(x + w / 2, z - d / 2),
         point(x + w / 2, z + d / 2), point(x - w / 2, z + d / 2)
     ];
-    station.layout.areas.find(a => a.id === 'hanshin-umeda-east-paid')!.outline = rectangle(-50, -2, 8, 50);
-    station.layout.areas.find(a => a.id === 'hanshin-umeda-east-public')!.outline = rectangle(-69, -12, 30, 26);
-    Object.assign(station.facilities.find(f => f.id === 'hanshin-umeda-east-gate')!, point(-54, -10));
-    const target = point(-79, -10);
-    for (const c of station.layout.connections.filter(c => c.id.includes('east-public-'))) {
-        Object.assign(c.from, point(-69, -10));
-        Object.assign(c.to, target);
-        Object.assign(station.nodes.find(n => n.id === c.from.id)!, c.from);
-        Object.assign(station.nodes.find(n => n.id === c.to.id)!, target);
+    calibrateHanshinWestConcourse(station, point);
+    // Align the B2 gate with the district marker and retain a level apron in front of the bank.
+    station.layout.areas.find(a => a.id === 'hanshin-umeda-east-paid')!.outline = rectangle(-52.5, -2, 15, 50);
+    station.layout.areas.find(a => a.id === 'hanshin-umeda-east-public')!.outline = rectangle(-73.5, -12, 27, 26);
+    Object.assign(station.facilities.find(f => f.id === 'hanshin-umeda-east-gate')!, point(-60, -12));
+    const cityRoute = 'https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda04-2%28202606%29.pdf';
+    const eastPhoto = 'https://www.daiken.jp/showroom/pdf/osaka/osaka_sr_access_hanshin.pdf';
+    const eastStair = station.layout.connections.find(c => c.id === 'hanshin-umeda-east-public-stairs')!;
+    const eastBank = station.layout.connections.find(c => c.id === 'hanshin-umeda-east-public-escalators')!;
+    eastBank.width = 1.85;
+    eastBank.laneSpacing = 8.8;
+    eastStair.openingWidth = eastBank.laneSpacing + eastBank.width + .55;
+    for (const c of [eastStair, eastBank]) {
+        Object.assign(c.from, point(-69, -12));
+        Object.assign(c.to, point(-80, -12));
+        c.evidence = {
+            ...c.evidence,
+            detail: 'A broad straight stair flanked by escalators ascends from the B2 public apron to the shared B1 well. The photo confirms the bank arrangement; the run, opening dimensions and middle landing are fitted.',
+            urls: [...c.evidence.urls!, cityRoute, eastPhoto]
+        };
     }
     const landing = station.layout.areas.find(a => a.id === 'hanshin-umeda-east-upper-public')!;
-    landing.outline = rectangle(-79, -10, 8, 18);
+    landing.outline = rectangle(-81, -12, 10, 18);
+    const southLanding = station.layout.areas.find(a => a.id === 'hanshin-umeda-south-b1-landing')!;
+    const southBank = station.layout.connections.find(c => c.id === 'hanshin-umeda-south-public-escalator')!;
+    station.layout.areas.push({
+        ...southLanding,
+        id: 'hanshin-umeda-south-b1-bank-approach',
+        outline: rectangle(-69, -39, 12, 8),
+        label: false,
+        evidence: southBank.evidence
+    });
     calibrateSouthExit(station);
     return station;
 }

@@ -131,4 +131,4 @@
 - 西梅田使用 `stations/nishi-umeda/index.ts`、Y11 编号和来源 yotsubashi；北新地使用 `stations/kitashinchi/index.ts`、KS 编号和独立来源 kitashinchi。Y11 北端车挡用 `terminalEnd: end`，北改札只出、中改札只进；北新地是通行岛式站台。现役公共地下网按地区通道 PDF 连接 DIAMOR／阪神／西梅田／北新地。阪神、西梅田、北新地的闸外步行路线由 `south-diamor/walking-routes.ts` 显式登记。
 
 - “显示建筑轮廓”沿用内部 `roof` 状态，统一控制 JR 大屋顶与商业外观/上部体量；仅在总览显示。地下通路和入口不显示浮动标签，二层联络桥只有未画目标的延伸段显式启用 `PublicPassage.label`。
-- 阪神 B1 付费区在西半侧，闸机位于东西端，中部保留朝南公共通路；站台内部楼梯/扶梯向西上行。B2 东口主出口朝东，宽两段式阶梯居中、扶梯分列两侧；`stairLandingLength`、`laneSpacing`、`gateCount` 分别统一落台造型、扶梯模型/孔洞及闸机/围栏留口。
+- 阪神 B1 付费区在西半侧，`west-concourse.ts` 校准两端检票口及付费轮廓，北侧、南侧及百货店口外朝南的通道归共享公共面；站台内部楼梯／扶梯向西上行。B2 东口主出口朝东，宽两段式阶梯和两侧扶梯共用 B1 开口，宽度随 `laneSpacing` 计算；`stairLandingLength` 和 `gateCount` 继续统一落台造型与闸机／围栏留口。

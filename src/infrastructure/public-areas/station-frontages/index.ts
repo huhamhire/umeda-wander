@@ -16,7 +16,10 @@ const core: Record<StationId, string[]> = {
         'jr-interface',
         'south-public'
     ],
-    'hanshin-umeda': ['west-public', 'central-public', 'east-hall-public', 'south-b1-lift-door-approach', 'f23-b1-approach'],
+    'hanshin-umeda': [
+        'west-public', 'north-public', 'department-public', 'central-public', 'east-hall-public',
+        'south-b1-lift-door-approach', 'f23-b1-approach'
+    ],
     'higashi-umeda': ['public-spine', 'whity-public', 'exit-2-lift-b1:door-approach', 'street-lift-low:door-approach'],
     'nishi-umeda': ['public-hall', 'north-west-public', 'south-public', 'exit-4-a-concourse-approach', 'exit-4-a-b1-approach'],
     'kitashinchi': ['north-public', 'west-public', 'diamor-public', 'south-public', 'east-public'],

@@ -127,6 +127,8 @@ export interface VerticalConnection {
     lanes?: 1 | 2;
     laneSpacing?: number;
     stairLandingLength?: number;
+    /** Clear slab opening width when a stair and its flanking escalators share one well. */
+    openingWidth?: number;
     doorFacingRad?: number;
     /** Explicit lower elevator door heading when the two landings use different shaft faces. */
     lowerDoorFacingRad?: number;

@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import polygonClipping from 'polygon-clipping';
+import polygonClipping, { type Pair, type Polygon } from 'polygon-clipping';
 import * as T from 'three';
 import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { planGateBoundaries } from '../../src/application/connections/gate-boundaries.ts';
 import { MapSession } from '../../src/application/map-session.ts';
-import { platformLocalPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { passageOutline, platformLocalPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
-import { edges, facilities, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, facilities, layout, levels, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { hanshinStation } from '../../src/infrastructure/stations/hanshin-umeda/index.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
@@ -18,19 +18,23 @@ import { axisPlacement } from '../../src/domain/map/axis-calibration.ts';
 import { hanshinAxis } from '../../src/infrastructure/stations/hanshin-umeda/geographic.ts';
 import { stationFrontages } from '../../src/infrastructure/public-areas/station-frontages/index.ts';
 
+const frame = axisPlacement(hanshinAxis);
+/** Project reviewed samples in the Hanshin (阪神) station frame into district space. */
+const hanshinPoint = (x: number, z: number) => ({
+    x: frame.origin.x + Math.cos(frame.angle) * x * frame.planScale.along - Math.sin(frame.angle) * z * frame.planScale.across,
+    z: frame.origin.z + Math.sin(frame.angle) * x * frame.planScale.along + Math.cos(frame.angle) * z * frame.planScale.across
+});
+/** Convert a model outline to the polygon-clipping coordinate format. */
+const ring = (points: { x: number; z: number }[]): Pair[] => points.map(({ x, z }) => [x, z]);
+
 test('Hanshin B1 covers the office bay while retaining a local eastern main-stair opening', () => {
     const station = createGeographicStation('hanshin-umeda');
     const cover = station.layout.areas.find(a => a.id === 'hanshin-umeda-east-hall-public')!;
     assert(stationFrontages([station]).some(a => a.id === cover.id), 'full slab must survive shared-public assembly');
-    const frame = axisPlacement(hanshinAxis);
-    const point = (x: number, z: number) => ({
-        x: frame.origin.x + Math.cos(frame.angle) * x * frame.planScale.along - Math.sin(frame.angle) * z * frame.planScale.across,
-        z: frame.origin.z + Math.sin(frame.angle) * x * frame.planScale.along + Math.cos(frame.angle) * z * frame.planScale.across
-    });
     const b1 = layout.areas.filter(a => levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) === -8);
     const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
     for (const [x, z] of [[-34, 0], [-45, -13], [-20, 14], [-52, 12]]) {
-        const p = point(x!, z!);
+        const p = hanshinPoint(x!, z!);
         assert(b1.some(a => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h))), 'office-side slab missing');
         assert(!openings.some(o => b1.some(a => a.level === o.level) && pointInPolygon(p, o.outline)), 'office bay is cut away');
     }
@@ -46,6 +50,56 @@ test('Hanshin B1 covers the office bay while retaining a local eastern main-stai
     assert.equal(new T.Raycaster(new T.Vector3(center.x, 5, center.z), new T.Vector3(0, -1, 0)).intersectObject(mesh).length, 0);
     mesh.geometry.dispose();
     (mesh.material as T.Material).dispose();
+});
+
+test('Hanshin geographic B1 retains both public bypasses and all paid shaft openings', () => {
+    const station = createGeographicStation('hanshin-umeda');
+    const paid = station.layout.areas.find(a => a.id === 'hanshin-umeda-hall-paid')!;
+    const publicMesh = polygonClipping.union(undergroundPublicAreas.filter(a => !a.elevationOffset).map(a =>
+        [a.outline, ...a.holes ?? []].map(ring)
+    ));
+    const paths = [
+        [[68, 22], [58, 18], [50, 17], [43, 21], [31, 21], [20, 20], [12, 19]],
+        [[68, -19], [64, -29], [56, -31], [39, -31], [24, -28], [14, -25], [10, -22]],
+        [[68, 22], [68, -19]],
+        [[12, 19], [10, -22]]
+    ] as const;
+    for (const path of paths) {
+        for (let i = 1; i < path.length; i++) {
+            const [x0, z0] = path[i - 1]!;
+            const [x1, z1] = path[i]!;
+            const strip: Polygon = [ring(passageOutline(hanshinPoint(x0, z0), hanshinPoint(x1, z1), 3))];
+            assert.equal(polygonClipping.difference(strip, publicMesh).length, 0, `B1 corridor near ${x0}, ${z0}`);
+        }
+    }
+    const paidShafts = planFloorOpenings(station.layout.connections.filter(c => c.platformId), station.levels, station.layout.platforms);
+    for (const opening of paidShafts.filter(o => o.level === paid.level)) {
+        assert.equal(polygonClipping.difference([ring(opening.outline)], [ring(paid.outline)]).length, 0, opening.connectionId);
+    }
+});
+
+test('Hanshin east stairs and both escalators share one B1 opening and retain upper landings', () => {
+    const stairs = layout.connections.find(c => c.id === 'hanshin-umeda-east-public-stairs')!;
+    const bank = layout.connections.find(c => c.id === 'hanshin-umeda-east-public-escalators')!;
+    const openings = planFloorOpenings([stairs, bank], levels, []);
+    const b1 = openings.filter(o => o.level === 'district-underground');
+    assert.equal(b1.length, 3);
+    const sharedCut = b1.find(o => o.connectionId === stairs.id)!;
+    const laneCuts = b1.filter(o => o.connectionId === bank.id);
+    for (const lane of laneCuts) {
+        assert.equal(polygonClipping.difference([ring(lane.outline)], [ring(sharedCut.outline)]).length, 0);
+    }
+    const run = Math.hypot(stairs.to.x - stairs.from.x, stairs.to.z - stairs.from.z);
+    assert(Math.atan2(8, run - stairs.stairLandingLength!) < Math.PI / 6);
+    for (const c of [stairs, ...connectionLanes(bank)]) {
+        const forward = {
+            x: c.to.x + 2 * (c.to.x - c.from.x) / run,
+            z: c.to.z + 2 * (c.to.z - c.from.z) / run
+        };
+        assert(undergroundPublicAreas.some(a => pointInPolygon(forward, a.outline)
+            && !a.holes?.some(hole => pointInPolygon(forward, hole))));
+        assert(!b1.some(o => pointInPolygon(forward, o.outline)));
+    }
 });
 test(
     'Hanshin has separate B1 west/department gates, B2 east gate and four tracks with independent alighting strips',
