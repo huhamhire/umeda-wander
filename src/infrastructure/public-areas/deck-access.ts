@@ -3,6 +3,7 @@ import type { FloorArea, VerticalConnection, Point2 } from '../../domain/map/mod
 import { passageOutline } from '../../domain/map/geometry.ts';
 import { elevatorDoorApproach } from '../../application/connections/connection-openings.ts';
 import { deckEvidence, sourceDeckPaths } from './elevated-source.ts';
+import { midosujiSouthLift } from './metro-interchange/street-exits.ts';
 
 /** Only public equipment explicitly marked by the supplied elevated/2F plans. */
 export function createDeckAccess(atriumLift: VerticalConnection) {
@@ -126,8 +127,19 @@ export function createDeckAccess(atriumLift: VerticalConnection) {
         landing.evidence = plazaStair.evidence;
     }
     areas.find(a => a.id === plazaLift.from.id + ':landing')!.evidence = plazaLift.evidence;
+    const metroLift = add(
+        'public-south-lift-6',
+        'south-decks',
+        'district-south-deck',
+        midosujiSouthLift.center,
+        midosujiSouthLift.center,
+        'elevator',
+        false,
+        midosujiSouthLift.deckFacing
+    );
+    metroLift.evidence = midosujiSouthLift.evidence;
+    metroLift.reverseLowerDoor = true;
     for (const [ref, x, z] of [
-        [6, 618.6, 607.7],
         [7, 625.9, 580.8],
         [8, 628.4, 659.7],
         [9, 669.3, 632.4]

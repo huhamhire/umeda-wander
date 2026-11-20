@@ -12,6 +12,5 @@ export function jrPublicAccessAnchors() {
         // Fit the east-side shaft to the existing 2F and 3F public floors.
         lift: jrGroundPoint({ x: 20, z: -47.5 }),
         liftGroundJoin: jrGroundPoint({ x: 20, z: -41 }),
-        metroStairs: { ground: jrGroundPoint({ x: 56, z: -18 }), b1: { x: 563, z: 521 } },
     };
 }

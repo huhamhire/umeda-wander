@@ -134,7 +134,9 @@ test(
                 const y = levels.find(l => l.id === n.level)!.y;
                 const landingAreas = c.kind === 'elevator' && n === c.to && n.level.startsWith('district-') ? elevatedAreas : layout.areas;
                 const floors = landingAreas.filter(a => a.kind === 'public' && levels.find(l => l.id === a.level)!.y === y);
-                const facing = c.doorFacingRad;
+                const facing = c.doorFacingRad === undefined
+                    ? undefined
+                    : c.doorFacingRad + (c.reverseLowerDoor && n === c.from ? Math.PI : 0);
                 const samples = facing === undefined ? [n] : [-1, 0, 1].map(side => ({
                     x: n.x + (elevatorWellHalfWidth + 0.03) * Math.cos(facing) - side * Math.sin(facing),
                     z: n.z + (elevatorWellHalfWidth + 0.03) * Math.sin(facing) + side * Math.cos(facing)
@@ -174,6 +176,16 @@ test(
         }
     }
 );
+
+test('the M16 Midosuji South Gate lift shares a shaft and keeps its existing ground facility', () => {
+    const upper = layout.connections.find(c => c.id === 'public-south-lift-6')!;
+    const lower = layout.connections.find(c => c.id === 'metro-umeda-midosuji-south-lift')!;
+    const stops = [lower.from, lower.to, upper.from, upper.to];
+    assert.deepEqual(stops.map(stop => stop.level), ['district-underground', 'district-ground', 'district-ground', 'district-south-deck']);
+    assert(stops.every(stop => Math.hypot(stop.x - 608.437, stop.z - 597.710) < .002));
+    assert(facilities.some(f => f.id === 'connection-public-south-lift-6-from'));
+    assert.equal(facilities.filter(f => f.kind === 'elevator' && f.level === 'district-ground' && f.x === upper.from.x && f.z === upper.from.z).length, 1);
+});
 test(
     'Grand Front approach reaches both south podium doors and supplies the plaza stair and lift',
     () => {

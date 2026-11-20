@@ -51,8 +51,11 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('jp-garden')) {
             return messageText('facilities.locations.jpGarden');
         }
-        if (id.startsWith('district-jr-metro')) {
-            return messageText('facilities.locations.jrMetro');
+        if (id === 'district-jr-metro-stairs') {
+            return messageText('facilities.locations.midosujiExit', { number: '3A' });
+        }
+        if (id.startsWith('metro-umeda-exit-')) {
+            return messageText('facilities.locations.midosujiExit', { number: id.slice('metro-umeda-exit-'.length) });
         }
         if (id.startsWith('hankyu')) {
             return messageText('facilities.locations.hankyu');

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import clipping from 'polygon-clipping';
 import * as T from 'three';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { partitionPublicAreas } from '../../src/application/public-areas/public-area-blocks.ts';
 import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
@@ -188,3 +189,25 @@ test(
         assert.equal(stairs.to.level, 'district-underground');
     }
 );
+
+test('M16 street exits preserve their geographic anchors, lane openings and public landings', () => {
+    const exits = [
+        ['district-jr-metro-stairs', '3A', 543.775, 470.115, 1, true],
+        ['metro-umeda-exit-8', '8', 583.766, 595.640, 1, true],
+        ['metro-umeda-exit-9', '9', 584.626, 559.105, 2, false],
+        ['metro-umeda-exit-18', '18', 616.353, 654.127, 1, false]
+    ] as const;
+    for (const [id, number, x, z, lanes, canopy] of exits) {
+        const exit = publicAccess.connections.find(c => c.id === id)!;
+        assert(Math.hypot(exit.from.x - x, exit.from.z - z) < .002);
+        assert.equal(exit.evidence.source, 'metro');
+        assert.equal(connectionLanes(exit).length, lanes);
+        assert.equal(layout.canopies.some(c => c.id === 'metro-umeda-exit-' + number + '-canopy'), canopy);
+        assert.equal(planFloorOpenings([exit], levels, []).filter(o => o.level === exit.from.level).length, lanes);
+        for (const lane of connectionLanes(exit)) {
+            assert(layout.areas.some(a => a.level === lane.from.level && a.kind === 'public' && contains(a, lane.from)));
+            assert(flat.some(a => contains(a, lane.to)));
+        }
+        assert(!edges.some(edge => [exit.from.id, exit.to.id].some(stop => edge.from === stop || edge.to === stop)));
+    }
+});

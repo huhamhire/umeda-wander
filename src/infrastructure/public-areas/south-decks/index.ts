@@ -4,6 +4,7 @@ import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { building as daimaru } from '../../buildings/daimaru/index.ts';
 import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
 import { cityLiftMap, southLiftDeckApproach } from '../../stations/hanshin-umeda/south-exit.ts';
+import { midosujiSouthLift } from '../metro-interchange/street-exits.ts';
 
 /**
  * Build the recessed south forecourt and east pedestrian bridge in the entrance frame, avoiding existing interiors.
@@ -40,6 +41,13 @@ export function southDecks(stations: StationMap[]): {
         'southeast-extension'
     ]);
     paths.push(
+        {
+            ...deckPath('midosuji-south-lift-approach', messageText('facilities.locations.midosuji'), [
+                midosujiSouthLift.deckJoin,
+                midosujiSouthLift.center
+            ], 4),
+            evidence: midosujiSouthLift.evidence
+        },
         {
             ...deckPath('hanshin-lift-21-approach', hanshin.name, southLiftDeckApproach, 4),
             evidence: {

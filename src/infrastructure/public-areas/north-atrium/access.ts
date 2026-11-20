@@ -87,29 +87,6 @@ export function createNorthPublicAccess(interfaces: StationPublicInterface[]) {
         outline: elevatorDoorApproach(northLift.to, northLift.doorFacingRad!, passageOutline(anchors.lift, anchors.liftGroundJoin, 5)),
         evidence: liftProof
     });
-    add(
-        'district-jr-metro-stairs',
-        'stairs',
-        anchors.metroStairs.b1,
-        anchors.metroStairs.ground,
-        'concourse',
-        {
-            source: 'district',
-            pages: [1, 5, 6],
-            urls: [
-                jrUrl,
-                'https://subway.osakametro.co.jp/station_guide/station/M16_%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf'
-            ],
-            detail: 'JR Midosuji public exit and M16 central-west/JR entrance relation, cross-checked in operator diagrams. Landing geometry fitted; stairs do not certify an accessible transfer.'
-        },
-        'metro-interchange-b1'
-    );
-    // Preserve the existing public facility IDs/codes: from is JR ground, to is Metro B1.
-    const metro = connections.find(c => c.id === 'district-jr-metro-stairs')!;
-    [metro.from, metro.to] = [
-        { ...metro.to, id: 'district-jr-metro-surface' },
-        { ...metro.from, id: 'district-jr-metro-underground' }
-    ];
     const gate = interfaces.find(p => p.gateId === 'umekita-gate')!;
     const normal = { x: (gate.outside.x - gate.inside.x) / 4, z: (gate.outside.z - gate.inside.z) / 4 };
     const at = (forward: number, side: number) => ({

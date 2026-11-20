@@ -13,6 +13,7 @@ import { bindPublicInterfaces } from '../../application/stations/public-interfac
 import { partitionPublicAreas } from '../../application/public-areas/public-area-blocks.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../public-areas/underground-blocks.ts';
 import { createNorthPublicAccess, publicGroundLevel } from '../public-areas/north-atrium/access.ts';
+import { createMetroStreetExits } from '../public-areas/metro-interchange/street-exits.ts';
 import { buildBasementOccupancies } from '../../application/public-areas/basement-occupancy.ts';
 import { basementOccupancies } from '../public-areas/basement-buildings.ts';
 import { completeFacilityDirectory } from '../facility-directory.ts';
@@ -36,12 +37,14 @@ const stationMaps = createGeographicStations();
 export const publicInterfaces = stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages = stationFrontages(stationMaps);
 const northAccess = createNorthPublicAccess(publicInterfaces);
+const metroAccess = createMetroStreetExits();
 export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
+const streetConnections = [...northAccess.connections, ...jpAccess.connections, ...grandFrontPlazaAccess.connections, ...metroAccess.connections];
 export const publicAccess = {
-    connections: [...northAccess.connections, ...jpAccess.connections, ...grandFrontPlazaAccess.connections],
-    areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas],
+    connections: [...streetConnections, metroAccess.lift],
+    areas: [...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas],
 };
 const patchFloors = undergroundPatches.map(p => ({
     id: p.id,
@@ -112,7 +115,8 @@ export const deckBuildingAreas = deckBuildingOccupancies.flatMap(group => {
         { level: group.level, prefix: 'deck-context', reservedRegions }
     ).areas;
 });
-const externalConnections = [...publicAccess.connections, ...deckAccess.connections];
+// Preserve the existing ground facility ID shared by both segments of the Midosuji lift.
+const externalConnections = [...streetConnections, ...deckAccess.connections, metroAccess.lift];
 const composed = composeStationMaps(
     shared.stations,
     {
@@ -128,7 +132,7 @@ const composed = composeStationMaps(
         platforms: [],
         connections: externalConnections,
         exteriorOpenings,
-        canopies: [...northDeckCanopies(), ...southDeckCanopies()],
+        canopies: [...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies],
         concourses: hankyuConcourses,
         atria: hankyuConcourseAtria,
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
