@@ -1,7 +1,9 @@
 import { axisPlacement } from '../../../domain/map/axis-calibration.ts';
 import { createStation } from './index.ts';
-import { passageOutline, pointInPolygon } from '../../../domain/map/geometry.ts';
+import { joinedPassageOutlines, passageOutline } from '../../../domain/map/geometry.ts';
+import type { Point2, StationMap } from '../../../domain/map/model.ts';
 import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
+import { cityLiftMap, exitPhoto, f23EscalatorTracks, f23Stair, southLiftDeckApproach, southLiftHallApproach, southLiftPoint } from './south-exit.ts';
 // Manual endpoint fit to the reviewed road / underground plan, not surveyed coordinates.
 export const hanshinAxis = {
     negativeEnd: { x: 612, z: 718 },
@@ -41,55 +43,119 @@ export function createGeographicHanshin() {
     }
     const landing = station.layout.areas.find(a => a.id === 'hanshin-umeda-east-upper-public')!;
     landing.outline = rectangle(-79, -10, 8, 18);
-    // Reuse the calibrated lift position when fitting the door-side approaches.
-    const lift = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;
-    const dx = 666 - lift.to.x;
-    const dz = 731 - lift.to.z;
-    const moved = station.layout.connections.filter(c => c.id.includes('south-lift-'));
-    const nodeIds = new Set(moved.flatMap(c => [c.from.id, c.to.id]));
-    for (const node of station.nodes.filter(n => nodeIds.has(n.id))) {
-        node.x += dx;
-        node.z += dz;
-    }
-    for (const c of moved) {
-        // Connection endpoints are separate records from the station node registry.
-        c.from = { ...c.from, ...station.nodes.find(n => n.id === c.from.id)! };
-        c.to = { ...c.to, ...station.nodes.find(n => n.id === c.to.id)! };
-    }
-    for (const facility of station.facilities.filter(f => moved.some(c => c.id === f.connectionId))) {
-        facility.x += dx;
-        facility.z += dz;
+    calibrateSouthExit(station);
+    return station;
+}
+
+/** Locate F23 and its public lift from the OSM axes, keeping the route graph independent. */
+function calibrateSouthExit(station: StationMap): void {
+    const stair = station.layout.connections.find(c => c.id.endsWith('south-ground-stairs'))!;
+    const escalator = station.layout.connections.find(c => c.id.endsWith('south-ground-escalator'))!;
+    const mid = (a: Point2, b: Point2): Point2 => ({ x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 });
+    const [first, second] = f23EscalatorTracks;
+    const heading = Math.atan2(f23Stair.to.z - f23Stair.from.z, f23Stair.to.x - f23Stair.from.x);
+    const offset = (p: Point2, along: number, across = 0): Point2 => ({
+        x: p.x + Math.cos(heading) * along - Math.sin(heading) * across,
+        z: p.z + Math.sin(heading) * along + Math.cos(heading) * across
+    });
+    // Keep mapped flight lengths and widen the cross-section slightly to separate the modeled rails.
+    Object.assign(stair.from, offset(f23Stair.from, 0, -.9));
+    Object.assign(stair.to, offset(f23Stair.to, 0, -.9));
+    stair.width = 3.2;
+    stair.evidence.urls!.push(f23Stair.way, exitPhoto);
+    stair.evidence.detail += ' F23 stair axis follows OSM. The photo shows a broad stair beside two escalators; width and intermediate landing are fitted.';
+    Object.assign(escalator.from, offset(mid(first.from, second.from), 0, .6));
+    Object.assign(escalator.to, offset(mid(first.to, second.to), 0, .6));
+    escalator.width = 1.65;
+    escalator.lanes = 2;
+    escalator.laneSpacing = 1.7;
+    escalator.evidence.urls!.push(first.way, second.way, exitPhoto);
+    escalator.evidence.detail += ' Two covered parallel flights follow the mapped bank axis. Lane spacing is widened for the model.';
+    const lower = station.layout.connections.find(c => c.id.endsWith('south-lift-b2-b1'))!;
+    const middle = station.layout.connections.find(c => c.id.endsWith('south-lift-b1-ground'))!;
+    const upper = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;
+    const deckJoin = southLiftDeckApproach[1]!;
+    const deckFacing = Math.atan2(deckJoin.z - southLiftPoint.z, deckJoin.x - southLiftPoint.x);
+    const hallFacing = deckFacing + Math.PI;
+    middle.reverseLowerDoor = true;
+    for (const lift of [lower, middle, upper]) {
+        Object.assign(lift.from, southLiftPoint);
+        Object.assign(lift.to, southLiftPoint);
+        lift.doorFacingRad = lift === lower ? hallFacing : deckFacing;
+        lift.evidence.urls!.push(cityLiftMap, 'https://www.openstreetmap.org/node/5691997475');
+        lift.evidence.detail = 'Osaka City lift 21 serves the East Gate B2, B1, ground and deck. Shaft follows the mapped lift point; door orientation is fitted.';
     }
     const b1Landing = station.layout.areas.find(a => a.id === 'hanshin-umeda-south-b1-landing')!;
-    // Keep the stair-side apron and give the lift its own B1 door approach.
-    const b1Lift = moved.find(c => c.id.endsWith('south-lift-b1-ground'))!;
     station.layout.areas.push({
         ...b1Landing,
         id: 'hanshin-umeda-south-b1-lift-door-approach',
-        level: b1Lift.from.level,
-        outline: elevatorDoorApproach(b1Lift.from, b1Lift.doorFacingRad!),
+        outline: elevatorDoorApproach(middle.from, hallFacing),
         label: false,
-        evidence: b1Lift.evidence
+        evidence: middle.evidence
     });
-    for (const id of ['hanshin-umeda-south-ground', 'hanshin-umeda-south-deck']) {
-        const area = station.layout.areas.find(a => a.id === id)!;
-        area.outline = elevatorDoorApproach(lift.to, lift.doorFacingRad!);
-        area.railings = id.endsWith('south-deck');
-    }
-    for (const connection of station.layout.connections.filter(c => c.id.includes('south-ground-'))) {
-        for (const node of [connection.from, connection.to]) {
-            if (station.layout.areas.some(a => a.level === node.level && pointInPolygon(node, a.outline))) {
-                continue;
-            }
-            station.layout.areas.push({
-                ...b1Landing,
-                id: node.id + ':compact-landing',
-                level: node.level,
-                outline: passageOutline({ x: node.x - 2, z: node.z }, { x: node.x + 2, z: node.z }, 4),
-                label: false,
-                evidence: connection.evidence
-            });
+    // The mapped B1 footway reaches the lower escalator mouths. Include the adjacent stair landing.
+    const hallSections = joinedPassageOutlines(southLiftHallApproach, 5.8);
+    const hallOutline = [
+        hallSections[0]![0]!,
+        ...hallSections.map(section => section[1]!),
+        ...hallSections.map(section => section[2]!).reverse(),
+        hallSections[0]![3]!
+    ];
+    station.layout.areas.push({
+        ...b1Landing,
+        id: 'hanshin-umeda-f23-b1-approach',
+        outline: hallOutline,
+        label: false,
+        evidence: {
+            ...stair.evidence,
+            urls: [...stair.evidence.urls!, 'https://www.openstreetmap.org/way/1329514168'],
+            detail: 'Lower stair and escalator apron fitted around the mapped B1 footway to lift 21; corridor width is estimated.'
         }
+    });
+    station.layout.areas.push({
+        ...b1Landing,
+        id: 'hanshin-umeda-south-b2-lift-door-approach',
+        level: lower.from.level,
+        outline: elevatorDoorApproach(lower.from, hallFacing),
+        label: false,
+        evidence: lower.evidence
+    });
+    for (const [key, stop, heading] of [
+        ['ground', middle.to, deckFacing],
+        ['deck', upper.to, deckFacing]
+    ] as const) {
+        const area = station.layout.areas.find(a => a.id === 'hanshin-umeda-south-' + key)!;
+        area.outline = elevatorDoorApproach(stop, heading);
+        area.evidence = upper.evidence;
+        area.railings = key === 'deck';
     }
-    return station;
+    const high = mid(stair.to, escalator.to);
+    const low = mid(stair.from, escalator.from);
+    station.layout.areas.push({
+        ...b1Landing,
+        id: 'hanshin-umeda-f23-b1-landing',
+        outline: passageOutline(offset(low, -3), offset(low, .5), 8),
+        label: false,
+        evidence: stair.evidence
+    });
+    station.layout.areas.push({
+        ...b1Landing,
+        id: 'hanshin-umeda-f23-ground-landing',
+        level: stair.to.level,
+        outline: passageOutline(offset(high, -.5), offset(high, 3.5), 8),
+        label: false,
+        evidence: stair.evidence
+    });
+    station.layout.canopies = [{
+        id: 'hanshin-umeda-f23-canopy',
+        level: stair.to.level,
+        points: [offset(low, -.5), offset(high, 1.5)],
+        width: 8,
+        clearHeight: 3.3,
+        glazed: true,
+        evidence: {
+            ...escalator.evidence,
+            detail: 'The March 2025 photograph confirms a steel-framed glazed canopy over F23. Roof extent, supports and height are fitted.'
+        }
+    }];
 }

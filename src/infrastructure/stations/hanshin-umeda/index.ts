@@ -1,7 +1,6 @@
 import { messageText } from '../../i18n/index.ts';
 import { stationDraft } from '../../station-draft.ts';
 import { districtPlacements } from '../../district-placement.ts';
-import { passageOutline } from '../../../domain/map/geometry.ts';
 // +X runs west toward Kobe (神戸); -X is the eastern terminal. Coordinates are a
 // schematic fit of the user-supplied 2025-12-24 plan, not measured station metres.
 /**
@@ -30,7 +29,7 @@ export function createStation(
         1,
         placement.planScale
     );
-    const { draft, area, facility, node, edge, connection, platform, point, proof } = b;
+    const { draft, area, facility, node, edge, connection, platform, proof } = b;
     draft.levels = [
         {
             id: 'hanshin-platform',
@@ -493,10 +492,12 @@ export function createStation(
             'https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda01-5-2%28202109%29.pdf'
         ];
     }
+    const southB2 = node('south-lift-b2', 'hanshin-platform', -76, -35);
     const southB1 = node('south-lift-b1', 'hanshin-hall', -76, -35);
     const southGround = node('south-lift-ground', 'hanshin-ground', -76, -35);
     const southDeck = node('south-lift-deck', 'hanshin-deck', -76, -35);
     for (const lift of [
+        connection('south-lift-b2-b1', 'elevator', southB2, southB1),
         connection('south-lift-b1-ground', 'elevator', southB1, southGround),
         connection('south-lift-ground-deck', 'elevator', southGround, southDeck)
     ]) {
@@ -514,24 +515,6 @@ export function createStation(
         node('south-escalator-b1', 'hanshin-hall', -57, -39.5),
         node('south-escalator-ground', 'hanshin-ground', -76, -39.5)
     );
-    // Diagram explicitly gives a step-free East Gate–South Exit relation; retain a
-    // continuous public slope without claiming a measured gradient or routing edge.
-    const rampLow = { ...point(-82, -17), level: 'hanshin-platform' as const, station: draft.id };
-    const rampHigh = { ...point(-82, -34), level: 'hanshin-hall' as const, station: draft.id };
-    draft.layout.passages = [{
-        id: 'hanshin-east-south-public-slope',
-        name: messageText('stations.hanshinUmeda.entities.hanshinEastSouthPublicSlope.name'),
-        kind: 'underground',
-        width: 4.5,
-        points: [rampLow, rampHigh],
-        evidence: proof('PDF step-free East Gate to South Exit relation; exploded-layer slope is schematic, not an engineering gradient')
-    }];
-    draft.layout.atria = [{
-        id: 'hanshin-south-ramp-opening',
-        name: messageText('stations.hanshinUmeda.entities.hanshinSouthRampOpening.name'),
-        openings: [{ level: 'hanshin-hall', outline: passageOutline(point(-82, -27), point(-82, -35), 5) }],
-        evidence: proof('Upper B1 opening for the public East Gate–South Exit slope')
-    }];
     // One preview entirely inside Hanshin (阪神); no invented inter-operator routing edge.
     const entry = node('route-entry', 'hanshin-hall', 58, 0);
     const out = node('route-gate-out', 'hanshin-hall', 49, 0);
@@ -546,6 +529,10 @@ export function createStation(
     edge(low, dest);
     for (const value of [...draft.facilities, ...draft.layout.areas, ...draft.layout.platforms, ...draft.layout.connections]) {
         value.evidence.urls ??= ['https://www.hanshin.co.jp/uploads/guidemap/umeda.pdf'];
+    }
+    for (const stair of draft.layout.connections.filter(c => c.kind === 'stairs' && c.from.level !== c.to.level)) {
+        stair.stairLandingLength ??= 1.8;
+        stair.evidence.detail += ' The intermediate landing is fitted where the source does not dimension the flight.';
     }
     return draft;
 }

@@ -48,7 +48,9 @@ test(
         for (const c of layout.connections) {
             for (const n of [c.from, c.to]) {
                 const y = levels.find(l => l.id === n.level)!.y + (n.elevationOffset ?? 0);
-                const facing = c.doorFacingRad;
+                const facing = c.doorFacingRad === undefined
+                    ? undefined
+                    : c.doorFacingRad + (c.reverseLowerDoor && n === c.from ? Math.PI : 0);
                 const door = facing === undefined ? n : {
                     x: n.x + 2 * Math.cos(facing),
                     z: n.z + 2 * Math.sin(facing)

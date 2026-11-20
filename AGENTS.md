@@ -69,7 +69,7 @@
 - 具体连接优先采用对应构内图；缺少明确依据的候选只记录在 `docs/design/buildings/README.md`，不渲染、不补最短捷径。北侧梅北公共通路按 JR 第 6 页绕 LUCUA 1100 北侧。
 - `references/district/station-area-orientation.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/design/buildings/README.md`。
 - 阪急 Grand Building 使用独立轮廓，不能合并进百货实体。已核对的 1F 南北/东西公共通廊是商业内部不展开规则的明确例外；`CommercialConcourse` 只表达公共空间，不展开店铺。南北挑高裁孔与东西通廊上方 2F 通道分别处理，造型由 `commercial-concourse-model.ts` 生成，商业裁孔同步避让外墙与压顶。
-- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口按 B1→地面→Deck 分段，B2 东口的连续公共斜行通路裁 B1 开口；坡度不代表实测。现役闸外接驳归公共板块，阪神西口通往西梅田的 B1 路径由公共站间步行图维护。来源边界见 `docs/design/stations/hanshin-umeda.md`。
+- 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口 F23 楼梯、两条扶梯、地面顶棚和 21 号电梯的地理校准见 `stations/hanshin-umeda/south-exit.ts` 和同目录 `geographic.ts`；21 号为同一座 B2→B1→地面→Deck 电梯。现役闸外接驳归公共板块，阪神西口通往西梅田的 B1 路径由公共站间步行图维护。来源边界见 `docs/design/stations/hanshin-umeda.md`。
 - 北中庭 2/3、47/48 共用 `AtriumVoid` 开放天井，由 `atrium-openings.ts` 裁剪上层；南侧 15/16 斜向接公共区域，再经 50/T 接大丸 2F 前侧。组合地图的 `south-deck` 归 2F 探索，按南侧较低相邻层展示，原 JR 数据保留建筑楼层名称。
 - 地图标签被实际不透明楼板、商业体块或屋顶遮挡时隐藏；真实孔洞保留视线，玻璃与隐藏楼层不遮挡。便利店统一短标签 7-Eleven，设施页“便利店”可分别定位。设施页只保留分类、名称定位和图例，不显示参考图页码及设施说明详情；来源与注释继续保留在数据和文档中。
 - 阪急原图拟合与历史偏移在 `district-placement.ts`，现役定位在 `stations/hankyu-umeda/geographic.ts`；站体、平台、落点、连廊和轨道共用比例，层高不缩放。向南调整时同时检查 JR 东侧本线曲率与道床净距，不能靠把整站向北推远解决比例问题。

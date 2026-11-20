@@ -281,6 +281,9 @@ export class VerticalConnectionModel {
         box(this.cabin, 'cabin-door-seam', 0, 1.2, 1.45, 0.04, 2.3, 0.04, 0x5c8072);
         this.landing(this.lowLanding, true);
         this.landing(this.highLanding, true);
+        if (this.connection.reverseLowerDoor) {
+            this.lowLanding.rotation.y = Math.PI;
+        }
     }
     /**
      * Update full equipment across expanded floors, retaining visible elevator shafts and both landings.

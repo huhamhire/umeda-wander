@@ -98,17 +98,26 @@ test('Yodobashi gallery and eastern bridges have continuous coverage at their mo
 test('Hanshin lift approaches stay on the door side and join the upper bridge', () => {
     const station = createGeographicStation('hanshin-umeda');
     const lift = station.layout.connections.find(c => c.id.endsWith('south-lift-ground-deck'))!;
-    assert(Math.hypot(lift.to.x - 666, lift.to.z - 731) < .01);
+    assert(Math.hypot(lift.to.x - 662.92, lift.to.z - 714.59) < .02);
+    const segments = station.layout.connections.filter(c => c.id.includes('-south-lift-'));
+    assert.deepEqual(segments.map(c => c.from.level), ['hanshin-platform', 'hanshin-hall', 'hanshin-ground']);
+    assert(segments.flatMap(c => [c.from, c.to]).every(p => p.x === lift.to.x && p.z === lift.to.z));
+    assert(!layout.connections.some(c => c.id === 'public-south-lift-21'));
     const facing = lift.doorFacingRad!;
     const atDoor = (distance: number, side = 0) => ({
         x: lift.to.x + distance * Math.cos(facing) - side * Math.sin(facing),
         z: lift.to.z + distance * Math.sin(facing) + side * Math.cos(facing)
     });
-    for (const id of ['hanshin-umeda-south-b1-lift-door-approach', 'hanshin-umeda-south-ground', 'hanshin-umeda-south-deck']) {
+    for (const [id, direction] of [
+        ['hanshin-umeda-south-b2-lift-door-approach', -1],
+        ['hanshin-umeda-south-b1-lift-door-approach', -1],
+        ['hanshin-umeda-south-ground', 1],
+        ['hanshin-umeda-south-deck', 1]
+    ] as const) {
         const area = station.layout.areas.find(a => a.id === id)!;
         assert(!pointInPolygon(lift.to, area.outline));
-        assert(!pointInPolygon(atDoor(-2), area.outline));
-        assert([-1, 0, 1].every(side => pointInPolygon(atDoor(1.78, side), area.outline)));
+        assert(!pointInPolygon(atDoor(-2 * direction), area.outline));
+        assert([-1, 0, 1].every(side => pointInPolygon(atDoor(1.78 * direction, side), area.outline)));
         const maxEdge = Math.max(...area.outline.map((p, i) => {
             const next = area.outline[(i + 1) % area.outline.length]!;
             return Math.hypot(p.x - next.x, p.z - next.z);
@@ -118,7 +127,7 @@ test('Hanshin lift approaches stay on the door side and join the upper bridge', 
     const bridge = layout.areas.filter(a => a.blockId === 'south-decks' && a.railings);
     assert(bridge.some(a => pointInPolygon(atDoor(3.3), a.outline) && !a.holes?.some(h => pointInPolygon(atDoor(3.3), h))));
     assert(layout.areas.some(a => a.kind === 'public' && levels.find(l => l.id === a.level)?.y === -8 &&
-        pointInPolygon(atDoor(2), a.outline) && !a.holes?.some(h => pointInPolygon(atDoor(2), h))));
+        pointInPolygon(atDoor(-2), a.outline) && !a.holes?.some(h => pointInPolygon(atDoor(-2), h))));
 });
 
 test('Hanshin office keeps four right-angle corners and the retail frontage has no northward box', () => {

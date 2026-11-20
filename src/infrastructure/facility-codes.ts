@@ -561,6 +561,8 @@ export const facilityCodes: Record<string, string> = {
     'hanshin-umeda-west-lockers': 'HS-046',
     'hanshin-umeda-department-lockers': 'HS-047',
     'hanshin-umeda-east-lockers': 'HS-048',
+    'connection-hanshin-umeda-south-lift-b2-b1-from': 'HS-049',
+    'connection-hanshin-umeda-south-lift-b2-b1-to': 'HS-050',
     'metro-umeda-exit-3a-lockers': 'M16-041',
     'metro-umeda-exit-8-lockers': 'M16-042',
     'metro-umeda-exit-9-lockers': 'M16-043',

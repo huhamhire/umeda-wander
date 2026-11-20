@@ -707,8 +707,8 @@ export class MapScene {
         this.geographicExteriors.visible = groundVisible && this.state.roof && this.state.level === 'all';
         this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
         this.models.roof.visible = canShowGround && this.state.roof && this.state.level === 'all';
-        for (const canopy of this.models.canopies) {
-            canopy.visible = this.state.roof;
+        for (const { model, ground } of this.models.canopies) {
+            model.visible = this.state.roof && (!ground || groundVisible);
         }
         this.appearance.apply(this.models.roof, false, this.state.focusStation, 'jr-osaka');
         this.selected.visible = !!this.activeFacility && ['normal', 'current'].includes(viewLayerRole(this.levels, this.state, this.activeFacility.level));

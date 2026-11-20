@@ -190,6 +190,25 @@ test(
         }
     }
 );
+test('Hanshin F23 keeps covered ground openings, two escalator lanes and a wide stair landing', () => {
+    const stair = layout.connections.find(c => c.id.endsWith('hanshin-umeda-south-ground-stairs'))!;
+    const bank = layout.connections.find(c => c.id.endsWith('hanshin-umeda-south-ground-escalator'))!;
+    const canopy = layout.canopies.find(c => c.id === 'hanshin-umeda-f23-canopy')!;
+    assert.equal(canopy.level, stair.to.level);
+    assert(canopy.glazed);
+    assert(stair.width! > 3 && stair.stairLandingLength! > 0);
+    const openings = planFloorOpenings([stair, bank], levels, []);
+    assert.equal(openings.filter(o => o.level === 'district-ground' && o.connectionId === bank.id).length, 2);
+    assert.equal(openings.filter(o => o.level === 'district-ground' && o.connectionId === stair.id).length, 1);
+    for (const c of [stair, ...connectionLanes(bank)]) {
+        for (const stop of [c.from, c.to]) {
+            const floorLevel = stop === c.from ? 'district-underground' : 'hanshin-ground';
+            assert(layout.areas.some(a => a.kind === 'public' && a.level === floorLevel &&
+                pointInPolygon(stop, a.outline) && !a.holes?.some(h => pointInPolygon(stop, h))));
+            assert(!edges.some(edge => edge.from === stop.id || edge.to === stop.id));
+        }
+    }
+});
 test(
     'Hanshin B1 gates occupy opposite ends of the western paid half and the central public corridor stays clear',
     () => {

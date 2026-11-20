@@ -39,7 +39,7 @@ export class MapModels {
     readonly geographicBuildingFloors: T.Group[] = [];
     readonly basementBuildingFloors: T.Group[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
-    readonly canopies: T.Group[] = [];
+    readonly canopies: { model: T.Group; ground: boolean }[] = [];
     readonly pickables: T.Object3D[] = [];
     readonly platformSurfaces = new Map<string, T.Mesh>();
     readonly labels: SceneLabelDefinition[] = [];
@@ -350,7 +350,7 @@ export class MapModels {
         for (const canopy of this.layout.canopies ?? []) {
             const model = setRegionOwner(buildWalkwayCanopy(canopy), null);
             this.groups.get(canopy.level)!.add(model);
-            this.canopies.push(model);
+            this.canopies.push({ model, ground: this.levels.find(level => level.id === canopy.level)!.y === 0 });
         }
         for (const guide of this.layout.guides ?? []) {
             for (const p of guide.points) {

@@ -3,6 +3,7 @@ import type { StationMap, PlanRegion } from '../../../domain/map/model.ts';
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { building as daimaru } from '../../buildings/daimaru/index.ts';
 import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
+import { cityLiftMap, southLiftDeckApproach } from '../../stations/hanshin-umeda/south-exit.ts';
 
 /**
  * Build the recessed south forecourt and east pedestrian bridge in the entrance frame, avoiding existing interiors.
@@ -29,7 +30,7 @@ export function southDecks(stations: StationMap[]): {
         ]
     };
     const hanshin = stations.find(s => s.id === 'hanshin-umeda')!;
-    const liftDeck = hanshin.layout.connections.find(c => c.id === 'hanshin-umeda-south-lift-ground-deck')!.to;
+    const lift = hanshin.layout.connections.find(c => c.id === 'hanshin-umeda-south-lift-ground-deck')!;
     const paths = sourceDeckPaths([
         'south-skywalk',
         'bridge-north',
@@ -39,6 +40,14 @@ export function southDecks(stations: StationMap[]): {
         'southeast-extension'
     ]);
     paths.push(
+        {
+            ...deckPath('hanshin-lift-21-approach', hanshin.name, southLiftDeckApproach, 4),
+            evidence: {
+                ...deckEvidence,
+                urls: [cityLiftMap, 'https://www.openstreetmap.org/way/597941440'],
+                detail: 'OSM spur to lift 21, confirmed by the city deck plan. Width is fitted.'
+            }
+        },
         deckPath(
             'south-frontage-west',
             messageText('publicAreas.southDecks.deckPaths.southFrontageWest.name'),
@@ -81,7 +90,7 @@ export function southDecks(stations: StationMap[]): {
             portal('hankyu-dept-north-door', 'hankyu-dept', { x: 645.5, z: 564.6 }, -Math.PI / 4),
             portal('hankyu-dept-south-door', 'hankyu-dept', { x: 669.3, z: 632.4 }, -Math.PI / 4),
             portal('hanshin-dept-door', 'hanshin-dept', { x: 701.5, z: 750.3 }, Math.PI / 6),
-            portal('hanshin-station-lift', 'station:hanshin-umeda', { x: liftDeck.x, z: liftDeck.z }, -Math.PI / 6),
+            portal('hanshin-station-lift', 'station:hanshin-umeda', lift.to, lift.doorFacingRad!),
         ]
     };
 }

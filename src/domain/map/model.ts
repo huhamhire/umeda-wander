@@ -128,6 +128,8 @@ export interface VerticalConnection {
     laneSpacing?: number;
     stairLandingLength?: number;
     doorFacingRad?: number;
+    /** The lower elevator door faces the opposite side of the shaft. */
+    reverseLowerDoor?: boolean;
     placement?: 'exterior';
     blockId?: string;
 }
@@ -145,7 +147,7 @@ export interface StationLayout {
     canopies?: WalkwayCanopy[];
 }
 
-/** Roof over a confirmed public deck, independent of its floor and walking graph. */
+/** Roof over a confirmed public approach, independent of its floor and walking graph. */
 export interface WalkwayCanopy {
     id: string;
     level: LevelId;

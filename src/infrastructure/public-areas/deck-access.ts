@@ -130,8 +130,7 @@ export function createDeckAccess(atriumLift: VerticalConnection) {
         [6, 618.6, 607.7],
         [7, 625.9, 580.8],
         [8, 628.4, 659.7],
-        [9, 669.3, 632.4],
-        [21, 701.5, 750.3]
+        [9, 669.3, 632.4]
     ]) {
         add('public-south-lift-' + ref, 'south-decks', 'district-south-deck', { x: x!, z: z! });
     }
@@ -175,7 +174,6 @@ export function createDeckAccess(atriumLift: VerticalConnection) {
             { connectionId: 'public-north-lift-26-bridge', buildingId: 'lucua' },
             { connectionId: 'public-jp-deck-stairs', buildingId: 'jp-tower' },
             { connectionId: 'public-south-lift-9', buildingId: 'hankyu-dept' },
-            { connectionId: 'public-south-lift-21', buildingId: 'hanshin-dept' },
         ]
     };
 }
