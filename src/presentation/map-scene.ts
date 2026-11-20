@@ -119,7 +119,8 @@ export class MapScene {
         private layout: StationLayout,
         initial: MapViewState,
         private onSelect: (facility?: Facility) => void,
-        private onViewSettled?: () => void
+        private onViewSettled?: () => void,
+        onSpacingGesture?: (delta?: number) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -208,6 +209,7 @@ export class MapScene {
                 pan.addScaledVector(up, dy * scale);
             },
             zoom: (factor, pivot) => this.zoom(factor, pivot),
+            adjustSpacing: delta => onSpacingGesture?.(delta),
             select: (x, y) => this.selectAt(x, y),
             hover: point => this.setPointerHover(point),
             invalidate: () => this.requestRender()

@@ -553,6 +553,29 @@ facilityFloorButton.addEventListener(
     }
 );
 let explodePointer: number | undefined;
+let explodeWheel = false;
+
+/** Use the same bounds, slider readout and immediate scene update for every spacing control. */
+function setExplodeSpacing(value: number): void {
+    session.state.explode = Math.min(Number(slider.max) / 100, Math.max(Number(slider.min) / 100, value));
+    slider.value = String(Math.round(session.state.explode * 100));
+    element('#explode-value').textContent = `${slider.value}%`;
+    scene?.update(session.state, { immediateExplode: true });
+    queueMapUrl();
+}
+
+/** Reuse the slider's lightweight preview while the wheel is active. */
+function adjustExplodeWithWheel(delta?: number): void {
+    const active = delta !== undefined;
+    if (explodeWheel !== active) {
+        explodeWheel = active;
+        scene?.setExplodeDragging(explodeWheel || explodePointer !== undefined);
+    }
+    if (delta !== undefined) {
+        setExplodeSpacing(session.state.explode + delta / 240);
+    }
+}
+
 slider.addEventListener('pointerdown', event => {
     explodePointer = event.pointerId;
     scene?.setExplodeDragging(true);
@@ -564,21 +587,13 @@ function endExplodeDrag(event?: PointerEvent): void {
         return;
     }
     explodePointer = undefined;
-    scene?.setExplodeDragging(false);
+    scene?.setExplodeDragging(explodeWheel);
 }
 
 window.addEventListener('pointerup', endExplodeDrag);
 window.addEventListener('pointercancel', endExplodeDrag);
 window.addEventListener('blur', () => endExplodeDrag());
-slider.addEventListener(
-    'input',
-    () => {
-        session.state.explode = Number(slider.value) / 100;
-        element('#explode-value').textContent = `${slider.value}%`;
-        scene?.update(session.state, { immediateExplode: true });
-        queueMapUrl();
-    }
-);
+slider.addEventListener('input', () => setExplodeSpacing(Number(slider.value) / 100));
 roof.addEventListener('change', () => {
     session.state.roof = roof.checked;
     sync();
@@ -652,7 +667,18 @@ async function loadMap(): Promise<void> {
         }
         session = new MapSession(runtime.edges, { nodes: runtime.nodes, levels: runtime.levels });
         session.state = currentState;
-        scene = new runtime.MapScene(viewport, labels, runtime.levels, runtime.facilities, runtime.nodes, runtime.layout, currentState, selectFromMap, queueMapUrl);
+        scene = new runtime.MapScene(
+            viewport,
+            labels,
+            runtime.levels,
+            runtime.facilities,
+            runtime.nodes,
+            runtime.layout,
+            currentState,
+            selectFromMap,
+            queueMapUrl,
+            adjustExplodeWithWheel
+        );
         syncFacilityLabels();
         scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);

@@ -5,7 +5,7 @@ type PointerSample = PointerPosition & { touch: boolean };
 type TouchPair = { first: PointerSample; second: PointerSample };
 const orbitRadiansPerPixel = .006;
 const touchGestureThreshold = 4;
-const wheelOrbitIdleMs = 140;
+const wheelIdleMs = 140;
 
 export interface MapGestureActions {
     beginOrbit: (touchMidpoint?: PointerPosition) => Vector3 | undefined;
@@ -13,6 +13,7 @@ export interface MapGestureActions {
     beginDrag: () => void;
     pan: (deltaX: number, deltaY: number) => void;
     zoom: (factor: number, pivot?: Vector3) => void;
+    adjustSpacing: (delta?: number) => void;
     select: (clientX: number, clientY: number) => void;
     hover: (point?: PointerPosition) => void;
     invalidate: () => void;
@@ -29,7 +30,8 @@ export class MapGestures {
     private moving = false;
     private orbit?: { pointer: number; pivot: Vector3 };
     private wheelPivot?: Vector3;
-    private wheelOrbitTimer?: ReturnType<typeof setTimeout>;
+    private wheelSpacing = false;
+    private wheelTimer?: ReturnType<typeof setTimeout>;
     private touchPivot?: Vector3;
     private touchBaseline?: TouchPair;
     private touchMode?: 'pitch' | 'yaw' | 'zoom';
@@ -74,9 +76,9 @@ export class MapGestures {
         canvas.addEventListener('wheel', event => this.wheel(event), { passive: false, signal });
     }
 
-    /** Report pointer movement or a trackpad orbit so labels and URL writes wait for the gesture to finish. */
+    /** Keep labels and URL writes paused during pointer movement and modified wheel gestures. */
     get isMoving(): boolean {
-        return this.moving || this.wheelPivot !== undefined;
+        return this.moving || this.wheelPivot !== undefined || this.wheelSpacing;
     }
 
     /** Report an active orbit through the end of its pointer or wheel sequence. */
@@ -90,7 +92,7 @@ export class MapGestures {
             this.canvas.removeAttribute('data-orbiting');
         }
         this.orbit = undefined;
-        this.endWheelOrbit();
+        this.endWheelGesture();
         this.resetTouchGesture();
     }
 
@@ -103,24 +105,15 @@ export class MapGestures {
         this.setMoving(false);
     }
 
-    /** Alt-wheel orbits around the canvas centre while Ctrl-wheel still handles pinch zoom. */
+    /** Dispatch modified wheel gestures and preserve ordinary wheel and pinch zoom. */
     private wheel(event: WheelEvent): void {
         event.preventDefault();
-        if (event.altKey && !event.ctrlKey && !this.pointers.size) {
+        if ((event.altKey || event.shiftKey) && !event.ctrlKey && !this.pointers.size) {
             const mode = event.deltaMode;
             let dx = event.deltaX;
             let dy = event.deltaY;
             if (!dx && !dy) {
                 return;
-            }
-            const pivot = this.wheelPivot ?? this.actions.beginOrbit()?.clone();
-            if (!pivot) {
-                return;
-            }
-            if (!this.wheelPivot) {
-                this.wheelPivot = pivot;
-                this.canvas.setAttribute('data-orbiting', '');
-                this.actions.hover();
             }
             if (mode === 1) {
                 dx *= 16;
@@ -130,36 +123,67 @@ export class MapGestures {
                 dx *= this.canvas.clientWidth;
                 dy *= this.canvas.clientHeight;
             }
-            this.actions.rotate(pivot, -dx * orbitRadiansPerPixel, -dy * orbitRadiansPerPixel);
-            clearTimeout(this.wheelOrbitTimer);
-            this.wheelOrbitTimer = setTimeout(() => {
-                this.endWheelOrbit();
+            if (event.altKey) {
+                this.orbitWithWheel(dx, dy);
+            }
+            else {
+                if (this.wheelPivot) {
+                    this.endWheelGesture();
+                }
+                this.wheelSpacing = true;
+                this.actions.hover();
+                // Some environments move the vertical wheel delta onto the horizontal axis with Shift held.
+                this.actions.adjustSpacing(-(dy || dx));
+            }
+            clearTimeout(this.wheelTimer);
+            this.wheelTimer = setTimeout(() => {
+                this.endWheelGesture();
                 this.actions.invalidate();
-            }, wheelOrbitIdleMs);
+            }, wheelIdleMs);
             this.actions.invalidate();
             return;
         }
-        this.endWheelOrbit();
+        this.endWheelGesture();
         this.actions.zoom(Math.exp(-event.deltaY * 0.001));
         if (!this.pointers.size) {
             this.actions.hover({ x: event.clientX, y: event.clientY });
         }
     }
 
-    /** Release a wheel orbit on inactivity or when another interaction takes over. */
-    private endWheelOrbit(): void {
+    /** Freeze a canvas-centred pivot for an Alt-wheel sequence. */
+    private orbitWithWheel(dx: number, dy: number): void {
+        if (this.wheelSpacing) {
+            this.endWheelGesture();
+        }
+        if (!this.wheelPivot) {
+            this.wheelPivot = this.actions.beginOrbit()?.clone();
+            if (!this.wheelPivot) {
+                return;
+            }
+            this.canvas.setAttribute('data-orbiting', '');
+            this.actions.hover();
+        }
+        this.actions.rotate(this.wheelPivot, -dx * orbitRadiansPerPixel, -dy * orbitRadiansPerPixel);
+    }
+
+    /** Release a modified wheel gesture on inactivity or when another interaction takes over. */
+    private endWheelGesture(): void {
+        clearTimeout(this.wheelTimer);
+        this.wheelTimer = undefined;
         if (this.wheelPivot) {
-            clearTimeout(this.wheelOrbitTimer);
-            this.wheelOrbitTimer = undefined;
             this.wheelPivot = undefined;
             this.canvas.removeAttribute('data-orbiting');
+        }
+        if (this.wheelSpacing) {
+            this.wheelSpacing = false;
+            this.actions.adjustSpacing();
         }
     }
 
     /** Freeze an optional orbit pivot, then capture the pointer for click, drag or pinch tracking. */
     private pointerDown(event: PointerEvent): void {
         const wasRotating = this.isRotating;
-        this.endWheelOrbit();
+        this.endWheelGesture();
         this.actions.hover();
         if (event.button === 1) {
             const pivot = this.actions.beginOrbit();
@@ -185,7 +209,7 @@ export class MapGestures {
     private pointerMove(event: PointerEvent): void {
         const old = this.pointers.get(event.pointerId);
         if (!old) {
-            if (!this.pointers.size && !this.wheelPivot && event.pointerType !== 'touch' && !event.buttons) {
+            if (!this.pointers.size && !this.wheelPivot && !this.wheelSpacing && event.pointerType !== 'touch' && !event.buttons) {
                 this.actions.hover({ x: event.clientX, y: event.clientY });
             }
             return;

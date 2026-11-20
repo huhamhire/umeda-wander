@@ -57,6 +57,7 @@ function setup(overrides: Partial<MapGestureActions> = {}) {
         zoom: factor => {
             zooms.push(factor);
         },
+        adjustSpacing: () => {},
         select: (x, y) => {
             selections.push([x, y]);
         },
@@ -147,6 +148,31 @@ test('Alt trackpad scroll uses one centre pivot until settling and Ctrl pinch st
         wheel(0, -50, true);
         assert.deepEqual(zooms, [Math.exp(0.05)]);
         assert(!gestures.isMoving);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('Shift-wheel adjusts floor spacing in both axes and settles without zooming or orbiting', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const deltas: (number | undefined)[] = [];
+    const { canvas, gestures, zooms, rotations } = setup({ adjustSpacing: delta => deltas.push(delta) });
+    try {
+        const wheel = (dx: number, dy: number, ctrlKey = false) => dispatch(canvas, 'wheel', {
+            deltaX: dx, deltaY: dy, deltaMode: 0, shiftKey: true, ctrlKey
+        });
+        assert(wheel(0, -40).defaultPrevented);
+        wheel(25, 0);
+        assert.deepEqual(deltas, [40, -25]);
+        assert(gestures.isMoving);
+        assert(!gestures.isRotating);
+        assert.deepEqual(rotations, []);
+        assert.deepEqual(zooms, []);
+        t.mock.timers.tick(200);
+        assert.deepEqual(deltas, [40, -25, undefined]);
+        assert(!gestures.isMoving);
+        wheel(0, -50, true);
+        assert.deepEqual(zooms, [Math.exp(0.05)]);
     } finally {
         gestures.dispose();
     }
