@@ -95,7 +95,7 @@ test(
     'shared B1 cuts openings for non-JR public stairs and street lift, with real holes in the mesh',
     () => {
         const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-        for (const id of ['hanshin-umeda-east-public-stairs', 'higashi-umeda-street-lift', 'nishi-umeda-street-lift']) {
+        for (const id of ['hanshin-umeda-east-public-stairs', 'higashi-umeda-street-lift', 'nishi-umeda-4-a-lift-lower']) {
             const cut = openings.find(o => o.level === 'district-underground' && o.connectionId === id);
             assert.ok(cut, id);
             const center = cut.outline.reduce(

@@ -18,7 +18,7 @@ const core: Record<StationId, string[]> = {
     ],
     'hanshin-umeda': ['west-public', 'central-public', 'east-hall-public', 'south-b1-lift-door-approach', 'f23-b1-approach'],
     'higashi-umeda': ['public-spine', 'whity-public', 'exit-2-lift-b1:door-approach', 'street-lift-low:door-approach'],
-    'nishi-umeda': ['public-hall', 'north-west-public', 'south-public'],
+    'nishi-umeda': ['public-hall', 'north-west-public', 'south-public', 'exit-4-a-concourse-approach', 'exit-4-a-b1-approach'],
     // The southern exits have local equipment bays, not a confirmed full-length hall.
     'kitashinchi': ['north-public'],
 };

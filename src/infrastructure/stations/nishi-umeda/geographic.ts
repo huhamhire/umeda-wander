@@ -1,6 +1,7 @@
 import { createIslandRailApproaches } from '../../island-rail-approaches.ts';
 import { axisPlacement } from '../../../domain/map/axis-calibration.ts';
 import { createStation } from './index.ts';
+import { calibrateNishiStreetExits } from './street-exits.ts';
 // Manual endpoint fit to the reviewed road / underground plan, not surveyed coordinates.
 export const nishiAxis = {
     negativeEnd: { x: 415, z: 1048 },
@@ -14,6 +15,7 @@ export const nishiAxis = {
  */
 export function createGeographicNishi() {
     const station = createStation(axisPlacement(nishiAxis), true);
+    calibrateNishiStreetExits(station);
     for (const platform of station.layout.platforms) {
         platform.width *= nishiAxis.acrossScale;
     }

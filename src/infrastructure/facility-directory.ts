@@ -73,6 +73,10 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('higashi')) {
             return messageText('facilities.locations.higashiUmeda');
         }
+        const nishiExit = /^nishi-umeda-exit-(1|4-B|5|6|9|10)-stairs$/.exec(id)?.[1];
+        if (nishiExit || id === 'nishi-umeda-street-lift' || id === 'nishi-umeda-4-a-lift-lower') {
+            return messageText('stations.nishiUmeda.labels.streetEntrance', { key: nishiExit ?? '4-A' });
+        }
         if (id.startsWith('nishi')) {
             return messageText('facilities.locations.nishiUmeda');
         }

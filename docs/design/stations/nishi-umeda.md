@@ -24,3 +24,20 @@ B1 构内图在北改札一侧、中改札一侧、Metro Opus 旁和南改札往
 验证覆盖北端车挡方向、三组改札及单向过闸、设备落点、分层开口、站台侧向净空、B1 聚焦、菜单编号及闸外连接避让。未操作浏览器。
 
 南端补上往肥后桥的短段运行双线，由岛式站台两外侧平滑收束；北端是终点，不补北行延伸。交叉处 JR 东西线低于四桥线；上下标高为示意，探索时两者均属 B2。
+
+## 街面梯口和 4-A 电梯
+
+[Osaka Metro 出入口图](https://subway.osakametro.co.jp/station_guide/y/y11/map.php/map.php)提供乘客出口与目的地，构内图第 1 页对应 6/C30、9/C57 和 10/C49。地面位置取自仓库 2026-11-16 OSM 快照，按地区米制坐标直接投影。
+
+| 出口 | 地面来源与模型表达 |
+| --- | --- |
+| 1 | [出口编号表](https://ekitan.com/sta-info/station/5737/exit)对应 C12，上端采用 [OSM 梯口](https://www.openstreetmap.org/node/12183322171)，梯向参考[入口占地](https://www.openstreetmap.org/way/1316299648)。 |
+| 3 | 官方构内图标示北侧站厅向大阪花园城的地下接驳，方向标记放在 B1 西侧公共面。 |
+| 4-A | 在 Herbis ENT 一侧沿 [OSM 电梯节点](https://www.openstreetmap.org/node/2299297072)对齐井道，北侧站厅、B1 和地面三站共轴。两侧门前落台分别按[地下足道](https://www.openstreetmap.org/way/1322885747)与[地面足道](https://www.openstreetmap.org/way/1316049306)的方向拟合。两个地下停靠都归 B1 探索，标高差使用 2.4 米的模型值。 |
+| 4-B | Hilton Plaza West 外侧新增街面梯口，采用 [OSM 入口](https://www.openstreetmap.org/node/5024365394)和[独立顶棚轮廓](https://www.openstreetmap.org/way/618802435)。 |
+| 5 | [出口编号表](https://ekitan.com/sta-info/station/5737/exit)对应 C7，上端采用 [OSM 梯口](https://www.openstreetmap.org/node/5340837790)，梯向参考[入口占地](https://www.openstreetmap.org/way/992368846)。 |
+| 6 | 楼梯移至吉本大楼旁的 [C30 节点](https://www.openstreetmap.org/node/2299299144)，原油压升降平台继续表达地下局部高差。 |
+| 9 | 楼梯上端对齐关电不动产西梅田大楼边缘的 [C57 节点](https://www.openstreetmap.org/node/5024365386)。 |
+| 10 | 楼梯上端对齐樱桥交叉口西北侧的 [C49 节点](https://www.openstreetmap.org/node/2293280516)，按 [OSM 屋盖轮廓](https://www.openstreetmap.org/way/618802434)拟合顶棚。 |
+
+各梯的中间平台、B1 端点、门向、宽度和棚高属于展示拟合。1、5 号的 OSM 入口占地用于判断梯向，屋盖形式缺少独立依据。其 B1 端点分别落在现役 Crost 和阪神西侧公共面，接入关系仍按局部落台表达。4-B、9、10 号同样按局部落台表达。2 号 C18 的既有位置保留为示意，7-A／7-B 和 8 号堂岛地下街方向仍由地下公区表达。堂岛地下街有多个街面梯口，8 号指向该地下通道。未新增步行边。

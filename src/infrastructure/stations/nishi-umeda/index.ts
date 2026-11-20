@@ -361,14 +361,14 @@ export function createStation(
         );
     }
     for (const [key, name, x, z] of [
-        ['3', messageText('stations.nishiUmeda.labels.hiltonEast'), 42, 23],
+        ['3', messageText('stations.nishiUmeda.labels.gardenCity'), 55, -12],
         ['4-A', 'Herbis ENT', 25, -20],
         ['4-B', 'Hilton Plaza West', 0, -20],
         ['7-A', messageText('stations.nishiUmeda.items.level7A.name'), -32, 24],
         ['7-B', messageText('stations.nishiUmeda.items.level7B.name'), -60, 23],
         ['8', messageText('stations.nishiUmeda.labels.dojima'), -68, 12],
     ] as const) {
-        if (z < 0) {
+        if (key === '4-A' || key === '4-B') {
             area(
                 `exit-${key}-public`,
                 'y11-hall',

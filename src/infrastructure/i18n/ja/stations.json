@@ -315,7 +315,7 @@
   "stations.nishiUmeda.labels.dojima": "堂島地下街",
   "stations.nishiUmeda.labels.entrance": "西梅田・{key}号出入口",
   "stations.nishiUmeda.labels.gate": "西梅田・{name}",
-  "stations.nishiUmeda.labels.hiltonEast": "吉本ビル / ヒルトンプラザ イースト",
+  "stations.nishiUmeda.labels.gardenCity": "オオサカガーデンシティ",
   "stations.nishiUmeda.labels.namedExit": "西梅田・{key}号口 / {name}",
   "stations.nishiUmeda.labels.passageEntrance": "西梅田・{key}号口接続",
   "stations.nishiUmeda.labels.streetEntrance": "西梅田・{key}号出入口",

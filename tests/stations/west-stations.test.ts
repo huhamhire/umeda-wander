@@ -10,10 +10,51 @@ import { MapSession } from '../../src/application/map-session.ts';
 import { platformLocalPoint, platformPoint, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { platformRail } from '../../src/domain/map/rail-geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
-import { edges, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
+import { edges, facilities, layout, levels, stations } from '../../src/infrastructure/district/geographic-map.ts';
 import { kitashinchiStation } from '../../src/infrastructure/stations/kitashinchi/index.ts';
 import { nishiStation } from '../../src/infrastructure/stations/nishi-umeda/index.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+
+test('Y11 street exits follow mapped mouths with independent roofs at 4-B and 10', () => {
+    for (const [key, x, z, covered] of [
+        ['1', 457.204, 765.225, false],
+        ['4-B', 395.127, 933.619, true],
+        ['5', 408.135, 787.110, false],
+        ['6', 447.011, 881.565, false],
+        ['9', 367.095, 1086.071, false],
+        ['10', 387.090, 1039.339, true]
+    ] as const) {
+        const prefix = 'nishi-umeda-exit-' + key;
+        const stair = layout.connections.find(c => c.id === prefix + '-stairs')!;
+        assert(Math.hypot(stair.to.x - x, stair.to.z - z) < .015);
+        assert.equal(stair.evidence.source, 'yotsubashi');
+        assert(stair.stairLandingLength! > 0);
+        assert.equal(layout.canopies.some(c => c.id === prefix + '-canopy'), covered);
+        assert(planFloorOpenings([stair], levels, []).some(o => o.level === 'district-ground'));
+        const stops = [stair.from.id, stair.to.id];
+        assert(!edges.some(e => stops.includes(e.from) || stops.includes(e.to)));
+    }
+    for (const key of ['1', '3', '5']) {
+        const entrance = facilities.find(f => f.id === 'nishi-umeda-exit-' + key)!;
+        assert.equal(entrance.level, 'y11-hall');
+        assert(layout.areas.some(a => a.level === 'district-underground' && a.kind === 'public'
+            && pointInPolygon(entrance, a.outline) && !a.holes?.some(hole => pointInPolygon(entrance, hole))));
+    }
+    assert(!layout.connections.some(c => c.id.startsWith('nishi-umeda-exit-3-')));
+});
+
+test('Y11 4-A serves three stops at the mapped shaft and preserves its street opening', () => {
+    const lower = layout.connections.find(c => c.id === 'nishi-umeda-4-a-lift-lower')!;
+    const upper = layout.connections.find(c => c.id === 'nishi-umeda-street-lift')!;
+    assert.equal(lower.to.id, upper.from.id);
+    assert.equal(lower.from.level, lower.to.level);
+    assert(lower.to.elevationOffset! > 0);
+    assert.equal(upper.to.level, 'y11-ground');
+    assert(upper.reverseLowerDoor);
+    assert([lower.from, lower.to, upper.to].every(p => Math.hypot(p.x - 415.370, p.z - 866.082) < .012));
+    assert(planFloorOpenings([upper], levels, []).some(o => o.level === 'district-ground'));
+});
+
 test(
     'Y11 north terminal and Kitashinchi through island retain their own tracks and evidence',
     () => {
