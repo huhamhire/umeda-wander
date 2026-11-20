@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { buildStyles } from '../../scripts/styles.ts';
 import { renderHtmlMessages } from '../../scripts/html.ts';
 import { test } from 'node:test';
-import { geographicOsmData as osmCreditData } from '../../src/infrastructure/district/geographic-map.ts';
+import { geographicOsmData as osmCreditData } from '../../src/infrastructure/geography/osm-export.ts';
 import { bindCreditsDialog } from '../../src/presentation/components/source-credits-dialog.ts';
 
 class Node extends EventTarget {

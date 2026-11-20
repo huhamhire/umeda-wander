@@ -15,7 +15,7 @@
 - 不把嵌套三元表达式当成控制流程。超过简单二选一时优先使用具名中间变量、分支或查表。
 - 保持现有 DDD 依赖方向。样式整理不顺带调整布局数值、设施身份、地理来源或算法行为。
 
-`.editorconfig` 与 `.vscode/settings.json` 提供编辑器默认值，VS Code 使用自带 TypeScript formatter，无需安装扩展。格式化源代码后，压缩仍只发生在 esbuild 构建阶段。
+`.editorconfig` 与 `.vscode/settings.json` 提供编辑器默认值，VS Code 使用自带 TypeScript formatter，无需安装扩展。源代码由 esbuild 在构建时压缩；HTTP 响应压缩由服务端处理。
 
 ## 本地检查
 

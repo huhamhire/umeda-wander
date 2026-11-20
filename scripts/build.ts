@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { buildStyles } from './styles.ts';
 import { renderLocalizedPage } from './html.ts';
-import { geographicOsmData } from '../src/infrastructure/district/geographic-map.ts';
+import { browserMapData } from './browser-map-data.ts';
+import { geographicOsmData } from '../src/infrastructure/geography/osm-export.ts';
 import type { Locale } from '../src/domain/i18n/message.ts';
 
 /** Regenerate the menu from live station sources with a clean locale and module cache. */
@@ -34,7 +35,8 @@ export async function buildPage(): Promise<void> {
         platform: 'browser',
         target: 'es2022',
         minify: true,
-        legalComments: 'inline'
+        legalComments: 'inline',
+        plugins: [browserMapData]
     });
     const [template, chineseCredits, japaneseCredits, englishCredits, css, threeLicense, polygonLicense, predicatesLicense, splayReadme] = await Promise.all([
         readFile('src/index.html', 'utf8'),
@@ -91,13 +93,17 @@ export async function buildPage(): Promise<void> {
         writeFile('dist/styles.css', css),
         writeFile('dist/osm-derived-data.json', JSON.stringify(geographicOsmData()))
     ]);
-    // Prune only obsolete hashed JavaScript once the current page and all its chunks are in place.
+    // Prune obsolete hashed JavaScript and legacy encoding sidecars after publishing the new page.
     const activeChunks = new Set(chunks.map(file => file.path));
     const oldChunks = (await readdir(chunkDirectory, { withFileTypes: true }))
-        .filter(file => file.isFile() && /^[\w-]+-[A-Z0-9]{8}\.js$/.test(file.name))
+        .filter(file => file.isFile() && /^[\w-]+-[A-Z0-9]{8}\.js(?:\.(?:br|gz))?$/.test(file.name))
         .map(file => resolve(chunkDirectory, file.name))
         .filter(path => !activeChunks.has(path));
-    await Promise.all(oldChunks.map(path => rm(path, { force: true })));
+    await Promise.all([
+        ...oldChunks.map(path => rm(path, { force: true })),
+        rm('dist/osm-derived-data.json.br', { force: true }),
+        rm('dist/osm-derived-data.json.gz', { force: true })
+    ]);
     console.log('Built dist/index.html, application modules, styles and OSM derived data');
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

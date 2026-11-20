@@ -1,11 +1,8 @@
 import { messageText, resolveMessage } from '../i18n/index.ts';
-import osmExportMetadata from '../../../data/geography/osm-export-metadata.json' with { type: 'json' };
 import { platformRail, railApproachFootprints } from '../../domain/map/rail-geometry.ts';
 import { passageOutline } from '../../domain/map/geometry.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
 import { northDeckCanopies } from '../public-areas/north-decks/canopies.ts';
-import buildingParts from '../../../data/geography/building-parts.json' with { type: 'json' };
-import { osmRunningLines } from '../geography/runtime-rails.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
 import type { MultiPolygon } from 'polygon-clipping';
 import { composeStationMaps } from '../../application/stations/compose-station-maps.ts';
@@ -26,10 +23,9 @@ import { createJpBasementAccess } from '../public-areas/south-diamor/jp-access.t
 import { southernWalkingRoutes } from '../public-areas/south-diamor/walking-routes.ts';
 import { northernWalkingRoutes } from '../public-areas/north-decks/walking-routes.ts';
 import { createGrandFrontPlazaAccess } from '../public-areas/north-atrium/grand-front-plaza-access.ts';
-import { elevatedLevels, elevatedWidthEstimates } from '../public-areas/elevated-source.ts';
+import { elevatedLevels } from '../public-areas/elevated-source.ts';
 import { assemblePublicDecks } from '../../application/public-areas/public-deck-assembly.ts';
 import { deckBuildingOpenings, equipmentBuildingOpenings } from '../../application/public-areas/deck-interface-bindings.ts';
-import elevatedWays from '../../../data/geography/elevated/ways.json' with { type: 'json' };
 import { deckExtensionLabels } from '../../application/public-areas/deck-extension-labels.ts';
 import { buildBuildingOccupancies } from '../../application/public-areas/building-occupancy.ts';
 import { deckBuildingOccupancies } from '../public-areas/deck-buildings.ts';
@@ -168,26 +164,3 @@ export const layout = {
 };
 export const facilities = completeFacilityDirectory(composed.sourceFacilities, layout.connections, layout.platforms, levels);
 export const geographicPlan = plan;
-/**
- * Export the OSM subset and attribution actually used, excluding authored indoor geometry and facilities.
- */
-export function geographicOsmData() {
-    return {
-        title: osmExportMetadata.title,
-        attribution: '© OpenStreetMap contributors',
-        licence: 'https://opendatacommons.org/licenses/odbl/1-0/',
-        frame: {
-            origin: { lon: 135.491, lat: 34.708 },
-            units: 'metres',
-            x: 'east',
-            z: 'south'
-        },
-        ground: plan.ground,
-        widthEstimates: plan.widths,
-        buildingParts,
-        runningLines: osmRunningLines,
-        elevatedAxes: elevatedWays,
-        elevatedWidthEstimates,
-        reconstruction: osmExportMetadata.reconstruction
-    };
-}

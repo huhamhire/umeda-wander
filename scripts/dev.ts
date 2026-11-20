@@ -1,7 +1,37 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { watch } from 'node:fs';
+import { promisify } from 'node:util';
+import { brotliCompress, constants, gzip } from 'node:zlib';
 import { buildPage } from './build.ts';
+
+/** Pick a response encoding, honoring explicitly excluded representations. */
+function assetEncoding(header: string | undefined): 'br' | 'gzip' | 'identity' | undefined {
+    const weights = new Map((header ?? '').toLowerCase().split(',').map(item => {
+        const [name, ...parameters] = item.trim().split(';');
+        const quality = parameters.map(value => value.trim()).find(value => value.startsWith('q='));
+        return [name?.trim(), quality === undefined ? 1 : Number(quality.slice(2))] as const;
+    }));
+    const wildcard = weights.get('*');
+    const choices = [
+        { name: 'br', weight: weights.get('br') ?? wildcard ?? 0 },
+        { name: 'gzip', weight: weights.get('gzip') ?? wildcard ?? 0 },
+        { name: 'identity', weight: weights.get('identity') ?? (wildcard === 0 ? 0 : Number.EPSILON) }
+    ] as const;
+    return choices.filter(({ weight }) => weight > 0 && weight <= 1).sort((a, b) => b.weight - a.weight)[0]?.name;
+}
+
+/** Compress the response in memory without creating an additional file in dist. */
+async function encodeAsset(body: Buffer, encoding: 'br' | 'gzip' | 'identity'): Promise<Buffer> {
+    if (encoding === 'br') {
+        return promisify(brotliCompress)(body, { params: { [constants.BROTLI_PARAM_QUALITY]: 6 } });
+    }
+    if (encoding === 'gzip') {
+        return promisify(gzip)(body);
+    }
+    return body;
+}
+
 await buildPage();
 let pending: ReturnType<typeof setTimeout>;
 let queue = Promise.resolve();
@@ -37,9 +67,21 @@ const server = createServer(async (req, res) => {
         res.writeHead(404).end();
         return;
     }
+    const compressed = chunk || resource.file === 'osm-derived-data.json';
+    const encoding = compressed ? assetEncoding(req.headers['accept-encoding']) : 'identity';
+    if (!encoding) {
+        res.writeHead(406, { Vary: 'Accept-Encoding' }).end();
+        return;
+    }
     try {
-        const body = await readFile(`dist/${resource.file}`);
-        res.writeHead(200, { 'Content-Type': resource.mime, 'Cache-Control': 'no-store' });
+        const body = await encodeAsset(await readFile(`dist/${resource.file}`), encoding);
+        res.writeHead(200, {
+            'Content-Type': resource.mime,
+            'Cache-Control': 'no-store',
+            'Content-Length': body.length,
+            ...(compressed ? { Vary: 'Accept-Encoding' } : {}),
+            ...(encoding !== 'identity' ? { 'Content-Encoding': encoding } : {})
+        });
         res.end(body);
     }
     catch {

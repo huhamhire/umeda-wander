@@ -68,6 +68,8 @@ npm run build
 
 入口为 `dist/index.html`。楼层与设施目录随页面交付，立体场景从 `dist/chunks/` 按需加载。通过 HTTP 部署并保留整个 `dist/`，包括模块、样式与 OSM 派生数据。运行时资源均由本站提供，第三方许可证随构建保留。`dist/` 不纳入 Git。
 
+地图分块和 `osm-derived-data.json` 各交付一份原始文件。本地开发服务按 `Accept-Encoding` 提供 Brotli 或 gzip 响应。静态部署可在主机或 CDN 启用 HTTP 压缩。
+
 离线校准、数据重建及浏览器验收见[开发验证规范](./docs/development/validation.md)。
 
 ## 项目结构

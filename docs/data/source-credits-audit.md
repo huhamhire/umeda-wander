@@ -13,7 +13,7 @@
 ## 已核实的开放数据
 
 - OSM 数据许可为 ODbL 1.0：[OSM 版权页](https://www.openstreetmap.org/copyright)、[署名指引](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines)、[ODbL 原文](https://opendatacommons.org/licenses/odbl/1-0/)。按用户后续调整，地图角落将来源文字与 OSM 简短署名合并成一个文本链接，打开本项目弹窗；不再另放独立 OSM 链接。弹窗中的完整署名、版权页及 ODbL 各自保留。
-- 当前 OSM 下载由 `src/infrastructure/district/geographic-map.ts` 的 `geographicOsmData()` 提供，包含地面轮廓、估计宽度、建筑部件、行车参考线及高架轴线；机器可读数据保留署名、ODbL 链接和重建说明，不包含混合 PDF 参考的完整地下几何。旧 `commercial-footprints.ts` 和 `osm-credit-download.ts` 已删除，历史对照查 Git。数据许可不覆盖构内图整理、参考截图或整个项目。
+- 当前 OSM 下载由 `src/infrastructure/geography/osm-export.ts` 的 `geographicOsmData()` 提供，包含地面轮廓、估计宽度、建筑部件、行车参考线及高架轴线；机器可读数据保留署名、ODbL 链接和重建说明，不包含混合 PDF 参考的完整地下几何。下载可通过无损 HTTP 压缩传输。浏览器分块仅载入地图组装所需的轮廓、坐标和属性。数据许可不覆盖构内图整理、参考截图或整个项目。
 
 ## 待补充来源／授权的在用内容
 
