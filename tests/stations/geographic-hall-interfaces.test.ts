@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pointInPolygon, platformLocalPoint } from '../../src/domain/map/geometry.ts';
+import clipping, { type Polygon } from 'polygon-clipping';
+import { passageOutline, pointInPolygon, platformLocalPoint } from '../../src/domain/map/geometry.ts';
 import { createGeographicKitashinchi } from '../../src/infrastructure/stations/kitashinchi/geographic.ts';
 import { createGeographicNishi } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
 import * as T from 'three';
 import { bindPublicInterfaces } from '../../src/application/stations/public-interface-bindings.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
-import { layout, levels, publicInterfaces, publicInterfaceBindings } from '../../src/infrastructure/district/geographic-map.ts';
+import { layout, levels, publicInterfaces, publicInterfaceBindings, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 
 test(
@@ -70,6 +71,55 @@ test(
         }
     }
 );
+
+test('Kitashinchi gate approaches, district corridors and south exits share a continuous B1 floor', () => {
+    const publicFloor = clipping.union(...undergroundPublicAreas.filter(a => !a.elevationOffset).map(a =>
+        [a.outline, ...a.holes ?? []].map(ring => ring.map(({ x, z }) => [x, z])) as Polygon
+    ) as [Polygon, ...Polygon[]]);
+    const main = publicFloor.find(([outline]) => pointInPolygon({ x: 433, z: 1055 }, outline!.map(([x, z]) => ({ x, z }))))!;
+    const component = main.map(ring => ring.map(([x, z]) => ({ x, z })));
+    const onPublicFloor = (p: { x: number; z: number }) => pointInPolygon(p, component[0]!)
+        && !component.slice(1).some(hole => pointInPolygon(p, hole));
+    const gates = publicInterfaces.filter(p => p.station === 'kitashinchi');
+    for (const p of gates) {
+        const [a, b] = p.boundary;
+        const center = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
+        for (const end of [a, b]) {
+            assert(onPublicFloor({ x: p.outside.x + end.x - center.x, z: p.outside.z + end.z - center.z }), p.id);
+        }
+    }
+    for (const p of [{ x: 576, z: 1030 }, { x: 735, z: 1088 }]) {
+        assert(onPublicFloor(p));
+    }
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
+    const exits = layout.connections.filter(c => c.id.startsWith('kitashinchi-exit-'));
+    for (const exit of exits) {
+        assert(onPublicFloor(exit.from), exit.id);
+        assert(openings.some(o => o.connectionId === exit.id && o.level === 'kitashinchi-ground'), exit.id);
+    }
+    const lift = layout.connections.find(c => c.id === 'kitashinchi-street-lift')!;
+    assert(onPublicFloor(lift.from));
+    assert(onPublicFloor({
+        x: lift.from.x - 2 * Math.cos(lift.doorFacingRad!),
+        z: lift.from.z - 2 * Math.sin(lift.doorFacingRad!)
+    }));
+    assert(openings.some(o => o.connectionId === lift.id && o.level === 'kitashinchi-ground'));
+    assert.deepEqual(layout.canopies.filter(c => c.id.startsWith('kitashinchi-')).map(c => c.id), [
+        'kitashinchi-exit-11-4-canopy',
+        'kitashinchi-exit-11-5-canopy',
+        'kitashinchi-exit-11-41-canopy'
+    ]);
+    const junction = { x: 564, z: 1094.7 };
+    for (const [from, to] of [
+        [{ x: 564, z: 1076 }, junction],
+        [junction, exits.find(c => c.id.includes('11-21'))!.from],
+        [junction, exits.find(c => c.id.includes('11-23'))!.from]
+    ] as const) {
+        const strip: Polygon = [passageOutline(from, to, 3).map(({ x, z }) => [x, z])];
+        assert.equal(clipping.difference(strip, main).length, 0);
+    }
+    assert.equal(exits.find(c => c.id.includes('11-21'))!.kind, 'escalator');
+});
 test(
     'every B1 gate exposes a stable outward public interface bound at the shared display elevation',
     () => {

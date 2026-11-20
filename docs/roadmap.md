@@ -4,7 +4,7 @@
 
 ## 空间待核对
 
-- **地下门位**：依据平面资料确定 JP 下沉广场到 Garden Avenue 主网，以及 E-ma、Hilton West 的具体门洞。核对北新地南侧出口、西梅田短升降落台与公共网的连接及高差。[南侧区域](./design/areas/south.md)
+- **地下门位**：依据平面资料确定 JP 下沉广场到 Garden Avenue 主网，以及 E-ma、Hilton West 的具体门洞。核对西梅田短升降落台与公共网的连接及高差。[南侧区域](./design/areas/south.md)
 - **地下占位**：核对第一酒店等未登记街区的独立边界，保留源图公共开挖面及孔洞。[地下公共网](./design/public-areas/underground.md)
 - **二层接口**：复核阪急西侧公共前沿、连廊宽度与净空、商业门位、设备落点及 Inogate 连桥两端的实际标高。[北侧区域](./design/areas/north.md) · [二层连廊](./design/public-areas/elevated.md)
 - **公共直梯地下接驳**：依据公开平面资料核对 JR 北中庭 B 直梯（大阪市图编号 26）的 B1 门前落台与主网的接入。[二层连廊](./design/public-areas/elevated.md)

@@ -75,16 +75,22 @@ export function createStation(
             screenDoors: 'half-height'
         }
     );
-    area(
-        'paid-hall',
-        'kitashinchi-hall',
-        messageText('stations.kitashinchi.areas.paidHall.name'),
-        'paid',
-        0,
-        0,
-        90,
-        12
-    );
+    const paidHalls = geographic ? [
+        ['paid-hall-west', -26.5, 45],
+        ['paid-hall-east', 36, 34]
+    ] as const : [['paid-hall', 0, 90]] as const;
+    for (const [id, x, width] of paidHalls) {
+        area(
+            id,
+            'kitashinchi-hall',
+            messageText('stations.kitashinchi.areas.paidHall.name'),
+            'paid',
+            x,
+            geographic ? 2 : 0,
+            width,
+            12
+        );
+    }
     area(
         'west-public',
         'kitashinchi-hall',
@@ -140,22 +146,24 @@ export function createStation(
         'kitashinchi-hall',
         messageText('stations.kitashinchi.areas.office.name'),
         'service',
-        0,
-        11,
-        14,
-        4
+        geographic ? -12 : 0,
+        geographic ? 8.5 : 11,
+        geographic ? 6 : 14,
+        geographic ? 3 : 4
     );
-    for (const [key, name, x] of [
-        ['west', messageText('stations.kitashinchi.items.west.name'), -45],
-        ['east', messageText('stations.kitashinchi.items.east.name'), 45]
+    const westGateX = -15.5;
+    const eastGateX = 38.2;
+    for (const [key, name, x, geographicX] of [
+        ['west', messageText('stations.kitashinchi.items.west.name'), -45, westGateX],
+        ['east', messageText('stations.kitashinchi.items.east.name'), 45, eastGateX]
     ] as const) {
         facility(
             `${key}-gate`,
             'kitashinchi-hall',
             messageText('stations.kitashinchi.labels.gate', { name: name }),
             'gate',
-            geographic ? x * 0.78 : x,
-            geographic ? -6 : 0,
+            geographic ? geographicX : x,
+            geographic ? -4 : 0,
             '参考图 B1 改札；闸内外保持独立。',
             geographic ? 0 : Math.PI / 2
         );
@@ -164,8 +172,8 @@ export function createStation(
             'kitashinchi-hall',
             messageText('stations.kitashinchi.labels.ticketMachine', { name: name }),
             'ticket-machine',
-            geographic ? x * 0.78 : (key === 'west' ? -58 : 58),
-            -10,
+            geographic ? geographicX + (key === 'west' ? -6 : 6) : (key === 'west' ? -58 : 58),
+            geographic ? -7.5 : -10,
             '指定券售票机位置按参考图示意。',
             key === 'west' ? Math.PI / 2 : -Math.PI / 2
         );
@@ -193,8 +201,8 @@ export function createStation(
         'kitashinchi-hall',
         messageText('stations.kitashinchi.facilities.ticket.name'),
         'ticket',
-        -55,
-        12,
+        geographic ? -8 : -55,
+        geographic ? -7.5 : 12,
         '参考图“みどりの窓口”及相关受取柜台，具体柜台数量示意。'
     );
     facility(
@@ -202,8 +210,8 @@ export function createStation(
         'kitashinchi-hall',
         messageText('stations.kitashinchi.facilities.office.name'),
         'information',
-        0,
-        11,
+        geographic ? -12 : 0,
+        geographic ? 8.5 : 11,
         '参考图站务室位置。'
     );
     for (const [key, low, high] of [['west', -32, -44], ['west-inner', 0, -12], ['east', 32, 44]] as const) {
@@ -304,12 +312,12 @@ export function createStation(
             node(`exit-${number}-high`, 'kitashinchi-ground', highX, highZ)
         );
     }
-    const entry = node('route-entry', 'kitashinchi-hall', geographic ? -35.1 : -60, geographic ? -13 : 0);
-    const outside = node('route-west-out', 'kitashinchi-hall', geographic ? -35.1 : -48, geographic ? -9 : 0);
-    const inside = node('route-west-in', 'kitashinchi-hall', geographic ? -35.1 : -42, geographic ? -3 : 0);
+    const entry = node('route-entry', 'kitashinchi-hall', geographic ? -35.1 : -60, geographic ? -12 : 0);
+    const outside = node('route-west-out', 'kitashinchi-hall', geographic ? westGateX : -48, geographic ? -7 : 0);
+    const inside = node('route-west-in', 'kitashinchi-hall', geographic ? westGateX : -42, geographic ? -1 : 0);
     if (geographic) {
-        const eastOut = node('route-east-out', 'kitashinchi-hall', 35.1, -9);
-        const eastIn = node('route-east-in', 'kitashinchi-hall', 35.1, -3);
+        const eastOut = node('route-east-out', 'kitashinchi-hall', eastGateX, -7);
+        const eastIn = node('route-east-in', 'kitashinchi-hall', eastGateX, -1);
         edge(eastOut, eastIn, 'gate');
         edge(eastIn, draft.nodes.find(n => n.id === 'kitashinchi-east-escalators-high')!);
     }

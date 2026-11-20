@@ -1,6 +1,7 @@
 import { createIslandRailApproaches } from '../../island-rail-approaches.ts';
 import { axisPlacement } from '../../../domain/map/axis-calibration.ts';
 import { createStation } from './index.ts';
+import { calibrateKitashinchiConcourse } from './concourse.ts';
 // Manual endpoint fit to the reviewed road / underground plan, not surveyed coordinates.
 export const kitashinchiAxis = {
     negativeEnd: { x: 458, z: 1080 },
@@ -37,5 +38,6 @@ export function createGeographicKitashinchi() {
             moved.add(p);
         }
     }
+    calibrateKitashinchiConcourse(station);
     return station;
 }

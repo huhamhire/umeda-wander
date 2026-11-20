@@ -10,7 +10,7 @@ test(
         for (const guide of guides) {
             assert(guide.points.some(p => p.level === 'metro-intermediate'));
             assert.equal(guide.points.at(-1)!.level, 'metro-hall');
-            assert(guide.points.at(-1)!.caption?.includes('改札'));
+            assert(guide.points.at(-1)!.caption?.includes('检票口'));
             for (let i = 1; i < guide.points.length; i++) {
                 const a = guide.points[i - 1]!;
                 const b = guide.points[i]!;
