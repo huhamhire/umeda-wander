@@ -73,6 +73,12 @@ const p1 = source([5], '1F plan: public concourses, named gates and service area
 const pm = source([4], 'Walkways inside Central/Sakurabashi gates on Mezzanine 2F');
 const pp = source([3], '2F platforms numbered 1–11; north at track 11 side');
 const pb = source([2], '3F North-South Bridge, Bridge Gate and paid platform access');
+// Central Court's raised side stairs open onto the same landing while the centre is set back.
+const southCentralLanding = [
+    { x: -9, z: 47 }, { x: -4, z: 47 }, { x: -4, z: 49 },
+    { x: 4, z: 49 }, { x: 4, z: 47 }, { x: 9, z: 47 },
+    { x: 9, z: 56 }, { x: 6, z: 61 }, { x: -6, z: 61 }, { x: -9, z: 56 }
+];
 export const areas: FloorArea[] = [
     {
         id: 'north-b1-public',
@@ -312,7 +318,7 @@ export const areas: FloorArea[] = [
         level: 'concourse',
         name: messageText('stations.jrOsaka.areas.southCentralRaised.name'),
         kind: 'public',
-        outline: rectangle(0, 53, 28, 16),
+        outline: southCentralLanding.map(point => ({ ...point })),
         elevationOffset: 1.3,
         label: true,
         evidence: source(
@@ -325,7 +331,7 @@ export const areas: FloorArea[] = [
         level: 'concourse',
         name: messageText('stations.jrOsaka.areas.southRaisedPlinth.name'),
         kind: 'service',
-        outline: rectangle(4, 54, 54, 18),
+        outline: southCentralLanding.map(point => ({ ...point })),
         height: 1.3,
         evidence: source([5], 'Support volume for schematic local raised entrance, not an extra floor')
     },
@@ -729,7 +735,7 @@ export const facilities: Facility[] = [
         name: messageText('stations.jrOsaka.facilities.daimaruSteps.name'),
         kind: 'stairs',
         level: 'concourse',
-        x: -10,
+        x: -7,
         z: 39,
         note: '南端往大丸／南中央口的小段台阶，与 1F 公共通路之间有局部高差；不作为独立完整楼层。高差与步数为示意。',
         evidence: source([5], 'User-marked Central Court / South Central Gate transition')
@@ -1053,7 +1059,7 @@ export const layout: StationLayout = { areas, platforms, connections };
 export const nodes: RouteNode[] = [
     landing('entry', 'concourse', 0, 41),
     // Use the public space between Crost (クロスト) escalator 67 and stair 68.
-    landing('hall-crost-side', 'concourse', -3, 32),
+    landing('hall-crost-side', 'concourse', -4.1, 35.5),
     landing('hall', 'concourse', 0, 4),
     landing('gate-out', 'concourse', -6, 4),
     landing('gate-in', 'concourse', -13, 4),
@@ -1580,7 +1586,7 @@ addEscalator(
     [3, 5],
     'Carillon Plaza public escalator, diagram 49'
 );
-for (const [id, x] of [['central-daimaru-steps', -10], ['central-daimaru-east-steps', 10]] as const) {
+for (const [id, x] of [['central-daimaru-steps', -7], ['central-daimaru-east-steps', 7]] as const) {
     connections.push({
         id,
         kind: 'stairs',

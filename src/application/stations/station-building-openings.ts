@@ -6,8 +6,11 @@ import { escalatorOverallWidth } from '../connections/connection-lanes.ts';
 /** Clear public halls and the main vertical circulation inside the station-attached shell. */
 export function stationBuildingOpenings(stations: StationMap[]): BuildingOpening[] {
     const southGate = stations.find(s => s.id === 'jr-osaka');
-    const southGateExclusions = new Set(['south-entrance-ground-passage', 'south-entrance-deck', 'south-building-upper-landing', 'south-building-3f']);
-    const southGateOpenings = southGate?.layout.areas.filter(area => southGateExclusions.has(area.id)).map(area => {
+    const southGatePublicAreas = new Set([
+        'south-entrance-ground-passage', 'south-entrance-deck', 'south-building-upper-landing',
+        'south-building-3f', 'south-building-4f', 'south-bridge-4f-link'
+    ]);
+    const southGateOpenings = southGate?.layout.areas.filter(area => southGatePublicAreas.has(area.id)).map(area => {
         const y = southGate.levels.find(level => level.id === area.level)!.y + (area.elevationOffset ?? 0);
         const clearance = area.id === 'south-entrance-ground-passage' ? 2.7 : 4.5;
         return { buildingId: 'daimaru', outline: area.outline, base: y - .1, top: y + clearance, evidence: area.evidence };

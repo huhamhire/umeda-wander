@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import * as T from 'three';
 import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
@@ -10,6 +11,7 @@ import { exteriorOpenings, layout, levels } from '../../src/infrastructure/distr
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
+import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
 
 test('Daimaru public approaches stay continuous through the building on 1F, 2F and 3F', () => {
     const building = geographicBuildings.find(b => b.id === 'daimaru')!;
@@ -39,17 +41,25 @@ test('Daimaru public approaches stay continuous through the building on 1F, 2F a
         const ray = new T.Raycaster(new T.Vector3(from.x, height + 1.5, from.z), delta.clone().normalize(), 0, delta.length());
         assert.equal(ray.intersectObject(model, true).length, 0, level + ' facade blocks the route');
     }
+    const bridgeStart = jrAxisPoint(-12, 46.6);
+    const fourthFloor = jrAxisPoint(13, 75);
+    const throughPortal = new T.Vector3(fourthFloor.x - bridgeStart.x, 0, fourthFloor.z - bridgeStart.z);
+    const bridgeY = levels.find(l => l.id === 'bridge')!.y;
+    const bridgeRay = new T.Raycaster(
+        new T.Vector3(bridgeStart.x, bridgeY + 1.5, bridgeStart.z), throughPortal.clone().normalize(), 0, throughPortal.length()
+    );
+    assert.equal(bridgeRay.intersectObject(model, true).length, 0, 'Daimaru shell closes the level route to building 4F');
 });
 
-test('Daimaru 1F and 3F public entrances connect through the South Gate lifts without a station detour', () => {
+test('Daimaru public entrances connect through the South Gate stair and lift without crossing JR gates', () => {
     const network = createWalkingNetwork();
     const approaches = new Map(network.approaches);
     const ground = 'daimaru-entry';
     const upper = 'south-building-3f-entry';
-    const liftStops = ['south-lift-u-lower', 'south-lift-u-upper', 'south-lift-t-lower', 'south-lift-t-upper'];
+    const buildingStops = ['south-lift-u-lower', 'south-lift-u-upper', 'south-building-stairs-50-low', 'south-building-stairs-50-high'];
     const byId = new Map(network.nodes.map(node => [node.id, node]));
     const { center, angle } = geographicBuildings.find(b => b.id === 'daimaru')!.entrance!;
-    for (const [from, to, stops] of [[ground, upper, liftStops], [upper, ground, [...liftStops].reverse()]] as const) {
+    for (const [from, to, stops] of [[ground, upper, buildingStops], [upper, ground, [...buildingStops].reverse()]] as const) {
         const result = planWalkingRoute(network.edges, [from, to], false, approaches, network.shapeLeg);
         assert(result.route);
         assert.deepEqual(result.approximations, []);
@@ -59,16 +69,23 @@ test('Daimaru 1F and 3F public entrances connect through the South Gate lifts wi
         );
         assert(plazaDepths.every(depth => depth <= -9.99), 'the 1F path should not overshoot the lift lobby toward the plaza');
     }
+    const fromBridge = planWalkingRoute(network.edges, ['south-bridge-access', ground], false, approaches, network.shapeLeg);
+    assert(fromBridge.route);
+    assert.deepEqual(fromBridge.route.filter(id => !id.startsWith('walk:')), [
+        'south-stairs-16-upper', 'south-stairs-16-lower', ...buildingStops.slice().reverse()
+    ]);
+    assert.deepEqual(fromBridge.approximations, []);
+    assert(network.edges.some(edge => edge.from === 'south-plaza-stairs-74-low' && edge.to === 'south-plaza-stairs-74-high'));
 });
 
 test(
-    'both geographic South Gate escalator banks retain paired lanes and cut every overlapping 2F floor',
+    'South Gate banks 61 and 62 retain separate 1F and B1 landings and open the overlapping slabs',
     () => {
         const openings = planFloorOpenings(layout.connections, levels, layout.platforms);
-        for (const id of ['south-building-61', 'south-entrance-east-escalators']) {
+        for (const [id, bottom] of [['south-building-61', 'concourse'], ['south-entrance-east-escalators', 'underground-hall']] as const) {
             const bank = layout.connections.find(c => c.id === id)!;
             assert.equal(bank.lanes, 2);
-            assert.equal(bank.from.level, 'concourse');
+            assert.equal(bank.from.level, bottom);
             assert.equal(bank.to.level, 'south-deck');
             const deck = layout.areas.find(a => a.id === 'south-entrance-deck')!;
             assert.ok(pointInPolygon(bank.to, deck.outline), id + ' misses the upper deck');
@@ -90,6 +107,19 @@ test(
                     material.dispose();
                 }
             }
+        }
+        const direct = layout.connections.find(c => c.id === 'south-entrance-east-escalators')!;
+        const ground = layout.areas.find(a => a.id === 'south-entrance-ground')!;
+        const y = ground.elevationOffset!;
+        const cuts = [...openings, ...planAtriumOpenings(layout.atria)].filter(cut => cut.level === ground.level);
+        for (const lane of connectionLanes(direct)) {
+            assert(layout.areas.some(a => a.blockId === 'crost-b1' && a.kind === 'public' && pointInPolygon(lane.from, a.outline)));
+            const toY = levels.find(l => l.id === lane.to.level)!.y;
+            const fromY = levels.find(l => l.id === lane.from.level)!.y;
+            const t = (y - fromY) / (toY - fromY);
+            const p = { x: lane.from.x + (lane.to.x - lane.from.x) * t, z: lane.from.z + (lane.to.z - lane.from.z) * t };
+            assert(pointInPolygon(p, ground.outline));
+            assert(cuts.some(cut => pointInPolygon(p, cut.outline)), 'raised 1F plaza closes the through flight');
         }
     }
 );

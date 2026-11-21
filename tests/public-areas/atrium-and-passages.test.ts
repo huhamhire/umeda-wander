@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import * as T from 'three';
 import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
@@ -63,7 +64,7 @@ test(
     }
 );
 test(
-    'South bridge flights are diagonal exterior connections followed by 50/T to the front 2F passage',
+    'South Bridge flights fit the staggered slab edge and the building 4F bypass stays level',
     () => {
         const a = layout.connections.find(c => c.id === 'south-15')!;
         const b = layout.connections.find(c => c.id === 'south-stairs-16')!;
@@ -74,9 +75,31 @@ test(
         const ad = new T.Vector2(a.to.x - a.from.x, a.to.z - a.from.z).normalize();
         const bd = new T.Vector2(b.to.x - b.from.x, b.to.z - b.from.z).normalize();
         assert(ad.dot(bd) > 0.999);
+        assert.equal(a.lanes, 2);
+        assert(b.width! > a.width!);
+        const upper = layout.areas.find(area => area.id === 'bridge-south')!;
+        const lower = layout.areas.find(area => area.id === 'south-building-3f')!;
+        for (const flight of [...connectionLanes(a), b]) {
+            assert(pointInPolygon(flight.to, upper.outline), flight.id + ' missing bridge landing');
+            assert(pointInPolygon(flight.from, lower.outline), flight.id + ' missing lower lobby');
+            const belowEdge = {
+                x: flight.to.x + (flight.from.x - flight.to.x) * .025,
+                z: flight.to.z + (flight.from.z - flight.to.z) * .025
+            };
+            assert(!pointInPolygon(belowEdge, upper.outline), flight.id + ' is covered by the bridge edge');
+        }
+        const link = layout.areas.find(area => area.id === 'south-bridge-4f-link')!;
+        const fourth = layout.areas.find(area => area.id === 'south-building-4f')!;
+        assert.equal(link.level, upper.level);
+        assert.equal(fourth.level, upper.level);
+        for (let i = 0; i <= 20; i++) {
+            const t = i / 20;
+            const point = jrAxisPoint(-12 + t * 25, 46.6 + t * 28.4);
+            assert([upper, link, fourth].some(area => pointInPolygon(point, area.outline)));
+        }
         const front = layout.areas.find(a => a.id === 'south-entrance-deck')!;
         assert.equal(front.level, 'south-deck');
-        for (const id of ['south-building-50', 'south-lift-t']) {
+        for (const id of ['south-building-50', 'south-building-stairs-50', 'south-lift-t']) {
             const c = layout.connections.find(c => c.id === id)!;
             assert.equal(c.from.level, 'south-deck');
             assert(pointInPolygon(c.from, front.outline));

@@ -130,9 +130,9 @@ test(
 );
 
 test(
-    'JR retains three Central Court to Crost flights separately from the paid west link',
+    'Central Court to Crost retains the 67 stair-and-escalator bank and separate side stairs 68 and 69',
     () => {
-        for (const id of ['crost-67', 'crost-stairs-68', 'crost-stairs-69']) {
+        for (const id of ['crost-67', 'crost-67-stairs-west', 'crost-67-stairs-east', 'crost-stairs-68', 'crost-stairs-69']) {
             const c = layout.connections.find(c => c.id === id);
             assert.ok(c, id);
             assert.deepEqual(new Set([c.from.level, c.to.level]), new Set(['concourse', 'underground-hall']));

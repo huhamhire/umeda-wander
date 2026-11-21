@@ -113,7 +113,7 @@ test('expansion drag keeps both stair landings attached without replacing tread 
 test(
     'Daimaru 1F raised landings retain the 2F escalator and lift across cuts and expansion',
     () => {
-        for (const id of ['south-building-61', 'south-entrance-east-escalators', 'south-lift-u']) {
+        for (const id of ['south-building-61', 'south-lift-u']) {
             const connection = districtLayout.connections.find(c => c.id === id)!;
             assert.equal(connection.from.level, 'concourse');
             assert.equal(connection.from.elevationOffset, 1.3);
@@ -145,7 +145,7 @@ test(
                 }
             }
         }
-        for (const id of ['south-building-50', 'south-lift-t']) {
+        for (const id of ['south-building-50', 'south-building-stairs-50', 'south-lift-t']) {
             const model = new VerticalConnectionModel(
                 districtLayout.connections.find(c => c.id === id)!,
                 districtLevels,

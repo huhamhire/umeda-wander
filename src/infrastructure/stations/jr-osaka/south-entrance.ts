@@ -18,9 +18,9 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
     const passage = passageOutline(point(-4.1, -61), point(-6.8, -10.7), 5);
     const passageProof = {
         source: 'district' as const,
-        pages: [3],
+        pages: [],
         urls: [
-            'https://www.jcomm.co.jp/assets/pdf/transit/osc/tabidachi_20220331.pdf',
+            'https://osakastationcity.com/guide/?floor1F=',
             'https://www.openstreetmap.org/way/557170595',
             'https://www.openstreetmap.org/way/330561968'
         ],
@@ -102,24 +102,62 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
     move(existing.from, -15, 2);
     move(existing.to, -15, -3);
     existing.lanes = 2;
+    const directB1 = {
+        source: 'jr' as const,
+        pages: [4, 5, 6],
+        urls: ['https://osakastationcity.com/guide/?floor2F='],
+        detail: 'South Gate Plaza (南ゲート広場): east escalator 62 runs directly between building 2F and B1; adjacent stair 74 serves 1F and B1. The two banks and their landings are fitted to the public floors.'
+    };
     const east: VerticalConnection = {
         ...existing,
         id: 'south-entrance-east-escalators',
-        evidence: proof,
-        from: { ...existing.from, id: 'south-entrance-east-low', ...point(15, 2) },
+        evidence: directB1,
+        from: { level: 'underground-hall', id: 'south-entrance-east-low', ...point(14, 15) },
         to: { ...existing.to, id: 'south-entrance-east-high', ...point(15, -3) }
     };
-    station.layout.connections.push(east);
-    station.nodes.push(east.from, east.to);
+    const eastStairs: VerticalConnection = {
+        id: 'south-plaza-stairs-74',
+        kind: 'stairs',
+        width: 2.8,
+        from: { level: 'underground-hall', id: 'south-plaza-stairs-74-low', ...point(17, 18.5) },
+        to: { level: 'concourse', id: 'south-plaza-stairs-74-high', elevationOffset: 1.3, ...point(22.5, 6.9) },
+        evidence: directB1
+    };
+    station.layout.connections.push(east, eastStairs);
+    station.nodes.push(east.from, east.to, eastStairs.from, eastStairs.to);
     const lift = station.layout.connections.find(c => c.id === 'south-lift-u')!;
     move(lift.from, -20, -10);
     move(lift.to, -20, -10);
     const bank50 = station.layout.connections.find(c => c.id === 'south-building-50')!;
     move(bank50.from, 4, -12);
     move(bank50.to, 4, -20);
+    const bank50Evidence = {
+        source: 'jr' as const,
+        pages: [3, 4],
+        urls: ['https://osakastationcity.com/guide/?floor2F=', 'https://osakastationcity.com/guide/?floor3F='],
+        detail: 'South Gate Building (サウスゲートビルディング) 2F/3F bank 50: two escalator lanes sit east of the adjacent stair. Landing positions and widths are fitted.'
+    };
+    Object.assign(bank50, { lanes: 2, width: 2, laneSpacing: 2.15, evidence: bank50Evidence });
+    const stairs50: VerticalConnection = {
+        id: 'south-building-stairs-50',
+        kind: 'stairs',
+        width: 3.3,
+        from: { ...bank50.from, id: 'south-building-stairs-50-low', ...point(-.4, -12) },
+        to: { ...bank50.to, id: 'south-building-stairs-50-high', ...point(-.4, -20) },
+        evidence: bank50Evidence
+    };
+    station.layout.connections.push(stairs50);
+    station.nodes.push(stairs50.from, stairs50.to);
     const liftT = station.layout.connections.find(c => c.id === 'south-lift-t')!;
     move(liftT.from, 16, -20);
     move(liftT.to, 16, -20);
     // Compatibility-view apertures must not cut unrelated positions in metre coordinates.
     station.layout.atria = station.layout.atria?.filter(a => !['south-gate-curved-setback', 'south-building-50-open-bay', 'south-building-t-open-bay'].includes(a.id));
+    // Bank 62 passes through the raised plaza slab without making a 1F stop.
+    station.layout.atria?.push({
+        id: 'south-plaza-62-slot',
+        name: messageText('stations.jrOsaka.entities.southEntranceGround.name'),
+        openings: [{ level: 'concourse', outline: passageOutline(point(14.8, .7), point(14.4, 6.2), 5.5) }],
+        evidence: directB1
+    });
 }

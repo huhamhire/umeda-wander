@@ -70,7 +70,7 @@
 - `references/district/station-area-orientation.webp` 只作地区方位参照，不把旧名称、开发状态或图上比例当成现况测量。M16 既有展示拟合另沿北向主轴取 -34 单位，地下公共接口随站体推导；允许地下线与地上外部轨道平面交叉，不允许侵入 JR 站台主体。校对边界见 `docs/design/buildings/README.md`。
 - 阪急 Grand Building 使用独立轮廓，不能合并进百货实体。已核对的 1F 南北/东西公共通廊是商业内部不展开规则的明确例外；`CommercialConcourse` 只表达公共空间，不展开店铺。南北挑高裁孔与东西通廊上方 2F 通道分别处理，造型由 `commercial-concourse-model.ts` 生成，商业裁孔同步避让外墙与压顶。
 - 阪神布局见 `stations/hanshin-umeda/index.ts`，四个独立 LevelId 与 Evidence.source=hanshin；B1 西口/百货店口，B2 东口及四线终端、独立降车区。南出口 F23 楼梯、两条扶梯、地面顶棚和 21 号电梯的地理校准见 `stations/hanshin-umeda/south-exit.ts` 和同目录 `geographic.ts`；21 号为同一座 B2→B1→地面→Deck 电梯。现役闸外接驳归公共板块，阪神西口通往西梅田的 B1 路径由公共站间步行图维护。来源边界见 `docs/design/stations/hanshin-umeda.md`。
-- 北中庭 2/3、47/48 共用 `AtriumVoid` 开放天井，由 `atrium-openings.ts` 裁剪上层；南侧 15/16 斜向接公共区域，再经 50/T 接大丸 2F 前侧。组合地图的 `south-deck` 归 2F 探索，按南侧较低相邻层展示，原 JR 数据保留建筑楼层名称。
+- 北中庭 2/3、47/48 共用 `AtriumVoid` 开放天井，由 `atrium-openings.ts` 裁剪上层；南侧斜角楼板、15 双排扶梯、16 错位宽梯和通往大丸 4F 的平层支路由 `south-bridge.ts` 校准，50 双排扶梯及其旁侧楼梯由 `south-entrance.ts` 接到大丸 2F 前侧。组合地图的 `south-deck` 归 2F 探索，按南侧较低相邻层展示，原 JR 数据保留建筑楼层名称。
 - 地图标签被实际不透明楼板、商业体块或屋顶遮挡时隐藏；真实孔洞保留视线，玻璃与隐藏楼层不遮挡。便利店统一短标签 7-Eleven，设施页“便利店”可分别定位。设施页只保留分类、名称定位和图例，不显示参考图页码及设施说明详情；来源与注释继续保留在数据和文档中。
 - 阪急原图拟合与历史偏移在 `district-placement.ts`，现役定位在 `stations/hankyu-umeda/geographic.ts`；站体、平台、落点、连廊和轨道共用比例，层高不缩放。向南调整时同时检查 JR 东侧本线曲率与道床净距，不能靠把整站向北推远解决比例问题。
 - 站外短段轨道使用独立 `RailApproach` 图，不能加入步行 `RouteEdge`。站台轨道与延伸线共用 `platformRail` 计算端点；并线节点共用切向，公共尾段只画一次。地理轨道在 `geography/runtime-rails.ts`，JR 走廊约束在 `stations/jr-osaka/rail-corridors.ts`；旧 `rail-approaches.ts` 已退役，历史查 Git，渲染在 `rail-approach-model.ts`，取景包络包含尾段与标记。
@@ -103,7 +103,7 @@
 - 设施候选由 `facility-directory.ts` 补齐全部已建模跨层设施的各层落点和站台，保留来源、局部标高及内部编号；补齐候选不重复绘制设备模型或常驻标签。“售票”筛选合并售票处与售票机，底层类型继续分开。`selection-marker.ts` 用暖橙色立体图钉和地面圈标记所选设施，跟随层级标高，支持入场与浮动动画；减少动态效果时静止，标记隐藏后不持续请求动画帧。
 - 桌面设施类型用三列图标网格，名称可换行。移动端用单行横向滑动按钮，保留至少 44px 点击高度、选中状态及筛选后的横向滚动位置。
 - 地面层与建筑轮廓开关使用相同字号，在分层展开滑块下方同一行排列，并留出上下间距；展开距离上限为原先的 1.5 倍，不显示百分比数值。自动缩小下限按完整地图包络占可见纵向空间 80% 计算，移动端扣除底部菜单。手动缩小可继续适配较宽的投影，补足横向取景时最多将上述纵向跨度加倍，仍可平移。
-- 商业楼板与车站楼板共用应用层规划的 `FloorOpening`；`buildCommercialFloor` 必须接收开口，不能让商业体底板重新封住扶梯井口。大丸南侧 61/74 为两组双排扶梯，保留 1F 局部标高及完整下层模型。
+- 商业楼板与车站楼板共用应用层规划的 `FloorOpening`；`buildCommercialFloor` 必须接收开口，不能让商业体底板重新封住扶梯井口。大丸南侧 61 双排扶梯接 1F 与 2F，62 双排扶梯直通 B1 与 2F，独立楼梯 74 接 B1 与 1F。保留 1F 局部标高、62 的穿层开口及完整下层模型。
 - LUCUA 1100 西侧往梅北 Green Place 的 2F 连廊有独立来源；只画公共落台，不画对侧建筑，不接到地下付费站台。LUCUA 上部裙楼与办公塔楼只在总览显示，选层隐藏，取景包络仍包含其高度。
 
 ## Grand Front 补充
