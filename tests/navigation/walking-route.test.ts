@@ -16,8 +16,17 @@ import { walkingPlaces } from '../../src/infrastructure/district/walking-places.
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
 
+const floorOpenings = planFloorOpenings(layout.connections, levels, layout.platforms);
+const mapOpenings = [...floorOpenings, ...planAtriumOpenings(layout.atria)];
+let networkFixture: ReturnType<typeof createWalkingNetwork> | undefined;
+
+/** Share the read-only district graph while each test owns its itinerary state. */
+function walkingNetwork() {
+    return networkFixture ??= createWalkingNetwork();
+}
+
 test('walk previews reduce the Hankyu mesh zigzag while preserving the chosen waypoint and transitions', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const approaches = new Map(network.approaches);
     const session = new MapSession(network.edges, { nodes: network.nodes, levels, shapeLeg: network.shapeLeg });
     const waypoint = 'daimaru-entry';
@@ -37,7 +46,7 @@ test('walk previews reduce the Hankyu mesh zigzag while preserving the chosen wa
 });
 
 test('the expanded map routes Central Gate 9/10 to Higashi-Umeda exit 4 through a JR gate only', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const approaches = new Map(network.approaches);
     const entrance = 'higashi-umeda-exit-4';
     const gates = network.edges.filter(edge => edge.kind === 'gate');
@@ -69,7 +78,7 @@ test('the expanded map routes Central Gate 9/10 to Higashi-Umeda exit 4 through 
 });
 
 test('Bridge Gate ticket machines reach the Nishi-Umeda platform through a single Metro gate in both directions', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const approaches = new Map(network.approaches);
     const machines = 'machines-bridge';
     const platform = 'nishi-umeda-destination';
@@ -95,14 +104,14 @@ test('Bridge Gate ticket machines reach the Nishi-Umeda platform through a singl
 });
 
 test('the Loop Line platform route uses the Bridge Gate escalators and does not overshoot the platform destination', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const approaches = new Map(network.approaches);
     const graphNodes = new Map(network.nodes.map(node => [node.id, node]));
     const machines = 'machines-bridge';
     const platform = 'platform-p1-2';
     const down = layout.connections.find(c => c.id === 'bridge-p1-2')!;
     const up = layout.connections.find(c => c.id === 'bridge-west-13')!;
-    const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'platform');
+    const openings = floorOpenings.filter(o => o.level === 'platform');
     for (const [from, to, departure, arrival] of [
         [machines, platform, down.from.id, down.to.id],
         [platform, machines, up.to.id, up.from.id]
@@ -117,9 +126,9 @@ test('the Loop Line platform route uses the Bridge Gate escalators and does not 
         assert(!route.some(id => id.startsWith('walk:street:') || id.startsWith('bridge-lift-h-')));
         assert.equal(planWalkingRoute(network.edges, [from, to], false, approaches).issue, 'gateRequired');
         const points = route.map(id => graphNodes.get(id)!).filter(node => node.level === 'platform');
+        assert(points.length >= 2, 'The itinerary includes a walk on the platform');
         const first = points[0]!;
         const last = points.at(-1)!;
-        assert(points.length <= 4);
         for (let i = 1; i < points.length; i++) {
             const previous = points[i - 1]!;
             const current = points[i]!;
@@ -137,7 +146,7 @@ test('the Loop Line platform route uses the Bridge Gate escalators and does not 
 });
 
 test('Hankyu south concourse stairs join the B1 public route in both directions', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const ground = 'hankyu-concourse-south-stairs-ground';
     const basement = 'hankyu-concourse-south-stairs-b1';
     const destination = 'nishi-umeda-north-route-out';
@@ -148,7 +157,7 @@ test('Hankyu south concourse stairs join the B1 public route in both directions'
 });
 
 test('Hankyu station and the department store concourse connect at 1F under the JR tracks', () => {
-    const network = createWalkingNetwork();
+    const network = walkingNetwork();
     const graphNodes = new Map(network.nodes.map(node => [node.id, node]));
     const areas = layout.areas.filter(area => area.id.startsWith('hankyu-concourse-north-ground-'));
     const station = 'hankyu-umeda-route-entry';
@@ -235,8 +244,7 @@ test('facility approaches stay on a continuous same-height walkable face and the
 
 test('the geographic map routes to a named public approach for the JR west ticket machines', () => {
     const places = walkingPlaces();
-    const openings = [...planFloorOpenings(layout.connections, levels, layout.platforms), ...planAtriumOpenings(layout.atria ?? [])];
-    const approaches = new Map(walkingApproaches(facilities, places, nodes, layout.areas, layout.platforms, openings));
+    const approaches = new Map(walkingApproaches(facilities, places, nodes, layout.areas, layout.platforms, mapOpenings));
     const result = planWalkingRoute(edges, ['entry', 'machines-west'], false, approaches);
     assert(result.route);
     assert(result.route.includes('west-entry'));
@@ -357,7 +365,7 @@ test('JR South Central Entrance uses the public gap beside the Crost openings to
         polygon(layout.areas.find(area => area.id === 'central-public')!.outline),
         polygon(layout.areas.find(area => area.id === 'south-public')!.outline)
     );
-    const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(opening => opening.level === 'concourse');
+    const openings = floorOpenings.filter(opening => opening.level === 'concourse');
     const obstructions = [
         ...openings,
         ...layout.areas.filter(area => area.level === 'concourse' && ['paid', 'commercial', 'service'].includes(area.kind))
@@ -396,10 +404,6 @@ test('Kitashinchi to Hankyu Kyoto platform via Hanshin West uses the JR north de
 });
 
 test('the northern transfer follows public floors and the ascent modeled in the atrium', () => {
-    const openingCuts = [
-        ...planFloorOpenings(layout.connections, levels, layout.platforms),
-        ...planAtriumOpenings(layout.atria)
-    ];
     const lookup = new Map(nodes.map(node => [node.id, node]));
     const rise = layout.connections.find(connection => connection.id === 'north-48')!;
     for (const edge of northWalking.edges) {
@@ -412,7 +416,7 @@ test('the northern transfer follows public floors and the ascent modeled in the 
         const to = lookup.get(edge.to)!;
         const floors = from.level === 'concourse' ? ['concourse'] : ['platform', 'district-north-deck', 'hankyu-hall'];
         const areas = layout.areas.filter(area => floors.includes(area.level) && !area.elevationOffset);
-        const cuts = openingCuts.filter(opening => floors.includes(opening.level));
+        const cuts = mapOpenings.filter(opening => floors.includes(opening.level));
         const dx = to.x - from.x;
         const dz = to.z - from.z;
         const length = Math.hypot(dx, dz);

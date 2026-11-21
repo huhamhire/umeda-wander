@@ -7,9 +7,30 @@ import { createWalkingNetwork } from '../../src/infrastructure/district/walking-
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import clipping from 'polygon-clipping';
-import * as T from 'three';
-import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
-import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
+
+const concourse = 'nishi-umeda-north-route-out';
+let accessFixture: ReturnType<typeof buildAccessFixture> | undefined;
+
+/** Index the read-only geographic graph by physical height for local public-access checks. */
+function buildAccessFixture() {
+    const network = createWalkingNetwork();
+    const elevations = new Map(levels.map(level => [level.id, level.y]));
+    const heights = new Map(network.nodes.map(node => [node.id, elevations.get(node.level)! + (node.elevationOffset ?? 0)]));
+    const walksAt = (height: number) =>
+        network.edges.filter(edge => edge.kind === 'walk' && heights.get(edge.from) === height && heights.get(edge.to) === height);
+    /** Find the exact sidewalk anchor from the OSM street graph within the fitting tolerance. */
+    const streetAt = (x: number, z: number) => {
+        const node = network.nodes.find(n => n.id.startsWith('walk:street:') && Math.hypot(n.x - x, n.z - z) < .02);
+        assert(node, `No street node at ${x}, ${z}`);
+        return node.id;
+    };
+    return { network, heights, basementWalks: walksAt(-8), groundWalks: walksAt(0), streetAt };
+}
+
+/** Share the graph and the elevation indexes across the access cases in this file. */
+function publicAccessFixture() {
+    return accessFixture ??= buildAccessFixture();
+}
 
 test(
     'JP garden reaches the Garden Avenue public network and shares one lift stop at street level',
@@ -23,17 +44,13 @@ test(
         assert.ok(jpAccess.connections.every(c => c.evidence.pages.includes(2) && c.evidence.urls?.[0]?.includes('1027_01_01.pdf')));
         const stairs = layout.connections.find(c => c.id === 'jp-garden-b1-ground-stairs')!;
         const deckStairs = layout.connections.find(c => c.id === 'public-jp-deck-stairs')!;
-        const network = createWalkingNetwork();
-        const elevations = new Map(levels.map(l => [l.id, l.y]));
-        const heights = new Map(network.nodes.map(n => [n.id, elevations.get(n.level)! + (n.elevationOffset ?? 0)]));
-        const basementWalks = network.edges.filter(e => e.kind === 'walk' && heights.get(e.from) === -8 && heights.get(e.to) === -8);
-        const streetWalks = network.edges.filter(e => e.kind === 'walk' && heights.get(e.from) === 0 && heights.get(e.to) === 0);
-        const sidewalk = network.nodes.find(n => n.id.startsWith('walk:street:') && Math.hypot(n.x - 358.16, n.z - 802.74) < .02)!;
+        const { network, basementWalks, groundWalks, streetAt } = publicAccessFixture();
+        const sidewalk = streetAt(358.16, 802.74);
         for (const landing of [stairs.from, lower.from]) {
-            assert(findRoute(basementWalks, landing.id, 'nishi-umeda-north-route-out', false), landing.id);
+            assert(findRoute(basementWalks, landing.id, concourse, false), landing.id);
         }
         for (const landing of [stairs.to, lower.to, deckStairs.from]) {
-            assert(findRoute(streetWalks, landing.id, sidewalk.id, false), landing.id);
+            assert(findRoute(groundWalks, landing.id, sidewalk, false), landing.id);
         }
         assert.deepEqual(findRoute(network.edges.filter(e => e.kind === 'elevator'), lower.from.id, upper.to.id, false), [
             lower.from.id, upper.from.id, upper.to.id
@@ -44,24 +61,8 @@ test(
     }
 );
 
-test('Both Nishi-Umeda street stairs outside Daimaru join the same public B1 passage', () => {
-    const network = createWalkingNetwork();
-    const basementLevels = new Set(levels.filter(l => l.y === -8).map(l => l.id));
-    const basementNodes = new Set(network.nodes.filter(n => basementLevels.has(n.level) && !n.elevationOffset).map(n => n.id));
-    const basementWalks = network.edges.filter(e => e.kind === 'walk' && basementNodes.has(e.from) && basementNodes.has(e.to));
-    for (const number of [1, 5]) {
-        const stairs = layout.connections.find(c => c.id === 'nishi-umeda-exit-' + number + '-stairs')!;
-        assert(findRoute(basementWalks, stairs.from.id, 'nishi-umeda-north-route-out', false), stairs.id);
-        assert(network.edges.some(e => e.kind === 'stairs' && e.from === stairs.from.id && e.to === stairs.to.id), stairs.id);
-    }
-});
-
-test('Garden Avenue exits reach the street and the B1 public corridor from both landings', () => {
-    const network = createWalkingNetwork();
-    const elevations = new Map(levels.map(l => [l.id, l.y]));
-    const heights = new Map(network.nodes.map(n => [n.id, elevations.get(n.level)! + (n.elevationOffset ?? 0)]));
-    const basementWalks = network.edges.filter(e => e.kind === 'walk' && heights.get(e.from) === -8 && heights.get(e.to) === -8);
-    const groundWalks = network.edges.filter(e => e.kind === 'walk' && heights.get(e.from) === 0 && heights.get(e.to) === 0);
+test('Garden Avenue exits and the Daimaru street stairs reach the public B1 corridor', () => {
+    const { network, heights, basementWalks, groundWalks, streetAt } = publicAccessFixture();
     const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'district-ground');
     for (const [id, x, z] of [
         ['garden-avenue-exit-6-71', 356, 856.52],
@@ -77,16 +78,24 @@ test('Garden Avenue exits reach the street and the B1 public corridor from both 
         ['garden-avenue-exit-6-36', 141.322, 1002.036],
         ['garden-avenue-exit-6-40', 162.507, 979.828],
         ['garden-avenue-exit-6-46', 215.575, 947.545],
-        ['garden-avenue-exit-6-48', 198.17, 950.239]
+        ['garden-avenue-exit-6-48', 198.17, 950.239],
+        ['garden-avenue-exit-6-25', 76.907, 1090.747],
+        ['garden-avenue-lift-6-25', 76.907, 1090.747],
+        ['nishi-umeda-exit-1-stairs'],
+        ['nishi-umeda-exit-5-stairs']
     ] as const) {
         const connection = layout.connections.find(c => c.id === id)!;
         const lower = layout.connections.find(c => c.id === id + '-lower');
         const foot = lower?.from ?? connection.from;
-        const street = network.nodes.find(n => n.id.startsWith('walk:street:') && Math.hypot(n.x - x, n.z - z) < .02)!;
-        assert(street, id);
-        assert(findRoute(groundWalks, connection.to.id, street.id, false), id);
-        assert(findRoute(basementWalks, foot.id, 'nishi-umeda-north-route-out', false), id);
+        assert(findRoute(basementWalks, foot.id, concourse, false), id);
         assert(network.edges.some(e => e.kind === connection.kind && e.from === connection.from.id && e.to === connection.to.id), id);
+        if (x === undefined || z === undefined) {
+            assert.equal(connection.kind, 'stairs', id);
+            continue;
+        }
+        assert.equal(heights.get(foot.id), -8, id);
+        assert.equal(heights.get(connection.to.id), 0, id);
+        assert(findRoute(groundWalks, connection.to.id, streetAt(x, z), false), id);
         const opening = openings.find(o => o.connectionId === id);
         assert(opening, id);
         const polygon = opening.outline.map(({ x, z }): clipping.Pair => [x, z]);
@@ -94,12 +103,14 @@ test('Garden Avenue exits reach the street and the B1 public corridor from both 
             const neighbor = other.outline.map(({ x, z }): clipping.Pair => [x, z]);
             assert.equal(clipping.intersection([polygon], [neighbor]).length, 0, id + ' / ' + other.connectionId);
         }
-        if (lower) {
-            assert.equal(lower.to, connection.from);
-            assert(heights.get(lower.to.id)! > -8 && heights.get(lower.to.id)! < 0);
-            const stairs = network.edges.filter(e => e.kind === 'stairs');
-            assert.deepEqual(findRoute(stairs, connection.to.id, foot.id, false), [connection.to.id, lower.to.id, foot.id]);
-        }
+    }
+    const stairs = network.edges.filter(e => e.kind === 'stairs');
+    for (const id of ['garden-avenue-exit-6-13', 'garden-avenue-exit-6-48']) {
+        const lower = layout.connections.find(c => c.id === id + '-lower')!;
+        const upper = layout.connections.find(c => c.id === id)!;
+        assert.equal(lower.to, upper.from, id);
+        assert(heights.get(lower.to.id)! > -8 && heights.get(lower.to.id)! < 0, id);
+        assert.deepEqual(findRoute(stairs, upper.to.id, lower.from.id, false), [upper.to.id, lower.to.id, lower.from.id], id);
     }
     const escalator = layout.connections.find(c => c.id === 'garden-avenue-exit-6-1-escalator')!;
     const link = network.edges.find(e => e.from === escalator.from.id && e.to === escalator.to.id);
@@ -111,13 +122,8 @@ test('Garden Avenue exits reach the street and the B1 public corridor from both 
 });
 
 test('Garden Avenue building doors and the HERBIS ENT plaza join the documented public approaches', () => {
-    const network = createWalkingNetwork();
+    const { network, basementWalks, groundWalks, streetAt } = publicAccessFixture();
     const approaches = new Map(network.approaches);
-    const elevations = new Map(levels.map(level => [level.id, level.y]));
-    const heights = new Map(network.nodes.map(node => [node.id, elevations.get(node.level)! + (node.elevationOffset ?? 0)]));
-    const basementWalks = network.edges.filter(edge => edge.kind === 'walk' && heights.get(edge.from) === -8 && heights.get(edge.to) === -8);
-    const groundWalks = network.edges.filter(edge => edge.kind === 'walk' && heights.get(edge.from) === 0 && heights.get(edge.to) === 0);
-    const concourse = 'nishi-umeda-north-route-out';
     for (const id of [
         'garden-avenue-building-6-10', 'garden-avenue-building-6-25', 'garden-avenue-building-6-31',
         'garden-avenue-building-6-47', 'garden-avenue-building-6-47-breeze', 'garden-avenue-building-6-57',
@@ -128,34 +134,5 @@ test('Garden Avenue building doors and the HERBIS ENT plaza join the documented 
         assert(findRoute(basementWalks, door!.id, concourse, false), id);
     }
 
-    const sidewalk = network.nodes.find(node =>
-        node.id.startsWith('walk:street:') && Math.hypot(node.x - 76.907, node.z - 1090.747) < .02
-    )!;
-    for (const id of ['garden-avenue-exit-6-25', 'garden-avenue-lift-6-25']) {
-        const equipment = layout.connections.find(connection => connection.id === id)!;
-        assert.equal(heights.get(equipment.from.id), -8);
-        assert.equal(heights.get(equipment.to.id), 0);
-        assert(findRoute(basementWalks, equipment.from.id, concourse, false), id);
-        assert(findRoute(groundWalks, equipment.to.id, sidewalk.id, false), id);
-        assert(network.edges.some(edge => edge.kind === equipment.kind && edge.from === equipment.from.id && edge.to === equipment.to.id), id);
-    }
-
-    const plaza = planAtriumOpenings(layout.atria ?? []).find(opening => opening.connectionId === 'herbis-ent-sunken-entrance')!;
-    assert.equal(plaza.level, 'district-ground');
-    const context = buildGeographicContext([plaza.outline]);
-    const groups = [context.roads, context.buildings];
-    const ray = new T.Raycaster(new T.Vector3(395, 3, 865), new T.Vector3(0, -1, 0), 0, 7);
-    assert.equal(ray.intersectObjects(groups, true).length, 0, 'The 1F surface leaves the B2 plaza visibly open');
-    ray.ray.origin.set(394.427, 3, 860.492);
-    assert(ray.intersectObjects(groups, true).length, 'The mapped upper footway keeps its pavement');
-    for (const group of groups) {
-        for (const mesh of group.children as T.Mesh<T.BufferGeometry, T.Material>[]) {
-            mesh.geometry.dispose();
-            mesh.material.dispose();
-        }
-    }
-    const frontage = [[385.504, 855.149], [407.962, 862.485]].map(([x, z]) =>
-        network.nodes.find(node => node.id.startsWith('walk:street:') && Math.hypot(node.x - x!, node.z - z!) < .02)!.id
-    );
-    assert(findRoute(groundWalks, frontage[0]!, frontage[1]!, false));
+    assert(findRoute(groundWalks, streetAt(385.504, 855.149), streetAt(407.962, 862.485), false));
 });

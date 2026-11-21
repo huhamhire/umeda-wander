@@ -1,19 +1,20 @@
 import type { Point2, RailApproach } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { platformTangent, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { sampleRailSegment, platformRail, railApproachFootprints } from '../../src/domain/map/rail-geometry.ts';
 import clipping from 'polygon-clipping';
-import { platformTangent } from '../../src/domain/map/geometry.ts';
 import { nishiAxis } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
 import { jrAxisPoint, jrGroundFrame } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
 import { jrRailCorridors } from '../../src/infrastructure/stations/jr-osaka/rail-corridors.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 
+const stations = createGeographicStations();
+
 test('the Hankyu 1F public passage passes below the JR eastern rail approaches', () => {
-    const [jr] = createGeographicStations();
+    const [jr] = stations;
     const polygon = (outline: Point2[]): clipping.Polygon => [outline.map(p => [p.x, p.z])];
     const underpass = hankyuConcourseAreas.filter(a => a.id.startsWith('hankyu-concourse-north-ground-'));
     for (const corridor of ['main', 'loop']) {
@@ -28,7 +29,7 @@ test('the Hankyu 1F public passage passes below the JR eastern rail approaches',
 test(
     'calibrated rail approaches restore smooth shared merges without sharp doglegs',
     () => {
-        for (const station of createGeographicStations()) {
+        for (const station of stations) {
             for (const approach of station.layout.railApproaches ?? []) {
                 const platform = station.layout.platforms.find(p => p.level === approach.level)!;
                 const axis = { x: Math.cos(platform.rotationRad), z: Math.sin(platform.rotationRad) };
@@ -74,7 +75,7 @@ test(
     () => {
         assert.equal(nishiAxis.negativeEnd.x, 415);
         assert.equal(nishiAxis.positiveEnd.x, 423);
-        const station = createGeographicStations().find(s => s.id === 'nishi-umeda')!;
+        const station = stations.find(s => s.id === 'nishi-umeda')!;
         const paid = station.layout.areas.find(a => a.kind === 'paid')!;
         assert.ok(paid.outline.reduce((s, p) => s + p.x / paid.outline.length, 0) < station.layout.platforms[0]!.x);
     }
@@ -82,7 +83,6 @@ test(
 test(
     'Umekita and Hankyu merge into shared running pairs rather than independent tails',
     () => {
-        const stations = createGeographicStations();
         for (const s of stations) {
             for (const a of s.layout.railApproaches ?? []) {
                 if (a.level !== 'underground-platform' && a.level !== 'hankyu-platform') {
@@ -109,7 +109,7 @@ test(
 test(
     'JR main bends north at both ends and east loop avoids Hankyu building envelopes',
     () => {
-        const jr = createGeographicStations()[0]!;
+        const jr = stations[0]!;
         const angle = jr.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
         for (const side of [-1, 1]) {
             const main = jr.layout.railApproaches!.find(a => a.id === `map-rail-jr-osaka-platform-main-${side}`)!;
@@ -169,7 +169,7 @@ function pointSegmentDistance(p: Point2, a: Point2, b: Point2): number {
 test(
     'JR loop remains on its side of the main corridor at both station ends',
     () => {
-        const jr = createGeographicStations()[0]!;
+        const jr = stations[0]!;
         for (const side of [-1, 1]) {
             const main = jr.layout.railApproaches!.find(a => a.id === `map-rail-jr-osaka-platform-main-${side}`)!;
             const loop = jr.layout.railApproaches!.find(a => a.id === `map-rail-jr-osaka-platform-loop-${side}`)!;
@@ -193,7 +193,7 @@ test(
 test(
     'west loop pair narrows and approaches the mainline bundle before continuing',
     () => {
-        const jr = createGeographicStations()[0]!;
+        const jr = stations[0]!;
         const angle = jr.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
         const across = (p: Point2) => -p.x * Math.sin(angle) + p.z * Math.cos(angle);
         const main = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-main--1')!;
@@ -230,7 +230,7 @@ test(
 );
 
 test('JR east runtime track beds stay clear of the actual Hankyu halls and landmark shells', () => {
-    const [jr, hankyu] = createGeographicStations();
+    const [jr, hankyu] = stations;
     const ring = (points: Point2[]): clipping.Ring => points.map(p => [p.x, p.z]);
     const obstacles = [
         ...hankyu!.layout.areas.map(a => ({ name: a.id, outline: a.outline })),
@@ -248,7 +248,7 @@ test('JR east runtime track beds stay clear of the actual Hankyu halls and landm
 });
 
 test('JR eastern apron retains six running roads with a gentle departure rather than a crosswise throat', () => {
-    const station = createGeographicStations()[0]!;
+    const station = stations[0]!;
     const eastern = station.layout.railApproaches!.filter(a => a.level === 'platform' && !a.id.endsWith('--1'));
     assert.equal(eastern.flatMap(a => a.nodes.filter(n => n.kind === 'end')).length, 6);
     const axis = station.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
@@ -266,7 +266,7 @@ test('JR eastern apron retains six running roads with a gentle departure rather 
 });
 
 test('the east loop outer road turns in before Hankyu department store (阪急うめだ本店)', () => {
-    const jr = createGeographicStations()[0]!;
+    const jr = stations[0]!;
     const loop = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-loop-1')!;
     const outer = loop.segments.find(s => s.track === 1)!;
     const inner = loop.segments.find(s => s.track === 2)!;

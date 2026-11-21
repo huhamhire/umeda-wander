@@ -32,16 +32,14 @@ test(
     }
 );
 test(
-    'every directory facility has a unique persistent number independent of filtering order',
+    'every directory facility has a valid unique number and established numbers stay fixed',
     () => {
         const codes = facilities.map(f => facilityCodes[f.id]);
         assert(codes.every(c => /^(JR|HK|M16|HS|T20|Y11|KS|PUB)-\d{3}$/.test(c!)));
         assert.equal(new Set(codes).size, facilities.length);
         assert.equal(facilityCodes['west-gate'], 'JR-001');
         assert.equal(facilityCodes['metro-umeda-north-gate'], 'M16-001');
-        for (const f of [...facilities].reverse()) {
-            assert.equal(facilityCodes[f.id], codes[facilities.findIndex(v => v.id === f.id)]);
-        }
+        assert.equal(facilityCodes['connection-district-jr-metro-stairs-from'], 'JR-183');
     }
 );
 test(

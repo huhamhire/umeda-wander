@@ -4,7 +4,9 @@ import clipping from 'polygon-clipping';
 import * as T from 'three';
 import context from '../../data/geography/display-context.json' with { type: 'json' };
 import plan from '../../data/geography/runtime-plan.json' with { type: 'json' };
-import { layout, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { grandFrontPlazaAccess, layout, levels, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
@@ -27,6 +29,20 @@ const area = (g: clipping.MultiPolygon) => g.reduce(
     0
 );
 const scope = context.scope as clipping.MultiPolygon;
+
+/** Release the complete terrain fixture after all opening samples have been checked. */
+function disposeGround(groups: T.Group[]): void {
+    for (const group of groups) {
+        group.traverse(object => {
+            if (object instanceof T.Mesh) {
+                object.geometry.dispose();
+                const materials = Array.isArray(object.material) ? object.material : [object.material];
+                materials.forEach(material => material.dispose());
+            }
+        });
+    }
+}
+
 test(
     'display pruning keeps underground, platforms and destination contexts under an opaque ground mask',
     () => {
@@ -70,7 +86,7 @@ test(
 );
 test(
     'trimmed ground and retained paving preserve real access openings',
-    () => {
+    t => {
         const center = { x: 400, z: 600 };
         const opening = [
             { x: center.x - 2, z: center.z - 2 },
@@ -79,6 +95,7 @@ test(
             { x: center.x - 2, z: center.z + 2 },
         ];
         const context = buildGeographicContext([opening]);
+        t.after(() => disposeGround(Object.values(context)));
         for (const child of context.buildings.children) {
             assert(child instanceof T.Mesh);
             child.geometry.computeBoundingBox();
@@ -91,12 +108,34 @@ test(
             0,
             'ground skin or road paving sealed the access hole'
         );
-        for (const group of Object.values(context)) {
-            group.traverse(object => {
-                if (object instanceof T.Mesh) {
-                    object.geometry.dispose();
-                }
-            });
-        }
     }
 );
+
+test('the assembled ground leaves the Grand Front and HERBIS plaza openings clear', t => {
+    const openings = [
+        ...planFloorOpenings(layout.connections, levels, layout.platforms),
+        ...planAtriumOpenings(layout.atria)
+    ].filter(opening => levels.find(level => level.id === opening.level)!.y === 0);
+    const context = buildGeographicContext(openings.map(opening => opening.outline));
+    const groups = Object.values(context);
+    t.after(() => disposeGround(groups));
+    groups.forEach(group => group.updateMatrixWorld(true));
+
+    for (const { id } of grandFrontPlazaAccess.connections) {
+        const opening = openings.find(o => o.connectionId === id && o.level === 'district-ground');
+        assert(opening, id + ' is missing its ground opening');
+        const p = opening.outline.reduce(
+            (p, q) => ({ x: p.x + q.x / opening.outline.length, z: p.z + q.z / opening.outline.length }),
+            { x: 0, z: 0 }
+        );
+        const ray = new T.Raycaster(new T.Vector3(p.x, 3, p.z), new T.Vector3(0, -1, 0), 0, 8);
+        assert.equal(ray.intersectObject(context.roads, true).length, 0, id + ' ground reseals the opening');
+    }
+
+    const plaza = openings.find(o => o.connectionId === 'herbis-ent-sunken-entrance');
+    assert.equal(plaza?.level, 'district-ground', 'HERBIS ENT is missing its ground opening');
+    const ray = new T.Raycaster(new T.Vector3(395, 3, 865), new T.Vector3(0, -1, 0), 0, 7);
+    assert.equal(ray.intersectObjects(groups, true).length, 0, 'The 1F surface reseals the HERBIS ENT plaza');
+    ray.ray.origin.set(394.427, 3, 860.492);
+    assert(ray.intersectObjects(groups, true).length, 'The HERBIS ENT upper footway loses its pavement');
+});
