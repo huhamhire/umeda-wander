@@ -25,6 +25,7 @@ import { createDiamorNorthAccess } from '../public-areas/south-diamor/diamor-nor
 import { createDiamorSouthAccess } from '../public-areas/south-diamor/diamor-south-access.ts';
 import { createDiamorEastAccess } from '../public-areas/south-diamor/diamor-east-access.ts';
 import { calibrateGardenAvenueOutline, createGardenAvenueAccess } from '../public-areas/south-diamor/garden-avenue-access.ts';
+import { createGardenAvenueBuildingAccess } from '../public-areas/south-diamor/garden-avenue-building-access.ts';
 import { createDoticaAccess } from '../public-areas/south-diamor/dotica-access.ts';
 import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
@@ -63,6 +64,7 @@ const diamorCentralAccess = createDiamorCentralAccess();
 const diamorSouthAccess = createDiamorSouthAccess();
 const diamorEastAccess = createDiamorEastAccess();
 const gardenAvenueAccess = createGardenAvenueAccess();
+const gardenAvenueBuildings = createGardenAvenueBuildingAccess();
 const doticaAccess = createDoticaAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
@@ -83,6 +85,7 @@ const streetConnections = [
     ...diamorSouthAccess.connections,
     ...diamorEastAccess.connections,
     ...gardenAvenueAccess.connections,
+    ...gardenAvenueBuildings.connections,
     ...doticaAccess.connections,
     ...hankyuConcourseConnections,
     ...whityAccess.flatMap(access => access.connections)
@@ -92,7 +95,7 @@ export const publicAccess = {
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
-        ...diamorEastAccess.areas, ...gardenAvenueAccess.areas, ...doticaAccess.areas,
+        ...diamorEastAccess.areas, ...gardenAvenueAccess.areas, ...gardenAvenueBuildings.areas, ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
     ],
 };
@@ -169,7 +172,7 @@ const composed = composeStationMaps(
         ],
         landmarks: izumiAccess.landmarks,
         concourses: hankyuConcourses,
-        atria: hankyuConcourseAtria,
+        atria: [...hankyuConcourseAtria, ...gardenAvenueBuildings.atria],
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
     }
 );
@@ -206,7 +209,7 @@ export const layout = {
 export const facilities = completeFacilityDirectory(
     [
         ...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities,
-        ...diamorEastAccess.facilities, ...gardenAvenueAccess.facilities, ...eastMallAccess.facilities
+        ...diamorEastAccess.facilities, ...gardenAvenueAccess.facilities, ...gardenAvenueBuildings.facilities, ...eastMallAccess.facilities
     ],
     layout.connections,
     layout.platforms,

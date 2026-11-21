@@ -137,6 +137,18 @@
 - **6-13、6-19**。西端 B1 主脊按 OSM 地下轴线及 6-13 支路交点局部校准，现有轮廓和孔洞同步调整，变形向两端渐隐。6-13 保留 B1 折线支路、转角平台和公园地面接驳。6-19 依据酒店步行指引确认街面楼梯，短下接段按导向图支路拟合。 [6-13 地下支路](https://www.openstreetmap.org/way/1323837456) · [公园指引](https://hanshin-enkachi.com/parkguide/) · [6-19 酒店步行指引](https://stg.www.2nd-inn.com/access/)
 - **6-40、6-48**。6-40 采用与 OSM 人行道共节点的一侧梯口，同号另一节点未计作独立出口。6-48 保留两段楼梯与转角平台，B1 短接段按北侧支路拟合。两处均有地面楼板开口。 [6-40 梯段](https://www.openstreetmap.org/way/623352512) · [6-48 下段](https://www.openstreetmap.org/way/623352514) · [6-48 上段](https://www.openstreetmap.org/way/1316049318)
 
+#### 楼宇接口与 HERBIS ENT 下沉广场
+
+| 编号 | 现役模型 |
+| --- | --- |
+| 6-10 | 每日新闻大楼 B1 门口接西端北侧支路。大厅导览图标出 6-10 和楼内上行设备，入口位置按支路拟合。 [大厅 B1 图](https://www.hearton.co.jp/wp-content/uploads/2017/01/hall_mai_2.pdf#page=2) |
+| 6-25 | 街面楼梯与旁边直梯均到 HERBIS HALL B2，B2 门前回接 Garden Avenue。设备位置沿 OSM 梯线及电梯点，门向和短接段拟合。 [HERBIS HALL 官方指引](https://hankyuhanshin-hall.com/herbis-hall/access/) · [直梯节点](https://www.openstreetmap.org/node/5887069625) |
+| 6-31 | Garden Avenue 接 HERBIS PLAZA B2 西侧入口。 [场馆接驳图](https://bhj.biock.jp/common/files/bio2025_access.pdf) |
+| 6-47 | 同一编号对应两条去向，分别接 HERBIS PLAZA B2 东侧入口和 BREEZÉ BREEZÉ B1。 [HERBIS 会议设施指引](https://www.hhbm.hankyu-hanshin.co.jp/meeting/herbis/download/pdf/access_map.pdf) · [BREEZÉ 地下接入图](https://www.breeze-breeze.jp/info/map_underground) |
+| 6-57 | Garden Avenue 接 HERBIS PLAZA ENT B2 西侧门户，邻近 Billboard Live。 [HERBIS 地下通道图](https://www.hhbm.hankyu-hanshin.co.jp/meeting/herbis/download/pdf/access_passage.pdf) · [楼层图](https://umeda-sc.jp/wp2/wp-content/themes/hhp_umeda/assets/pdf/malls/herbis/floor-guide_202312.pdf) |
+
+HERBIS 楼层图将 B2 门口画在 Garden Avenue 通路上，模型在接口处沿用公共 B1 的物理标高，并保留楼方的 B2 名称。东端靠 Hilton Plaza West 的地下入口广场用真实地面裁口露出下层，开口取在已绘人行线南侧，人行线继续连通。广场尺寸和开口范围为示意拟合。6-57 对应 ENT 西侧另一处门口。 [HERBIS 楼层图第 1、2 页](https://umeda-sc.jp/wp2/wp-content/themes/hhp_umeda/assets/pdf/malls/herbis/floor-guide_202312.pdf) · [竹中工务店广场说明](https://www.takenaka.co.jp/design/takenaka_design_works/068/book/pageindices/index5.html)
+
 ### 堂岛地下中心（ドーチカ）
 
 - **C-60 北、C-60 南** 在西梅田南侧接入。运营方平面图显示两处街梯在东侧共用一段 B1 上行梯，随后分向北、南。本轮按两个 OSM 梯口和梯亭轮廓固定街面位置，补齐共享平台、两处 1F 开口及顶棚。 [运营方平面图，PDF 第 47 页](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [北梯亭](https://www.openstreetmap.org/way/619294244) · [南梯亭](https://www.openstreetmap.org/way/619294243)

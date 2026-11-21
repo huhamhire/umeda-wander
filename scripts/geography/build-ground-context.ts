@@ -10,6 +10,7 @@ import { basementOccupancies } from '../../src/infrastructure/public-areas/basem
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 import { calibrateGardenAvenueOutline, createGardenAvenueAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-access.ts';
+import { createGardenAvenueBuildingAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-building-access.ts';
 import { platformOutline, passageOutline } from '../../src/domain/map/geometry.ts';
 import type { Point2 } from '../../src/domain/map/model.ts';
 import { contextEnvelope, ring, unionContextPieces } from './context-scope.ts';
@@ -25,6 +26,7 @@ const protectedOutlines = [
     ...inogateHosts.map(host => host.region.outline),
     ...hankyuConcourseAreas.map(area => area.outline),
     ...createGardenAvenueAccess().areas.map(area => area.outline),
+    ...createGardenAvenueBuildingAccess().areas.map(area => area.outline),
     ...decks.blocks.flatMap(b => b.regions.map(r => r.outline)),
     ...decks.blocks.flatMap(b => b.paths.flatMap(p => p.points.slice(1).map((to, i) => passageOutline(p.points[i]!, to, p.width)))),
 ];

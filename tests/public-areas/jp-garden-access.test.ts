@@ -7,6 +7,9 @@ import { createWalkingNetwork } from '../../src/infrastructure/district/walking-
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import clipping from 'polygon-clipping';
+import * as T from 'three';
+import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
+import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 
 test(
     'JP garden reaches the Garden Avenue public network and shares one lift stop at street level',
@@ -105,4 +108,54 @@ test('Garden Avenue exits reach the street and the B1 public corridor from both 
     assert(layout.canopies?.some(c => c.id === 'garden-avenue-exit-6-1-canopy'));
     assert(undergroundPublicAreas.some(area => pointInPolygon({ x: 24.96, z: 1112.73 }, area.outline)),
         'The calibrated B1 main corridor contains the mapped 6-13 branch junction');
+});
+
+test('Garden Avenue building doors and the HERBIS ENT plaza join the documented public approaches', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const elevations = new Map(levels.map(level => [level.id, level.y]));
+    const heights = new Map(network.nodes.map(node => [node.id, elevations.get(node.level)! + (node.elevationOffset ?? 0)]));
+    const basementWalks = network.edges.filter(edge => edge.kind === 'walk' && heights.get(edge.from) === -8 && heights.get(edge.to) === -8);
+    const groundWalks = network.edges.filter(edge => edge.kind === 'walk' && heights.get(edge.from) === 0 && heights.get(edge.to) === 0);
+    const concourse = 'nishi-umeda-north-route-out';
+    for (const id of [
+        'garden-avenue-building-6-10', 'garden-avenue-building-6-25', 'garden-avenue-building-6-31',
+        'garden-avenue-building-6-47', 'garden-avenue-building-6-47-breeze', 'garden-avenue-building-6-57',
+        'herbis-ent-sunken-entrance'
+    ]) {
+        const [door] = approaches.get(id) ?? [];
+        assert.equal(door?.distance, 0, id);
+        assert(findRoute(basementWalks, door!.id, concourse, false), id);
+    }
+
+    const sidewalk = network.nodes.find(node =>
+        node.id.startsWith('walk:street:') && Math.hypot(node.x - 76.907, node.z - 1090.747) < .02
+    )!;
+    for (const id of ['garden-avenue-exit-6-25', 'garden-avenue-lift-6-25']) {
+        const equipment = layout.connections.find(connection => connection.id === id)!;
+        assert.equal(heights.get(equipment.from.id), -8);
+        assert.equal(heights.get(equipment.to.id), 0);
+        assert(findRoute(basementWalks, equipment.from.id, concourse, false), id);
+        assert(findRoute(groundWalks, equipment.to.id, sidewalk.id, false), id);
+        assert(network.edges.some(edge => edge.kind === equipment.kind && edge.from === equipment.from.id && edge.to === equipment.to.id), id);
+    }
+
+    const plaza = planAtriumOpenings(layout.atria ?? []).find(opening => opening.connectionId === 'herbis-ent-sunken-entrance')!;
+    assert.equal(plaza.level, 'district-ground');
+    const context = buildGeographicContext([plaza.outline]);
+    const groups = [context.roads, context.buildings];
+    const ray = new T.Raycaster(new T.Vector3(395, 3, 865), new T.Vector3(0, -1, 0), 0, 7);
+    assert.equal(ray.intersectObjects(groups, true).length, 0, 'The 1F surface leaves the B2 plaza visibly open');
+    ray.ray.origin.set(394.427, 3, 860.492);
+    assert(ray.intersectObjects(groups, true).length, 'The mapped upper footway keeps its pavement');
+    for (const group of groups) {
+        for (const mesh of group.children as T.Mesh<T.BufferGeometry, T.Material>[]) {
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        }
+    }
+    const frontage = [[385.504, 855.149], [407.962, 862.485]].map(([x, z]) =>
+        network.nodes.find(node => node.id.startsWith('walk:street:') && Math.hypot(node.x - x!, node.z - z!) < .02)!.id
+    );
+    assert(findRoute(groundWalks, frontage[0]!, frontage[1]!, false));
 });
