@@ -374,26 +374,29 @@ export class MapScene {
         this.renderer.domElement.remove();
     }
     /**
-     * Receive exploration state and request a redraw; immediate expansion cancels camera motion that would lag the slider.
+     * Receive exploration state while retaining the displayed camera when navigation changes the visible floors.
      */
     update(state: MapViewState, options: {
         immediateExplode?: boolean;
+        preserveFraming?: boolean;
     } = {}): void {
         const floorChanged = this.state.level !== state.level;
         const stationChanged = this.state.focusStation !== state.focusStation;
         this.modelsDirty ||= floorChanged || stationChanged ||
             this.state.roof !== state.roof || this.state.route !== state.route;
-        if (floorChanged) {
+        if (floorChanged || options.preserveFraming) {
             this.locatingFacility = false;
         }
         if (stationChanged) {
-            this.manualView = undefined;
-            this.focusTransition = true;
             this.fitEnvelope = undefined;
-        } else if (floorChanged && this.framing) {
+        }
+        if ((options.preserveFraming || (floorChanged && !stationChanged)) && this.framing) {
             // Keep the frame actually on screen, including an interrupted facility transition.
             this.freezeFraming(this.framing);
             this.focusTransition = false;
+        } else if (stationChanged) {
+            this.manualView = undefined;
+            this.focusTransition = true;
         }
         if (options.immediateExplode) {
             this.focusTransition = false;

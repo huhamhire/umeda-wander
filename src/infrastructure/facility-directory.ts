@@ -70,6 +70,10 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id === 'diamor-lift-ev-4') {
             return messageText('facilities.locations.diamorLift', { number: 'EV-4' });
         }
+        const gardenAvenueExit = /^garden-avenue-(?:exit|lift)-(6-\d+)(?:-(?:escalator|lower))?$/.exec(id)?.[1];
+        if (gardenAvenueExit) {
+            return messageText('facilities.locations.gardenAvenueExit', { number: gardenAvenueExit });
+        }
         const doticaExit = /^dotica-exit-(c-\d+)(?:-(north|south|lower|escalator))?$/.exec(id);
         if (doticaExit) {
             const number = doticaExit[1]!.toUpperCase();

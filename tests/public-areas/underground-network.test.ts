@@ -14,6 +14,7 @@ import { basements, edges, facilities, geographicPlan, layout, levels, nodes, pu
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
+import { calibrateGardenAvenueOutline } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-access.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
@@ -45,7 +46,7 @@ test(
         }));
         const shared = assembleSharedUnderground(
             createGeographicStations(),
-            geographicPlan.underground as clipping.MultiPolygon,
+            calibrateGardenAvenueOutline(geographicPlan.underground as clipping.MultiPolygon),
             [
                 ...publicFrontages,
                 ...patches,
@@ -131,8 +132,7 @@ test(
             }
         }
         assert.deepEqual(basements.contacts.filter(c => c.status === 'needs-review').map(c => c.buildingId), []);
-        // JP's source-confirmed sunken garden now contacts its host. This alone does
-        // not assert attachment to Garden Avenue or a usable underground entrance.
+        // The basement contact check only describes the host footprint. Public routes are verified separately.
         assert.equal(basements.contacts.find(c => c.buildingId === 'jp-tower')!.status, 'geometric-contact');
     }
 );

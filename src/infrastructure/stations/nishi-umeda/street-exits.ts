@@ -27,6 +27,7 @@ export function calibrateNishiStreetExits(station: StationMap): void {
             footprint: '1316299648',
             top: project(135.4959961, 34.7011259),
             foot: { x: 447.5, z: 771.6 },
+            publicApproach: { x: 436.6, z: 788.2 },
             width: 2.7,
             detail: 'C12 entrance on the north public passage towards Osaka Station (大阪駅).'
         },
@@ -49,6 +50,7 @@ export function calibrateNishiStreetExits(station: StationMap): void {
             footprint: '992368846',
             top: project(135.4954599, 34.7009293),
             foot: { x: 419, z: 785.2 },
+            publicApproach: { x: 430, z: 784.2 },
             width: 3,
             detail: 'C7 entrance on the north public passage towards Osaka Station (大阪駅).'
         },
@@ -86,11 +88,12 @@ export function calibrateNishiStreetExits(station: StationMap): void {
         const facility = facilities.find(f => f.id === prefix);
         const evidence: Evidence = {
             source: 'yotsubashi',
-            pages: exit.footprint ? [] : [1],
+            pages: [1],
             urls: [
                 ...(exit.footprint
                     ? [
                         'https://subway.osakametro.co.jp/cn/station_guide/Y/Y11/map.php',
+                        'https://subway.osakametro.co.jp/station_guide/station/Y11_%E8%A5%BF%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf',
                         'https://ekitan.com/sta-info/station/5737/exit',
                         'https://www.openstreetmap.org/way/' + exit.footprint
                     ]
@@ -98,7 +101,8 @@ export function calibrateNishiStreetExits(station: StationMap): void {
                 'https://www.openstreetmap.org/node/' + exit.node,
                 ...(exit.roof ? ['https://www.openstreetmap.org/way/' + exit.roof.way] : [])
             ],
-            detail: exit.detail + ' The upper mouth follows OSM; the lower landing, stair axis, width and intermediate landing are fitted.'
+            detail: exit.detail + ' The upper mouth follows OSM; the lower landing, stair axis, width and intermediate landing are fitted.' +
+                (exit.publicApproach ? ' The station guide shows the foot of the stair opening onto the JR Osaka B1 public passage. Its local approach is fitted.' : '')
         };
         let connection = layout.connections.find(c => c.id === prefix + '-stairs');
         if (!connection) {
@@ -128,12 +132,13 @@ export function calibrateNishiStreetExits(station: StationMap): void {
             [connection.from, connection.to, 'arm'],
             [connection.to, connection.from, 'ground']
         ] as const) {
+            const approach = suffix === 'arm' ? exit.publicApproach : undefined;
             layout.areas.push({
                 id: prefix + '-' + suffix,
                 level: stop.level,
                 kind: 'public',
                 name,
-                outline: passageOutline(extend(stop, opposite, -.55), extend(stop, opposite, 3.9), exit.width + 1.4),
+                outline: passageOutline(extend(stop, opposite, -.55), approach ?? extend(stop, opposite, 3.9), exit.width + 1.4),
                 label: false,
                 evidence
             });

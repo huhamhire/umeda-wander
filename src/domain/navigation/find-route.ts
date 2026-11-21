@@ -3,7 +3,7 @@ import type { RouteEdge } from '../map/model.ts';
 type Step = { id: string; gates: number; streetDistance: number; travelCost: number };
 
 /** Extra walking-equivalent cost per modeled edge, used only after the gate and street priorities. */
-const verticalPenalty: Partial<Record<RouteEdge['kind'], number>> = { elevator: 15, stairs: 30 };
+const verticalPenalty: Partial<Record<RouteEdge['kind'], number>> = { elevator: 30, stairs: 45 };
 
 /** Prefer fewer gate crossings, less street walking and then lower travel cost. */
 function compareSteps(a: Step, b: Step): number {

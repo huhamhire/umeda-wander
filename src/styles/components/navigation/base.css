@@ -782,7 +782,7 @@
   color: var(--color-paper);
 }
 
-.walking-field .walking-point-clear {
+.walking-field button.walking-point-clear {
   position: absolute;
   inset: 0 1px 0 auto;
   width: 28px;

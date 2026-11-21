@@ -127,6 +127,16 @@
 - **10-21／E-26** 的楼梯线共用地下上行段，随后分成两个街面出口。E-26 上行支路保留第二个转向平台。 **EV-4** 采用室外直梯的 1F 和地下停靠位置，地下门前平台接东西向公共通道，街面按带顶步道接入人行网。 [共享梯线](https://www.openstreetmap.org/way/619294213) · [E-26 支路](https://www.openstreetmap.org/way/619294216) · [EV-4 井道](https://www.openstreetmap.org/node/5853250928) · [EV-4 街面接驳](https://www.openstreetmap.org/way/619294219)
 - 大阪市图将站前第 3、4 大楼之间的 B1、B2 分别标为独立连通层，当前模型只接入运营方图所示的 DIAMOR 公共层。EV-1 的 OSM 停靠层级与当前公共面之间缺少可对位的地下门前路径。 [大阪市地下连接图](https://www.city.osaka.lg.jp/toshiseibi/cmsfiles/contents/0000585/585427/6_siryou.pdf) · [EV-1 停靠层级](https://www.openstreetmap.org/node/5853250929)
 
+### Garden Avenue 西段
+
+大阪市图确认 Garden Avenue 公共通廊从西梅田北侧经 HERBIS 延伸至西梅田公园。首批补齐 **6-71 楼梯、6-71 直梯、6-77 楼梯**。OSM 共用节点定位街面梯口、井道和地下支路。6-71 两处设备共用一段 B1 公共支路，6-77 沿独立支路接入现有通廊。三处均有 1F 开口及两端步行接驳，梯宽、平台高差与直梯门向采用展示拟合。 [大阪市导向编号图](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000545/545556/12-4bessi2-2.pdf) · [6-71 地下支路](https://www.openstreetmap.org/way/1322885759) · [6-77 地下支路](https://www.openstreetmap.org/way/1322885761)
+
+- **6-58，KITTE 西侧**。街面入口编号见商户指引。楼梯沿 OSM 两端锚点布置，B1 保留两段支路的转折后接入 Garden Avenue，1F 接楼外人行道。梯宽和中间平台采用拟合。 [商户指引](https://www.global-style.jp/archives/562222) · [地下支路](https://www.openstreetmap.org/way/1473638614) · [楼梯](https://www.openstreetmap.org/way/1473638615)
+- **6-1，西梅田公园侧西端**。大阪市图标出西端出入口和独立电梯，公开照片显示有盖楼梯及并排上行扶梯。模型用现役 B1 西端和 OSM 公园侧人行道拟合设备坐标、接段和顶棚，保留各设备的 1F 开口。楼梯与电梯双向接入，扶梯只登记上行。 [大阪市无障碍详图](https://www.city.osaka.lg.jp/toshikeikaku/cmsfiles/contents/0000369/369380/umeda01-4-2%28202109%29.pdf) · [设备及街面照片](https://yuruku-walk.hatenablog.jp/entry/240810) · [公园侧人行道](https://www.openstreetmap.org/way/623352523)
+- **6-20、6-36、6-46**。街面锚点沿 OSM 人行道共用节点定位。踏步方向采用 OSM 楼梯走线，依据大阪市 B1 导向图拟合下端回接和中间平台。 [6-20 梯段](https://www.openstreetmap.org/way/623352521) · [6-36 梯段](https://www.openstreetmap.org/way/639381333) · [6-46 梯段](https://www.openstreetmap.org/way/623352516)
+- **6-13、6-19**。西端 B1 主脊按 OSM 地下轴线及 6-13 支路交点局部校准，现有轮廓和孔洞同步调整，变形向两端渐隐。6-13 保留 B1 折线支路、转角平台和公园地面接驳。6-19 依据酒店步行指引确认街面楼梯，短下接段按导向图支路拟合。 [6-13 地下支路](https://www.openstreetmap.org/way/1323837456) · [公园指引](https://hanshin-enkachi.com/parkguide/) · [6-19 酒店步行指引](https://stg.www.2nd-inn.com/access/)
+- **6-40、6-48**。6-40 采用与 OSM 人行道共节点的一侧梯口，同号另一节点未计作独立出口。6-48 保留两段楼梯与转角平台，B1 短接段按北侧支路拟合。两处均有地面楼板开口。 [6-40 梯段](https://www.openstreetmap.org/way/623352512) · [6-48 下段](https://www.openstreetmap.org/way/623352514) · [6-48 上段](https://www.openstreetmap.org/way/1316049318)
+
 ### 堂岛地下中心（ドーチカ）
 
 - **C-60 北、C-60 南** 在西梅田南侧接入。运营方平面图显示两处街梯在东侧共用一段 B1 上行梯，随后分向北、南。本轮按两个 OSM 梯口和梯亭轮廓固定街面位置，补齐共享平台、两处 1F 开口及顶棚。 [运营方平面图，PDF 第 47 页](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [北梯亭](https://www.openstreetmap.org/way/619294244) · [南梯亭](https://www.openstreetmap.org/way/619294243)
@@ -152,7 +162,7 @@
 | JR 北中庭 | JR 构内图第 5、6 页标出 75／76 扶梯和 B 直梯。B 直梯的上部停靠见[二层连廊](./elevated.md)。 |
 | JR—M16 | 3A、8 号宽梯、9 号扶梯、18 号楼梯及御堂筋南口电梯下段由 `metro-interchange/street-exits.ts` 维护。18 号和电梯保留独立 B1 落台。[地面出入口](../stations/metro-umeda.md#jr-一侧地面出入口) |
 | 梅北闸外 | JR 构内图第 8 页标出未编号的地面扶梯、楼梯和直梯，位于 AD／AE 与西口闸内连接通道之外。 |
-| JP 下沉广场 | [日本邮便连桥说明](../../../references/commercial/jp-tower/deck-and-sunken-garden.pdf)第 2 页标出 B1–1F 阶梯及 B1–2F 电梯。`south-diamor/jp-access.ts` 维护独立广场，电梯下段与 `public-jp-deck-lift` 共轴。 |
+| JP 下沉广场 | [日本邮便连桥说明](../../../references/commercial/jp-tower/deck-and-sunken-garden.pdf)第 2 页标出 B1–1F 阶梯及 B1–2F 电梯。`south-diamor/jp-access.ts` 维护广场、Garden Avenue 接驳及 1F 街面接入，直梯的 B1 和 2F 段共用一个 1F 停靠点。[JP 楼层连接](../buildings/jp-tower.md) |
 | Grand Front 南侧广场 | [梅北广场 1F 图](../../../references/commercial/grand-front/umekita-plaza-1f.jpg)及 [B1 图](../../../references/commercial/grand-front/umekita-plaza-b1.jpg)用于核对两处扶梯和一组宽楼梯。由 `north-atrium/grand-front-plaza-access.ts` 维护。 |
 
 设备米制位置、尺寸及展示高差为拟合。地下门位、主网接驳和局部高差的待核对项统一见 [Roadmap](../../roadmap.md)。
@@ -163,7 +173,7 @@
 
 E-ma、Hilton West 使用地区图第 1 页的绿色面，绘图对象分别为 405、436；MARU 使用对象 243 的闭合弧形外边界。`basement-source.json` 记录源文件哈希、页码、绘图序号及采样结果，`basement-outlines.json` 与公共面共用道路投影。第一酒店附近的对象 63 同时描绘道路、建筑细部和站前第 1 大楼，复合线不足以定义酒店边界。
 
-E-ma、Hilton West 和 MARU 与公共面有几何接触。JP 下沉广场与 JP 宿主接触，仍独立于地下主网。`basementGaps` 使用包含孔洞的内外边界计算最短距离，供查看图面间距；入口认定需要另有资料。
+E-ma、Hilton West 和 MARU 与公共面有几何接触。JP 下沉广场按运营资料接入 Garden Avenue。`basementGaps` 使用包含孔洞的内外边界计算最短距离，供查看图面间距；入口认定需要另有资料。
 
 ## 重建与复核
 

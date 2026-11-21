@@ -936,6 +936,7 @@ export const connections: VerticalConnection[] = [
         kind: 'escalator',
         from: landing(`bridge-${index}`, 'bridge', 6, platform.z),
         to: landing(`platform-${index}`, 'platform', 17, platform.z),
+        travelDirection: platform.id === 'p1-2' ? 'from-to' : undefined,
         evidence: source(
             [2, 3],
             `Selected eastern 3F–2F escalator: diagram ${[
@@ -948,6 +949,13 @@ export const connections: VerticalConnection[] = [
             ][index]}`
         ),
     })),
+    {
+        id: 'bridge-lift-h',
+        kind: 'elevator',
+        from: landing('bridge-lift-h-2', 'platform', 4.1, 30),
+        to: landing('bridge-lift-h-3', 'bridge', 4.1, 30),
+        evidence: source([2, 3], 'Lift H connects the paid Bridge Gate concourse to the Osaka Loop Line platform for tracks 1 and 2; the shaft position is fitted.')
+    },
     ...platforms.filter(platform => platform.level === 'platform').map((platform, index): VerticalConnection => ({
         id: `west-${platform.id}`,
         kind: 'escalator',
@@ -1488,8 +1496,7 @@ for (const edge of edges.filter(e => ['public-b1-entry', 'public-b1-turn', 'publ
     const b = nodes.find(n => n.id === edge.to)!;
     edge.cost = Math.hypot(b.x - a.x, b.z - a.z);
 }
-// Additional banks read from the floor plans. Directions are geometric only;
-// operational up/down direction is not inferred or inserted into the route graph.
+// Additional banks read from the floor plans. Only set routing directions where supported separately.
 /**
  * Register an escalator with its two landings and reference pages.
  */
@@ -1544,6 +1551,9 @@ for (const [i, platformId] of [
         [2, 3],
         `Western Bridge Gate bank, diagram ${5 + i * 2}`
     );
+    if (platformId === 'p1-2') {
+        connections.at(-1)!.travelDirection = 'to-from';
+    }
 }
 areas.push({
     id: 'north-2f-public',

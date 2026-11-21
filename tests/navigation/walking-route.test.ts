@@ -94,6 +94,48 @@ test('Bridge Gate ticket machines reach the Nishi-Umeda platform through a singl
     assert(toStreetExit?.filter(id => streetNodes.has(id)).length);
 });
 
+test('the Loop Line platform route uses the Bridge Gate escalators and does not overshoot the platform destination', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const graphNodes = new Map(network.nodes.map(node => [node.id, node]));
+    const machines = 'machines-bridge';
+    const platform = 'platform-p1-2';
+    const down = layout.connections.find(c => c.id === 'bridge-p1-2')!;
+    const up = layout.connections.find(c => c.id === 'bridge-west-13')!;
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'platform');
+    for (const [from, to, departure, arrival] of [
+        [machines, platform, down.from.id, down.to.id],
+        [platform, machines, up.to.id, up.from.id]
+    ] as const) {
+        const route = planWalkingRoute(network.edges, [from, to], true, approaches, network.shapeLeg).route;
+        assert(route);
+        assert.equal(route[route.indexOf(departure) + 1], arrival);
+        const gates = network.edges.filter(e => e.kind === 'gate' && route.includes(e.from) && route.includes(e.to));
+        assert.deepEqual(gates.map(e => e.from), ['walk:gate:out:jr-osaka:bridge']);
+        assert(network.edges.some(e => e.from === departure && e.to === arrival && e.directed && e.kind === 'escalator'));
+        assert(!network.edges.some(e => e.from === arrival && e.to === departure && e.kind === 'escalator'));
+        assert(!route.some(id => id.startsWith('walk:street:') || id.startsWith('bridge-lift-h-')));
+        assert.equal(planWalkingRoute(network.edges, [from, to], false, approaches).issue, 'gateRequired');
+        const points = route.map(id => graphNodes.get(id)!).filter(node => node.level === 'platform');
+        const first = points[0]!;
+        const last = points.at(-1)!;
+        assert(points.length <= 4);
+        for (let i = 1; i < points.length; i++) {
+            const previous = points[i - 1]!;
+            const current = points[i]!;
+            assert((current.x - previous.x) * (last.x - first.x) + (current.z - previous.z) * (last.z - first.z) > 0);
+            for (let j = 1; j < 10; j++) {
+                const t = j / 10;
+                const point = { x: previous.x + (current.x - previous.x) * t, z: previous.z + (current.z - previous.z) * t };
+                assert(!openings.some(opening => pointInPolygon(point, opening.outline)));
+            }
+        }
+    }
+    const withoutEscalators = network.edges.filter(e => e.kind !== 'escalator');
+    const fallback = planWalkingRoute(withoutEscalators, [machines, platform], true, approaches, network.shapeLeg).route;
+    assert(fallback?.includes('bridge-lift-h-3') && fallback.includes('bridge-lift-h-2'));
+});
+
 test('Hankyu south concourse stairs join the B1 public route in both directions', () => {
     const network = createWalkingNetwork();
     const ground = 'hankyu-concourse-south-stairs-ground';

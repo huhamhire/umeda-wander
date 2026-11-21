@@ -200,8 +200,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
         const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid, walkingApproaches);
         if (result.route) {
             clearFacilitySelection();
-            scene?.reset();
-            sync();
+            sync({ preserveFraming: true });
             return { message: walkingApproachMessage(result.approximations) };
         }
         sync();
@@ -231,7 +230,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
             session.state.roof = false;
             session.state.explode = oneFloor ? 0 : Math.max(.6, session.state.explode);
             clearFacilitySelection();
-            sync();
+            sync({ preserveFraming: true });
         }
         scene?.setWalkingPickTargets(places, onPick);
     }
@@ -412,8 +411,8 @@ function refreshFacilities(dismissExcludedSelection = false): void {
 /**
  * Synchronize exploration state with the scene, floor buttons, operator palette and expansion controls.
  */
-function sync(): void {
-    scene?.update(session.state);
+function sync(options?: Parameters<MapScene['update']>[1]): void {
+    scene?.update(session.state, options);
     if (scene) {
         queueMapUrl();
     }

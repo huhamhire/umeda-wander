@@ -24,6 +24,7 @@ import { createDiamorCentralAccess } from '../public-areas/south-diamor/diamor-c
 import { createDiamorNorthAccess } from '../public-areas/south-diamor/diamor-north-access.ts';
 import { createDiamorSouthAccess } from '../public-areas/south-diamor/diamor-south-access.ts';
 import { createDiamorEastAccess } from '../public-areas/south-diamor/diamor-east-access.ts';
+import { calibrateGardenAvenueOutline, createGardenAvenueAccess } from '../public-areas/south-diamor/garden-avenue-access.ts';
 import { createDoticaAccess } from '../public-areas/south-diamor/dotica-access.ts';
 import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
@@ -51,13 +52,17 @@ export const publicFrontages = stationFrontages(stationMaps);
 const northAccess = createNorthPublicAccess(publicInterfaces);
 const metroAccess = createMetroStreetExits();
 export const deckAccess = createDeckAccess(northAccess.northLift);
-export const jpAccess = createJpBasementAccess(deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!);
+export const jpAccess = createJpBasementAccess(
+    deckAccess.connections.find(c => c.id === 'public-jp-deck-lift')!,
+    deckAccess.connections.find(c => c.id === 'public-jp-deck-stairs')!
+);
 export const grandFrontPlazaAccess = createGrandFrontPlazaAccess();
 const sonechikaAccess = createSonechikaAccess();
 const diamorNorthAccess = createDiamorNorthAccess();
 const diamorCentralAccess = createDiamorCentralAccess();
 const diamorSouthAccess = createDiamorSouthAccess();
 const diamorEastAccess = createDiamorEastAccess();
+const gardenAvenueAccess = createGardenAvenueAccess();
 const doticaAccess = createDoticaAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
@@ -77,6 +82,7 @@ const streetConnections = [
     ...diamorCentralAccess.connections,
     ...diamorSouthAccess.connections,
     ...diamorEastAccess.connections,
+    ...gardenAvenueAccess.connections,
     ...doticaAccess.connections,
     ...hankyuConcourseConnections,
     ...whityAccess.flatMap(access => access.connections)
@@ -86,7 +92,7 @@ export const publicAccess = {
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
-        ...diamorEastAccess.areas, ...doticaAccess.areas,
+        ...diamorEastAccess.areas, ...gardenAvenueAccess.areas, ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
     ],
 };
@@ -102,7 +108,7 @@ const patchFloors = undergroundPatches.map(p => ({
 }));
 const shared = assembleSharedUnderground(
     stationMaps,
-    plan.underground as MultiPolygon,
+    calibrateGardenAvenueOutline(plan.underground as MultiPolygon),
     [
         ...publicFrontages,
         ...patchFloors,
@@ -127,6 +133,7 @@ export const elevatedAreas = assemblePublicDecks(elevated.blocks, shared.station
 export const exteriorOpenings = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
     ...elevated.buildingOpenings,
+    ...jpAccess.buildingOpenings,
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorth2Access.connections, whityNorth2Access.buildingEquipment, assemblyLevels),
@@ -156,6 +163,7 @@ const composed = composeStationMaps(
             ...diamorCentralAccess.canopies,
             ...diamorSouthAccess.canopies,
             ...diamorEastAccess.canopies,
+            ...gardenAvenueAccess.canopies,
             ...doticaAccess.canopies,
             ...whityAccess.flatMap(access => access.canopies)
         ],
@@ -198,7 +206,7 @@ export const layout = {
 export const facilities = completeFacilityDirectory(
     [
         ...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities,
-        ...diamorEastAccess.facilities, ...eastMallAccess.facilities
+        ...diamorEastAccess.facilities, ...gardenAvenueAccess.facilities, ...eastMallAccess.facilities
     ],
     layout.connections,
     layout.platforms,

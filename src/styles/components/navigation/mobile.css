@@ -209,7 +209,7 @@
   font-size: 16px;
 }
 
-.walking-field .walking-point-clear {
+.walking-field button.walking-point-clear {
   width: 44px;
   min-height: 0;
 }

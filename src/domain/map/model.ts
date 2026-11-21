@@ -124,6 +124,8 @@ export interface VerticalConnection {
     from: RouteNode;
     to: RouteNode;
     evidence: Evidence;
+    /** Schematic escalator travel direction relative to the modeled endpoints. */
+    travelDirection?: 'from-to' | 'to-from';
     platformId?: string;
     width?: number;
     lanes?: 1 | 2 | 6;

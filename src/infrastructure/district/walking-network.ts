@@ -12,6 +12,30 @@ import { walkingPlaces } from './walking-places.ts';
 
 type Triangle = { id: string; outline: Point2[]; region: PlanRegion };
 type Face = { level: LevelId; offset: number; polygons: Polygon[]; triangles: Triangle[]; restricted: Polygon[] };
+type VisibilityWalk = { face: Face; id: string; anchors: RouteNode[] };
+
+/** Place visibility anchors just inside the boundary, including beside openings in narrow platforms. */
+function walkableCorners(region: PlanRegion): Point2[] {
+    return [region.outline, ...region.holes ?? []].flatMap(ring => ring.flatMap((point, index) => {
+        const previous = ring.at(index - 1)!;
+        const next = ring[(index + 1) % ring.length]!;
+        const turn = (point.x - previous.x) * (next.z - point.z) - (point.z - previous.z) * (next.x - point.x);
+        if (turn >= -1e-8) {
+            return [];
+        }
+        const before = Math.hypot(point.x - previous.x, point.z - previous.z);
+        const after = Math.hypot(next.x - point.x, next.z - point.z);
+        if (before < 1e-8 || after < 1e-8) {
+            return [];
+        }
+        // The clipping rings keep walkable space on their left, including around holes.
+        const anchor = {
+            x: point.x - .04 * ((point.z - previous.z) / before + (next.z - point.z) / after),
+            z: point.z + .04 * ((point.x - previous.x) / before + (next.x - point.x) / after)
+        };
+        return pointInPolygon(anchor, region.outline) && !region.holes?.some(hole => pointInPolygon(anchor, hole)) ? [anchor] : [];
+    }));
+}
 
 /** Convert a modeled floor face to the polygon clipping representation. */
 function polygon(outline: Point2[], holes: Point2[][] = []): Polygon {
@@ -39,8 +63,24 @@ export function createWalkingNetwork() {
     const plane = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean) =>
         paid ? 'paid:' + node.level + ':' + (node.elevationOffset ?? 0) : 'public:' + elevation(node);
     const faces = new Map<string, Face>();
+    const visibilityWalks = new Map<PlanRegion, VisibilityWalk>();
+    const visibilityPlanes = new Set([
+        ...layout.platforms.map(platform => plane(platform, true)),
+        ...layout.areas.filter(area => area.id === 'bridge-paid').map(area => plane(area, true))
+    ]);
     const blockers = new Map<number, { shape: Polygon; connectionId?: string }[]>();
     const openings = [...planFloorOpenings(layout.connections, levels, layout.platforms), ...planAtriumOpenings(layout.atria ?? [])];
+    const elevatorSegmentsByStop = new Map<string, Set<string>>();
+    for (const connection of layout.connections) {
+        if (connection.kind !== 'elevator') {
+            continue;
+        }
+        for (const stop of [connection.from, connection.to]) {
+            const segments = elevatorSegmentsByStop.get(stop.id) ?? new Set<string>();
+            segments.add(connection.id);
+            elevatorSegmentsByStop.set(stop.id, segments);
+        }
+    }
     /** Add one eligible floor to its physical plane, keeping paid areas in their own station level. */
     const floor = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean, shape: Polygon) => {
         const key = plane(node, paid);
@@ -90,6 +130,9 @@ export function createWalkingNetwork() {
         for (const [index, region] of regions.entries()) {
             const [outline, ...voids] = region.map(ring => ring.slice(0, -1).map(([x, z]) => ({ x, z })));
             const walkable = { outline: outline!, holes: voids };
+            if (visibilityPlanes.has(key)) {
+                visibilityWalks.set(walkable, { face, id: `walk:corner:${key}:${index}`, anchors: [] });
+            }
             const coordinates: number[] = [];
             const holes: number[] = [];
             for (const [ringIndex, ring] of region.entries()) {
@@ -135,6 +178,7 @@ export function createWalkingNetwork() {
         const exact = face?.triangles.find(triangle => pointInPolygon(node, triangle.outline));
         if (exact) {
             nodeRegions.set(node.id, exact.region);
+            visibilityWalks.get(exact.region)?.anchors.push(node);
             walk(node.id, exact.id, exact.region);
             return true;
         }
@@ -156,12 +200,18 @@ export function createWalkingNetwork() {
         }
         const strip = polygon(passageOutline(node, best.point, .02));
         const obstacles = blockers.get(elevation(node)) ?? [];
+        // At a shared elevator stop, both segments cut the same shaft at this landing.
+        const elevatorSegments = elevatorSegmentsByStop.get(node.id);
         if (face.restricted.some(shape => clipping.intersection(strip, shape).length > 0) ||
-            obstacles.some(({ shape, connectionId }) =>
-                connectionId?.split(':')[0] !== equipmentId && clipping.intersection(strip, shape).length > 0)) {
+            obstacles.some(({ shape, connectionId }) => {
+                const owner = connectionId?.split(':')[0];
+                return owner !== equipmentId && !(owner && elevatorSegments?.has(owner)) &&
+                    clipping.intersection(strip, shape).length > 0;
+            })) {
             return false;
         }
         const landing = addNode('walk:landing:' + node.id, face, best.point);
+        visibilityWalks.get(best.triangle.region)?.anchors.push(landing);
         walk(node.id, landing.id);
         walk(landing.id, best.triangle.id, best.triangle.region);
         return true;
@@ -242,9 +292,13 @@ export function createWalkingNetwork() {
         const to = attach(connection.to, paid, connection.id);
         const { id: a } = connection.from;
         const { id: b } = connection.to;
-        if (from && to && connection.kind !== 'escalator' && !edges.some(e => (e.from === a && e.to === b) || (e.from === b && e.to === a))) {
+        const directed = connection.kind === 'escalator' && connection.travelDirection;
+        if (from && to && (connection.kind !== 'escalator' || directed) &&
+            !edges.some(e => (e.from === a && e.to === b) || (e.from === b && e.to === a))) {
+            const reverse = directed === 'to-from';
             graphEdges.push({
-                from: a, to: b, kind: connection.kind,
+                from: reverse ? b : a, to: reverse ? a : b, kind: connection.kind,
+                ...(directed ? { directed: true } : {}),
                 cost: Math.hypot(connection.from.x - connection.to.x, connection.from.z - connection.to.z,
                     elevation(connection.from) - elevation(connection.to))
             });
@@ -304,6 +358,23 @@ export function createWalkingNetwork() {
             })[0];
             if (nearest) {
                 approaches.set(facility.id, [{ id: nearest.id, distance: 0 }]);
+                visibilityWalks.get(nearest.region)?.anchors.push(graphNodes.get(nearest.id)!);
+            }
+        }
+    }
+    // Long, thin platform triangles can route past the destination just to go around a stairwell.
+    for (const [region, { face, id, anchors }] of visibilityWalks) {
+        if (anchors.length < 2) {
+            continue;
+        }
+        const points = [...new Map(anchors.map(node => [node.id, node])).values(),
+            ...walkableCorners(region).map((point, index) => addNode(id + ':' + index, face, point))];
+        for (const [i, from] of points.entries()) {
+            for (let j = i + 1; j < points.length; j++) {
+                const to = points[j]!;
+                if (walkableChord(from, to, region)) {
+                    walk(from.id, to.id, region);
+                }
             }
         }
     }
