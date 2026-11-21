@@ -125,14 +125,11 @@ function walkingPlaceId(facilityId: string): string | undefined {
 }
 
 /** Name each substituted endpoint while keeping the user's original places in the itinerary. */
-function walkingPreviewMessage(count: number, approximations: readonly WalkingApproximation[] = []): string {
-    return [
-        messageText('ui.walking.result', { count }),
-        ...approximations.map(({ requested, via }) => messageText('ui.walking.approachResult', {
-            place: walkingNames.get(requested) ?? requested,
-            approach: walkingNames.get(via) ?? via
-        }))
-    ].join('\n');
+function walkingApproachMessage(approximations: readonly WalkingApproximation[] = []): string {
+    return approximations.map(({ requested, via }) => messageText('ui.walking.approachResult', {
+        place: walkingNames.get(requested) ?? requested,
+        approach: walkingNames.get(via) ?? via
+    })).join('\n');
 }
 const categoryLabels = {
     all: messageText('facilities.types.all'),
@@ -204,7 +201,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
             clearFacilitySelection();
             scene?.reset();
             sync();
-            return { message: walkingPreviewMessage(places.length - 1, result.approximations) };
+            return { message: walkingApproachMessage(result.approximations) };
         }
         sync();
         if (result.issue === 'unavailable' || result.issue === 'gateRequired') {
@@ -653,26 +650,27 @@ async function loadMap(): Promise<void> {
             });
         });
         const runtime = await import('./presentation/map-runtime.ts');
+        const graph = runtime.createWalkingNetwork();
         screenDirection = runtime.screenDirection;
         const currentState = session.state;
         const savedItinerary = sharedItinerary ?? (currentState.route ? restored?.walkingDraft : undefined);
         let restoredPreview: string | undefined;
         if (savedItinerary?.ids.every(id => id !== null)) {
-            const result = planWalkingRoute(runtime.edges, savedItinerary.ids, savedItinerary.allowPaid, walkingApproaches);
+            const result = planWalkingRoute(graph.edges, savedItinerary.ids, savedItinerary.allowPaid, walkingApproaches);
             currentState.route = result.route ?? null;
             if (result.route) {
-                restoredPreview = walkingPreviewMessage(savedItinerary.ids.length - 1, result.approximations);
+                restoredPreview = walkingApproachMessage(result.approximations);
             }
             sharedItinerary = undefined;
         }
-        session = new MapSession(runtime.edges, { nodes: runtime.nodes, levels: runtime.levels });
+        session = new MapSession(graph.edges, { nodes: graph.nodes, levels: runtime.levels });
         session.state = currentState;
         scene = new runtime.MapScene(
             viewport,
             labels,
             runtime.levels,
             runtime.facilities,
-            runtime.nodes,
+            graph.nodes,
             runtime.layout,
             currentState,
             selectFromMap,

@@ -32,6 +32,7 @@ export class MapGestures {
     private orbit?: { pointer: number; pivot: Vector3 };
     private wheelPivot?: Vector3;
     private wheelSpacing = false;
+    private wheelZooming = false;
     private wheelTimer?: ReturnType<typeof setTimeout>;
     private touchPivot?: Vector3;
     private touchBaseline?: TouchPair;
@@ -77,9 +78,9 @@ export class MapGestures {
         canvas.addEventListener('wheel', event => this.wheel(event), { passive: false, signal });
     }
 
-    /** Keep labels and URL writes paused during pointer movement and modified wheel gestures. */
+    /** Keep labels and URL writes paused during pointer movement and wheel gestures. */
     get isMoving(): boolean {
-        return this.moving || this.wheelPivot !== undefined || this.wheelSpacing;
+        return this.moving || this.wheelPivot !== undefined || this.wheelSpacing || this.wheelZooming;
     }
 
     /** Report an active orbit through the end of its pointer or wheel sequence. */
@@ -124,6 +125,9 @@ export class MapGestures {
                 dx *= this.canvas.clientWidth;
                 dy *= this.canvas.clientHeight;
             }
+            if (this.wheelZooming) {
+                this.endWheelGesture();
+            }
             if (event.altKey) {
                 this.orbitWithWheel(dx, dy);
             }
@@ -136,19 +140,20 @@ export class MapGestures {
                 // Some environments move the vertical wheel delta onto the horizontal axis with Shift held.
                 this.actions.adjustSpacing(-(dy || dx));
             }
-            clearTimeout(this.wheelTimer);
-            this.wheelTimer = setTimeout(() => {
-                this.endWheelGesture();
-                this.actions.invalidate();
-            }, wheelIdleMs);
+            this.scheduleWheelEnd();
             this.actions.invalidate();
             return;
         }
-        this.endWheelGesture();
-        this.actions.zoom(Math.exp(-event.deltaY * 0.001));
-        if (!this.pointers.size) {
-            this.actions.hover({ x: event.clientX, y: event.clientY });
+        if (!event.deltaY) {
+            return;
         }
+        if (!this.wheelZooming) {
+            this.endWheelGesture();
+            this.wheelZooming = true;
+            this.actions.hover();
+        }
+        this.actions.zoom(Math.exp(-event.deltaY * 0.001));
+        this.scheduleWheelEnd();
     }
 
     /** Freeze a canvas-centred pivot for an Alt-wheel sequence. */
@@ -167,10 +172,18 @@ export class MapGestures {
         this.actions.rotate(this.wheelPivot, -dx * orbitRadiansPerPixel, -dy * orbitRadiansPerPixel);
     }
 
-    /** Release a modified wheel gesture on inactivity or when another interaction takes over. */
+    /** Wait for a quiet interval after the most recent wheel event. */
+    private scheduleWheelEnd(): void {
+        clearTimeout(this.wheelTimer);
+        this.wheelTimer = setTimeout(() => this.endWheelGesture(), wheelIdleMs);
+    }
+
+    /** Release a wheel gesture and request the settled frame that restores the labels. */
     private endWheelGesture(): void {
+        const wasActive = this.wheelZooming || this.wheelSpacing || this.wheelPivot !== undefined;
         clearTimeout(this.wheelTimer);
         this.wheelTimer = undefined;
+        this.wheelZooming = false;
         if (this.wheelPivot) {
             this.wheelPivot = undefined;
             this.canvas.removeAttribute('data-orbiting');
@@ -178,6 +191,9 @@ export class MapGestures {
         if (this.wheelSpacing) {
             this.wheelSpacing = false;
             this.actions.adjustSpacing();
+        }
+        if (wasActive) {
+            this.actions.invalidate();
         }
     }
 
@@ -210,7 +226,7 @@ export class MapGestures {
     private pointerMove(event: PointerEvent): void {
         const old = this.pointers.get(event.pointerId);
         if (!old) {
-            if (!this.pointers.size && !this.wheelPivot && !this.wheelSpacing && event.pointerType !== 'touch' && !event.buttons) {
+            if (!this.pointers.size && !this.isMoving && event.pointerType !== 'touch' && !event.buttons) {
                 this.actions.hover({ x: event.clientX, y: event.clientY });
             }
             return;

@@ -687,7 +687,7 @@
 }
 
 .walking-actions button,
-.walking-panel button,
+.walking-panel button:not(.panel-select),
 .walking-panel select {
   min-width: 0;
   min-height: 36px;
@@ -728,22 +728,16 @@
   opacity: .5;
 }
 
-#walking-pick,
 #walking-clear {
   display: grid;
   place-items: center;
   padding: 0;
 }
 
-#walking-pick {
-  flex: 0 0 36px;
-}
-
 #walking-clear {
   width: 36px;
 }
 
-#walking-pick > svg,
 #walking-clear > svg {
   width: 17px;
   height: 17px;
@@ -751,16 +745,6 @@
   stroke: currentColor;
   stroke-linecap: round;
   stroke-width: 1.75;
-}
-
-#walking-pick:disabled {
-  color: var(--color-subtle-text);
-}
-
-#walking-pick[aria-pressed="true"] {
-  border-color: var(--color-tab-active);
-  background: var(--color-tab-active);
-  color: var(--color-paper);
 }
 
 #walking-preview {

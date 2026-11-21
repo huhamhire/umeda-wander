@@ -147,7 +147,44 @@ test('Alt trackpad scroll uses one centre pivot until settling and Ctrl pinch st
         assert.deepEqual(rotations[2]!.slice(0, 3), [4, 5, 6]);
         wheel(0, -50, true);
         assert.deepEqual(zooms, [Math.exp(0.05)]);
+        assert(gestures.isMoving && !gestures.isRotating);
+        t.mock.timers.tick(140);
         assert(!gestures.isMoving);
+    } finally {
+        gestures.dispose();
+    }
+});
+
+test('ordinary wheel zoom stays unsettled until scrolling pauses and suppresses hover picks', t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const hovers: unknown[] = [];
+    const frames: boolean[] = [];
+    const { canvas, gestures, zooms } = setup({
+        hover: point => hovers.push(point),
+        invalidate: () => frames.push(gestures.isMoving)
+    });
+    try {
+        dispatch(canvas, 'wheel', { deltaY: -40 });
+        assert(gestures.isMoving && !gestures.isRotating);
+        t.mock.timers.tick(100);
+        dispatch(canvas, 'wheel', { deltaY: 20 });
+        dispatch(canvas, 'pointermove', { buttons: 0, clientX: 20 });
+        t.mock.timers.tick(139);
+        assert(gestures.isMoving);
+        assert.deepEqual(hovers, [undefined]);
+        assert.deepEqual(zooms, [Math.exp(.04), Math.exp(-.02)]);
+        assert.deepEqual(frames, []);
+        t.mock.timers.tick(1);
+        assert(!gestures.isMoving);
+        assert.deepEqual(frames, [false]);
+        dispatch(canvas, 'pointermove', { buttons: 0, clientX: 20 });
+        assert.deepEqual(hovers.at(-1), { x: 20, y: 0 });
+
+        dispatch(canvas, 'wheel', { deltaY: -40 });
+        dispatch(canvas, 'pointerdown', { clientX: 20 });
+        assert(!gestures.isMoving);
+        t.mock.timers.tick(140);
+        assert.deepEqual(frames, [false, false]);
     } finally {
         gestures.dispose();
     }

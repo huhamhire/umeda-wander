@@ -1,0 +1,251 @@
+import clipping, { type Polygon } from 'polygon-clipping';
+import { Earcut } from 'three/src/extras/Earcut.js';
+import { planAtriumOpenings } from '../../application/connections/atrium-openings.ts';
+import { planFloorOpenings } from '../../application/connections/connection-openings.ts';
+import { walkingApproaches } from '../../application/navigation/walking-approaches.ts';
+import { closestPolygonPoint, passageOutline, platformOutline, pointInPolygon } from '../../domain/map/geometry.ts';
+import type { LevelId, Point2, RouteEdge, RouteNode } from '../../domain/map/model.ts';
+import { edges, facilities, layout, levels, nodes, publicInterfaces } from './geographic-map.ts';
+import { walkingPlaces } from './walking-places.ts';
+
+type Triangle = { id: string; outline: Point2[] };
+type Face = { level: LevelId; offset: number; polygons: Polygon[]; triangles: Triangle[]; restricted: Polygon[] };
+
+/** Convert a modeled floor face to the polygon clipping representation. */
+function polygon(outline: Point2[], holes: Point2[][] = []): Polygon {
+    return [outline, ...holes].map(ring => ring.map(({ x, z }) => [x, z]));
+}
+
+/** Determine which side of an uncut floor boundary owns a node. */
+function contains(polygon: Polygon, point: Point2): boolean {
+    const [outer, ...holes] = polygon;
+    const containsRing = (ring: Polygon[number]) => pointInPolygon(point, ring.map(([x, z]) => ({ x, z })));
+    return containsRing(outer!) && !holes.some(containsRing);
+}
+
+/** Build a routing mesh inside modeled floors and attach existing gates and equipment. */
+export function createWalkingNetwork() {
+    const graphNodes = new Map(nodes.map(node => [node.id, node]));
+    const graphEdges = [...edges];
+    const elevation = (node: Pick<RouteNode, 'level' | 'elevationOffset'>) =>
+        levels.find(level => level.id === node.level)!.y + (node.elevationOffset ?? 0);
+    const plane = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean) =>
+        paid ? 'paid:' + node.level + ':' + (node.elevationOffset ?? 0) : 'public:' + elevation(node);
+    const faces = new Map<string, Face>();
+    const blockers = new Map<number, { shape: Polygon; connectionId?: string }[]>();
+    const openings = [...planFloorOpenings(layout.connections, levels, layout.platforms), ...planAtriumOpenings(layout.atria ?? [])];
+    /** Add one eligible floor to its physical plane, keeping paid areas in their own station level. */
+    const floor = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean, shape: Polygon) => {
+        const key = plane(node, paid);
+        const face = faces.get(key) ?? { level: node.level, offset: node.elevationOffset ?? 0, polygons: [], triangles: [], restricted: [] };
+        face.polygons.push(shape);
+        faces.set(key, face);
+    };
+    for (const area of layout.areas) {
+        const shape = polygon(area.outline, area.holes);
+        if (area.kind === 'public' || area.kind === 'paid') {
+            floor(area, area.kind === 'paid', shape);
+        } else {
+            const y = elevation(area);
+            blockers.set(y, [...blockers.get(y) ?? [], { shape }]);
+        }
+    }
+    for (const platform of layout.platforms) {
+        floor(platform, true, polygon(platformOutline(platform)));
+    }
+    for (const opening of openings) {
+        const y = elevation(opening);
+        blockers.set(y, [...blockers.get(y) ?? [], { shape: polygon(opening.outline), connectionId: opening.connectionId }]);
+    }
+    /** Insert a graph node at a physical walkable elevation. */
+    const addNode = (id: string, face: Face, point: Point2) => {
+        const node = { ...point, id, level: face.level, elevationOffset: face.offset };
+        graphNodes.set(id, node);
+        return node;
+    };
+    /** Add one schematic walk segment with cost equal to its modeled length. */
+    const walk = (from: string, to: string) => {
+        const a = graphNodes.get(from)!;
+        const b = graphNodes.get(to)!;
+        graphEdges.push({ from, to, kind: 'walk', cost: Math.hypot(a.x - b.x, a.z - b.z) });
+    };
+    for (const [key, face] of faces) {
+        const y = elevation({ level: face.level, elevationOffset: face.offset });
+        const paid = key.startsWith('paid:');
+        const paidShapes = paid ? [] : [...faces].flatMap(([otherKey, other]) =>
+            otherKey.startsWith('paid:') && elevation({ level: other.level, elevationOffset: other.offset }) === y ? other.polygons : []);
+        face.restricted = paidShapes;
+        const cuts = blockers.get(y)?.map(blocker => blocker.shape) ?? [];
+        const regions = clipping.difference(clipping.union(...face.polygons as [Polygon, ...Polygon[]]), ...cuts, ...paidShapes);
+        for (const [index, region] of regions.entries()) {
+            const coordinates: number[] = [];
+            const holes: number[] = [];
+            for (const [ringIndex, ring] of region.entries()) {
+                if (ringIndex) {
+                    holes.push(coordinates.length / 2);
+                }
+                coordinates.push(...ring.slice(0, -1).flat());
+            }
+            const indices = Earcut.triangulate(coordinates, holes, 2);
+            const shared = new Map<string, string>();
+            for (let i = 0; i < indices.length; i += 3) {
+                const corners = indices.slice(i, i + 3);
+                const outline = corners.map(n => ({ x: coordinates[2 * n]!, z: coordinates[2 * n + 1]! }));
+                const id = `walk:${key}:${index}:${i}`;
+                addNode(id, face, {
+                    x: outline.reduce((sum, point) => sum + point.x, 0) / 3,
+                    z: outline.reduce((sum, point) => sum + point.z, 0) / 3
+                });
+                face.triangles.push({ id, outline });
+                for (const [n, first] of corners.entries()) {
+                    const second = corners[(n + 1) % 3]!;
+                    const seam = [Math.min(first, second), Math.max(first, second)].join(':');
+                    const previous = shared.get(seam);
+                    if (previous) {
+                        const joint = id + ':' + n;
+                        addNode(joint, face, {
+                            x: (coordinates[first * 2]! + coordinates[second * 2]!) / 2,
+                            z: (coordinates[first * 2 + 1]! + coordinates[second * 2 + 1]!) / 2
+                        });
+                        walk(previous, joint);
+                        walk(joint, id);
+                    } else {
+                        shared.set(seam, id);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Attach endpoints inside a triangle, allowing fitted equipment landings to reach the edge of their slab opening. */
+    const attach = (node: RouteNode, paid: boolean, equipmentId?: string): boolean => {
+        const face = faces.get(plane(node, paid));
+        const exact = face?.triangles.find(triangle => pointInPolygon(node, triangle.outline));
+        if (exact) {
+            walk(node.id, exact.id);
+            return true;
+        }
+        if (!face || !equipmentId || !face.polygons.some(shape => contains(shape, node))) {
+            return false;
+        }
+        let best: { triangle: Triangle; point: Point2 } | undefined;
+        let distance = 2.5;
+        for (const triangle of face.triangles) {
+            const point = closestPolygonPoint(node, triangle.outline);
+            const gap = Math.hypot(node.x - point.x, node.z - point.z);
+            if (gap < distance) {
+                distance = gap;
+                best = { triangle, point };
+            }
+        }
+        if (!best) {
+            return false;
+        }
+        const strip = polygon(passageOutline(node, best.point, .02));
+        const obstacles = blockers.get(elevation(node)) ?? [];
+        if (face.restricted.some(shape => clipping.intersection(strip, shape).length > 0) ||
+            obstacles.some(({ shape, connectionId }) =>
+                connectionId?.split(':')[0] !== equipmentId && clipping.intersection(strip, shape).length > 0)) {
+            return false;
+        }
+        const landing = addNode('walk:landing:' + node.id, face, best.point);
+        walk(node.id, landing.id);
+        walk(landing.id, best.triangle.id);
+        return true;
+    };
+    /** Classify the endpoint from the uncut paid footprint so openings cannot change gate side. */
+    const onPaidFloor = (node: RouteNode) => faces.get(plane(node, true))?.polygons.some(shape => contains(shape, node)) ?? false;
+    const places = walkingPlaces();
+    const gateEdges = edges.filter(edge => edge.kind === 'gate');
+    const gateSides = new Map<string, boolean>();
+    for (const edge of gateEdges) {
+        for (const id of [edge.from, edge.to]) {
+            const place = places.find(place => place.id === id);
+            gateSides.set(id, place ? place.access === 'inside' : onPaidFloor(graphNodes.get(id)!));
+        }
+    }
+    for (const id of new Set(edges.flatMap(edge => [edge.from, edge.to]))) {
+        const node = graphNodes.get(id)!;
+        attach(node, gateSides.get(id) ?? onPaidFloor(node));
+    }
+    for (const connection of layout.connections) {
+        for (const node of [connection.from, connection.to]) {
+            if (!graphNodes.has(node.id)) {
+                graphNodes.set(node.id, node);
+            }
+        }
+        const paid = onPaidFloor(connection.from);
+        if (paid !== onPaidFloor(connection.to)) {
+            continue;
+        }
+        const from = attach(connection.from, paid, connection.id);
+        const to = attach(connection.to, paid, connection.id);
+        const { id: a } = connection.from;
+        const { id: b } = connection.to;
+        if (from && to && connection.kind !== 'escalator' && !edges.some(e => (e.from === a && e.to === b) || (e.from === b && e.to === a))) {
+            graphEdges.push({
+                from: a, to: b, kind: connection.kind,
+                cost: Math.hypot(connection.from.x - connection.to.x, connection.from.z - connection.to.z,
+                    elevation(connection.from) - elevation(connection.to))
+            });
+        }
+    }
+    const approaches = new Map(walkingApproaches(facilities, places, nodes, layout.areas, layout.platforms, openings));
+    const exactFacilities = new Set(places.map(place => place.facilityId));
+    const platforms = new Map(layout.platforms.map(platform => [platform.id, platform]));
+    for (const port of publicInterfaces) {
+        const center = { x: (port.inside.x + port.outside.x) / 2, z: (port.inside.z + port.outside.z) / 2 };
+        const existing = gateEdges.find(edge => {
+            const a = graphNodes.get(edge.from)!;
+            const b = graphNodes.get(edge.to)!;
+            return a.level === port.level && b.level === port.level &&
+                Math.hypot(center.x - (a.x + b.x) / 2, center.z - (a.z + b.z) / 2) < 4;
+        });
+        if (existing) {
+            if (!exactFacilities.has(port.gateId)) {
+                const outside = gateSides.get(existing.from) ? existing.to : existing.from;
+                approaches.set(port.gateId, [{ id: outside, distance: 0 }]);
+            }
+            continue;
+        }
+        const offset = port.elevation - elevation({ level: port.level });
+        const outside = { ...port.outside, id: 'walk:gate:out:' + port.id, level: port.level, elevationOffset: offset };
+        const inside = { ...port.inside, id: 'walk:gate:in:' + port.id, level: port.level, elevationOffset: offset };
+        graphNodes.set(outside.id, outside);
+        graphNodes.set(inside.id, inside);
+        if (attach(outside, false)) {
+            approaches.set(port.gateId, [{ id: outside.id, distance: 0 }]);
+            if (attach(inside, true)) {
+                graphEdges.push({ from: outside.id, to: inside.id, kind: 'gate', cost: 4 });
+            }
+        }
+    }
+    for (const facility of facilities) {
+        if (exactFacilities.has(facility.id) || facility.kind === 'gate') {
+            continue;
+        }
+        const { x, z, level, elevationOffset } = facility;
+        const node = { x, z, level, elevationOffset, id: 'walk:facility:' + facility.id };
+        graphNodes.set(node.id, node);
+        if (attach(node, onPaidFloor(node), facility.connectionId)) {
+            approaches.set(facility.id, [{ id: node.id, distance: 0 }]);
+            continue;
+        }
+        const platform = facility.kind === 'platform' && facility.platformId && platforms.get(facility.platformId);
+        if (platform) {
+            const outline = platformOutline(platform);
+            const face = faces.get(plane(node, true));
+            const onPlatform = face?.triangles.filter(triangle => pointInPolygon(graphNodes.get(triangle.id)!, outline)) ?? [];
+            // The label may be above a lift or stairwell. Use an actual point on the same platform.
+            const nearest = onPlatform.sort((a, b) => {
+                const first = graphNodes.get(a.id)!;
+                const second = graphNodes.get(b.id)!;
+                return Math.hypot(first.x - x, first.z - z) - Math.hypot(second.x - x, second.z - z);
+            })[0];
+            if (nearest) {
+                approaches.set(facility.id, [{ id: nearest.id, distance: 0 }]);
+            }
+        }
+    }
+    return { nodes: [...graphNodes.values()], edges: graphEdges, places, approaches: [...approaches] };
+}

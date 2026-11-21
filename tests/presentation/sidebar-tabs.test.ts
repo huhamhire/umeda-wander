@@ -58,7 +58,8 @@ test(
         assert(!html.includes('data-route='));
         assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m => m[1]), ['tab-layers', 'tab-facilities', 'tab-walking']);
         assert(html.indexOf('id="facility-picker"') < html.indexOf('id="facility-station"'));
-        assert(html.includes('id="walking-pick"'));
+        assert(html.includes('id="walking-search"'));
+        assert(!html.includes('id="walking-pick"'));
         assert.equal([...html.matchAll(/id="facility-station"/g)].length, 1);
         assert(!html.includes('panel-stations'));
         assert(!html.includes('data-focus='));

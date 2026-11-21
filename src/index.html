@@ -180,13 +180,8 @@
               </button>
             </div>
             <div class="walking-filters">
-              <select id="walking-station" aria-label="{{ui.facilities.stationFilter}}"></select>
-              <button type="button" id="walking-pick" aria-label="{{ui.walking.pick}}" aria-pressed="false" title="{{ui.walking.pick}}">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <circle cx="12" cy="12" r="7" />
-                  <circle cx="12" cy="12" r="2" />
-                  <path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
-                </svg>
+              <button class="panel-select" id="walking-station" type="button" aria-label="{{ui.facilities.stationFilter}}">
+                <span>{{ui.filters.allStations}}</span>
               </button>
             </div>
             <details class="walking-options" id="walking-options">
@@ -196,6 +191,9 @@
                 <select id="walking-kind" aria-label="{{ui.facilities.types}}"></select>
               </div>
             </details>
+            <input id="walking-search" class="panel-select-search" type="search" autocomplete="off" spellcheck="false"
+              placeholder="{{ui.facilities.search}}" aria-label="{{ui.facilities.search}}" role="combobox"
+              aria-controls="walking-results" aria-expanded="false" aria-autocomplete="list" />
             <p id="walking-search-status" role="status" hidden></p>
             <div id="walking-results" class="walking-results" role="listbox" aria-label="{{ui.walking.choose}}" hidden></div>
             <div class="walking-route-actions">

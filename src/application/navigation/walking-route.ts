@@ -29,6 +29,11 @@ type WalkingRouteResult = { route: string[]; approximations?: WalkingApproximati
 
 export const maxWalkingStops = 3;
 
+/** Vertical equipment can carry a route without appearing as a destination. */
+export function isWalkingDestination(kind?: FacilityKind): boolean {
+    return kind !== 'stairs' && kind !== 'escalator' && kind !== 'elevator';
+}
+
 /** Assemble an itinerary in user order and identify the first leg the graph cannot support. */
 export function planWalkingRoute(
     edges: RouteEdge[], places: readonly string[], allowPaid: boolean, approaches?: WalkingApproaches
@@ -104,7 +109,8 @@ function planApproachedRoute(edges: RouteEdge[], places: readonly string[], allo
     if (result.path) {
         const approximations: WalkingApproximation[] = places.flatMap((requested, i) => {
             const via = result.path.endpoints[i]!;
-            return requested === via ? [] : [{ requested, via }];
+            const exact = choices[i]!.some(choice => choice.id === via && choice.distance === 0);
+            return requested === via || exact ? [] : [{ requested, via }];
         });
         return { route: result.path.route, approximations };
     }

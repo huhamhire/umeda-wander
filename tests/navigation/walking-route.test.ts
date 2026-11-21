@@ -12,7 +12,40 @@ import type { Facility, FloorArea, RouteEdge } from '../../src/domain/map/model.
 import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { edges, facilities, layout, levels, nodes, northWalking, southWalking, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
+import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
+
+test('the expanded map routes Central Gate 9/10 to Higashi-Umeda exit 4 through a JR gate only', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const entrance = 'higashi-umeda-exit-4';
+    const gates = network.edges.filter(edge => edge.kind === 'gate');
+    const usedGates = (route: string[]) => route.slice(1).flatMap((to, i) => gates.filter(edge =>
+        edge.from === route[i] && edge.to === to || !edge.directed && edge.to === route[i] && edge.from === to));
+    for (const end of ['from', 'to']) {
+        const escalator = 'connection-central-32-' + end;
+        for (const [from, to] of [[escalator, entrance], [entrance, escalator]] as const) {
+            const result = planWalkingRoute(network.edges, [from, to], true, approaches);
+            assert(result.route);
+            assert.deepEqual(usedGates(result.route).map(edge => edge.from), ['gate-out']);
+            assert.equal(result.approximations?.length, 0);
+            assert.equal(planWalkingRoute(network.edges, [from, to], false, approaches).issue, 'gateRequired');
+        }
+    }
+    for (const allowPaid of [false, true]) {
+        const result = planWalkingRoute(network.edges, [entrance, 'connection-dotica-exit-c-93-lower-from'], allowPaid, approaches);
+        assert(result.route);
+        assert.deepEqual(usedGates(result.route), []);
+    }
+    assert(!approaches.has('sonechika-exit-11-44'));
+    for (const [from, to] of [['entry', 'platform-p23-24'], ['platform-p23-24', 'entry']] as const) {
+        assert(planWalkingRoute(network.edges, [from, to], true, approaches).route);
+    }
+    for (const gate of edges.filter(edge => edge.kind === 'gate' && edge.directed)) {
+        assert(gates.includes(gate));
+        assert(!gates.some(other => other.from === gate.to && other.to === gate.from));
+    }
+});
 
 test('walking routes concatenate ordered legs and name the first blocked leg without drawing a partial route', () => {
     const graph: RouteEdge[] = [
