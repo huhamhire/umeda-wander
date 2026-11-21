@@ -2,7 +2,7 @@ import type { Level, LevelId, RouteEdge, RouteNode, StationId } from '../domain/
 import { findRoute } from '../domain/navigation/find-route.ts';
 import { stationFocusLevel } from './exploration/region-focus.ts';
 import { planWalkingRoute } from './navigation/walking-route.ts';
-import type { WalkingApproaches } from './navigation/walking-route.ts';
+import type { WalkingApproaches, WalkingLegShape } from './navigation/walking-route.ts';
 
 export interface MapViewState {
     explode: number;
@@ -21,11 +21,11 @@ export class MapSession {
         focusStation: null
     };
     private readonly edges: RouteEdge[];
-    private readonly map?: { nodes: RouteNode[]; levels: Level[] };
+    private readonly map?: { nodes: RouteNode[]; levels: Level[]; shapeLeg?: WalkingLegShape };
     /**
      * Store the local navigation graph without calculating a route during initialization.
      */
-    constructor(edges: RouteEdge[], map?: { nodes: RouteNode[]; levels: Level[] }) {
+    constructor(edges: RouteEdge[], map?: { nodes: RouteNode[]; levels: Level[]; shapeLeg?: WalkingLegShape }) {
         this.edges = edges;
         this.map = map;
     }
@@ -33,14 +33,15 @@ export class MapSession {
      * Calculate an illustrative route and open an expanded overview; this is not verified cross-station navigation.
      */
     showRoute(start = 'entry', end = 'destination'): void {
-        this.state.route = findRoute(this.edges, start, end, true);
+        const route = findRoute(this.edges, start, end, true);
+        this.state.route = route && (this.map?.shapeLeg?.(route) ?? route);
         this.state.explode = 0.78;
         this.state.level = 'all';
         this.state.roof = false;
     }
     /** Draw a complete itinerary only when each ordered leg is present in the graph. */
     previewWalkingRoute(places: readonly string[], allowPaid: boolean, approaches?: WalkingApproaches) {
-        const result = planWalkingRoute(this.edges, places, allowPaid, approaches);
+        const result = planWalkingRoute(this.edges, places, allowPaid, approaches, this.map?.shapeLeg);
         this.state.route = result.route ?? null;
         if (result.route) {
             const map = this.map;

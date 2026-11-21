@@ -3,6 +3,10 @@ import config from '../../../../data/geography/elevated/inogate.json' with { typ
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import type { Evidence } from '../../../domain/map/model.ts';
 import { jrGroundPoint } from '../../stations/jr-osaka/geographic.ts';
+import { footprint } from '../../buildings/building-data.ts';
+
+/** Ground footprints identify the two bridge destinations without adding deck-level slabs. */
+export const inogateHosts = config.hosts.map(host => ({ ...host, region: footprint(host.way) }));
 
 export const inogateDeckEvidence: Evidence = {
     source: 'district',

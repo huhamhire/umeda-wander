@@ -6,11 +6,25 @@ import assert from 'node:assert/strict';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { sampleRailSegment, platformRail, railApproachFootprints } from '../../src/domain/map/rail-geometry.ts';
 import clipping from 'polygon-clipping';
-import { deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { platformTangent } from '../../src/domain/map/geometry.ts';
 import { nishiAxis } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
 import { jrAxisPoint, jrGroundFrame } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
 import { jrRailCorridors } from '../../src/infrastructure/stations/jr-osaka/rail-corridors.ts';
+import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
+
+test('the Hankyu 1F public passage passes below the JR eastern rail approaches', () => {
+    const [jr] = createGeographicStations();
+    const polygon = (outline: Point2[]): clipping.Polygon => [outline.map(p => [p.x, p.z])];
+    const underpass = hankyuConcourseAreas.filter(a => a.id.startsWith('hankyu-concourse-north-ground-'));
+    for (const corridor of ['main', 'loop']) {
+        const approach = jr!.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-' + corridor + '-1')!;
+        assert(jr!.levels.find(l => l.id === approach.level)!.y > 0);
+        assert(railApproachFootprints(approach, 1.65).some(outline =>
+            underpass.some(a => a.level === 'district-ground' && clipping.intersection(polygon(outline), polygon(a.outline)).length)
+        ));
+    }
+});
+
 test(
     'calibrated rail approaches restore smooth shared merges without sharp doglegs',
     () => {
@@ -230,18 +244,6 @@ test('JR east runtime track beds stay clear of the actual Hankyu halls and landm
                 assert.equal(clipping.intersection([ring(bed)], [ring(obstacle.outline)]).length, 0, `${approach.id}: ${obstacle.name}`);
             }
         }
-    }
-});
-
-test('Inogate 2F context cannot hide the western track 11 connection', () => {
-    const jr = createGeographicStations()[0]!;
-    const approach = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-main--1')!;
-    const segment = approach.segments.find(s => s.track === 11)!;
-    const platform = jr.layout.platforms.find(p => p.id === segment.platformId)!;
-    const end = platformRail(platform, 0).start;
-    const samples = [end, ...sampleRailSegment(approach, segment, 100).slice(0, 14).map(s => s.point)];
-    for (const p of samples) {
-        assert(!deckBuildingAreas.filter(a => a.level === 'district-north-deck').some(a => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h))), 'context slab covers the rendered rail seam');
     }
 });
 

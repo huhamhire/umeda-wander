@@ -37,7 +37,6 @@ export interface MapModelOptions {
 export class MapModels {
     readonly roof = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
-    readonly geographicBuildingFloors: T.Group[] = [];
     readonly basementBuildingFloors: T.Group[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
     readonly canopies: { model: T.Group; ground: boolean }[] = [];
@@ -68,11 +67,8 @@ export class MapModels {
         this.buildStation();
     }
 
-    /** Apply the ground layer and building switches without changing the parent floor's cutaway visibility. */
-    updateBuildingFloorVisibility(groundVisible: boolean, buildingsVisible: boolean): void {
-        for (const floor of this.geographicBuildingFloors) {
-            floor.visible = groundVisible;
-        }
+    /** Apply the building switch to basement footprints while preserving the parent floor's cutaway visibility. */
+    updateBuildingFloorVisibility(buildingsVisible: boolean): void {
         for (const floor of this.basementBuildingFloors) {
             floor.visible = buildingsVisible;
         }
@@ -114,9 +110,9 @@ export class MapModels {
             this.scene.add(group);
         }
         for (const hall of this.layout.concourses ?? []) {
-            const model = setRegionOwner(buildCommercialConcourse(hall, this.layout.concourses), null);
+            const openings = this.openings.filter(opening => opening.level === hall.level).map(opening => opening.outline);
+            const model = setRegionOwner(buildCommercialConcourse(hall, this.layout.concourses, openings), null);
             this.groups.get(hall.level)!.add(model);
-            this.geographicBuildingFloors.push(model);
         }
         for (const passage of this.layout.passages ?? []) {
             if (passage.kind === 'underground' || (passage.kind === 'deck' && !passage.label)) {
@@ -143,15 +139,13 @@ export class MapModels {
             roughness: 0.3
         });
         for (const area of this.layout.areas) {
-            const groundContext = area.id.startsWith('deck-context-') || area.blockId === 'building:hankyu-concourse';
             const basement = area.level === 'district-underground' && area.blockId?.startsWith('building:');
-            const buildingFloors = groundContext ? this.geographicBuildingFloors : basement ? this.basementBuildingFloors : undefined;
             const levelGroup = this.groups.get(area.level)!;
-            const floorGroup = buildingFloors ? new T.Group() : levelGroup;
-            if (buildingFloors) {
+            const floorGroup = basement ? new T.Group() : levelGroup;
+            if (basement) {
                 floorGroup.name = area.id;
                 levelGroup.add(floorGroup);
-                buildingFloors.push(floorGroup);
+                this.basementBuildingFloors.push(floorGroup);
             }
             const cuts = [
                 ...area.holes ?? [],
@@ -200,7 +194,7 @@ export class MapModels {
                     false,
                     area.id === 'central-public' || area.id === 'bridge-public' || area.id === 'central-mezz' || area.id === 'south-central-raised',
                     owner,
-                    buildingFloors ? floorGroup : undefined
+                    basement ? floorGroup : undefined
                 );
             }
         }

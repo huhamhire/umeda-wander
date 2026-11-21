@@ -17,6 +17,7 @@ export interface WalkingApproach {
 }
 
 export type WalkingApproaches = ReadonlyMap<string, readonly WalkingApproach[]>;
+export type WalkingLegShape = (leg: readonly string[]) => string[];
 
 export interface WalkingApproximation {
     requested: string;
@@ -36,13 +37,13 @@ export function isWalkingDestination(kind?: FacilityKind): boolean {
 
 /** Assemble an itinerary in user order and identify the first leg the graph cannot support. */
 export function planWalkingRoute(
-    edges: RouteEdge[], places: readonly string[], allowPaid: boolean, approaches?: WalkingApproaches
+    edges: RouteEdge[], places: readonly string[], allowPaid: boolean, approaches?: WalkingApproaches, shapeLeg?: WalkingLegShape
 ): WalkingRouteResult {
     if (places.length < 2 || places.length > maxWalkingStops + 2) {
         return { issue: 'incomplete' } as const;
     }
     if (approaches && places.some(place => approaches.has(place))) {
-        return planApproachedRoute(edges, places, allowPaid, approaches);
+        return planApproachedRoute(edges, places, allowPaid, approaches, shapeLeg);
     }
     const route: string[] = [];
     for (let i = 0; i < places.length - 1; i++) {
@@ -56,7 +57,8 @@ export function planWalkingRoute(
             const issue = !allowPaid && findRoute(edges, from, to, true) ? 'gateRequired' : 'unavailable';
             return { issue, from, to } as const;
         }
-        route.push(...(i ? leg.slice(1) : leg));
+        const shaped = shapeLeg?.(leg) ?? leg;
+        route.push(...(i ? shaped.slice(1) : shaped));
     }
     return { route };
 }
@@ -64,12 +66,12 @@ export function planWalkingRoute(
 interface ApproachPath {
     distance: number;
     endpoints: string[];
-    route: string[];
+    legs: string[][];
 }
 
 /** Keep one best partial itinerary per approach so a waypoint uses the same node on both legs. */
 function reachableApproaches(edges: RouteEdge[], choices: readonly (readonly WalkingApproach[])[], allowPaid: boolean) {
-    let paths = choices[0]!.map(({ id, distance }) => ({ distance, endpoints: [id], route: [id] }));
+    let paths: ApproachPath[] = choices[0]!.map(({ id, distance }) => ({ distance, endpoints: [id], legs: [] }));
     for (let i = 1; i < choices.length; i++) {
         const reachable: ApproachPath[] = [];
         for (const choice of choices[i]!) {
@@ -82,7 +84,7 @@ function reachableApproaches(edges: RouteEdge[], choices: readonly (readonly Wal
                 }
                 const leg = findRoute(edges, from, choice.id, allowPaid);
                 if (leg) {
-                    best = { distance, endpoints: [...path.endpoints, choice.id], route: [...path.route, ...leg.slice(1)] };
+                    best = { distance, endpoints: [...path.endpoints, choice.id], legs: [...path.legs, leg] };
                 }
             }
             if (best) {
@@ -98,7 +100,9 @@ function reachableApproaches(edges: RouteEdge[], choices: readonly (readonly Wal
 }
 
 /** Select the closest approaches that support the whole itinerary under the current gate policy. */
-function planApproachedRoute(edges: RouteEdge[], places: readonly string[], allowPaid: boolean, approaches: WalkingApproaches) {
+function planApproachedRoute(
+    edges: RouteEdge[], places: readonly string[], allowPaid: boolean, approaches: WalkingApproaches, shapeLeg?: WalkingLegShape
+) {
     const duplicate = places.findIndex((place, i) => place === places[i - 1]);
     if (duplicate >= 0) {
         const from = places[duplicate]!;
@@ -112,7 +116,8 @@ function planApproachedRoute(edges: RouteEdge[], places: readonly string[], allo
             const exact = choices[i]!.some(choice => choice.id === via && choice.distance === 0);
             return requested === via || exact ? [] : [{ requested, via }];
         });
-        return { route: result.path.route, approximations };
+        const route = result.path.legs.flatMap((leg, i) => (shapeLeg?.(leg) ?? leg).slice(i ? 1 : 0));
+        return { route, approximations };
     }
     const to = places[result.failedAt]!;
     const from = places[result.failedAt - 1]!;

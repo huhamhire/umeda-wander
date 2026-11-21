@@ -9,7 +9,7 @@ import { buildGeographicBuilding } from '../../src/presentation/models/buildings
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
 import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
 import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
-import { exteriorOpenings, deckBuildingAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
 
 const polygon = (v: Pick<BuildingVolume, 'outline' | 'holes'>): clipping.Polygon => [v.outline, ...v.holes].map(r => r.map(p => [p.x, p.z]));
 const area = (geometry: clipping.MultiPolygon) => geometry.reduce(
@@ -83,10 +83,9 @@ test(
     }
 );
 test(
-    'Sanbangai shell keeps public hall mouths open and adds no duplicate deck occupancy',
+    'Sanbangai shell keeps public hall mouths open',
     () => {
         const building = geographicBuildings.find(b => b.id === 'hankyu-sanbangai')!;
-        assert(!deckBuildingAreas.some(a => a.id.includes('hankyu-sanbangai')));
         const model = buildGeographicBuilding(building, exteriorOpenings);
         model.updateMatrixWorld(true);
         let checked = 0;

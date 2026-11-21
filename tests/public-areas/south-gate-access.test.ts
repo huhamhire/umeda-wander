@@ -8,8 +8,10 @@ import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { exteriorOpenings, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
+import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
+import { planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
 
-test('Daimaru 2F forecourt and 3F access corridor stay continuous through the building', () => {
+test('Daimaru public approaches stay continuous through the building on 1F, 2F and 3F', () => {
     const building = geographicBuildings.find(b => b.id === 'daimaru')!;
     const e = building.entrance!;
     const c = Math.cos(e.angle);
@@ -19,6 +21,7 @@ test('Daimaru 2F forecourt and 3F access corridor stay continuous through the bu
     const model = buildGeographicBuilding(building, exteriorOpenings);
     model.updateMatrixWorld(true);
     for (const [level, height, along, across] of [
+        ['concourse', 1.3, [-4.2, -6.7], [-59, -12]],
         ['south-deck', 4, [0, 0], [-33, -8]],
         ['south-deck', 4, [-23, 23], [-15, -15]],
         ['platform', 8, [0, 0], [-60, -22]]
@@ -26,7 +29,8 @@ test('Daimaru 2F forecourt and 3F access corridor stay continuous through the bu
         for (let i = 0; i <= 40; i++) {
             const t = i / 40;
             const p = point(along[0] + (along[1] - along[0]) * t, across[0] + (across[1] - across[0]) * t);
-            assert(layout.areas.some(area => area.level === level && area.kind === 'public' && pointInPolygon(p, area.outline)));
+            assert(layout.areas.some(area => area.level === level && area.kind === 'public' &&
+                levels.find(l => l.id === area.level)!.y + (area.elevationOffset ?? 0) === height && pointInPolygon(p, area.outline)));
             assert(!cuts.some(cut => cut.level === level && pointInPolygon(p, cut.outline)));
         }
         const from = point(along[0], across[0]);
@@ -34,6 +38,26 @@ test('Daimaru 2F forecourt and 3F access corridor stay continuous through the bu
         const delta = new T.Vector3(to.x - from.x, 0, to.z - from.z);
         const ray = new T.Raycaster(new T.Vector3(from.x, height + 1.5, from.z), delta.clone().normalize(), 0, delta.length());
         assert.equal(ray.intersectObject(model, true).length, 0, level + ' facade blocks the route');
+    }
+});
+
+test('Daimaru 1F and 3F public entrances connect through the South Gate lifts without a station detour', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const ground = 'daimaru-entry';
+    const upper = 'south-building-3f-entry';
+    const liftStops = ['south-lift-u-lower', 'south-lift-u-upper', 'south-lift-t-lower', 'south-lift-t-upper'];
+    const byId = new Map(network.nodes.map(node => [node.id, node]));
+    const { center, angle } = geographicBuildings.find(b => b.id === 'daimaru')!.entrance!;
+    for (const [from, to, stops] of [[ground, upper, liftStops], [upper, ground, [...liftStops].reverse()]] as const) {
+        const result = planWalkingRoute(network.edges, [from, to], false, approaches, network.shapeLeg);
+        assert(result.route);
+        assert.deepEqual(result.approximations, []);
+        assert.deepEqual(result.route.filter(id => !id.startsWith('walk:')), stops);
+        const plazaDepths = result.route.map(id => byId.get(id)!).filter(node => node.level === 'concourse').map(node =>
+            (node.z - center.z) * Math.cos(angle) - (node.x - center.x) * Math.sin(angle)
+        );
+        assert(plazaDepths.every(depth => depth <= -9.99), 'the 1F path should not overshoot the lift lobby toward the plaza');
     }
 });
 

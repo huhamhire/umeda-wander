@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { layout, levels, elevated, elevatedAreas, deckBuildingAreas, deckAccess, geographicPlan } from '../../src/infrastructure/district/geographic-map.ts';
+import { layout, levels, elevated, elevatedAreas, deckAccess, geographicPlan } from '../../src/infrastructure/district/geographic-map.ts';
 import { areaColor } from '../../src/presentation/appearance/area-palette.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
-import { deckBuildingOccupancies } from '../../src/infrastructure/public-areas/deck-buildings.ts';
+import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { pointInPolygon, closestPolygonPoint } from '../../src/domain/map/geometry.ts';
 import type { Point2, PlanRegion } from '../../src/domain/map/model.ts';
 
@@ -59,12 +59,6 @@ for (const raw of geographicPlan.ground) {
         }
     }
 }
-for (const a of deckBuildingAreas) {
-    shapes.push(`<path d="${shape(a)}" fill="#${areaColor(a).toString(16).padStart(6, '0')}" stroke="#b3bcae" stroke-width=".3" fill-rule="evenodd"/>`);
-    if (a.label && a.labelAnchor) {
-        shapes.push(`<text transform="translate(${a.labelAnchor.x} ${a.labelAnchor.z}) rotate(${(a.labelAngleRad ?? 0) * 180 / Math.PI})" text-anchor="middle" fill="#55675f" font-family="Microsoft YaHei,sans-serif" font-size="5" textLength="${a.labelWidth}" lengthAdjust="spacingAndGlyphs">${esc(a.name)}</text>`);
-    }
-}
 for (const area of layout.areas.filter(area => area.kind === 'public' && [4, 8].includes(levels.find(level => level.id === area.level)!.y))) {
     const color = '#' + areaColor(area).toString(16).padStart(6, '0');
     shapes.push(`<path d="${shape(area)}" fill="${color}" stroke="#7e9287" stroke-width=".3" fill-rule="evenodd"><title>${esc(area.id)}</title></path>`);
@@ -100,7 +94,7 @@ const bindings = elevated.portals.map(p => {
     const y = levels.find(l => l.id === p.level)!.y;
     const surfaces = layout.areas.filter(a => a.kind === 'public' && levels.find(l => l.id === a.level)!.y === y);
     const building = geographicBuildings.find(b => b.id === p.target);
-    const contextHost = deckBuildingOccupancies.find(group => group.level === p.level)?.definitions.find(host => host.id === p.target);
+    const contextHost = inogateHosts.find(host => host.id === p.target);
     const target = building?.volumes.filter(v => v.base <= y && v.top > y) ?? (contextHost ? [contextHost.region] : layout.areas.filter(a => levels.find(l => l.id === a.level)!.y === y &&
         a.kind === 'public' && levels.find(l => l.id === a.level)!.station === p.target.replace('station:', '')));
     return {

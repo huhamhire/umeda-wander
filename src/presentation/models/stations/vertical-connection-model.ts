@@ -109,7 +109,7 @@ export class VerticalConnectionModel {
     private previousForceVisible?: boolean;
     private readonly levels: Level[];
     /**
-     * Build equipment from both landings in its platform frame, expanding paired escalators into complete child models.
+     * Build equipment from both landings in its platform frame, expanding escalator banks into complete child models.
      */
     constructor(connection: VerticalConnection, levels: Level[], platforms: Platform[]) {
         this.connection = connection;
@@ -126,8 +126,9 @@ export class VerticalConnectionModel {
         this.lowLanding.name = 'lower-landing';
         this.highLanding.name = 'upper-landing';
         this.group.add(this.body, this.lowLanding, this.highLanding);
-        if (connection.lanes === 2) {
-            this.lanes = connectionLanes(connection).map(lane => new VerticalConnectionModel(lane, levels, platforms));
+        const lanes = connectionLanes(connection);
+        if (lanes.length > 1) {
+            this.lanes = lanes.map(lane => new VerticalConnectionModel(lane, levels, platforms));
             this.group.clear();
             for (const lane of this.lanes) {
                 this.group.add(lane.group);

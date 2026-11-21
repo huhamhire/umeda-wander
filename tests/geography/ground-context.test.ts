@@ -6,7 +6,7 @@ import context from '../../data/geography/display-context.json' with { type: 'js
 import plan from '../../data/geography/runtime-plan.json' with { type: 'json' };
 import { layout, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { deckBuildingOccupancies } from '../../src/infrastructure/public-areas/deck-buildings.ts';
+import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion } from '../../src/domain/map/model.ts';
 import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
@@ -35,8 +35,9 @@ test(
             ...basementOccupancies.map(b => b.region),
             ...layout.platforms.map(p => ({ outline: platformOutline(p) })),
             ...layout.areas.filter(a => a.railings),
+            ...layout.areas.filter(a => a.id.startsWith('hankyu-concourse-north-ground-')),
             ...geographicBuildings.map(b => ({ outline: b.volumes[0]!.outline })),
-            ...deckBuildingOccupancies.flatMap(group => group.definitions.map(b => b.region)),
+            ...inogateHosts.map(host => host.region),
         ];
         for (const region of regions) {
             assert.ok(
@@ -78,6 +79,11 @@ test(
             { x: center.x - 2, z: center.z + 2 },
         ];
         const context = buildGeographicContext([opening]);
+        for (const child of context.buildings.children) {
+            assert(child instanceof T.Mesh);
+            child.geometry.computeBoundingBox();
+            assert(child.geometry.boundingBox!.max.y <= 0);
+        }
         context.roads.updateMatrixWorld(true);
         const ray = new T.Raycaster(new T.Vector3(center.x, 5, center.z), new T.Vector3(0, -1, 0), 0, 10);
         assert.equal(

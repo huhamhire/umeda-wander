@@ -1,11 +1,13 @@
 import * as T from 'three';
-import type { CommercialConcourse } from '../../../domain/map/model.ts';
+import type { CommercialConcourse, Point2 } from '../../../domain/map/model.ts';
 import { buildFloorGeometry } from '../floor-geometry.ts';
 import clipping from 'polygon-clipping';
 import { passageOutline } from '../../../domain/map/geometry.ts';
 
 /** Cutaway public hall: open walking axis, cream arches and warm window bays. */
-export function buildCommercialConcourse(hall: CommercialConcourse, neighbours: CommercialConcourse[] = []): T.Group {
+export function buildCommercialConcourse(
+    hall: CommercialConcourse, neighbours: CommercialConcourse[] = [], openings: Point2[][] = []
+): T.Group {
     const group = new T.Group();
     group.name = hall.id;
     const [a, b] = hall.axis;
@@ -48,16 +50,24 @@ export function buildCommercialConcourse(hall: CommercialConcourse, neighbours: 
     const ownIndex = neighbours.findIndex(h => h.id === hall.id);
     const c = (b.x - a.x) / length;
     const s = (b.z - a.z) / length;
-    const pavingCuts = neighbours.slice(0, Math.max(0, ownIndex)).map(h => h.outline.map(p => ({
+    const toLocal = (p: Point2): Point2 => ({
         x: (p.x - a.x) * c + (p.z - a.z) * s,
         z: -(p.x - a.x) * s + (p.z - a.z) * c,
-    })));
+    });
+    const pavingCuts = [...neighbours.slice(0, Math.max(0, ownIndex)).map(h => h.outline), ...openings]
+        .map(outline => outline.map(toLocal))
+        .filter(outline =>
+            outline.some(p => p.x >= 0) && outline.some(p => p.x <= length) &&
+            outline.some(p => p.z >= -half) && outline.some(p => p.z <= half));
     add(buildFloorGeometry(localOutline, pavingCuts, 0.07, 0.58), floor, 'concourse-paving');
     for (let x = 2; x < length; x += 4.5) {
-        box(x, 0.665, 0, 0.035, 0.02, hall.width - 0.3, dark, 'floor-grid');
+        const outline = passageOutline({ x, z: 0.15 - half }, { x, z: half - 0.15 }, 0.035);
+        add(buildFloorGeometry(outline, pavingCuts, 0.02, 0.655), dark, 'floor-grid');
     }
     for (const side of [-1, 1]) {
-        box(length / 2, 0.665, side * half * 0.62, length, 0.02, 0.035, dark, 'floor-grid');
+        const z = side * half * 0.62;
+        const outline = passageOutline({ x: 0, z }, { x: length, z }, 0.035);
+        add(buildFloorGeometry(outline, pavingCuts, 0.02, 0.655), dark, 'floor-grid');
     }
     const bays = Math.ceil(length / 7.5);
     const bay = length / bays;

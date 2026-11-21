@@ -4,13 +4,16 @@ import clipping from 'polygon-clipping';
 import * as T from 'three';
 import { building as hanshin } from '../../src/infrastructure/buildings/hanshin-dept/index.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { layout, deckBuildingAreas, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
+import { facilities, layout, levels, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
 import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
 import { jrAxisPoint } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
 import { sourceDeckPaths } from '../../src/infrastructure/public-areas/elevated-source.ts';
+import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
+import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 
 test('North Gate atrium is open toward the tracks below the upper span', () => {
     const wings = new T.Group();
@@ -117,20 +120,36 @@ test(
     }
 );
 test(
-    'Hankyu tall hall cuts 2F context occupancy while the east–west upper floor remains',
+    'Hankyu tall hall retains a void at both deck heights while the east–west passage stays low',
     () => {
         const [ns, ew] = layout.concourses;
         assert(ns && ew);
         const nsRing: clipping.Polygon = [ns.outline.map(p => [p.x, p.z])];
-        const occupancies = deckBuildingAreas.filter(a => ['building:hankyu-dept', 'building:hankyu-grand'].includes(a.blockId!));
-        for (const floor of occupancies) {
-            const geometry: clipping.Polygon = [floor.outline, ...floor.holes ?? []].map(r => r.map(p => [p.x, p.z]));
-            assert.equal(clipping.intersection(geometry, nsRing).length, 0, '2F fill sealed the tall hall');
-        }
+        const atrium = layout.atria!.find(a => a.id === 'hankyu-concourse-void')!;
+        assert.deepEqual(atrium.openings.map(o => o.level), ['district-south-deck', 'district-north-deck']);
         const west = { x: ew.axis[0].x + 30, z: ew.axis[0].z - 1 };
-        assert(
-            occupancies.some(a => pointInPolygon(west, a.outline) && !a.holes?.some(h => pointInPolygon(west, h))),
-            'east–west concourse should keep its upper floor'
-        );
+        for (const o of atrium.openings) {
+            const opening: clipping.Polygon = [o.outline.map(p => [p.x, p.z])];
+            assert.equal(clipping.difference(nsRing, opening).length, 0);
+            assert(!pointInPolygon(west, o.outline));
+        }
     }
 );
+
+test('Hankyu south concourse exposes the stairs and all six escalator lanes through the ground paving', () => {
+    const hall = layout.concourses.find(h => h.id === 'hankyu-north-south-concourse')!;
+    const bank = layout.connections.find(c => c.id === 'hankyu-concourse-south-escalators')!;
+    const openings = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === hall.level);
+    assert.equal(openings.filter(o => o.connectionId === bank.id).length, 6);
+    assert.equal(new VerticalConnectionModel(bank, levels, layout.platforms).group.children.length, 6);
+    assert(facilities.some(f => f.connectionId === bank.id && f.level === hall.level));
+    const apron = layout.areas.find(a => a.id === 'hankyu-concourse-south-ground')!;
+    const cuts = openings.map(o => o.outline);
+    const model = new T.Group();
+    model.add(buildCommercialConcourse(hall, layout.concourses, cuts), new T.Mesh(buildFloorGeometry(apron.outline, cuts, .55)));
+    model.updateMatrixWorld(true);
+    for (const [z, blocked] of [[613, false], [610, true], [600, true]] as const) {
+        const ray = new T.Raycaster(new T.Vector3(723.2, 1.2, z), new T.Vector3(0, -1, 0), 0, 1);
+        assert.equal(ray.intersectObject(model, true).length > 0, blocked);
+    }
+});

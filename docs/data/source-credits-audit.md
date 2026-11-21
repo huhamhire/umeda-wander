@@ -58,6 +58,8 @@ Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽�
 
 阪急 1F 公共通廊现役几何在 `src/infrastructure/buildings/hankyu-dept/concourse.ts`，拱门及橱窗程序模型在 `src/presentation/models/buildings/commercial-concourse-model.ts`；依据官方通廊说明和既有用户照片拟合，原始素材未嵌入页面。已单列数据条目，几何改编、外观参考及公开使用授权仍待核实，不能归入 PLATEAU 或 OSM 的许可。
 
+南端梯组以官方来源核对层间关系、设备类型和数量。模型轴线及公共步道参考仓库现有 OSM 快照，建设方图纸和指引照片通过链接标注来源。 [阪急电铁建设说明](https://www.hankyu.co.jp/company/news/pdf/ER201204123N2.pdf) · [大阪市公共步行指引](https://www.city.osaka.lg.jp/shimin/page/0000600942.html)
+
 2026-11-17 从大阪市 2025 CityGML 包提取指定三栋阪急／站房 LOD2 屋面及 JR 站房 LOD0／1 包络。包内 README 允许选用 CC BY 4.0；本项目据此明确选择该许可并记录出典、加工事实、GML ID、测绘年份和文件 SHA-256，见 `data/geography/buildings/PLATEAU-LICENSE.md`、`plateau-source.json`。未导入贴图。历史阪神／JP 数据未采用；这两栋重建后的人工体量及非开放外观资料不包含在 PLATEAU 的许可声明中。出处与限制见 `docs/design/buildings/model-calibration.md`。
 
 ## 地标与顶棚

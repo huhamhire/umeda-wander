@@ -7,7 +7,8 @@ import { createElevatedBlocks } from '../../src/infrastructure/public-areas/elev
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { footprint } from '../../src/infrastructure/buildings/building-data.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
-import { deckBuildingOccupancies } from '../../src/infrastructure/public-areas/deck-buildings.ts';
+import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
+import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 import { platformOutline, passageOutline } from '../../src/domain/map/geometry.ts';
 import type { Point2 } from '../../src/domain/map/model.ts';
 import { contextEnvelope, ring, unionContextPieces } from './context-scope.ts';
@@ -20,7 +21,8 @@ const protectedOutlines = [
     // Ground scope follows the declared source host, not a rounded facade decoration.
     ...geographicBuildings.map(b => footprint(b.volumes[0]!.source.split('/').at(-1)!).outline),
     ...basementOccupancies.map(b => b.region.outline),
-    ...deckBuildingOccupancies.flatMap(group => group.definitions.map(b => b.region.outline)),
+    ...inogateHosts.map(host => host.region.outline),
+    ...hankyuConcourseAreas.map(area => area.outline),
     ...decks.blocks.flatMap(b => b.regions.map(r => r.outline)),
     ...decks.blocks.flatMap(b => b.paths.flatMap(p => p.points.slice(1).map((to, i) => passageOutline(p.points[i]!, to, p.width)))),
 ];
@@ -36,7 +38,7 @@ const coreScope = contextEnvelope(
 const relatedBuildingIds = new Set([
     ...geographicBuildings.flatMap(b => b.volumes.map(v => new URL(v.source).pathname.slice(1))),
     ...basementOccupancies.flatMap(b => b.evidence.urls ?? []).filter(url => url.includes('openstreetmap.org/')).map(url => new URL(url).pathname.slice(1)),
-    ...deckBuildingOccupancies.flatMap(group => group.definitions.flatMap(b => b.evidence.urls ?? [])).filter(url => url.includes('openstreetmap.org/')).map(url => new URL(url).pathname.slice(1)),
+    ...inogateHosts.map(host => 'way/' + host.way),
     ...policy.additionalBuildingIds,
 ]);
 /**

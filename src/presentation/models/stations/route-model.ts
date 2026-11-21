@@ -46,11 +46,19 @@ export class RouteModel {
                 continue;
             }
             this.primitives.beam(this.group, a, b, 0.38, colors.route);
+            const length = a.distanceTo(b);
+            // Short bends need a continuous beam, not an arrow larger than the segment.
+            if (length < 4) {
+                continue;
+            }
             const direction = b.clone().sub(a).normalize();
-            const arrow = new T.Mesh(new T.ConeGeometry(0.9, 2.1, 3), this.primitives.material(colors.route));
-            arrow.position.copy(a).lerp(b, 0.66);
-            arrow.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction);
-            this.group.add(arrow);
+            const markers = Math.max(1, Math.floor(length / 18));
+            for (let j = 0; j < markers; j++) {
+                const arrow = new T.Mesh(new T.ConeGeometry(0.9, 2.1, 3), this.primitives.material(colors.route));
+                arrow.position.copy(a).lerp(b, (j + .5) / markers);
+                arrow.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction);
+                this.group.add(arrow);
+            }
         }
         for (const index of new Set([0, points.length - 1])) {
             if (!visible(nodes[index]!.level)) {

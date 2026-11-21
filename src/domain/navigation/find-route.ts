@@ -1,10 +1,13 @@
 import type { RouteEdge } from '../map/model.ts';
 
-type Step = { id: string; gates: number; distance: number };
+type Step = { id: string; gates: number; streetDistance: number; travelCost: number };
 
-/** Rank unnecessary gate crossings after staying on the same side. */
+/** Extra walking-equivalent cost per modeled edge, used only after the gate and street priorities. */
+const verticalPenalty: Partial<Record<RouteEdge['kind'], number>> = { elevator: 15, stairs: 30 };
+
+/** Prefer fewer gate crossings, less street walking and then lower travel cost. */
 function compareSteps(a: Step, b: Step): number {
-    return a.gates - b.gates || a.distance - b.distance;
+    return a.gates - b.gates || a.streetDistance - b.streetDistance || a.travelCost - b.travelCost;
 }
 
 /** Add a tentative step to the min heap. */
@@ -69,17 +72,18 @@ function adjacency(edges: RouteEdge[]) {
 }
 
 /**
- * Prefer fewer gate crossings, then shorter paths. Disabled paid access removes gate edges entirely.
+ * Compare gate crossings, street distance and weighted travel cost in order.
+ * Disabled paid access removes gate edges entirely.
  */
 export function findRoute(edges: RouteEdge[], start: string, end: string, allowPaid: boolean): string[] | null {
-    const origin = { id: start, gates: 0, distance: 0 };
+    const origin = { id: start, gates: 0, streetDistance: 0, travelCost: 0 };
     const best = new Map<string, Step>([[start, origin]]);
     const previous = new Map<string, string>();
     const graph = adjacency(edges);
     const queue: Step[] = [origin];
     while (queue.length) {
         const step = popStep(queue);
-        const { id, distance, gates } = step;
+        const { id, travelCost, gates, streetDistance } = step;
         if (step !== best.get(id)) {
             continue;
         }
@@ -99,7 +103,12 @@ export function findRoute(edges: RouteEdge[], start: string, end: string, allowP
             if (!allowPaid && edge.kind === 'gate') {
                 continue;
             }
-            const next = { id: to, gates: gates + Number(edge.kind === 'gate'), distance: distance + edge.cost };
+            const next = {
+                id: to,
+                gates: gates + Number(edge.kind === 'gate'),
+                streetDistance: streetDistance + (edge.street ? edge.cost : 0),
+                travelCost: travelCost + edge.cost + (verticalPenalty[edge.kind] ?? 0),
+            };
             const prior = best.get(to);
             if (!prior || compareSteps(next, prior) < 0) {
                 best.set(to, next);

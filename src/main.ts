@@ -656,14 +656,14 @@ async function loadMap(): Promise<void> {
         const savedItinerary = sharedItinerary ?? (currentState.route ? restored?.walkingDraft : undefined);
         let restoredPreview: string | undefined;
         if (savedItinerary?.ids.every(id => id !== null)) {
-            const result = planWalkingRoute(graph.edges, savedItinerary.ids, savedItinerary.allowPaid, walkingApproaches);
+            const result = planWalkingRoute(graph.edges, savedItinerary.ids, savedItinerary.allowPaid, walkingApproaches, graph.shapeLeg);
             currentState.route = result.route ?? null;
             if (result.route) {
                 restoredPreview = walkingApproachMessage(result.approximations);
             }
             sharedItinerary = undefined;
         }
-        session = new MapSession(graph.edges, { nodes: graph.nodes, levels: runtime.levels });
+        session = new MapSession(graph.edges, { nodes: graph.nodes, levels: runtime.levels, shapeLeg: graph.shapeLeg });
         session.state = currentState;
         scene = new runtime.MapScene(
             viewport,

@@ -707,7 +707,7 @@ export class MapScene {
         const groundVisible = this.roadsVisible && canShowGround;
         this.context.roads.visible = groundVisible;
         this.context.buildings.visible = groundVisible;
-        this.models.updateBuildingFloorVisibility(groundVisible, this.state.roof);
+        this.models.updateBuildingFloorVisibility(this.state.roof);
         this.geographicExteriors.visible = groundVisible && this.state.roof && this.state.level === 'all';
         this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
         this.models.roof.visible = canShowGround && this.state.roof && this.state.level === 'all';

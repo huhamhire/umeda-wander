@@ -385,7 +385,8 @@ export const areas: FloorArea[] = [
         level: 'bridge',
         name: messageText('stations.jrOsaka.areas.bridgePublic.name'),
         kind: 'public',
-        outline: rectangle(-8, 0, 8, 76),
+        // Overlap the north public landing so the fitted bridge remains continuous after projection.
+        outline: rectangle(-8, -0.5, 8, 77),
         label: true,
         evidence: pb
     },

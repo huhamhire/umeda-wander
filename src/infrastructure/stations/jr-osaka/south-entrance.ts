@@ -1,6 +1,7 @@
 import { messageText } from '../../i18n/index.ts';
 import type { StationMap, Point2, VerticalConnection } from '../../../domain/map/model.ts';
 import type { BuildingEntrance } from '../../buildings/building-data.ts';
+import { passageOutline } from '../../../domain/map/geometry.ts';
 
 /** JR public entrance landings share the commercial facade's explicit entrance interface. */
 export function applySouthEntrance(station: StationMap, e: BuildingEntrance): void {
@@ -13,8 +14,40 @@ export function applySouthEntrance(station: StationMap, e: BuildingEntrance): vo
         urls: ['https://osakastationcity.com/guide/'],
         detail: 'Osaka Station City (大阪ステーションシティ) 2F and 3F plans and the user facade photo show the South Gate forecourt and the public approach between stair banks. The outlines and elevations are schematic.'
     };
+    // Fit the OSM indoor corridor from the raised Central South Exit to the ground arcade.
+    const passage = passageOutline(point(-4.1, -61), point(-6.8, -10.7), 5);
+    const passageProof = {
+        source: 'district' as const,
+        pages: [3],
+        urls: [
+            'https://www.jcomm.co.jp/assets/pdf/transit/osc/tabidachi_20220331.pdf',
+            'https://www.openstreetmap.org/way/557170595',
+            'https://www.openstreetmap.org/way/330561968'
+        ],
+        detail: 'The South Gate Building (サウスゲートビルディング) ground plan shows the public passage from the JR Central Concourse to South Gate Plaza. OSM indoor corridor and arcade locate its axis. The fitted width and continuity at the raised model elevation are schematic.'
+    };
     station.layout.areas = station.layout.areas.filter(a => !['south-building-2f', 'south-gate-west-escalator-ground'].includes(a.id));
     station.layout.areas.push(
+        {
+            id: 'south-entrance-ground-passage',
+            level: 'concourse',
+            name: messageText('stations.jrOsaka.entities.southEntranceGround.name'),
+            kind: 'public',
+            label: false,
+            elevationOffset: 1.3,
+            evidence: passageProof,
+            outline: passage
+        },
+        {
+            id: 'south-entrance-ground-passage-base',
+            level: 'concourse',
+            name: messageText('stations.jrOsaka.entities.southEntranceGround.name'),
+            kind: 'service',
+            label: false,
+            height: 1.3,
+            evidence: passageProof,
+            outline: passageOutline(point(-4.42, -55), point(-6.8, -10.7), 5)
+        },
         {
             id: 'south-entrance-ground',
             level: 'concourse',

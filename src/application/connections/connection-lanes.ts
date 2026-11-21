@@ -5,7 +5,8 @@ export const escalatorTreadWidth = 1.35;
 export const escalatorLaneSpacing = 2.45;
 /** Independent, genuinely side-by-side lanes sharing a diagram reference. */
 export function connectionLanes(connection: VerticalConnection): VerticalConnection[] {
-    if (connection.lanes !== 2) {
+    const lanes = connection.lanes ?? 1;
+    if (lanes === 1) {
         return [connection];
     }
     const dx = connection.to.x - connection.from.x;
@@ -14,7 +15,8 @@ export function connectionLanes(connection: VerticalConnection): VerticalConnect
     if (length < 1e-6) {
         throw new Error('Parallel escalators need a horizontal run');
     }
-    return [-0.5, 0.5].map((side, index) => {
+    return Array.from({ length: lanes }, (_, index) => {
+        const side = index - (lanes - 1) / 2;
         const offset = side * (connection.laneSpacing ?? escalatorLaneSpacing);
         const ox = -dz / length * offset;
         const oz = dx / length * offset;

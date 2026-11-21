@@ -18,7 +18,7 @@
 
 - B1 街区占位可以独立于地上 OSM 实体。E-ma／Hilton West／MARU 使用 `data/geography/underground/basement-outlines.json` 的源图边界，由 `south-diamor/basement-outlines.ts` 适配；原始路径、SHA-256 和绘图对象在 `basement-source.json`。道路配准变化后须运行 `build-basement-outlines.ts`、`build-ground-context.ts` 和 `review-underground.ts`。边界接触和核查报告的最短间距均不证明门洞，不可据此补最近点通道。
 
-- 阪急百货 1F 内庭／公共通廊在 `buildings/hankyu-dept/concourse.ts` 独立维护，复用拱门、暖色橱窗和地坪模型；接入 `district-ground`，不依赖归档坐标。外壳按通廊高度裁开，南北挑高同时避让两组 2F 展示标高的占位楼板，东西通廊上层保留。地面关闭时同步隐藏。阪神上部裙楼先合并为单一包络，再承接退台塔楼；`BuildingVolume.surface` 明确材质角色，不以悬空基底推断为塔楼。
+- 阪急百货 1F 内庭／公共通廊在 `buildings/hankyu-dept/concourse.ts` 独立维护，复用拱门、暖色橱窗和地坪模型；接入 `district-ground`，向北经 JR 轨道下方连到阪急站 1F 闸外站厅。外壳按通廊高度裁开，南北挑高在两组 2F 标高保留开口。内庭跟随 1F 显隐，关闭地面底图时仍可查看。地面建筑轮廓不复制到 2F。阪神上部裙楼先合并为单一包络，再承接退台塔楼；`BuildingVolume.surface` 明确材质角色，不以悬空基底推断为塔楼。
 
 - 建筑白模校对见 `docs/design/buildings/model-calibration.md`。`data/geography/buildings/plateau-profiles.json` 只含已核对的阪急 LOD2 分层屋面，包版本 2025、选中建筑 surveyYear=2017；阪神／JP 重建体量不能套用旧模型。阪神地面退让与跨道路上部裙楼分开，JP 保持连续塔身。三番街共用站体宿主，不另画 2F 占位；公共站厅外壳裁口由 `station-building-openings.ts` 维护。浅色建筑主题在 `models/building-palette.ts`，地下公共颜色不随线路更改。JR 地理屋顶按独立 `jr-roof.json` 的约 180×100 米及 LOD0／1 包络拟合，斜面仍是示意，旧屋顶参数不混用。
 

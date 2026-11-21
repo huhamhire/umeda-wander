@@ -26,7 +26,13 @@
 
 两条公共轴线按百货与独立 Grand Building 的接缝重新拟合，归入 1F `district-ground`。南北挑高通廊约 12 米宽／12 米高，东西通廊约 10 米宽／3.3 米高，仅为白模展示参数。依据仍为[官方通廊说明](https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf)及既有用户照片，具体边界和外观授权待核实。
 
-外壳、立面层带及竖向饰条共用通廊裁口；交会处不画横挡的拱墙。南北挑高对南／北两组 2F 占位均裁空，东西通廊保留其上方楼板。1F 选层时保留内庭细节、隐藏上部建筑；关闭地面显示时内庭和地上占位一起隐藏。没有新增商场店铺内部布局或跨站寻路边。
+外壳、立面层带及竖向饰条共用通廊裁口。交会处保持通行，南北挑高在南／北两组 2F 标高均保留开口，东西通廊采用较低净高。内庭与公共通廊跟随 1F 显隐，关闭地面底图时可继续查看。
+
+从东西通廊可经 1F 公共步道向北，穿过 JR 大阪站东侧本线和环状线高架下方，进入阪急大阪梅田站 1F 闸外站厅。走向采用相接的 OSM 地面步道轴线，6 米宽度、首尾接合和外壳净空按模型拟合。 [大阪市步行指引](https://www.city.osaka.lg.jp/shimin/page/0000600942.html) · [OSM 百货侧轴线](https://www.openstreetmap.org/way/557024413) · [OSM 下穿段](https://www.openstreetmap.org/way/747189967) · [OSM 站厅端](https://www.openstreetmap.org/way/747189969)
+
+南北通廊的南端设六台并列扶梯与东侧宽楼梯，连接 1F 和 B1。两组梯段按 OSM 轴线定位，B1 落台经源步道先向南、再向西接入公共网。1F 公共楼板、铺装线和百货低层体量共用梯口净空。梯宽、坡度与落台范围按模型展示拟合。 [大阪市步行指引](https://www.city.osaka.lg.jp/shimin/page/0000600942.html) · [阪急电铁通廊资料](https://www.hankyu.co.jp/company/news/pdf/ER201204123N2.pdf) · [OSM 扶梯](https://www.openstreetmap.org/way/637935250) · [OSM 楼梯](https://www.openstreetmap.org/way/1320007682) · [OSM 地下接段](https://www.openstreetmap.org/way/1320007679)
+
+设施目录标注南端梯组和百货西南侧 9 号连廊电梯。大阪市图在 2F 和 B1 均标出 9 号公共电梯。现有模型的拟合井道在 B1 投影与 M16 南闸内重合，导航只采用有公共落点的设备连接。阪急东、西及南北通廊的跨层关系以各个具名公共设备和实际落台为准。 [大阪市步道桥详图](../../../references/district/elevated-walkways-2026.pdf) · [阪急东西通廊发布说明](https://www.hankyu.co.jp/company/news/pdf/ER201209194N1.pdf)
 
 离线组装复核命令：`node scripts/geography/render-building-details.ts --assembly`，生成阪神四方向及阪急 1F 两方向的实际网格深度预览到忽略的 `build/geography/building-assembly.png`。测试检查实际外壳与内庭组合后的步行轴线、2F 挑高裁空、阪神道路净空及塔楼承接。未直接操作浏览器。
 

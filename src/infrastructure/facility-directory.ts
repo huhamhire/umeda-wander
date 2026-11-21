@@ -33,6 +33,12 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (hankyuLocation) {
             return messageText(hankyuLocation);
         }
+        if (id.startsWith('hankyu-concourse-south-')) {
+            return messageText('buildings.hankyuDept.entities.hankyuNorthSouthConcourse.name');
+        }
+        if (id === 'public-south-lift-9') {
+            return messageText('facilities.locations.hankyuDeptBridgeLift');
+        }
         if (id.startsWith('public-north')) {
             return messageText('facilities.locations.northAtrium');
         }

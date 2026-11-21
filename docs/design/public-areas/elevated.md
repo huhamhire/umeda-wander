@@ -7,11 +7,11 @@
 | `public-areas/north-decks/` | Grand Front 南北馆直桥、Grand Front—北中庭、Yodobashi 西／东桥与外圈回廊、LUCUA／JR 公共廊至阪急接口 |
 | `public-areas/south-decks/` | JP Tower—大丸前庭、梅田新步道桥北／南支臂及沿路主干、阪急百货西侧两个接入口、阪神百货和南出口直梯接入、东南延伸 |
 | `public-areas/west-decks/` | LUCUA 1100 西侧公共廊至梅北上方公共步道；不绘对侧建筑，不接地下付费站台 |
-| `west-decks/inogate.ts` | 独立 Inogate 2F 公共前沿及西端至 Grand Green 南馆连桥；两端只补平面占位 |
+| `west-decks/inogate.ts` | 独立 Inogate 2F 公共前沿及西端至 Grand Green 南馆连桥，目标轮廓留在地面 |
 
 `src/infrastructure/public-areas/elevated-blocks.ts` 登记板块，`data/geography/elevated/` 保存 OSM 轴线配置及 Inogate 参考拟合。桥宽通常取 6–7 m；源轴线保留原经纬度、标签和版本。OSM `level=1` 不直接对应建筑 1F。
 
-`public-deck-assembly.ts` 在分支处合并桥面，再减去同高车站楼板、付费区和前序公共板块。前往建筑的二层平面占位由 `building-occupancy.ts` 减去公共面、车站楼板和设备孔洞；名称平贴楼板，随建筑轮廓开关显隐。高架公共网没有跨站 `RouteEdge`。
+`public-deck-assembly.ts` 在分支处合并桥面，再减去同高车站楼板、付费区和前序公共板块。建筑的示意轮廓在地面显示，2F 保留公共面和具名入口。高架公共网的步行接续见[步行路线](../walking-routes.md)。
 
 ## 标高与开口
 
@@ -64,7 +64,7 @@ OSM 原始轴线及估计宽度随 OSM 下载提供；公共平台、建筑裁�
 
 Inogate 连桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-decks` 板块。JR 发布资料第 1 页位置图、第 4 页两端及楼层说明，与两份本地 2F 图、OSM Inogate／Grand Green 南馆 Gate Tower 外围轮廓联合拟合：从 JR 北侧 2F 公共面接 Inogate 前沿，再从西端朝西北接南馆。它与更北面的 LUCUA—Green Place 连桥保持独立，不误接 Grand Front 或梅北付费站台。
 
-两端坐标、7 m 桥宽及北侧统一展示标高仍是参考拟合，不是实测门位；两处宿主只显示 2F 平面占位，无商场内部路线、上部建筑或新增跨站 RouteEdge。公共面避让占位、孔洞、同高楼板和付费区，回归检查覆盖 JR 至目标处的连续公共分量；入口栏杆按声明的门户留口。新桥的细部门口和实际标高继续纳入人工复核。
+两端坐标、7 m 桥宽及北侧统一展示标高按参考图拟合。两处宿主在地面用 OSM 轮廓标示，桥面保留已登记的入口与落台。公共面避让孔洞、同高楼板和付费区。回归检查覆盖 JR 至目标处的连续公共分量，入口栏杆按声明的门户留口。
 
 ## 桥面顶棚
 

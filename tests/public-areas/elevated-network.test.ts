@@ -11,7 +11,8 @@ import { explorationElevation } from '../../src/application/exploration/explorat
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { FloorArea, PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { deckAccess, deckBuildingAreas, edges, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels, publicWalkingRoutes } from '../../src/infrastructure/district/geographic-map.ts';
+import { deckAccess, edges, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels, publicWalkingRoutes } from '../../src/infrastructure/district/geographic-map.ts';
+import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { pendingDecks } from '../../src/infrastructure/public-areas/elevated-source.ts';
@@ -109,16 +110,11 @@ test(
     }
 );
 test(
-    'commercial 2F context is occupancy only and cannot cover walking faces or become a route',
+    'district 2F levels do not duplicate ground building footprints as floor areas',
     () => {
-        assert.equal(new Set(deckBuildingAreas.map(a => a.blockId)).size, 14);
-        for (const a of deckBuildingAreas) {
-            assert.equal(a.kind, 'commercial');
-            assert.ok(a.labelStyle === 'floor');
-            for (const b of layout.areas.filter(b => b.kind === 'public' && levels.find(l => l.id === b.level)!.y === levels.find(l => l.id === a.level)!.y)) {
-                assert.ok(size(clipping.intersection(geometry(a), geometry(b))) < 1e-5, a.id + ' covers walkway');
-            }
-        }
+        const deckLevels = new Set(elevated.blocks.map(block => block.level));
+        assert(layout.areas.filter(area => deckLevels.has(area.level)).every(area => area.kind === 'public'));
+        assert(layout.areas.some(area => area.blockId === 'building:hankyu-grand' && area.level === 'district-underground'));
     }
 );
 test(
@@ -266,7 +262,7 @@ test(
             const b = geographicBuildings.find(b => b.id === door.buildingId);
             if (!b) {
                 assert.ok(
-                    deckBuildingAreas.some(area => area.blockId === 'building:' + door.buildingId),
+                    inogateHosts.some(host => host.id === door.buildingId),
                     'unmodelled mouth must have a declared context host'
                 );
                 continue;
@@ -311,10 +307,9 @@ test(
             end.x < bridge.points[0]!.x && end.z < bridge.points[0]!.z,
             'Grand Green branch must leave the west end northwestward'
         );
-        const host = deckBuildingAreas.filter(a => a.blockId === 'building:grand-green-south-gate');
+        const host = inogateHosts.find(host => host.id === 'grand-green-south-gate');
         const mouth = exteriorOpenings.find(o => o.buildingId === 'grand-green-south-gate')!;
-        assert.ok(host.length && mouth, 'destination context and declared mouth are missing');
-        assert.ok(!host.some(a => contains(a, end)), 'host fill must yield to the public landing');
+        assert.ok(host && mouth, 'destination context and declared mouth are missing');
         assert.ok(bridge.evidence.detail?.includes('人工拟合'), 'do not present authored endpoints as surveyed');
     }
 );

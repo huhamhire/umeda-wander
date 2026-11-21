@@ -56,12 +56,8 @@ test(
             assert.equal(material.color.getHex(), stationPalettes['hankyu-umeda'].platform);
             assert.ok(p.lineColor, 'route colours remain separate from the pale chestnut pavement');
         }
-        for (const hall of layout.concourses) {
-            assert.ok(
-                scene.geographicBuildingFloors.some((model) => model.name === hall.id),
-                '1F hall must follow the ground visibility switch'
-            );
-        }
+        const halls = layout.concourses.map(hall => scene.groups.get(hall.level)!.children.find(model => model.name === hall.id)!);
+        assert(halls.length && halls.every(hall => hall?.visible));
         const b1 = scene.groups.get('district-underground')!;
         const basementFloors = scene.basementBuildingFloors;
         assert.deepEqual(basementFloors.map(floor => floor.name), basements.areas.map(area => area.id));
@@ -69,12 +65,14 @@ test(
         const basementSlabs = basementFloors.flatMap(floor => floor.children.filter(mesh => mesh.userData.labelOccluder));
         const publicSlabs = b1.children.filter(mesh => mesh.userData.labelOccluder);
         assert(basementSlabs.length && publicSlabs.length);
-        scene.updateBuildingFloorVisibility(true, false);
+        scene.updateBuildingFloorVisibility(false);
         assert(basementFloors.every(floor => !floor.visible));
-        assert(scene.geographicBuildingFloors.every(floor => floor.visible));
+        assert(halls.every(hall => hall.visible));
         assert.deepEqual(visibleLabelOccluders([...basementSlabs, ...publicSlabs]), publicSlabs);
-        scene.updateBuildingFloorVisibility(false, true);
-        assert(scene.geographicBuildingFloors.every(floor => !floor.visible));
+        context.roads.visible = false;
+        context.buildings.visible = false;
+        scene.updateBuildingFloorVisibility(true);
+        assert(halls.every(hall => hall.parent?.visible && hall.visible));
         assert.deepEqual(visibleLabelOccluders(basementSlabs), basementSlabs);
     }
 );

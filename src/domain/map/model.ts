@@ -70,6 +70,8 @@ export interface RouteEdge {
     cost: number;
     kind: 'walk' | 'gate' | 'escalator' | 'stairs' | 'elevator';
     directed?: boolean;
+    /** This segment follows a ground-level street or pedestrian crossing. */
+    street?: true;
 }
 
 export interface FloorArea {
@@ -124,7 +126,7 @@ export interface VerticalConnection {
     evidence: Evidence;
     platformId?: string;
     width?: number;
-    lanes?: 1 | 2;
+    lanes?: 1 | 2 | 6;
     laneSpacing?: number;
     stairLandingLength?: number;
     /** Clear slab opening width when a stair and its flanking escalators share one well. */

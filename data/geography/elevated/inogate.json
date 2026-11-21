@@ -5,12 +5,10 @@
   "hosts": [
     {
       "id": "inogate",
-      "name": "Inogate 大阪 · 2F",
       "way": "1147394005"
     },
     {
       "id": "grand-green-south-gate",
-      "name": "Grand Green 南馆 · 2F 接入",
       "way": "1347368433"
     }
   ],
@@ -84,5 +82,5 @@
     "references/connections/grand-green-osaka/south-building-2f.png"
   ],
   "certainty": "reference-fit",
-  "note": "目标与楼层来自参考图；前沿、门位、桥宽及统一展示标高为人工拟合，不是测量端点。只显示公共连接和宿主平面占位，不展开商业内部。"
+  "note": "目标与楼层来自参考图；前沿、门位、桥宽及统一展示标高为人工拟合。2F 显示公共连接，宿主轮廓留在地面。"
 }

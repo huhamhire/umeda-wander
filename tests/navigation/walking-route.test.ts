@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import * as T from 'three';
 import clipping from 'polygon-clipping';
 import type { Polygon } from 'polygon-clipping';
 import { MapSession } from '../../src/application/map-session.ts';
@@ -14,6 +15,26 @@ import { edges, facilities, layout, levels, nodes, northWalking, southWalking, s
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
+
+test('walk previews reduce the Hankyu mesh zigzag while preserving the chosen waypoint and transitions', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const session = new MapSession(network.edges, { nodes: network.nodes, levels, shapeLeg: network.shapeLeg });
+    const waypoint = 'daimaru-entry';
+    const stops = ['hankyu-umeda-route-entry', waypoint, 'nishi-umeda-destination'];
+    const original = planWalkingRoute(network.edges, stops, true, approaches);
+    const preview = session.previewWalkingRoute(stops, true, approaches);
+    assert(original.route && preview.route);
+    assert.equal(preview.route[0], original.route[0]);
+    assert.equal(preview.route.at(-1), original.route.at(-1));
+    assert(preview.route.includes(approaches.get(waypoint)![0]!.id));
+    assert(preview.route.length < original.route.length / 2);
+    const transitions = network.edges.filter(edge => edge.kind !== 'walk');
+    const usedTransitions = (route: string[]) => route.slice(1).flatMap((to, i) => transitions.filter(edge =>
+        edge.from === route[i] && edge.to === to || !edge.directed && edge.to === route[i] && edge.from === to));
+    assert.deepEqual(usedTransitions(preview.route), usedTransitions(original.route));
+    assert.equal(planWalkingRoute(network.edges, stops, false, approaches, network.shapeLeg).issue, 'gateRequired');
+});
 
 test('the expanded map routes Central Gate 9/10 to Higashi-Umeda exit 4 through a JR gate only', () => {
     const network = createWalkingNetwork();
@@ -44,6 +65,58 @@ test('the expanded map routes Central Gate 9/10 to Higashi-Umeda exit 4 through 
     for (const gate of edges.filter(edge => edge.kind === 'gate' && edge.directed)) {
         assert(gates.includes(gate));
         assert(!gates.some(other => other.from === gate.to && other.to === gate.from));
+    }
+});
+
+test('Bridge Gate ticket machines reach the Nishi-Umeda platform through a single Metro gate in both directions', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const machines = 'machines-bridge';
+    const platform = 'nishi-umeda-destination';
+    const gates = network.edges.filter(edge => edge.kind === 'gate');
+    for (const [from, to] of [[machines, platform], [platform, machines]] as const) {
+        const result = planWalkingRoute(network.edges, [from, to], true, approaches);
+        assert(result.route);
+        assert.deepEqual(result.approximations, []);
+        const route = result.route;
+        const usedGates = route.slice(1).flatMap((next, i) => gates.filter(edge =>
+            edge.from === route[i] && edge.to === next || !edge.directed && edge.to === route[i] && edge.from === next));
+        assert.equal(usedGates.length, 1);
+        assert.match(usedGates[0]!.from, /^nishi-umeda-/);
+        assert.equal(planWalkingRoute(network.edges, [from, to], false, approaches).issue, 'gateRequired');
+    }
+    assert(planWalkingRoute(network.edges, ['entry', machines], false, approaches).route);
+    assert(planWalkingRoute(network.edges, [machines, 'entry'], false, approaches).route);
+    const streetNodes = new Set(network.edges.filter(edge => edge.street).flatMap(edge => [edge.from, edge.to]));
+    const toBridge = planWalkingRoute(network.edges, ['entry', machines], false, approaches).route!;
+    assert(!toBridge.some(id => streetNodes.has(id)));
+    const toStreetExit = planWalkingRoute(network.edges, ['entry', 'nishi-umeda-exit-10'], false, approaches).route;
+    assert(toStreetExit?.filter(id => streetNodes.has(id)).length);
+});
+
+test('Hankyu south concourse stairs join the B1 public route in both directions', () => {
+    const network = createWalkingNetwork();
+    const ground = 'hankyu-concourse-south-stairs-ground';
+    const basement = 'hankyu-concourse-south-stairs-b1';
+    const destination = 'nishi-umeda-north-route-out';
+    const outbound = planWalkingRoute(network.edges, [ground, destination], false).route;
+    const inbound = planWalkingRoute(network.edges, [destination, ground], false).route;
+    assert.equal(outbound?.[1], basement);
+    assert.equal(inbound?.at(-2), basement);
+});
+
+test('Hankyu station and the department store concourse connect at 1F under the JR tracks', () => {
+    const network = createWalkingNetwork();
+    const graphNodes = new Map(network.nodes.map(node => [node.id, node]));
+    const areas = layout.areas.filter(area => area.id.startsWith('hankyu-concourse-north-ground-'));
+    const station = 'hankyu-umeda-route-entry';
+    const concourse = 'hankyu-concourse-south-stairs-ground';
+    for (const [from, to] of [[station, concourse], [concourse, station]] as const) {
+        const { route } = planWalkingRoute(network.edges, [from, to], false);
+        assert(route);
+        const points = route.map(id => graphNodes.get(id)!);
+        assert(points.every(point => levels.find(level => level.id === point.level)!.y + (point.elevationOffset ?? 0) === 0));
+        assert(points.some(point => point.z > 455 && point.z < 485 && areas.some(area => pointInPolygon(point, area.outline))));
     }
 });
 
@@ -168,9 +241,22 @@ test('the cross-station route mesh stays continuous across B1 owners and hides o
     const model = new RouteModel(nodes);
     const elevation = (id: typeof levels[number]['id']) => levels.find(level => level.id === id)!.y;
     model.update(route, elevation, id => viewLayerRole(levels, { level: 'district-underground' }, id) === 'current');
-    assert.equal(model.group.children.length, 2 * (route.length - 1) + 2);
+    assert.equal(model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'CylinderGeometry').length, route.length - 1);
+    assert.equal(model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'SphereGeometry').length, 2);
     model.update(route, elevation, id => viewLayerRole(levels, { level: 'concourse' }, id) === 'current');
     assert.equal(model.group.children.length, 0);
+});
+
+test('short route turns keep their beam without oversized arrows', () => {
+    const model = new RouteModel([
+        { id: 'start', level: 'concourse', x: 0, z: 0 },
+        { id: 'turn', level: 'concourse', x: 0, z: 1 },
+        { id: 'end', level: 'concourse', x: 38, z: 1 }
+    ]);
+    model.update(['start', 'turn', 'end'], () => 0, () => true);
+    const arrows = model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'ConeGeometry');
+    assert.equal(arrows.length, 2);
+    assert(arrows.every(arrow => arrow.position.z === 1));
 });
 
 const routeFromCrost = planWalkingRoute(edges, ['crost68-b1', 'hanshin-umeda-route-entry'], false).route!;

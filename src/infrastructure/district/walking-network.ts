@@ -4,11 +4,13 @@ import { planAtriumOpenings } from '../../application/connections/atrium-opening
 import { planFloorOpenings } from '../../application/connections/connection-openings.ts';
 import { walkingApproaches } from '../../application/navigation/walking-approaches.ts';
 import { closestPolygonPoint, passageOutline, platformOutline, pointInPolygon } from '../../domain/map/geometry.ts';
-import type { LevelId, Point2, RouteEdge, RouteNode } from '../../domain/map/model.ts';
+import type { LevelId, PlanRegion, Point2, RouteEdge, RouteNode } from '../../domain/map/model.ts';
+import { shapeWalkingLeg, walkableChord } from '../../domain/navigation/shape-walking-leg.ts';
 import { edges, facilities, layout, levels, nodes, publicInterfaces } from './geographic-map.ts';
+import { groundWalkingPaths } from './ground-walking-paths.ts';
 import { walkingPlaces } from './walking-places.ts';
 
-type Triangle = { id: string; outline: Point2[] };
+type Triangle = { id: string; outline: Point2[]; region: PlanRegion };
 type Face = { level: LevelId; offset: number; polygons: Polygon[]; triangles: Triangle[]; restricted: Polygon[] };
 
 /** Convert a modeled floor face to the polygon clipping representation. */
@@ -23,10 +25,15 @@ function contains(polygon: Polygon, point: Point2): boolean {
     return containsRing(outer!) && !holes.some(containsRing);
 }
 
+/** Mesh edges are bidirectional, so both traversal orders share one key. */
+const meshEdgeKey = (from: string, to: string) => from < to ? from + '\0' + to : to + '\0' + from;
+
 /** Build a routing mesh inside modeled floors and attach existing gates and equipment. */
 export function createWalkingNetwork() {
     const graphNodes = new Map(nodes.map(node => [node.id, node]));
     const graphEdges = [...edges];
+    const meshRegions = new Map<string, PlanRegion>();
+    const nodeRegions = new Map<string, PlanRegion>();
     const elevation = (node: Pick<RouteNode, 'level' | 'elevationOffset'>) =>
         levels.find(level => level.id === node.level)!.y + (node.elevationOffset ?? 0);
     const plane = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean) =>
@@ -64,10 +71,13 @@ export function createWalkingNetwork() {
         return node;
     };
     /** Add one schematic walk segment with cost equal to its modeled length. */
-    const walk = (from: string, to: string) => {
+    const walk = (from: string, to: string, region?: PlanRegion) => {
         const a = graphNodes.get(from)!;
         const b = graphNodes.get(to)!;
         graphEdges.push({ from, to, kind: 'walk', cost: Math.hypot(a.x - b.x, a.z - b.z) });
+        if (region && a.level === b.level) {
+            meshRegions.set(meshEdgeKey(from, to), region);
+        }
     };
     for (const [key, face] of faces) {
         const y = elevation({ level: face.level, elevationOffset: face.offset });
@@ -78,6 +88,8 @@ export function createWalkingNetwork() {
         const cuts = blockers.get(y)?.map(blocker => blocker.shape) ?? [];
         const regions = clipping.difference(clipping.union(...face.polygons as [Polygon, ...Polygon[]]), ...cuts, ...paidShapes);
         for (const [index, region] of regions.entries()) {
+            const [outline, ...voids] = region.map(ring => ring.slice(0, -1).map(([x, z]) => ({ x, z })));
+            const walkable = { outline: outline!, holes: voids };
             const coordinates: number[] = [];
             const holes: number[] = [];
             for (const [ringIndex, ring] of region.entries()) {
@@ -96,7 +108,7 @@ export function createWalkingNetwork() {
                     x: outline.reduce((sum, point) => sum + point.x, 0) / 3,
                     z: outline.reduce((sum, point) => sum + point.z, 0) / 3
                 });
-                face.triangles.push({ id, outline });
+                face.triangles.push({ id, outline, region: walkable });
                 for (const [n, first] of corners.entries()) {
                     const second = corners[(n + 1) % 3]!;
                     const seam = [Math.min(first, second), Math.max(first, second)].join(':');
@@ -107,8 +119,8 @@ export function createWalkingNetwork() {
                             x: (coordinates[first * 2]! + coordinates[second * 2]!) / 2,
                             z: (coordinates[first * 2 + 1]! + coordinates[second * 2 + 1]!) / 2
                         });
-                        walk(previous, joint);
-                        walk(joint, id);
+                        walk(previous, joint, walkable);
+                        walk(joint, id, walkable);
                     } else {
                         shared.set(seam, id);
                     }
@@ -122,7 +134,8 @@ export function createWalkingNetwork() {
         const face = faces.get(plane(node, paid));
         const exact = face?.triangles.find(triangle => pointInPolygon(node, triangle.outline));
         if (exact) {
-            walk(node.id, exact.id);
+            nodeRegions.set(node.id, exact.region);
+            walk(node.id, exact.id, exact.region);
             return true;
         }
         if (!face || !equipmentId || !face.polygons.some(shape => contains(shape, node))) {
@@ -150,11 +163,58 @@ export function createWalkingNetwork() {
         }
         const landing = addNode('walk:landing:' + node.id, face, best.point);
         walk(node.id, landing.id);
-        walk(landing.id, best.triangle.id);
+        walk(landing.id, best.triangle.id, best.triangle.region);
         return true;
     };
     /** Classify the endpoint from the uncut paid footprint so openings cannot change gate side. */
     const onPaidFloor = (node: RouteNode) => faces.get(plane(node, true))?.polygons.some(shape => contains(shape, node)) ?? false;
+    const groundLevel = 'district-ground';
+    const groundFace = faces.get(plane({ level: groundLevel }, false));
+    if (groundFace) {
+        const obstructions = [...groundFace.restricted, ...(blockers.get(0) ?? []).map(blocker => blocker.shape)].map(shape => {
+            const xs = shape[0]!.map(([x]) => x);
+            const zs = shape[0]!.map(([, z]) => z);
+            return { shape, west: Math.min(...xs), east: Math.max(...xs), north: Math.min(...zs), south: Math.max(...zs) };
+        });
+        /** Attach each shared ground vertex to the modeled public mesh at most once. */
+        const streetNode = (point: Point2) => {
+            // Shared source vertices join, but two intersecting ways without a common vertex do not.
+            const id = `walk:street:${point.x}:${point.z}`;
+            if (!graphNodes.has(id)) {
+                const node = { ...point, id, level: groundLevel } as const;
+                graphNodes.set(id, node);
+                attach(node, false);
+            }
+            return id;
+        };
+        for (const path of groundWalkingPaths()) {
+            for (const [index, to] of path.points.entries()) {
+                const from = path.points[index - 1];
+                if (!from) {
+                    continue;
+                }
+                const cost = Math.hypot(to.x - from.x, to.z - from.z);
+                if (cost === 0) {
+                    continue;
+                }
+                const west = Math.min(from.x, to.x) - .01;
+                const east = Math.max(from.x, to.x) + .01;
+                const north = Math.min(from.z, to.z) - .01;
+                const south = Math.max(from.z, to.z) + .01;
+                const nearby = obstructions.filter(b => b.east >= west && b.west <= east && b.south >= north && b.north <= south);
+                if (nearby.length) {
+                    const strip = polygon(passageOutline(from, to, .02));
+                    if (nearby.some(b => clipping.intersection(strip, b.shape).length)) {
+                        continue;
+                    }
+                }
+                graphEdges.push({
+                    from: streetNode(from), to: streetNode(to),
+                    kind: 'walk', cost, street: true, directed: path.oneWay
+                });
+            }
+        }
+    }
     const places = walkingPlaces();
     const gateEdges = edges.filter(edge => edge.kind === 'gate');
     const gateSides = new Map<string, boolean>();
@@ -247,5 +307,20 @@ export function createWalkingNetwork() {
             }
         }
     }
-    return { nodes: [...graphNodes.values()], edges: graphEdges, places, approaches: [...approaches] };
+    // A two-way indoor edge may share a shortcut only when the entire authored segment is inside the same face.
+    for (const edge of edges) {
+        if (edge.kind !== 'walk' || edge.directed || edge.street) {
+            continue;
+        }
+        const region = nodeRegions.get(edge.from);
+        const from = graphNodes.get(edge.from)!;
+        const to = graphNodes.get(edge.to)!;
+        if (region && region === nodeRegions.get(edge.to) && from.level === to.level && walkableChord(from, to, region)) {
+            meshRegions.set(meshEdgeKey(edge.from, edge.to), region);
+        }
+    }
+    return {
+        nodes: [...graphNodes.values()], edges: graphEdges, places, approaches: [...approaches],
+        shapeLeg: (leg: readonly string[]) => shapeWalkingLeg(leg, graphNodes, (from, to) => meshRegions.get(meshEdgeKey(from, to)))
+    };
 }

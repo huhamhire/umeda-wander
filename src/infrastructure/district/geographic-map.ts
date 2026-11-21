@@ -1,6 +1,4 @@
 import { messageText, resolveMessage } from '../i18n/index.ts';
-import { platformRail, railApproachFootprints } from '../../domain/map/rail-geometry.ts';
-import { passageOutline } from '../../domain/map/geometry.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
 import { northDeckCanopies } from '../public-areas/north-decks/canopies.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
@@ -40,10 +38,11 @@ import { elevatedLevels } from '../public-areas/elevated-source.ts';
 import { assemblePublicDecks } from '../../application/public-areas/public-deck-assembly.ts';
 import { deckBuildingOpenings, equipmentBuildingOpenings } from '../../application/public-areas/deck-interface-bindings.ts';
 import { deckExtensionLabels } from '../../application/public-areas/deck-extension-labels.ts';
-import { buildBuildingOccupancies } from '../../application/public-areas/building-occupancy.ts';
-import { deckBuildingOccupancies } from '../public-areas/deck-buildings.ts';
 import { stationBuildingOpenings } from '../../application/stations/station-building-openings.ts';
-import { hankyuConcourses, hankyuConcourseAreas, hankyuConcourseOpenings, hankyuConcourseAtria, } from '../buildings/hankyu-dept/concourse.ts';
+import {
+    hankyuConcourses, hankyuConcourseAreas, hankyuConcourseBasementAreas, hankyuConcourseConnections,
+    hankyuConcourseOpenings, hankyuConcourseAtria
+} from '../buildings/hankyu-dept/concourse.ts';
 
 const stationMaps = createGeographicStations();
 export const publicInterfaces = stationMaps.flatMap(stationPublicInterfaces);
@@ -76,6 +75,7 @@ const streetConnections = [
     ...diamorCentralAccess.connections,
     ...diamorSouthAccess.connections,
     ...doticaAccess.connections,
+    ...hankyuConcourseConnections,
     ...whityAccess.flatMap(access => access.connections)
 ];
 export const publicAccess = {
@@ -84,7 +84,7 @@ export const publicAccess = {
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
         ...doticaAccess.areas,
-        ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas
+        ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
     ],
 };
 const patchFloors = undergroundPatches.map(p => ({
@@ -131,35 +131,6 @@ export const exteriorOpenings = [
     ...stationBuildingOpenings(shared.stations),
     ...hankyuConcourseOpenings,
 ];
-export const deckBuildingAreas = deckBuildingOccupancies.flatMap(group => {
-    const y = assemblyLevels.find(l => l.id === group.level)!.y;
-    const stationAreas = shared.stations.flatMap(s => s.layout.areas.filter(a => Math.abs(s.levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) - y) < .01));
-    const atriumCuts = hankyuConcourseAtria.flatMap(a => a.openings.filter(o => o.level === group.level).map(o => ({
-        id: a.id,
-        name: a.name,
-        kind: 'public' as const,
-        ...o,
-        evidence: a.evidence,
-    })));
-    // Context slabs must not conceal platform rails or the first metres of their approaches.
-    const reservedRegions = shared.stations.flatMap(station => {
-        const sameHeight = (id: string) => Math.abs(station.levels.find(l => l.id === id)!.y - y) < .01;
-        return [
-            ...station.layout.platforms.filter(p => sameHeight(p.level)).flatMap(p => p.tracks.map((_, i) => {
-                const rail = platformRail(p, i);
-                return { outline: passageOutline(rail.start, rail.end, 3.3) };
-            })),
-            ...station.layout.railApproaches!.filter(a => sameHeight(a.level))
-                .flatMap(a => railApproachFootprints(a, 1.65).map(outline => ({ outline })))
-        ];
-    });
-    return buildBuildingOccupancies(
-        group.definitions,
-        [...elevatedAreas.filter(a => a.level === group.level), ...atriumCuts],
-        stationAreas,
-        { level: group.level, prefix: 'deck-context', reservedRegions }
-    ).areas;
-});
 // Preserve the existing ground facility ID shared by both segments of the Midosuji lift.
 const externalConnections = [...streetConnections, ...deckAccess.connections, metroAccess.lift];
 const composed = composeStationMaps(
@@ -170,7 +141,6 @@ const composed = composeStationMaps(
             ...basements.areas,
             ...publicAccess.areas.filter(a => a.level !== 'district-underground'),
             ...elevatedAreas,
-            ...deckBuildingAreas,
             ...deckAccess.areas.filter(a => a.level === 'district-ground'),
             ...hankyuConcourseAreas,
         ],
