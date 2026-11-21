@@ -1,5 +1,5 @@
 import type { Point2, RouteNode, VerticalConnection } from '../../domain/map/model.ts';
-import { connectionLanes } from '../connections/connection-lanes.ts';
+import { connectionLanes, escalatorCombEnd } from '../connections/connection-lanes.ts';
 
 export interface RoutePathPoint extends RouteNode {
     escalator?: VerticalConnection;
@@ -17,10 +17,7 @@ export function routeEscalators(connections: readonly VerticalConnection[]) {
 
 /** Match the model's comb plate: enter or leave beyond the rounded handrail return. */
 function combEnd(landing: RouteNode, opposite: RouteNode, lane: VerticalConnection): RoutePathPoint {
-    const dx = landing.x - opposite.x;
-    const dz = landing.z - opposite.z;
-    const factor = .8 / (Math.hypot(dx, dz) || 1);
-    return { ...landing, x: landing.x + dx * factor, z: landing.z + dz * factor, escalator: lane };
+    return { ...landing, ...escalatorCombEnd(landing, opposite), escalator: lane };
 }
 
 /** Fit the displayed path to the equipment, keeping the selected graph path and costs intact. */

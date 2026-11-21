@@ -35,7 +35,7 @@ test('route playback samples the preview by physical distance and keeps both lan
     assert.equal(lift.fraction, .5);
     assert.equal(lift.level.id, 'district-ground');
     assert.equal(lift.ceiling, 0);
-    assert.equal(path.descentAhead(32, 10), undefined);
+    assert.equal(path.flightAhead(32, 10), undefined);
     assert.equal(path.at(36).level.id, 'district-underground');
     assert.equal(path.at(path.length).x, 16);
     assert.equal(playbackFor('deck', 'deck-end')?.at(7).ceiling, 4);
@@ -96,9 +96,9 @@ test('route camera enters the downhill viewing range and keeps an existing obliq
         const points = routePath([nodes.get('street')!, upper, lower], routeEscalators([connection]));
         const path = createRoutePlayback(points, levels, [connection])!;
         const rise = createRoutePlayback(points.slice().reverse(), levels, [connection])!;
-        assert.equal(rise.descentAhead(0, rise.length), undefined);
-        assert.equal(path.descentAhead(0, 10), undefined);
-        assert.equal(path.descentAhead(24, 10)?.from.id, upper.id);
+        assert.equal(rise.flightAhead(0, rise.length)?.ascending, kind === 'escalator' ? true : undefined);
+        assert.equal(path.flightAhead(0, 10), undefined);
+        assert.equal(path.flightAhead(24, 10)?.from.id, upper.id);
 
         cameraOffset.set(0, 170, -273);
         const playback = new RoutePlaybackView(path, origin);
@@ -141,4 +141,31 @@ test('route camera enters the downhill viewing range and keeps an existing obliq
         assert.equal(reduced.status, 'finished');
         assert.deepEqual(cameraOffset.toArray(), [0, 170, -273]);
     }
+});
+
+test('route camera follows a turn from the lower concourse onto an ascending escalator', t => {
+    const initialOffset = cameraOffset.clone();
+    t.after(() => {
+        cameraOffset.copy(initialOffset);
+    });
+    const lower: RouteNode = { id: 'lower', level: 'district-ground', x: 28, z: 0 };
+    const upper: RouteNode = { id: 'upper', level: 'south-deck', x: 28, z: 12 };
+    const connection: VerticalConnection = {
+        id: 'ascending', kind: 'escalator', from: lower, to: upper, evidence: { pages: [], detail: 'Playback fixture' }
+    };
+    const points = routePath([nodes.get('street')!, lower, upper], routeEscalators([connection]));
+    const path = createRoutePlayback(points, levels, [connection])!;
+    cameraOffset.set(-273, 170, 0);
+    const playback = new RoutePlaybackView(path, { center: new T.Vector3(), span: 110 });
+    const usable = { left: 300, top: 0, width: 700, height: 700 };
+    let entered = false;
+    for (let time = 0; time <= 6000 && playback.status === 'playing'; time += 100) {
+        playback.advance(time, false, 1000, 700, usable, sample => new T.Vector3(sample.x, 0, sample.z));
+        if (playback.sample.from.id === lower.id && playback.sample.to.id === upper.id) {
+            const yaw = Math.atan2(cameraOffset.x, cameraOffset.z);
+            assert(Math.abs(yaw + 5 * Math.PI / 6) < 1e-6);
+            entered = true;
+        }
+    }
+    assert(entered);
 });

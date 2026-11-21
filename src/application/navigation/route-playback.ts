@@ -28,10 +28,10 @@ export function createRoutePlayback(
     nodes: readonly RoutePathPoint[], levels: readonly Level[], connections: readonly VerticalConnection[] = []
 ) {
     const byLevel = new Map(levels.map(level => [level.id, level]));
-    const flightKeys = new Set(connections.filter(connection => connection.kind === 'stairs' || connection.kind === 'escalator')
-        .map(connection => routeConnectionKey(connection.from.id, connection.to.id)));
+    const flightKinds = new Map(connections.filter(connection => connection.kind === 'stairs' || connection.kind === 'escalator')
+        .map(connection => [routeConnectionKey(connection.from.id, connection.to.id), connection.kind]));
     const segments: PlaybackSegment[] = [];
-    const descents: PlaybackSegment[] = [];
+    const flights: Array<PlaybackSegment & { ascending: boolean }> = [];
     let length = 0;
     for (let i = 1; i < nodes.length; i++) {
         const from = nodes[i - 1]!;
@@ -50,8 +50,9 @@ export function createRoutePlayback(
         const level = explorationElevation(fromLevel) > explorationElevation(toLevel) ? fromLevel : toLevel;
         const segment = { from, to, start: length, end: length + span, level, ceiling: Math.max(fromLevel.y, toLevel.y) };
         segments.push(segment);
-        if (dy < -1e-6 && run > 1e-6 && flightKeys.has(routeConnectionKey(from.id, to.id))) {
-            descents.push(segment);
+        const kind = flightKinds.get(routeConnectionKey(from.id, to.id));
+        if (run > 1e-6 && kind && (dy < -1e-6 || kind === 'escalator' && dy > 1e-6)) {
+            flights.push({ ...segment, ascending: dy > 0 });
         }
         length += span;
     }
@@ -70,8 +71,8 @@ export function createRoutePlayback(
         const fraction = Math.max(0, (distance - start) / (end - start));
         return { from, to, fraction, x: from.x + (to.x - from.x) * fraction, z: from.z + (to.z - from.z) * fraction, level, ceiling };
     };
-    /** Find the current or next descending flight within the camera's approach distance. */
-    const descentAhead = (distance: number, lookAhead: number) =>
-        descents.find(segment => segment.end >= distance && segment.start <= distance + lookAhead);
-    return { length, at, descentAhead };
+    /** Find the current or upcoming flight while walking toward its comb plate or stair landing. */
+    const flightAhead = (distance: number, lookAhead: number) =>
+        flights.find(segment => segment.end >= distance && segment.start <= distance + lookAhead);
+    return { length, at, flightAhead };
 }

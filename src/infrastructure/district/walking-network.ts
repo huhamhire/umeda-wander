@@ -2,6 +2,7 @@ import clipping, { type Polygon } from 'polygon-clipping';
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { planAtriumOpenings } from '../../application/connections/atrium-openings.ts';
 import { planFloorOpenings } from '../../application/connections/connection-openings.ts';
+import { connectionLanes, escalatorCombEnd, escalatorOverallWidth } from '../../application/connections/connection-lanes.ts';
 import { walkingApproaches } from '../../application/navigation/walking-approaches.ts';
 import { closestPolygonPoint, passageOutline, platformOutline, pointInPolygon } from '../../domain/map/geometry.ts';
 import type { LevelId, PlanRegion, Point2, RouteEdge, RouteNode } from '../../domain/map/model.ts';
@@ -55,7 +56,6 @@ const meshEdgeKey = (from: string, to: string) => from < to ? from + '\0' + to :
 /** Build a routing mesh inside modeled floors and attach existing gates and equipment. */
 export function createWalkingNetwork() {
     const graphNodes = new Map(nodes.map(node => [node.id, node]));
-    const graphEdges = [...edges];
     const meshRegions = new Map<string, PlanRegion>();
     const nodeRegions = new Map<string, PlanRegion>();
     const elevation = (node: Pick<RouteNode, 'level' | 'elevationOffset'>) =>
@@ -70,8 +70,32 @@ export function createWalkingNetwork() {
     ]);
     const blockers = new Map<number, { shape: Polygon; connectionId?: string }[]>();
     const openings = [...planFloorOpenings(layout.connections, levels, layout.platforms), ...planAtriumOpenings(layout.atria ?? [])];
+    const escalatorApproaches = new Map<string, Point2>();
+    const escalatorFootprints = new Map<number, Polygon[]>();
     const elevatorSegmentsByStop = new Map<string, Set<string>>();
     for (const connection of layout.connections) {
+        if (connection.kind === 'escalator') {
+            const [low, high] = elevation(connection.from) < elevation(connection.to)
+                ? [connection.from, connection.to] : [connection.to, connection.from];
+            const y = elevation(low);
+            const rise = elevation(high) - y;
+            if (rise > 0 && Math.hypot(high.x - low.x, high.z - low.z) > 1e-6) {
+                escalatorApproaches.set(low.id, escalatorCombEnd(low, high));
+                const t = Math.min(1, 3.2 / rise);
+                // Leave the portion of the lower floor with headroom available, and reserve the low end for the comb plate.
+                for (const lane of connectionLanes(connection)) {
+                    const [start, finish] = low.id === lane.from.id ? [lane.from, lane.to] : [lane.to, lane.from];
+                    const comb = escalatorCombEnd(start, finish);
+                    const shape = polygon(passageOutline(
+                        { x: (start.x + comb.x) / 2, z: (start.z + comb.z) / 2 },
+                        { x: start.x + t * (finish.x - start.x), z: start.z + t * (finish.z - start.z) },
+                        (lane.width ?? escalatorOverallWidth) + .8
+                    ));
+                    blockers.set(y, [...blockers.get(y) ?? [], { shape, connectionId: connection.id }]);
+                    escalatorFootprints.set(y, [...escalatorFootprints.get(y) ?? [], shape]);
+                }
+            }
+        }
         if (connection.kind !== 'elevator') {
             continue;
         }
@@ -81,6 +105,21 @@ export function createWalkingNetwork() {
             elevatorSegmentsByStop.set(stop.id, segments);
         }
     }
+    const authoredEdges = edges.filter(edge => {
+        if (edge.kind !== 'walk') {
+            return true;
+        }
+        const from = graphNodes.get(edge.from)!;
+        const to = graphNodes.get(edge.to)!;
+        const y = elevation(from);
+        const footprints = escalatorFootprints.get(y);
+        if (!footprints || Math.abs(elevation(to) - y) > 1e-6 || Math.hypot(to.x - from.x, to.z - from.z) < 1e-6) {
+            return true;
+        }
+        const strip = polygon(passageOutline(from, to, .02));
+        return !footprints.some(shape => clipping.intersection(strip, shape).length > 0);
+    });
+    const graphEdges = [...authoredEdges];
     /** Add one eligible floor to its physical plane, keeping paid areas in their own station level. */
     const floor = (node: Pick<RouteNode, 'level' | 'elevationOffset'>, paid: boolean, shape: Polygon) => {
         const key = plane(node, paid);
@@ -175,6 +214,23 @@ export function createWalkingNetwork() {
     /** Attach endpoints inside a triangle, allowing fitted equipment landings to reach the edge of their slab opening. */
     const attach = (node: RouteNode, paid: boolean, equipmentId?: string): boolean => {
         const face = faces.get(plane(node, paid));
+        const approach = equipmentId && escalatorApproaches.get(node.id);
+        if (approach) {
+            const triangle = face?.triangles.find(item => pointInPolygon(approach, item.outline));
+            if (!face || !triangle) {
+                return false;
+            }
+            const strip = polygon(passageOutline(node, approach, .02));
+            if (blockers.get(elevation(node))?.some(({ shape, connectionId }) =>
+                connectionId !== equipmentId && clipping.intersection(strip, shape).length > 0)) {
+                return false;
+            }
+            const landing = addNode('walk:comb:' + node.id, face, approach);
+            visibilityWalks.get(triangle.region)?.anchors.push(landing);
+            walk(node.id, landing.id);
+            walk(landing.id, triangle.id, triangle.region);
+            return true;
+        }
         const exact = face?.triangles.find(triangle => pointInPolygon(node, triangle.outline));
         if (exact) {
             nodeRegions.set(node.id, exact.region);
@@ -379,7 +435,7 @@ export function createWalkingNetwork() {
         }
     }
     // A two-way indoor edge may share a shortcut only when the entire authored segment is inside the same face.
-    for (const edge of edges) {
+    for (const edge of authoredEdges) {
         if (edge.kind !== 'walk' || edge.directed || edge.street) {
             continue;
         }

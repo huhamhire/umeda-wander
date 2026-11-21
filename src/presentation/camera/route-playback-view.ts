@@ -9,9 +9,10 @@ type Viewport = Parameters<typeof facilityCameraCenter>[4];
 
 const approachSeconds = .85;
 const playbackPitch = T.MathUtils.degToRad(28);
-const descentTurnRate = 1.65;
+const flightTurnRate = 1.65;
 const descentLookAheadSeconds = 2.2;
-const descentYawRange = Math.PI / 6;
+const ascentLookAheadSeconds = 1.25;
+const flightYawRange = Math.PI / 6;
 
 /** Return the signed shortest rotation from the current yaw to a desired bearing. */
 function yawDifference(target: number, current: number): number {
@@ -52,11 +53,11 @@ export class RoutePlaybackView {
         this.pitchStart = Math.atan2(cameraOffset.y, Math.hypot(cameraOffset.x, cameraOffset.z));
         this.yawTarget = this.yawStart;
         this.approachDuration = approachSeconds;
-        const descentTurn = this.descentTurn(this.yawStart, this.speed);
-        if (descentTurn !== undefined) {
-            this.yawTarget += descentTurn;
+        const flightTurn = this.flightTurn(this.yawStart, this.speed);
+        if (flightTurn !== undefined) {
+            this.yawTarget += flightTurn;
             // Smoothstep peaks at 1.5 times the average speed.
-            this.approachDuration = Math.max(approachSeconds, 1.5 * Math.abs(descentTurn) / descentTurnRate);
+            this.approachDuration = Math.max(approachSeconds, 1.5 * Math.abs(flightTurn) / flightTurnRate);
             return;
         }
         const turn = this.turnFrom(this.yawStart);
@@ -65,15 +66,16 @@ export class RoutePlaybackView {
         }
     }
 
-    /** Turn only as far as the nearest downhill viewing angle in the allowed range. */
-    private descentTurn(yaw: number, lookAhead: number): number | undefined {
-        const flight = this.path.descentAhead(this.distance, lookAhead);
-        if (!flight) {
+    /** Align with the actual flight around the turn, viewing from its lower side. */
+    private flightTurn(yaw: number, lookAhead: number): number | undefined {
+        const flight = this.path.flightAhead(this.distance, lookAhead);
+        if (!flight || flight.ascending && flight.start - this.distance > this.speed * ascentLookAheadSeconds) {
             return undefined;
         }
-        const bearing = Math.atan2(flight.to.x - flight.from.x, flight.to.z - flight.from.z);
+        const sign = flight.ascending ? -1 : 1;
+        const bearing = Math.atan2(sign * (flight.to.x - flight.from.x), sign * (flight.to.z - flight.from.z));
         const delta = yawDifference(bearing, yaw);
-        return delta - T.MathUtils.clamp(delta, -descentYawRange, descentYawRange);
+        return delta - T.MathUtils.clamp(delta, -flightYawRange, flightYawRange);
     }
 
     /** Ignore short turns and vertical lifts when deciding whether a wider heading change will help. */
@@ -106,10 +108,10 @@ export class RoutePlaybackView {
         } else {
             this.distance = Math.min(this.path.length, this.distance + this.speed * seconds);
             this.sample = this.path.at(this.distance);
-            const descentTurn = reducedMotion ? undefined : this.descentTurn(yaw, this.speed * descentLookAheadSeconds);
-            if (descentTurn !== undefined) {
-                const maxTurn = descentTurnRate * seconds;
-                yaw += T.MathUtils.clamp(descentTurn, -maxTurn, maxTurn);
+            const flightTurn = reducedMotion ? undefined : this.flightTurn(yaw, this.speed * descentLookAheadSeconds);
+            if (flightTurn !== undefined) {
+                const maxTurn = flightTurnRate * seconds;
+                yaw += T.MathUtils.clamp(flightTurn, -maxTurn, maxTurn);
             } else if (!reducedMotion) {
                 const turn = this.turnFrom(yaw);
                 const excess = Math.max(0, Math.abs(turn) - Math.PI * .53);

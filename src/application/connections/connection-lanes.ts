@@ -1,10 +1,18 @@
-import type { VerticalConnection } from '../../domain/map/model.ts';
+import type { Point2, VerticalConnection } from '../../domain/map/model.ts';
 
 export const escalatorOverallWidth = 2.3;
 export const escalatorTreadWidth = 1.35;
 export const escalatorLaneSpacing = 2.45;
 export const escalatorStepCount = 28;
 export const equipmentBaseLift = 0.65;
+
+/** Place the route approach beyond the handrail return on the comb plate. */
+export function escalatorCombEnd(landing: Point2, opposite: Point2): Point2 {
+    const dx = landing.x - opposite.x;
+    const dz = landing.z - opposite.z;
+    const factor = .8 / (Math.hypot(dx, dz) || 1);
+    return { x: landing.x + dx * factor, z: landing.z + dz * factor };
+}
 /** Independent, genuinely side-by-side lanes sharing a diagram reference. */
 export function connectionLanes(connection: VerticalConnection): VerticalConnection[] {
     const lanes = connection.lanes ?? 1;

@@ -16,7 +16,7 @@ import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts
 import { edges, facilities, layout, levels, nodes, northWalking, southWalking, stations, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
-import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
+import { RouteModel, routePointElevation } from '../../src/presentation/models/stations/route-model.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 
 const floorOpenings = planFloorOpenings(layout.connections, levels, layout.platforms);
@@ -115,9 +115,11 @@ test('the Loop Line platform route uses the Bridge Gate escalators and does not 
     const down = layout.connections.find(c => c.id === 'bridge-p1-2')!;
     const up = layout.connections.find(c => c.id === 'bridge-west-13')!;
     const openings = floorOpenings.filter(o => o.level === 'platform');
-    for (const [from, to, departure, arrival] of [
-        [machines, platform, down.from.id, down.to.id],
-        [platform, machines, up.to.id, up.from.id]
+    const routeModel = new RouteModel(network.nodes, layout.connections);
+    const elevation = (id: typeof levels[number]['id']) => levels.find(level => level.id === id)!.y;
+    for (const [from, to, departure, arrival, connection] of [
+        [machines, platform, down.from.id, down.to.id, down],
+        [platform, machines, up.to.id, up.from.id, up]
     ] as const) {
         const route = planWalkingRoute(network.edges, [from, to], true, approaches, network.shapeLeg).route;
         assert(route);
@@ -130,16 +132,35 @@ test('the Loop Line platform route uses the Bridge Gate escalators and does not 
         assert.equal(planWalkingRoute(network.edges, [from, to], false, approaches).issue, 'gateRequired');
         const points = route.map(id => graphNodes.get(id)!).filter(node => node.level === 'platform');
         assert(points.length >= 2, 'The itinerary includes a walk on the platform');
-        const first = points[0]!;
-        const last = points.at(-1)!;
+        const lower = connection.from.level === 'platform' ? connection.from : connection.to;
+        const comb = 'walk:comb:' + lower.id;
+        const platformWalk = points.filter(node => node.id !== lower.id);
+        assert.equal(from === machines ? platformWalk[0]!.id : platformWalk.at(-1)!.id, comb);
+        const first = platformWalk[0]!;
+        const last = platformWalk.at(-1)!;
         for (let i = 1; i < points.length; i++) {
             const previous = points[i - 1]!;
             const current = points[i]!;
-            assert((current.x - previous.x) * (last.x - first.x) + (current.z - previous.z) * (last.z - first.z) > 0);
+            if (previous.id !== lower.id && current.id !== lower.id) {
+                const progress = (current.x - previous.x) * (last.x - first.x) + (current.z - previous.z) * (last.z - first.z);
+                assert(progress > 0);
+            }
             for (let j = 1; j < 10; j++) {
                 const t = j / 10;
                 const point = { x: previous.x + (current.x - previous.x) * t, z: previous.z + (current.z - previous.z) * t };
                 assert(!openings.some(opening => pointInPolygon(point, opening.outline)));
+            }
+        }
+        const equipment = new VerticalConnectionModel(connection, levels, layout.platforms);
+        equipment.update(elevation, 'all');
+        const drawn = routeModel.path(route).filter(point => point.level === 'platform');
+        for (let i = 1; i < drawn.length; i++) {
+            const [a, b] = drawn.slice(i - 1, i + 1).map(point =>
+                new T.Vector3(point.x, routePointElevation(point, elevation), point.z));
+            const delta = b!.clone().sub(a!);
+            if (delta.lengthSq() > 1e-8) {
+                const ray = new T.Raycaster(a, delta.clone().normalize(), 0, delta.length());
+                assert.equal(ray.intersectObject(equipment.group, true).length, 0, 'platform route crosses the escalator model');
             }
         }
     }
