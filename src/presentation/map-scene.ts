@@ -68,6 +68,7 @@ export class MapScene {
     private hoverFrame = 0;
     private state: MapViewState;
     private displayedExplode: number;
+    private renderingStarted = false;
     private immediateExplode = false;
     private draggingExplode = false;
     private modelsDirty = true;
@@ -219,24 +220,20 @@ export class MapScene {
         this.resize();
     }
 
-    /** Freeze the frame, then resolve the touch orbit or pinch anchor from the current camera. */
-    private beginOrbit(anchor?: OrbitAnchor): T.Vector3 | undefined {
+    /** Freeze the current frame and anchor centered rotation to the displayed 1F plane. */
+    private beginOrbit(anchor: OrbitAnchor): T.Vector3 | undefined {
         if (!this.framing) {
             return undefined;
         }
         this.locatingFacility = false;
         this.focusTransition = false;
         this.freezeFraming(this.framing);
-        if (!anchor) {
-            return this.framing.center;
-        }
-        let fallbackY = this.framing.center.y;
         if (anchor === 'canvas-center') {
             this.raycaster.setFromCamera(new T.Vector2(0, 0), this.camera);
-            fallbackY = this.levelY('district-ground');
-        } else {
-            this.setPointerRay(anchor.x, anchor.y);
+            return orbitPointOnPlane(this.raycaster.ray, this.levelY('district-ground')) ?? this.framing.center;
         }
+        // Pinch zoom keeps the visible point at the two-finger midpoint.
+        this.setPointerRay(anchor.x, anchor.y);
         const hit = this.raycaster.intersectObjects(this.scene.children, true).find(item => {
             for (let object: T.Object3D | null = item.object; object; object = object.parent) {
                 if (!object.visible || object === this.selected || object === this.routeModel.group) {
@@ -246,7 +243,7 @@ export class MapScene {
             const material = (item.object as T.Mesh).material;
             return material && !Array.isArray(material) && material.visible && !(material instanceof T.ShadowMaterial);
         });
-        return hit?.point ?? orbitPointOnPlane(this.raycaster.ray, fallbackY) ?? this.framing.center;
+        return hit?.point ?? orbitPointOnPlane(this.raycaster.ray, this.framing.center.y) ?? this.framing.center;
     }
 
     /** Freeze the displayed frame and keep its starting scale reachable across gestures. */
@@ -637,7 +634,7 @@ export class MapScene {
      * Coalesce redraw requests into a single pending animation frame.
      */
     private requestRender(): void {
-        if (!this.disposed && !this.frame) {
+        if (this.renderingStarted && !this.disposed && !this.frame) {
             this.frame = requestAnimationFrame(() => this.render());
         }
     }
@@ -645,6 +642,7 @@ export class MapScene {
     /** Draw synchronously once so the page can report first-frame errors and end loading accurately. */
     renderFirstFrame(): void {
         cancelAnimationFrame(this.frame);
+        this.renderingStarted = true;
         this.render();
     }
 

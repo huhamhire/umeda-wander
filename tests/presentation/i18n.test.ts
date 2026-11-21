@@ -147,7 +147,7 @@ test('the single entry includes a translated shell and standalone credits for ea
         const body = html.split(`<template data-page-locale="${locale}">`)[1]?.split('</template>')[0];
         assert(body?.includes(messageText('ui.heading.title', {}, locale)));
         assert(body?.includes(messageText('ui.preferences.language', {}, locale)));
-        assert(body?.includes(messageText('ui.map.loading', {}, locale)));
+        assert(body?.includes(messageText('ui.map.loading.stations', {}, locale)));
         const embedded = body?.match(/<script id="navigation-data" type="application\/json">(.+?)<\/script>/)?.[1];
         assert.deepEqual(JSON.parse(embedded!), JSON.parse(navigation[locale]));
         assert(body?.includes(credits[locale].split('\n')[1]!.trim()));

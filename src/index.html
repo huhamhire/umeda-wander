@@ -72,8 +72,8 @@
       <div id="viewport" role="region" aria-label="{{ui.map.accessibleDescription}}" aria-busy="true"></div>
       <div id="labels" aria-hidden="true"></div>
       <div id="map-loading" class="map-loading" role="status">
-        <span aria-hidden="true"></span>
-        {{ui.map.loading}}
+        <span class="map-loading-spinner" aria-hidden="true"></span>
+        <span data-loading-status>{{ui.map.loading.stations}}</span>
       </div>
       <!-- NAVIGATION DATA -->
       <div id="fallback" class="fallback" hidden>
@@ -179,14 +179,12 @@
                 <span aria-hidden="true">+</span>
               </button>
             </div>
-            <div class="walking-filters">
-              <button class="panel-select" id="walking-station" type="button" aria-label="{{ui.facilities.stationFilter}}">
-                <span>{{ui.filters.allStations}}</span>
-              </button>
-            </div>
             <details class="walking-options" id="walking-options">
               <summary>{{ui.walking.options}}</summary>
               <div class="walking-filters">
+                <button class="panel-select" id="walking-station" type="button" aria-label="{{ui.facilities.stationFilter}}">
+                  <span>{{ui.filters.allStations}}</span>
+                </button>
                 <select id="walking-floor" aria-label="{{ui.facilities.floorFilter}}"></select>
                 <select id="walking-kind" aria-label="{{ui.facilities.types}}"></select>
               </div>

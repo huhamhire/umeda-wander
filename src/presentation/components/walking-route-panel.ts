@@ -32,7 +32,9 @@ interface WalkingField {
 interface StopDrag {
     from: number;
     pointer: number;
+    startX: number;
     startY: number;
+    bounds: DOMRect;
     target?: number;
 }
 
@@ -63,6 +65,7 @@ export function bindWalkingRoutePanel(
     const add = panel.querySelector<HTMLButtonElement>('#walking-add')!;
     const stationButton = panel.querySelector<HTMLButtonElement>('#walking-station')!;
     const station = bindPanelSelect(stationButton, panel);
+    const moreOptions = panel.querySelector<HTMLDetailsElement>('#walking-options')!;
     const floor = panel.querySelector<HTMLSelectElement>('#walking-floor')!;
     const kind = panel.querySelector<HTMLSelectElement>('#walking-kind')!;
     const results = panel.querySelector<HTMLElement>('#walking-results')!;
@@ -105,6 +108,11 @@ export function bindWalkingRoutePanel(
     let visible: WalkingCandidate[] = [];
     let picking = false;
     let mapReady = false;
+    const dragPreview = document.createElement('div');
+    dragPreview.className = 'walking-drag-preview';
+    dragPreview.hidden = true;
+    dragPreview.setAttribute('aria-hidden', 'true');
+    document.body.append(dragPreview);
     gates.checked = restored?.allowPaid ?? true;
 
     station.setOptions([
@@ -260,7 +268,10 @@ export function bindWalkingRoutePanel(
                 if (!drag && event.button === 0 && stops[index]) {
                     event.preventDefault();
                     grip.setPointerCapture(event.pointerId);
-                    drag = { from: index, pointer: event.pointerId, startY: event.clientY };
+                    drag = {
+                        from: index, pointer: event.pointerId, startX: event.clientX, startY: event.clientY,
+                        bounds: field.getBoundingClientRect()
+                    };
                 }
             });
             grip.addEventListener('pointermove', updateDrag);
@@ -470,7 +481,19 @@ export function bindWalkingRoutePanel(
             }
             closeEditor();
             fields[drag.from]!.row.setAttribute('data-dragging', '');
+            const place = stops[drag.from]!;
+            const caption = document.createElement('span');
+            caption.textContent = place.mapLabel ?? place.name;
+            dragPreview.replaceChildren(...(place.kind ? [createFacilityIcon(place.kind), caption] : [caption]));
+            dragPreview.style.width = `${drag.bounds.width}px`;
+            dragPreview.style.minHeight = `${drag.bounds.height}px`;
+            dragPreview.hidden = false;
         }
+        const x = Math.max(0, Math.min(document.documentElement.clientWidth - drag.bounds.width,
+            drag.bounds.left + event.clientX - drag.startX));
+        const y = Math.max(0, Math.min(document.documentElement.clientHeight - drag.bounds.height,
+            drag.bounds.top + event.clientY - drag.startY));
+        dragPreview.style.transform = `translate3d(${x}px, ${y}px, 0)`;
         const index = fields.findIndex(field => event.clientY < field.row.getBoundingClientRect().bottom);
         const target = index < 0 ? fields.length - 1 : index;
         if (target !== drag.target) {
@@ -507,6 +530,7 @@ export function bindWalkingRoutePanel(
             if (drag.target !== undefined) {
                 fields[drag.target]!.row.removeAttribute('data-drop');
             }
+            dragPreview.hidden = true;
             drag = undefined;
         }
     }
@@ -580,6 +604,11 @@ export function bindWalkingRoutePanel(
     for (const field of [stationButton, floor, kind]) {
         field.addEventListener('change', filtersChanged);
     }
+    moreOptions.addEventListener('toggle', () => {
+        if (!moreOptions.open) {
+            station.close();
+        }
+    });
     search.addEventListener('focus', () => {
         ensureEditing();
         stopPicking();
@@ -643,11 +672,16 @@ export function bindWalkingRoutePanel(
     showDraftStatus();
 
     return {
-        closeEditor,
+        /** Close panel interactions before hiding it. */
+        closeEditor(): void {
+            clearDrag();
+            closeEditor();
+        },
         showPreviewResult,
         /** Dismiss the current interaction on Escape. */
         cancelEditing(): boolean {
-            const wasEditing = editing !== undefined;
+            const wasEditing = editing !== undefined || drag !== undefined;
+            clearDrag();
             closeEditor();
             return wasEditing;
         },

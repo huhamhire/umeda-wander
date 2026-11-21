@@ -73,8 +73,8 @@ test('middle-button orbit freezes the viewport pivot without picking the cursor 
     let redraws = 0;
     const pivot = new Vector3(1, 2, 3);
     const fixture = setup({
-        beginOrbit: touchMidpoint => {
-            assert.equal(touchMidpoint, undefined);
+        beginOrbit: anchor => {
+            assert.equal(anchor, 'canvas-center');
             return pivot;
         },
         invalidate: () => {
@@ -113,8 +113,8 @@ test('Alt trackpad scroll uses one centre pivot until settling and Ctrl pinch st
     let starts = 0;
     let redraws = 0;
     const { canvas, gestures, rotations, zooms } = setup({
-        beginOrbit: midpoint => {
-            assert.equal(midpoint, undefined);
+        beginOrbit: anchor => {
+            assert.equal(anchor, 'canvas-center');
             starts++;
             return pivot;
         },

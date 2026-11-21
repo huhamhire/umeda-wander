@@ -9,7 +9,7 @@ const touchGestureThreshold = 4;
 const wheelIdleMs = 140;
 
 export interface MapGestureActions {
-    beginOrbit: (anchor?: OrbitAnchor) => Vector3 | undefined;
+    beginOrbit: (anchor: OrbitAnchor) => Vector3 | undefined;
     rotate: (pivot: Vector3, yawRadians: number, pitchRadians: number) => boolean;
     beginDrag: () => void;
     pan: (deltaX: number, deltaY: number) => void;
@@ -162,7 +162,7 @@ export class MapGestures {
             this.endWheelGesture();
         }
         if (!this.wheelPivot) {
-            this.wheelPivot = this.actions.beginOrbit()?.clone();
+            this.wheelPivot = this.actions.beginOrbit('canvas-center')?.clone();
             if (!this.wheelPivot) {
                 return;
             }
@@ -203,7 +203,7 @@ export class MapGestures {
         this.endWheelGesture();
         this.actions.hover();
         if (event.button === 1) {
-            const pivot = this.actions.beginOrbit();
+            const pivot = this.actions.beginOrbit('canvas-center');
             if (pivot) {
                 event.preventDefault();
                 this.orbit = { pointer: event.pointerId, pivot: pivot.clone() };

@@ -281,7 +281,7 @@
   z-index: 3;
   left: var(--desktop-ui-inset);
   top: 106px;
-  width: clamp(320px, 32vw, 344px);
+  width: var(--desktop-sidebar-width);
   max-height: calc(100% - 171px);
   display: flex;
   flex-direction: column;
@@ -572,6 +572,31 @@
   opacity: .55;
 }
 
+.walking-drag-preview {
+  position: fixed;
+  z-index: 10;
+  inset: 0 auto auto 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-tab-active);
+  border-radius: 7px;
+  background: var(--color-field-background);
+  color: var(--color-field-text);
+  box-shadow: 0 6px 16px var(--color-dialog-shadow);
+  font-size: 12px;
+  opacity: .78;
+  pointer-events: none;
+}
+
+.walking-drag-preview > :last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .walking-panel li[data-drop]::after {
   position: absolute;
   inset-inline: 0;
@@ -677,13 +702,13 @@
   gap: 5px;
 }
 
-.walking-panel > .walking-filters {
+.walking-options {
   padding-top: 8px;
   border-top: 1px solid var(--color-tab-divider);
 }
 
 #walking-station {
-  flex: 1 1 0;
+  flex: 1 1 100%;
 }
 
 .walking-actions button,

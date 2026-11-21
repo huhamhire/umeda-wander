@@ -3,6 +3,7 @@
 }
 
 .map-loading {
+  inset-inline: 0;
   top: calc((100% - var(--navigation-height)) / 2);
 }
 

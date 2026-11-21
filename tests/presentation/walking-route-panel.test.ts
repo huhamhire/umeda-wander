@@ -15,9 +15,10 @@ class Field extends EventTarget {
     id = '';
     bottom = 0;
     opened = false;
+    open = false;
     clientWidth = 320;
     clientLeft = 0;
-    style = {};
+    style: Record<string, string> = {};
     classList = { add() {}, remove() {} };
     captured?: number;
 
@@ -37,7 +38,9 @@ class Field extends EventTarget {
     hidePopover(): void { this.opened = false; }
     removeAttribute(name: string): void { this.attributes.delete(name); }
     setPointerCapture(pointer: number): void { this.captured = pointer; }
-    getBoundingClientRect(): Pick<DOMRect, 'left' | 'top' | 'bottom'> { return { left: 0, top: 0, bottom: this.bottom }; }
+    getBoundingClientRect(): Pick<DOMRect, 'left' | 'top' | 'bottom' | 'width' | 'height'> {
+        return { left: 0, top: 0, bottom: this.bottom, width: this.clientWidth, height: 42 };
+    }
     focus(): void { this.dispatchEvent(new Event('focus')); }
     select(): void {}
     click(): void { this.dispatchEvent(new Event('click')); }
@@ -45,7 +48,7 @@ class Field extends EventTarget {
 
 test('walking endpoints can be searched, filtered, cleared in place and chosen on the map', t => {
     const ids = [
-        'walking-places', 'walking-add', 'walking-station', 'walking-floor', 'walking-kind',
+        'walking-places', 'walking-add', 'walking-station', 'walking-options', 'walking-floor', 'walking-kind',
         'walking-search',
         'walking-results', 'walking-search-status', 'walking-gates', 'walking-preview', 'walking-clear', 'walking-status',
         'walking-gate-action', 'walking-allow-gates'
@@ -65,7 +68,10 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
         clearTimeout: (key: number) => timers.delete(key),
         getComputedStyle: () => ({ paddingLeft: '0', paddingRight: '0' })
     });
-    const document = { createElement: () => new Field(), createElementNS: () => new Field(), documentElement: { clientHeight: 800 } };
+    const document = {
+        body: new Field(), createElement: () => new Field(), createElementNS: () => new Field(),
+        documentElement: { clientHeight: 800, clientWidth: 500 }
+    };
     for (const [key, value] of Object.entries({ window, document, Option: Field })) {
         Object.defineProperty(globalThis, key, { configurable: true, value });
     }
@@ -175,6 +181,11 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     assert(!stationMenu!.opened);
     assert.equal(station.children[0]!.textContent, 'JR 大阪站');
     assert.equal(results.children.length, 5);
+    station.click();
+    assert(stationMenu!.opened);
+    elements.get('walking-options')!.dispatchEvent(new Event('toggle'));
+    assert(!stationMenu!.opened);
+    assert.equal(station.children[0]!.textContent, 'JR 大阪站');
     const searchField = elements.get('walking-search')!;
     searchField.focus();
     searchField.dispatchEvent(new Event('compositionstart'));
@@ -221,8 +232,8 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     planner.usePlace(places[0]!.id, 'start');
     planner.usePlace(places[1]!.id, 'end');
     planner.usePlace(places[2]!.id, 'stop');
-    const gesture = (grip: Field, type: string, clientY: number) => {
-        grip.dispatchEvent(Object.assign(new Event(type, { cancelable: true }), { button: 0, pointerId: 3, clientY }));
+    const gesture = (grip: Field, type: string, clientY: number, clientX = 15) => {
+        grip.dispatchEvent(Object.assign(new Event(type, { cancelable: true }), { button: 0, pointerId: 3, clientX, clientY }));
     };
     const gripAt = (index: number) => {
         for (const [i, row] of rows.children.entries()) {
@@ -232,11 +243,17 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     };
     const firstGrip = gripAt(0);
     const beforeDrag = clears;
+    const dragPreview = document.body.children[0]!;
     gesture(firstGrip, 'pointerdown', 25);
     assert.equal(firstGrip.captured, 3);
-    gesture(firstGrip, 'pointermove', 125);
+    assert(dragPreview.hidden);
+    gesture(firstGrip, 'pointermove', 125, 35);
+    assert(!dragPreview.hidden);
+    assert.equal(dragPreview.children.at(-1)!.textContent, '中央入口');
+    assert.equal(dragPreview.style.transform, 'translate3d(20px, 100px, 0)');
     assert.equal(rows.children[2]!.attributes.get('data-drop'), 'after');
     gesture(firstGrip, 'pointerup', 125);
+    assert(dragPreview.hidden);
     assert.deepEqual(planner.snapshot().ids, ['c', 'b', 'a']);
     assert.equal(clears, beforeDrag + 1);
     assert.equal(field(0)[0]!.textContent, '起点');
@@ -245,6 +262,7 @@ test('walking endpoints can be searched, filtered, cleared in place and chosen o
     gesture(middleGrip, 'pointerdown', 75);
     gesture(middleGrip, 'pointermove', 25);
     gesture(middleGrip, 'pointercancel', 25);
+    assert(dragPreview.hidden);
     assert.deepEqual(planner.snapshot().ids, ['c', 'b', 'a']);
     assert(rows.children.every(row => !row.attributes.has('data-drop')));
     const lastGrip = gripAt(2);

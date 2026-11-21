@@ -13,6 +13,7 @@ import { facilityCodes } from './infrastructure/facility-codes.ts';
 import { bindCreditsDialog } from './presentation/components/source-credits-dialog.ts';
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
 import { bindMapFullscreen } from './presentation/components/map-fullscreen.ts';
+import { bindMapLoading } from './presentation/components/map-loading.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
@@ -643,13 +644,11 @@ sync();
 async function loadMap(): Promise<void> {
     const viewport = element('#viewport');
     const labels = element('#labels');
+    const loading = bindMapLoading(element('#map-loading'));
     try {
-        await new Promise<void>(resolve => {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => resolve());
-            });
-        });
+        await loading.show('stations');
         const runtime = await import('./presentation/map-runtime.ts');
+        await loading.show('passages');
         const graph = runtime.createWalkingNetwork();
         screenDirection = runtime.screenDirection;
         const currentState = session.state;
@@ -665,6 +664,7 @@ async function loadMap(): Promise<void> {
         }
         session = new MapSession(graph.edges, { nodes: graph.nodes, levels: runtime.levels, shapeLeg: graph.shapeLeg });
         session.state = currentState;
+        await loading.show('equipment');
         scene = new runtime.MapScene(
             viewport,
             labels,
@@ -677,6 +677,7 @@ async function loadMap(): Promise<void> {
             queueMapUrl,
             adjustExplodeWithWheel
         );
+        await loading.show('ready');
         syncFacilityLabels();
         scene.setExplodeDragging(explodePointer !== undefined);
         scene.setRoadsVisible(groundPreference);
@@ -714,7 +715,7 @@ async function loadMap(): Promise<void> {
         labels.replaceChildren();
     }
     finally {
-        element('#map-loading').hidden = true;
+        loading.hide();
         viewport.setAttribute('aria-busy', 'false');
     }
 }

@@ -31,7 +31,11 @@ test(
         assert.match(css, /\.sidebar-tabs\s*\{[^}]*flex:\s*none/);
         assert.match(css, /\.sidebar\s*\{[^}]*padding-block:\s*15px/);
         assert.match(css, /\.sidebar-content > \[role=tabpanel\]\s*\{[^}]*padding-inline:\s*var\(--sidebar-inline-inset\);[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto/);
-        assert.match(css, /\.sidebar\s*\{[^}]*width:\s*clamp\(320px,\s*32vw,\s*344px\)/);
+        assert.match(css, /--desktop-sidebar-width:\s*clamp\(320px,\s*32vw,\s*344px\)/);
+        assert.match(css, /\.sidebar\s*\{[^}]*width:\s*var\(--desktop-sidebar-width\)/);
+        assert.match(css, /\.map-loading\s*\{[^}]*--loading-inline-start:[^;]*var\(--desktop-sidebar-width\)/);
+        assert(!/\.map-loading\s*\{[^}]*background/.test(css));
+        assert(narrowStyles.some(rules => /\.map-loading\s*\{[^}]*top:[^;]*var\(--navigation-height\)/.test(rules ?? '')));
         assert.match(css, /\.poi-list\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
         assert(narrowStyles.some(rules => /\.sidebar \.poi-list\s*\{[^}]*overflow-x:\s*auto/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar-content\s*\{[^}]*padding-block:\s*6px 8px/.test(rules ?? '')));

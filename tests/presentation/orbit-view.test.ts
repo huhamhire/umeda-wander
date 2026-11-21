@@ -26,7 +26,7 @@ test('viewport-centered orbit keeps the look-at point centered through yaw and p
     assert.equal(current.top - current.bottom, initial.top - initial.bottom);
 });
 
-test('the centre ray supplies a ground pivot without a visible ground mesh', () => {
+test('the ground projection stays centered through repeated yaw and pitch when the look-at height is below ground', () => {
     const offset = new T.Vector3(45, 170, 273);
     const center = new T.Vector3(400, -24, 600);
     const initial = camera(offset, center);
@@ -35,11 +35,13 @@ test('the centre ray supplies a ground pivot without a visible ground mesh', () 
     const pivot = orbitPointOnPlane(raycaster.ray, 0)!;
     assert.equal(pivot.y, 0);
     assert.notEqual(pivot.z, center.z);
-    orbitAboutPoint(offset, center, pivot, .65, -.2);
-    const current = camera(offset, center);
-    const screen = pivot.clone().project(current);
-    assert(Math.hypot(screen.x, screen.y) < 1e-9);
-    assert.equal(current.top - current.bottom, initial.top - initial.bottom);
+    for (const [yaw, pitch] of [[.65, -.2], [-.5, .3], [.6, .8]] as const) {
+        orbitAboutPoint(offset, center, pivot, yaw, pitch);
+        const current = camera(offset, center);
+        const screen = pivot.clone().project(current);
+        assert(Math.hypot(screen.x, screen.y) < 1e-9);
+        assert.equal(current.top - current.bottom, initial.top - initial.bottom);
+    }
 });
 
 test(
