@@ -23,6 +23,7 @@ import { createSonechikaAccess } from '../public-areas/south-diamor/sonechika-ac
 import { createDiamorCentralAccess } from '../public-areas/south-diamor/diamor-central-access.ts';
 import { createDiamorNorthAccess } from '../public-areas/south-diamor/diamor-north-access.ts';
 import { createDiamorSouthAccess } from '../public-areas/south-diamor/diamor-south-access.ts';
+import { createDiamorEastAccess } from '../public-areas/south-diamor/diamor-east-access.ts';
 import { createDoticaAccess } from '../public-areas/south-diamor/dotica-access.ts';
 import { createWhityStreetExits } from '../public-areas/whity/street-exits.ts';
 import { createIzumiPlazaAccess } from '../public-areas/whity/izumi-plaza-access.ts';
@@ -56,6 +57,7 @@ const sonechikaAccess = createSonechikaAccess();
 const diamorNorthAccess = createDiamorNorthAccess();
 const diamorCentralAccess = createDiamorCentralAccess();
 const diamorSouthAccess = createDiamorSouthAccess();
+const diamorEastAccess = createDiamorEastAccess();
 const doticaAccess = createDoticaAccess();
 const izumiAccess = createIzumiPlazaAccess();
 const whityNorthAccess = createWhityNorthMallAccess();
@@ -74,6 +76,7 @@ const streetConnections = [
     ...diamorNorthAccess.connections,
     ...diamorCentralAccess.connections,
     ...diamorSouthAccess.connections,
+    ...diamorEastAccess.connections,
     ...doticaAccess.connections,
     ...hankyuConcourseConnections,
     ...whityAccess.flatMap(access => access.connections)
@@ -83,7 +86,7 @@ export const publicAccess = {
     areas: [
         ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
-        ...doticaAccess.areas,
+        ...diamorEastAccess.areas, ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
     ],
 };
@@ -152,6 +155,7 @@ const composed = composeStationMaps(
             ...diamorNorthAccess.canopies,
             ...diamorCentralAccess.canopies,
             ...diamorSouthAccess.canopies,
+            ...diamorEastAccess.canopies,
             ...doticaAccess.canopies,
             ...whityAccess.flatMap(access => access.canopies)
         ],
@@ -192,7 +196,10 @@ export const layout = {
     })),
 };
 export const facilities = completeFacilityDirectory(
-    [...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities, ...eastMallAccess.facilities],
+    [
+        ...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities,
+        ...diamorEastAccess.facilities, ...eastMallAccess.facilities
+    ],
     layout.connections,
     layout.platforms,
     levels

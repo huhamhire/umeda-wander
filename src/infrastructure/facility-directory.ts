@@ -63,9 +63,12 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id === 'sonechika-public-lift') {
             return messageText('facilities.locations.sonechikaLift');
         }
-        const diamorExit = /^diamor-exit-(d-\d+)(?:-lower)?$/.exec(id)?.[1];
+        const diamorExit = /^diamor-exit-((?:d|e|10)-\d+)(?:-(?:lower|intermediate))?$/.exec(id)?.[1];
         if (diamorExit) {
             return messageText('facilities.locations.diamorExit', { number: diamorExit.toUpperCase() });
+        }
+        if (id === 'diamor-lift-ev-4') {
+            return messageText('facilities.locations.diamorLift', { number: 'EV-4' });
         }
         const doticaExit = /^dotica-exit-(c-\d+)(?:-(north|south|lower|escalator))?$/.exec(id);
         if (doticaExit) {

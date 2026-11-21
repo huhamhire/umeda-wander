@@ -32,6 +32,7 @@
   "facilities.locations.southPublic": "South public concourse",
   "facilities.locations.sonechikaExit": "Sonechika Exit {number}",
   "facilities.locations.diamorExit": "Diamor Osaka Exit {number}",
+  "facilities.locations.diamorLift": "Diamor Osaka {number}",
   "facilities.locations.doticaExit": "Dotica Exit {number}",
   "facilities.locations.doticaExitNorth": "Dotica Exit {number} (North)",
   "facilities.locations.doticaExitSouth": "Dotica Exit {number} (South)",

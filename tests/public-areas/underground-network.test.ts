@@ -7,10 +7,12 @@ import { connectionLanes } from '../../src/application/connections/connection-la
 import { partitionPublicAreas } from '../../src/application/public-areas/public-area-blocks.ts';
 import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { basements, edges, facilities, geographicPlan, layout, levels, nodes, publicAccess, publicFrontages, publicInterfaceBindings, publicInterfaces, publicWalkingRoutes, undergroundBlocks, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
+import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { facilityCodes } from '../../src/infrastructure/facility-codes.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
@@ -399,6 +401,55 @@ test('Diamor D-40 preserves the mapped bend and lower path without a shortcut to
     assert(openings.some(o => o.connectionId === id && o.level === street.level && contains(o, street)));
     assert(!layout.exteriorOpenings.some(o => contains(o, street)));
     assert(!edges.some(e => e.from.startsWith(id) || e.to.startsWith(id)));
+});
+
+test('Diamor east access joins public walking surfaces at both ends and preserves the shared stair branch', () => {
+    const network = createWalkingNetwork();
+    const approaches = new Map(network.approaches);
+    const groundWells = planFloorOpenings(layout.connections, levels, layout.platforms).filter(o => o.level === 'district-ground');
+    const groundLevels = new Set(levels.filter(l => l.y === 0).map(l => l.id));
+    const groundNodes = new Set(network.nodes.filter(n => groundLevels.has(n.level) && !n.elevationOffset).map(n => n.id));
+    const streetEdges = network.edges.filter(e => e.kind === 'walk' && groundNodes.has(e.from) && groundNodes.has(e.to));
+    const undergroundEdges = network.edges.filter(e => !groundNodes.has(e.from) && !groundNodes.has(e.to));
+    const streetReference = 'diamor-exit-10-18-ground';
+    const connection = (id: string) => {
+        const found = publicAccess.connections.find(c => c.id === id);
+        assert(found, id);
+        return found;
+    };
+
+    const shared = connection('diamor-exit-e-26-lower');
+    const bend = connection('diamor-exit-e-26-intermediate');
+    assert.equal(shared.to, bend.from);
+    assert.equal(shared.to, connection('diamor-exit-10-21').from);
+    assert.equal(bend.to, connection('diamor-exit-e-26').from);
+    assert.equal(shared.from.level, 'district-underground');
+
+    for (const number of ['10-18', '10-22', 'E-8', 'E-13', 'E-14', 'E-17', 'E-20', '10-21', 'E-26', 'E-34', 'E-35', 'EV-4']) {
+        const id = number === 'EV-4' ? 'diamor-lift-ev-4' : 'diamor-exit-' + number.toLowerCase();
+        const access = connection(id);
+        assert.equal(access.to.level, 'district-ground', id);
+        assert(!basements.areas.some(a => contains(a, access.from)), id);
+        assert(groundWells.some(o => o.connectionId === id && contains(o, access.to)), id);
+        assert(network.edges.some(e => e.from === access.from.id && e.to === access.to.id && e.kind === access.kind), id);
+        assert(findRoute(undergroundEdges, access.from.id, 'higashi-umeda-route-entry', false), id);
+        assert(findRoute(streetEdges, access.to.id, streetReference, false), id);
+        if (access.kind === 'stairs') {
+            const entrance = facilities.find(f => f.id === id);
+            assert.equal(entrance?.kind, 'entrance', id);
+            assert.equal(entrance?.connectionId, id);
+            assert(approaches.has(id), id);
+        }
+    }
+    assert(groundWells.some(o => o.connectionId === 'diamor-lift-ev-4' && o.kind === 'elevator'));
+    assert(layout.canopies.some(c => c.id === 'diamor-exit-e-14-canopy' &&
+        c.evidence.urls?.includes('https://www.openstreetmap.org/way/618802467')));
+    for (const id of ['diamor-exit-e-32', 'diamor-exit-e-33']) {
+        assert.equal(facilities.find(f => f.id === id)?.level, 'district-ground');
+        assert(findRoute(streetEdges, approaches.get(id)![0]!.id, streetReference, false), id);
+        assert(!publicAccess.connections.some(c => c.id.startsWith(id)), id);
+        assert(!groundWells.some(o => o.connectionId === id), id);
+    }
 });
 
 test('Diamor D-49 and D-50 connect opposite sides of the B1 junction to their mapped sidewalks', () => {

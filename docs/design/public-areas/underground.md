@@ -113,6 +113,20 @@
 
 18 个编号均已有街面定位和楼梯模型。D-40 的公共主通道接驳未计入完整覆盖率。
 
+### DIAMOR 大阪 · 东侧街面接入
+
+截图所示的东侧区域独立核对 14 个编号。11 个楼梯出口和 1 部直梯由 1F 人行网接入 DIAMOR 地下公共网，E-32、E-33 表达街面入口及人行接驳。地下分支归属参照运营方图，街面锚点取自 OSM，梯宽、平台标高、局部地下落脚面为展示拟合。 [运营方 B1 图](https://www.oud.co.jp/pdf/hinankeikaku.pdf#page=40)
+
+| 范围 | 已接通 1F 与地下公共层 | 街面入口及人行接驳 |
+| --- | --- | --- |
+| DT 塔东侧及北段 | E-8、E-13、E-14、E-17、E-20 | — |
+| 站前第 3、4 大楼之间 | 10-18、10-21、10-22、EV-4 | — |
+| 站前第 2、3 大楼之间 | E-26、E-34、E-35 | E-32、E-33 |
+
+- **E-14** 按街面梯亭轮廓定位顶棚和梯向，1F 开口避让梯口旁的人行道节点。E-8、E-14 的地下落点在 `hanshin-west-b1` 范围，其余按 DIAMOR 公共通道接入。 [E-14 顶棚](https://www.openstreetmap.org/way/618802467) · [街面人行道](https://www.openstreetmap.org/way/959779307)
+- **10-21／E-26** 的楼梯线共用地下上行段，随后分成两个街面出口。E-26 上行支路保留第二个转向平台。 **EV-4** 采用室外直梯的 1F 和地下停靠位置，地下门前平台接东西向公共通道，街面按带顶步道接入人行网。 [共享梯线](https://www.openstreetmap.org/way/619294213) · [E-26 支路](https://www.openstreetmap.org/way/619294216) · [EV-4 井道](https://www.openstreetmap.org/node/5853250928) · [EV-4 街面接驳](https://www.openstreetmap.org/way/619294219)
+- 大阪市图将站前第 3、4 大楼之间的 B1、B2 分别标为独立连通层，当前模型只接入运营方图所示的 DIAMOR 公共层。EV-1 的 OSM 停靠层级与当前公共面之间缺少可对位的地下门前路径。 [大阪市地下连接图](https://www.city.osaka.lg.jp/toshiseibi/cmsfiles/contents/0000585/585427/6_siryou.pdf) · [EV-1 停靠层级](https://www.openstreetmap.org/node/5853250929)
+
 ### 堂岛地下中心（ドーチカ）
 
 - **C-60 北、C-60 南** 在西梅田南侧接入。运营方平面图显示两处街梯在东侧共用一段 B1 上行梯，随后分向北、南。本轮按两个 OSM 梯口和梯亭轮廓固定街面位置，补齐共享平台、两处 1F 开口及顶棚。 [运营方平面图，PDF 第 47 页](https://dotica.osaka-chikagai.jp/front/common/img/dotica_evacuation_plan_2024.pdf#page=47) · [北梯亭](https://www.openstreetmap.org/way/619294244) · [南梯亭](https://www.openstreetmap.org/way/619294243)

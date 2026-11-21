@@ -32,6 +32,7 @@
   "facilities.locations.southPublic": "南侧公共通道",
   "facilities.locations.sonechikaExit": "曾根地下道 {number} 号出口",
   "facilities.locations.diamorExit": "DIAMOR 大阪 {number} 号出口",
+  "facilities.locations.diamorLift": "DIAMOR 大阪 {number}",
   "facilities.locations.doticaExit": "堂岛地下中心 {number} 号出口",
   "facilities.locations.doticaExitNorth": "堂岛地下中心 {number} 号出口（北）",
   "facilities.locations.doticaExitSouth": "堂岛地下中心 {number} 号出口（南）",
