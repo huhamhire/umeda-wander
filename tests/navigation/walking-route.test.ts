@@ -7,6 +7,8 @@ import { MapSession } from '../../src/application/map-session.ts';
 import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { planAtriumOpenings } from '../../src/application/connections/atrium-openings.ts';
+import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
+import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { maxWalkingStops, planWalkingRoute } from '../../src/application/navigation/walking-route.ts';
 import { walkingApproaches } from '../../src/application/navigation/walking-approaches.ts';
 import type { Facility, FloorArea, RouteEdge } from '../../src/domain/map/model.ts';
@@ -15,6 +17,7 @@ import { edges, facilities, layout, levels, nodes, northWalking, southWalking, s
 import { walkingPlaces } from '../../src/infrastructure/district/walking-places.ts';
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { RouteModel } from '../../src/presentation/models/stations/route-model.ts';
+import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
 
 const floorOpenings = planFloorOpenings(layout.connections, levels, layout.platforms);
 const mapOpenings = [...floorOpenings, ...planAtriumOpenings(layout.atria)];
@@ -293,6 +296,9 @@ test('the cross-station route mesh stays continuous across B1 owners and hides o
     model.update(route, elevation, id => viewLayerRole(levels, { level: 'district-underground' }, id) === 'current');
     assert.equal(model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'CylinderGeometry').length, route.length - 1);
     assert.equal(model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'SphereGeometry').length, 2);
+    model.update(route, elevation, id => viewLayerRole(levels, { level: 'district-underground' }, id) === 'current', false);
+    assert.equal(model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'CylinderGeometry').length, route.length - 1);
+    assert(!model.group.children.some(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'SphereGeometry'));
     model.update(route, elevation, id => viewLayerRole(levels, { level: 'concourse' }, id) === 'current');
     assert.equal(model.group.children.length, 0);
 });
@@ -307,6 +313,56 @@ test('short route turns keep their beam without oversized arrows', () => {
     const arrows = model.group.children.filter(mesh => mesh instanceof T.Mesh && mesh.geometry.type === 'ConeGeometry');
     assert.equal(arrows.length, 2);
     assert(arrows.every(arrow => arrow.position.z === 1));
+});
+
+test('escalator previews follow one modeled lane and clear its treads at maximum floor separation', () => {
+    const network = walkingNetwork();
+    const route = new RouteModel(network.nodes, layout.connections);
+    const elevation = (id: typeof levels[number]['id']) => displayElevation(levels, id, 1.5);
+    for (const id of ['bridge-p1-2', 'kitashinchi-west-escalators']) {
+        const connection = layout.connections.find(item => item.id === id)!;
+        const edge = network.edges.find(item => item.kind === 'escalator' &&
+            [connection.from.id, connection.to.id].includes(item.from) &&
+            [connection.from.id, connection.to.id].includes(item.to))!;
+        const ids = [edge.from, edge.to];
+        const [entry, from, to, exit] = route.path(ids);
+        const lane = connectionLanes(connection).find(item => item.id === from?.escalator?.id)!;
+        assert(lane && entry && from && to && exit);
+        const [departure, arrival] = edge.from === lane.from.id ? [lane.from, lane.to] : [lane.to, lane.from];
+        assert.deepEqual([from.x, from.z, to.x, to.z], [departure.x, departure.z, arrival.x, arrival.z]);
+        assert(Math.abs(Math.hypot(entry.x - from.x, entry.z - from.z) - .8) < 1e-8);
+        assert(Math.abs(Math.hypot(exit.x - to.x, exit.z - to.z) - .8) < 1e-8);
+
+        const equipment = new VerticalConnectionModel(connection, levels, layout.platforms);
+        equipment.update(elevation, 'all');
+        const treads: T.Object3D[] = [];
+        equipment.group.traverse(item => {
+            if (item.name === 'tread-surfaces' || item.name === 'tread-edge-stripes') {
+                treads.push(item);
+            }
+        });
+        route.update(ids, elevation, () => true);
+        route.group.updateMatrixWorld(true);
+        const ray = new T.Raycaster(new T.Vector3(), new T.Vector3(0, -1, 0));
+        const vertex = new T.Vector3();
+        let treadHits = 0;
+        for (const mesh of route.group.children) {
+            if (!(mesh instanceof T.Mesh) || mesh.geometry.type === 'SphereGeometry') {
+                continue;
+            }
+            const positions = mesh.geometry.getAttribute('position');
+            for (let i = 0; i < positions.count; i++) {
+                vertex.fromBufferAttribute(positions, i).applyMatrix4(mesh.matrixWorld);
+                ray.ray.origin.set(vertex.x, 1000, vertex.z);
+                const hit = ray.intersectObjects(treads, false)[0];
+                if (hit) {
+                    assert(vertex.y > hit.point.y, `${id} route intersects a tread`);
+                    treadHits++;
+                }
+            }
+        }
+        assert(treadHits > 0);
+    }
 });
 
 const routeFromCrost = planWalkingRoute(edges, ['crost68-b1', 'hanshin-umeda-route-entry'], false).route!;

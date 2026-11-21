@@ -782,6 +782,28 @@
   color: var(--color-paper);
 }
 
+.walking-route-actions #walking-play {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+}
+
+#walking-play > svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+#walking-play[data-playing] .walking-play-icon,
+#walking-play:not([data-playing]) .walking-pause-icon {
+  display: none;
+}
+
+#walking-play:disabled {
+  opacity: .5;
+}
+
 .walking-field button.walking-point-clear {
   position: absolute;
   inset: 0 1px 0 auto;
@@ -841,7 +863,7 @@
 
 .walking-route-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 5px;
 }

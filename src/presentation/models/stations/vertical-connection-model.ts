@@ -2,7 +2,7 @@ import * as T from 'three';
 import type { Level, LevelId, Platform, VerticalConnection } from '../../../domain/map/model.ts';
 import { elevatorShaftWidth, elevatorWellHalfWidth } from '../../../application/connections/connection-openings.ts';
 import { connectionHeading } from '../../../application/connections/connection-orientation.ts';
-import { connectionLanes, escalatorTreadWidth } from '../../../application/connections/connection-lanes.ts';
+import { connectionLanes, equipmentBaseLift, escalatorStepCount, escalatorTreadWidth } from '../../../application/connections/connection-lanes.ts';
 import { viewLayerRole } from '../../../application/exploration/view-layer.ts';
 
 const unitBox = new T.BoxGeometry(1, 1, 1);
@@ -116,7 +116,7 @@ export class VerticalConnectionModel {
         this.levels = levels;
         const fromY = levels.find(l => l.id === connection.from.level)!.y + (connection.from.elevationOffset ?? 0);
         const toY = levels.find(l => l.id === connection.to.level)!.y + (connection.to.elevationOffset ?? 0);
-        this.count = connection.kind === 'stairs' ? Math.max(4, Math.ceil(Math.abs(toY - fromY) / 0.24)) : 28;
+        this.count = connection.kind === 'stairs' ? Math.max(4, Math.ceil(Math.abs(toY - fromY) / 0.24)) : escalatorStepCount;
         this.treadWidth = connection.width ? connection.width - 0.6 : connection.kind === 'escalator' ? escalatorTreadWidth : 2.15;
         [this.low, this.high] = fromY < toY ? [connection.from, connection.to] : [connection.to, connection.from];
         this.run = Math.hypot(this.high.x - this.low.x, this.high.z - this.low.z);
@@ -300,8 +300,8 @@ export class VerticalConnectionModel {
             this.group.visible = this.lanes.some(lane => lane.group.visible);
             return;
         }
-        const lowY = elevation(this.low.level) + (this.low.elevationOffset ?? 0) + 0.65;
-        const highY = elevation(this.high.level) + (this.high.elevationOffset ?? 0) + 0.65;
+        const lowY = elevation(this.low.level) + (this.low.elevationOffset ?? 0) + equipmentBaseLift;
+        const highY = elevation(this.high.level) + (this.high.elevationOffset ?? 0) + equipmentBaseLift;
         const rise = highY - lowY;
         const previousRise = (this.previousHighY ?? 0) - (this.previousLowY ?? 0);
         this.group.position.y = lowY;

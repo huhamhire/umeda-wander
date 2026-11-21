@@ -19,6 +19,7 @@ import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
 import { bindMapViewUrl, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
 import { planWalkingRoute, type WalkingApproximation } from './application/navigation/walking-route.ts';
+import type { RoutePlaybackStatus } from './application/navigation/route-playback.ts';
 
 interface LanguageChangeView {
     state: MapViewState;
@@ -115,6 +116,23 @@ const facilityClear = element<HTMLButtonElement>('#facility-clear');
 const facilityStationButton = element<HTMLButtonElement>('#facility-station');
 const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
 const walkingPanel = element('#panel-walking');
+const walkingPlay = element<HTMLButtonElement>('#walking-play');
+walkingPlay.addEventListener('click', () => scene?.toggleRoutePlayback());
+
+/** Keep the playback control labelled for the action it will perform next. */
+function setRoutePlaybackStatus(status: RoutePlaybackStatus): void {
+    const actions = { ready: 'play', playing: 'pause', paused: 'resume', finished: 'replay' } as const;
+    const label = messageText(`ui.walking.${actions[status]}`);
+    walkingPlay.title = label;
+    walkingPlay.setAttribute('aria-label', label);
+    walkingPlay.toggleAttribute('data-playing', status === 'playing');
+}
+
+/** Offer playback only when the map has a drawn route. */
+function syncRoutePlaybackButton(): void {
+    walkingPlay.disabled = !scene || (session.state.route?.length ?? 0) < 2;
+}
+
 const facilityWalkingActions = element('#facility-walking-actions');
 const facilityWalkingStop = element<HTMLButtonElement>('#facility-walking-stop');
 const facilityWalkingRoles = ['start', 'end', 'stop'] as const;
@@ -197,6 +215,7 @@ const showSidebarTab = bindSidebarTabs(
 const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, facilities, {
     kindLabel: kind => categoryLabels[kind],
     preview: (places, allowPaid) => {
+        scene?.stopRoutePlayback();
         const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid, walkingApproaches);
         if (result.route) {
             clearFacilitySelection();
@@ -222,6 +241,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
     },
     pick: (places, onPick) => {
         if (places?.length) {
+            scene?.stopRoutePlayback();
             const first = places[0]!;
             const group = floors.find(item => item.members.some(level => level.id === first.level));
             const oneFloor = group && places.every(place => group.members.some(level => level.id === place.level));
@@ -413,6 +433,7 @@ function refreshFacilities(dismissExcludedSelection = false): void {
  */
 function sync(options?: Parameters<MapScene['update']>[1]): void {
     scene?.update(session.state, options);
+    syncRoutePlaybackButton();
     if (scene) {
         queueMapUrl();
     }
@@ -509,6 +530,7 @@ for (const b of floorButtons) {
     b.addEventListener(
         'click',
         () => {
+            scene?.stopRoutePlayback();
             session.state.level = b.dataset.level as LevelId | 'all';
             facilityFilter.level = session.state.level;
             pendingFacility = undefined;
@@ -674,7 +696,8 @@ async function loadMap(): Promise<void> {
             currentState,
             selectFromMap,
             queueMapUrl,
-            adjustExplodeWithWheel
+            adjustExplodeWithWheel,
+            setRoutePlaybackStatus
         );
         await loading.show('ready');
         syncFacilityLabels();
@@ -694,6 +717,7 @@ async function loadMap(): Promise<void> {
         updateCompass();
         scene.renderFirstFrame();
         walkingRoute.enableMap();
+        syncRoutePlaybackButton();
         if (restoredPreview) {
             walkingRoute.showPreviewResult({ message: restoredPreview });
         }
@@ -704,6 +728,7 @@ async function loadMap(): Promise<void> {
         console.error('Map initialization failed', error);
         scene?.dispose();
         scene = undefined;
+        syncRoutePlaybackButton();
         const fallback = element('#fallback');
         fallback.hidden = false;
         const message = error instanceof Error ? error.message : String(error);

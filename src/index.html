@@ -205,6 +205,12 @@
                 </svg>
               </button>
               <button type="button" id="walking-preview">{{ui.walking.preview}}</button>
+              <button type="button" id="walking-play" aria-label="{{ui.walking.play}}" title="{{ui.walking.play}}" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path class="walking-play-icon" d="M8 5l12 7-12 7z" />
+                  <path class="walking-pause-icon" d="M8 5h3v14H8zm6 0h3v14h-3z" />
+                </svg>
+              </button>
             </div>
             <p id="walking-status" role="status" hidden></p>
             <div class="walking-actions" id="walking-gate-action" hidden>

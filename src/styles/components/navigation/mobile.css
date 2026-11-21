@@ -201,7 +201,8 @@
   width: 44px;
 }
 
-#walking-clear {
+#walking-clear,
+.walking-route-actions #walking-play {
   width: 44px;
 }
 

@@ -59,6 +59,7 @@ test(
         assert.deepEqual([...html.matchAll(/id="(tab-[^"]+)"/g)].map(m => m[1]), ['tab-layers', 'tab-facilities', 'tab-walking']);
         assert(html.indexOf('id="facility-picker"') < html.indexOf('id="facility-station"'));
         assert(html.includes('id="walking-search"'));
+        assert.match(html, /id="walking-preview"[^>]*>[^<]*<\/button>\s*<button[^>]*id="walking-play"[^>]*disabled/);
         const options = html.match(/<details[^>]*id="walking-options"[^>]*>([\s\S]*?)<\/details>/);
         assert(options && !options[0].split('>')[0]!.includes(' open'));
         assert(options[1]!.includes('id="walking-station"'));

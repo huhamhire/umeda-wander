@@ -51,7 +51,8 @@ test(
         assert.match(css, /\.walking-itinerary\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) max-content/);
         assert.match(css, /\.walking-panel ol\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
         assert.match(css, /#walking-preview:enabled\s*\{[^}]*background:\s*var\(--color-tab-active\)/);
-        assert.match(css, /\.walking-route-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto/);
+        assert.match(css, /\.walking-route-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto auto\s*;/);
+        assert(narrowStyles.some(rules => /#walking-play\s*\{[^}]*width:\s*44px/.test(rules ?? '')));
         assert.match(css, /#viewport canvas\s*\{[^}]*cursor:\s*grab/);
         assert.match(css, /canvas\[data-clickable\]\s*\{\s*cursor:\s*pointer[^}]*\}[\s\S]*canvas\[data-dragging\]\s*\{\s*cursor:\s*grabbing[^}]*\}[\s\S]*canvas\[data-orbiting\]\s*\{\s*cursor:\s*move/);
         assert.match(css, /\.credits-content\s*\{[^}]*overflow-y:\s*auto/);

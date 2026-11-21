@@ -3,6 +3,8 @@ import type { VerticalConnection } from '../../domain/map/model.ts';
 export const escalatorOverallWidth = 2.3;
 export const escalatorTreadWidth = 1.35;
 export const escalatorLaneSpacing = 2.45;
+export const escalatorStepCount = 28;
+export const equipmentBaseLift = 0.65;
 /** Independent, genuinely side-by-side lanes sharing a diagram reference. */
 export function connectionLanes(connection: VerticalConnection): VerticalConnection[] {
     const lanes = connection.lanes ?? 1;
