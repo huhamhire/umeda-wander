@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- GitHub Pages 发布保留样式检查、类型检查及静态构建，跳过测试。拉取请求和其他分支的 CI 下载测试所需的 Git LFS 原始资料。
+
 ## [0.1.0] - 2026-11-22
 
 ### Added
