@@ -29,14 +29,14 @@
 
 - 地理地下公共网按 `public-areas/underground-blocks.ts` 登记九个独立所有者，管理窗口不改变原 PDF 开挖轮廓；各块共用 `district-underground` 标高与展开序号。建筑占位经 `basement-occupancy.ts` 减去公共面及站体，不能盖住通路；几何接触不等于已确认入口。公共设备用 `blockId` 声明归属，不误归车站付费区；维护入口见 `public-areas/README.md` 和 `docs/design/public-areas/underground.md`。
 
-- H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供与总图共用的独立站模。车站、建筑和公共区域使用统一米制坐标，设备造型可按可读性适度放大。各板块通过公开接口组装，共享逻辑按 DDD 语义归层。1F 地面路网独立显隐。空间核对与真机验收见 `docs/roadmap.md`。
+- H5 使用 `district/geographic-map.ts`，`createGeographicStation(id)` 提供与总图共用的独立站模。车站、建筑和公共区域使用统一米制坐标，设备造型可按可读性适度放大。各板块通过公开接口组装，共享逻辑按 DDD 语义归层。1F 地面路网独立显隐。验证方式见 `docs/development/validation.md`。
 - 默认使用中文沟通，代码标识符沿用项目已有风格。
 - 修改前先阅读相关文件，保持变更聚焦，保留用户已有改动。
 - 源码风格参考本地 nstarter service-express 模板，规范见 `docs/development/code-style.md`。TypeScript 使用 4 空格，CSS／HTML／JSON 使用 2 空格；UTF-8、LF、末尾换行。每行只放一条 statement，条件与循环必须带大括号，多语句回调分行，简单语句使用分号，避免多个副作用或长链式三元表达式挤在同一行。对象配置、参数和表达式按语义展开；构建压缩仅由 esbuild 执行。
 - 注释统一使用英文。罗马字地名、站名及线路名随注释注明日文原名。命名函数、类方法、访问器、构造器及模块级函数变量提供说明用途和重要约束的 JSDoc。关键算法、坐标框架、人工估计和副作用补必要说明。编辑器约束在 `.editorconfig`／`.vscode/settings.json`，`npm run check:style` 通过 ESLint 和 Stylelint 检查 TypeScript、CSS。格式整理与行为变更分别校对。
 - CSS 按 `src/styles/foundations/` 和 `components/<领域>/` 维护。各领域的 `index.css` 先引入通用样式，再为 760px 及以下的窄屏加载同级 `mobile.css`。`foundations/palette.css` 维护基础色板，`foundations/theme.css` 定义界面用途及衍生颜色供组件使用。每条属性独占一行，`scripts/styles.ts` 通过 esbuild 合并为 `dist/styles.css`。
 - 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/`、`ja/`、`en/` 使用同一套界面、车站、建筑、公共区域、设施、线路领域键。版权正文按语言在 `src/content/source-credits.<locale>.html` 整体维护。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；语言优先使用 Cookie 内的选择，否则按浏览器首选语言列表依次匹配，默认回退简体中文。语言与主题开关同放右上角。维护说明见 `docs/development/i18n.md`。
-- 当前源码入口与目录职责见根 README 的项目结构。Roadmap 维护待办和待验收项。测试覆盖现役站模、设施目录、开口和公共接口，历史版本通过 Git 查阅。
+- 当前源码入口与目录职责见 `docs/development/architecture.md`，本地运行与部署见 `docs/development/run-and-deploy.md`。Roadmap 记录后续功能改进。测试覆盖现役站模、设施目录、开口和公共接口，历史版本通过 Git 查阅。
 - 设施目录测试直接核对现役设备落点、站台及稳定编号。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 日常修改可用 `npm run check:style:changed` 检查改动文件。规则配置或依赖锁文件改动时自动转为全量，`npm run check:style` 可用于提交前与 CI。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。

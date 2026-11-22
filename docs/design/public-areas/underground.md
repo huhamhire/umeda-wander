@@ -179,7 +179,7 @@ HERBIS 楼层图将 B2 门口画在 Garden Avenue 通路上，模型在接口处
 | JP 下沉广场 | [日本邮便连桥说明](../../../references/commercial/jp-tower/deck-and-sunken-garden.pdf)第 2 页标出 B1–1F 阶梯及 B1–2F 电梯。`south-diamor/jp-access.ts` 维护广场、Garden Avenue 接驳及 1F 街面接入，直梯的 B1 和 2F 段共用一个 1F 停靠点。[JP 楼层连接](../buildings/jp-tower.md) |
 | Grand Front 南侧广场 | [梅北广场 1F 图](../../../references/commercial/grand-front/umekita-plaza-1f.jpg)及 [B1 图](../../../references/commercial/grand-front/umekita-plaza-b1.jpg)用于核对两处扶梯和一组宽楼梯。由 `north-atrium/grand-front-plaza-access.ts` 维护。 |
 
-设备米制位置、尺寸及展示高差为拟合。地下门位、主网接驳和局部高差的待核对项统一见 [Roadmap](../../roadmap.md)。
+设备米制位置、尺寸及展示高差为拟合。
 
 ## 建筑占位
 

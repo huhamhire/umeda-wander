@@ -24,7 +24,7 @@
 
 [JR 构内图](../../../references/stations/jr-osaka/station-guide.pdf) PDF 第 2、3、5、6 页将 B 直梯标在北中庭东侧，分列 3F、2F、1F、B1。[大阪市 2024 年 4 月无障碍图](../../../references/district/osaka-station-accessibility-2024-04.pdf) 第 1 页编号 26 列出地面、北门大楼 2F 和联络桥 3F。依据位置和停靠层，两套编号合并为共轴的四层直梯。2F、3F 门口分别落在 `north-2f-public`、`bridge-north`，LUCUA 外壳按地上井道范围留空。井道位置和门口宽度为展示拟合。设施目录每层只保留一个落点，1F 沿用 B 直梯原编号，2F 沿用 26 号的原编号。
 
-JR 图第 6 页画出 LUCUA 侧通路至 B 直梯，其 B1 落台接入地区主网保留为[资料核对项](../../roadmap.md)。阪神南出口直梯的 B1 落台沿 OSM 足道接至 F23 下端，公开资料未确定向地区主网的具体门位和局部高差。
+JR 图第 6 页画出 LUCUA 侧通路至 B 直梯，其 B1 落台与地区主网的接入尚无确认依据。阪神南出口直梯的 B1 落台沿 OSM 足道接至 F23 下端，公开资料未确定向地区主网的具体门位和局部高差。
 
 南侧参考图中 62 指向 B1。JP Tower 的地上连桥接入与[地下下沉广场](./underground.md)分别维护。
 
@@ -56,7 +56,7 @@ Yodobashi 外圈由公共回廊板块独立绘制，关闭建筑轮廓后仍保�
 - `build/geography/elevated-network-overview.svg` 和 north／south／west 局部 SVG：道路、公共桥面、既有车站公共面、付费区及接口；蓝点为公共设备、红圈为指定接口。
 - `elevated-network-audit.json`：板块、接口公共落脚与目标距离、设备和待定位项。距离只是核查，不创建门洞或路线。
 
-`tests/public-areas/elevated-network.test.ts` 检查共用节点、同高楼板避让、标高、回廊、设备真孔洞、建筑裁口、栏杆和设施编号。实际门位、标高及浏览器验收见 [Roadmap](../../roadmap.md)。
+`tests/public-areas/elevated-network.test.ts` 检查共用节点、同高楼板避让、标高、回廊、设备真孔洞、建筑裁口、栏杆和设施编号。浏览器验证方式见[开发验证规范](../../development/validation.md)。
 
 OSM 原始轴线及估计宽度随 OSM 下载提供；公共平台、建筑裁口及设施等混合来源几何的权限见[来源核查](../../data/source-credits-audit.md)。
 

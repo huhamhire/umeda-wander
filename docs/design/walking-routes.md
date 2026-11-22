@@ -42,4 +42,4 @@
 - `infrastructure/public-areas/north-decks/walking-routes.ts` 登记北中庭 1F 到 2F、北侧连廊和阪急闸外接段。测试覆盖公共楼板、井口和「北新地 → 阪神西口 → 阪急京都线」的完整预览。
 - `presentation/components/walking-route-panel.ts` 管理路线草稿、筛选和确认。地图只拾取显式提供的节点，`RouteModel` 绘制当前路线。
 
-其余跨站路径、任意落点约束与真机验收见 [Roadmap](../roadmap.md#步行路线)。验证命令见[开发验证规范](../development/validation.md)。
+跨站路径与任意落点的后续改进见 [Roadmap](../roadmap.md#步行路线)。验证方式见[开发验证规范](../development/validation.md)。

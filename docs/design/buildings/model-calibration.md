@@ -65,6 +65,6 @@ node scripts/geography/render-building-details.ts
 
 ## 核查
 
-白模按[离线核查命令](../../../scripts/geography/README.md#离线核查)检查。蓝天大厦的展示范围见 [Roadmap](../../roadmap.md)。
+白模按[离线核查命令](../../../scripts/geography/README.md#离线核查)检查。
 
 车站主题为低饱和度风味：JR 大阪站浅蓝，阪急灰粉／栗红，M16 淡珊瑚红，阪神浅蓝，T20 淡紫，Y11 淡蓝，北新地淡粉。Metro 色系参考其官方线路图，色值为本项目白模适配，不是运营者品牌色数值复刻；公共通路保持统一语义。

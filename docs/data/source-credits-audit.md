@@ -8,7 +8,9 @@
 
 `scripts/build.ts` 输出 `index.html`、`app.js`、`styles.css` 及机器可读的 `osm-derived-data.json`。版权正文在构建时嵌入单入口页面，不需要运行时请求或逐条拼接。入口为 `src/main.ts`；静态数据来自 `src/infrastructure/`。没有构建时复制或运行时加载 `references/` 中的 PDF、SVG、位图，也没有外部底图、在线瓦片、外部 3D 模型、照片贴图或下载字体。标牌使用 `CanvasTexture`，标识使用内联 SVG，模型使用程序化几何。Three.js 等程序库的原许可证仍保留在构建 HTML 注释中，不能当作本项目源码许可或地图数据许可。
 
-仓库没有配置 remote，`package.json` 为 private，根目录未发现项目级 LICENSE；无法确认公开源码或反馈入口。因此“项目源码”整节省略，没有推测仓库地址或自行设置源码许可。以后可通过统一配置增加真实公开地址、对应 LICENSE 与反馈入口。
+项目原创代码和原创文档采用 [MIT 许可证](../../LICENSE)。构建将其写入 `dist/LICENSE`，并在入口 HTML 注释中与第三方软件许可分别列出。`package.json` 的 `private` 继续防止意外发布到 npm。公开仓库与反馈入口尚未提供，来源弹窗保留现有来源说明。
+
+第三方原始资料、派生数据和作品沿用各自适用的条款。环状线进站音参考用户录音合成，发车音参照第三方对《やっぱ好きやねん》的 MIDI 再现转写。原始媒体未随构建交付，旋律改编的发布依据仍待核实。[轨道与提示音设计](../design/railways.md)
 
 ## 已核实的开放数据
 

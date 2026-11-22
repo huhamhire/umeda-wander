@@ -1,6 +1,31 @@
 # 车站模块与地区组装
 
-H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。目录结构见[项目 README](../../README.md#项目结构)，待核对事项见[Roadmap](../roadmap.md)。
+H5 使用地理米制总图，车站、商业建筑及公共区域按独立板块维护。
+
+## 项目结构
+
+```text
+umeda-h5/
+├── src/
+│   ├── domain/            # 地图实体、几何与通行规则
+│   ├── application/       # 站点与公共网装配、导航和探索用例
+│   ├── infrastructure/    # 站点、建筑、地理来源与浏览器偏好
+│   ├── presentation/      # 场景、镜头、标签、模型、控件和音效
+│   ├── content/           # 各语言的来源与版权正文
+│   ├── styles/            # 基础主题和领域组件样式
+│   ├── utils/             # 无地图领域语义的共用工具
+│   ├── main.ts            # 应用与 DOM 事件绑定
+│   └── index.html         # 单入口模板
+├── data/geography/        # 派生资源与可复现的地理配置
+├── references/           # 原始资料与来源索引
+├── scripts/              # 构建、开发服务和离线核查
+├── tests/                # 按领域组织的回归测试
+├── docs/                 # 设计、开发、来源与维护待办
+├── build/                # 本地中间产物和审查结果
+└── dist/                 # 静态部署产物
+```
+
+细分目录见[应用层](../../src/application/README.md)、[呈现层](../../src/presentation/README.md)、[样式](../../src/styles/README.md)和[测试](../../tests/README.md)。楼层展开使用的视觉高度只影响渲染，不参与步行路线代价计算。
 
 ## 组装入口
 

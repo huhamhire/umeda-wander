@@ -30,4 +30,4 @@ node scripts/geography/review-ground-context.ts
 - 输出离线图 `build/geography/display-context.svg`、`context-audit.json`；原始 references 不改写，生成预览不提交。
 - 修改底层地面、站体、地下网或高架板块后重建展示资源。裁剪后的几何受混合来源约束，不取代版权弹窗中的纯 OSM 数据下载。
 
-自动检查覆盖地下面、站台、核心建筑及连廊不被裁掉，道路片段连续、无关分支剔除，以及遮盖／铺装不重新封闭入口。浏览器与手机的验收条目见 [Roadmap](../../roadmap.md)。
+自动检查覆盖地下面、站台、核心建筑及连廊不被裁掉，道路片段连续、无关分支剔除，以及遮盖／铺装不重新封闭入口。浏览器与手机验证方式见[开发验证规范](../../development/validation.md)。

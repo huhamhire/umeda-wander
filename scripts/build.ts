@@ -38,12 +38,16 @@ export async function buildPage(): Promise<void> {
         legalComments: 'inline',
         plugins: [browserMapData]
     });
-    const [template, chineseCredits, japaneseCredits, englishCredits, css, threeLicense, polygonLicense, predicatesLicense, splayReadme] = await Promise.all([
+    const [
+        template, chineseCredits, japaneseCredits, englishCredits, css,
+        projectLicense, threeLicense, polygonLicense, predicatesLicense, splayReadme
+    ] = await Promise.all([
         readFile('src/index.html', 'utf8'),
         readFile('src/content/source-credits.zh-CN.html', 'utf8'),
         readFile('src/content/source-credits.ja.html', 'utf8'),
         readFile('src/content/source-credits.en.html', 'utf8'),
         buildStyles(),
+        readFile('LICENSE', 'utf8'),
         readFile('node_modules/three/LICENSE', 'utf8'),
         readFile('node_modules/polygon-clipping/LICENSE.md', 'utf8'),
         readFile('node_modules/robust-predicates/LICENSE', 'utf8'),
@@ -75,7 +79,7 @@ export async function buildPage(): Promise<void> {
         )
         .replace(
             '<!-- LICENSE -->',
-            () => `<!-- Third-party licenses\n${license.replaceAll('--', '—')}\n-->`
+            () => `<!-- UMEDA original code and documentation\n${projectLicense}\nThird-party software licenses\n${license.replaceAll('--', '—')}\n-->`
         );
     const appPath = resolve('dist/app.js');
     const app = result.outputFiles.find(file => file.path === appPath);
@@ -91,6 +95,7 @@ export async function buildPage(): Promise<void> {
         writeFile('dist/index.html', html),
         writeFile(app.path, app.contents),
         writeFile('dist/styles.css', css),
+        writeFile('dist/LICENSE', projectLicense),
         writeFile('dist/osm-derived-data.json', JSON.stringify(geographicOsmData()))
     ]);
     // Prune obsolete hashed JavaScript and legacy encoding sidecars after publishing the new page.

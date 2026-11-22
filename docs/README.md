@@ -1,6 +1,6 @@
 # 文档索引
 
-七站地理样板、地下公共网和主要二层连廊已接入。模型及连接包含人工拟合，不能用于现场导航。运行方式见[项目 README](../README.md)，待办与待验收项见 [Roadmap](./roadmap.md)。
+七站地理样板、地下公共网和主要二层连廊已接入。模型及连接包含人工拟合，不能用于现场导航。后续功能见 [Roadmap](./roadmap.md)。
 
 | 要处理的内容 | 入口 |
 | --- | --- |
@@ -9,13 +9,14 @@
 | 地面遮盖、地下开挖网络、2F 连廊 | [公共空间](./design/public-areas/README.md) |
 | 站内步行路线、端点和地图选点 | [步行路线](./design/walking-routes.md) |
 | 裙楼、塔楼、建筑造型及公共接入 | [建筑设计](./design/buildings/README.md) |
+| 本地运行、构建发布和子路径部署 | [本地开发与部署](./development/run-and-deploy.md) |
 | 架构、代码风格、国际化、验证和文档维护 | [开发文档](./development/README.md) |
 | 资料版本、授权与来源评估 | [数据与来源](./data/README.md) |
 
 ```text
 docs/
 ├── README.md
-├── roadmap.md                    # 剩余任务与待验收项
+├── roadmap.md                    # 后续功能改进
 ├── design/
 │   ├── areas/                   # JR 中央区、北侧、南侧
 │   ├── stations/                # 七站构内依据与简化边界

@@ -20,4 +20,4 @@
 
 ## 重建与检查
 
-[高架数据说明](../../../data/geography/elevated/README.md)列出配置、源轴线预览和运行时复核命令。检查 OSM way 及来源可追溯性、Grand Front 直桥走向、南侧支臂和主干共用节点。宽度、门位及标高的待核对项见 [Roadmap](../../roadmap.md)。
+[高架数据说明](../../../data/geography/elevated/README.md)列出配置、源轴线预览和运行时复核命令。检查 OSM way 及来源可追溯性、Grand Front 直桥走向、南侧支臂和主干共用节点。

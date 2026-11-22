@@ -18,4 +18,4 @@
 
 改动一个锚点后检查邻近三角网、建筑孔洞和支路。配准残差描述控制点与模型之间的差值，非现场测量精度。离线虚线站区表示参考包络，实际公共面与车站的合并及付费区避让见[地下公共网](./underground.md)。
 
-重建顺序、数据文件和输出格式见[地下数据说明](../../../data/geography/underground/README.md)。待核对项由 [Roadmap](../../roadmap.md) 维护。
+重建顺序、数据文件和输出格式见[地下数据说明](../../../data/geography/underground/README.md)。

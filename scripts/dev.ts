@@ -1,9 +1,16 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { watch } from 'node:fs';
-import { promisify } from 'node:util';
+import { parseArgs, promisify } from 'node:util';
 import { brotliCompress, constants, gzip } from 'node:zlib';
 import { buildPage } from './build.ts';
+
+const { values } = parseArgs({ options: { 'base-path': { type: 'string', default: '/' } } });
+const basePath = values['base-path'];
+if (!/^\/(?:[a-z0-9_-]+\/)*[a-z0-9_-]*$/i.test(basePath)) {
+    throw new Error('Expected an absolute directory path, such as /projects/umeda/');
+}
+const mountPath = basePath.endsWith('/') ? basePath : `${basePath}/`;
 
 /** Pick a response encoding, honoring explicitly excluded representations. */
 function assetEncoding(header: string | undefined): 'br' | 'gzip' | 'identity' | undefined {
@@ -46,7 +53,16 @@ watch(
     }
 );
 const server = createServer(async (req, res) => {
-    const path = new URL(req.url ?? '/', 'http://localhost').pathname;
+    const url = new URL(req.url ?? '/', 'http://localhost');
+    if (mountPath !== '/' && url.pathname === mountPath.slice(0, -1)) {
+        res.writeHead(308, { Location: `${mountPath}${url.search}` }).end();
+        return;
+    }
+    if (!url.pathname.startsWith(mountPath)) {
+        res.writeHead(404).end();
+        return;
+    }
+    const path = `/${url.pathname.slice(mountPath.length)}`;
     if (path === '/favicon.ico') {
         res.writeHead(204).end();
         return;
@@ -59,6 +75,7 @@ const server = createServer(async (req, res) => {
         '/index.html': { file: 'index.html', mime: 'text/html; charset=utf-8' },
         '/app.js': { file: 'app.js', mime: 'text/javascript; charset=utf-8' },
         '/styles.css': { file: 'styles.css', mime: 'text/css; charset=utf-8' },
+        '/LICENSE': { file: 'LICENSE', mime: 'text/plain; charset=utf-8' },
         '/osm-derived-data.json': { file: 'osm-derived-data.json', mime: 'application/json; charset=utf-8' },
     };
     const chunk = /^\/chunks\/[a-z0-9_-]+\.js$/i.test(path);
@@ -94,8 +111,8 @@ server.listen(
     () => {
         const address = server.address();
         if (address && typeof address !== 'string') {
-            console.log(`Local: http://127.0.0.1:${address.port}`);
-            console.log(`Listening: 0.0.0.0:${address.port} (LAN: use this computer's IP address)`);
+            console.log(`Local: http://127.0.0.1:${address.port}${mountPath}`);
+            console.log(`Listening: 0.0.0.0:${address.port}${mountPath} (LAN: use this computer's IP address)`);
         }
     }
 );

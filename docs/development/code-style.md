@@ -45,7 +45,7 @@ npm run build
 
 ## 样式模块
 
-样式使用原生 CSS。完整目录见[项目结构](../../README.md#项目结构)。
+样式使用原生 CSS。各领域入口见[样式说明](../../src/styles/README.md)。
 
 ```text
 src/styles/
