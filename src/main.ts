@@ -15,10 +15,13 @@ import { bindPagePreferences, mountLocalizedPage } from './presentation/componen
 import { bindMapFullscreen } from './presentation/components/map-fullscreen.ts';
 import { bindMapLoading } from './presentation/components/map-loading.ts';
 import { bindTourCaption } from './presentation/components/tour-caption.ts';
+import { LoopTrainSound } from './presentation/audio/loop-train-sound.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
-import { bindMapViewUrl, mapTourUrl, readMapTourMode, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
+import {
+    bindMapViewUrl, mapSoundUrl, mapTourUrl, readMapSoundEnabled, readMapTourMode, readMapView, type SharedMapView
+} from './presentation/camera/map-view-url.ts';
 import { planWalkingRoute, type WalkingApproximation } from './application/navigation/walking-route.ts';
 import type { RoutePlaybackStatus } from './application/navigation/route-playback.ts';
 
@@ -66,6 +69,60 @@ let session = new MapSession([]);
 const restored = takeLanguageChangeView();
 const address = new URL(location.href);
 const requestedTour = readMapTourMode(address);
+let soundEnabled = readMapSoundEnabled(address);
+const trainSound = new LoopTrainSound(soundEnabled, syncSoundButton);
+const soundButton = element<HTMLButtonElement>('#map-sound');
+
+/** Sync the sound switch and expose its active action without rewriting the camera parameters. */
+function syncSoundButton(): void {
+    const playingAllowed = soundEnabled && trainSound.ready;
+    soundButton.setAttribute('aria-pressed', String(!playingAllowed));
+    soundButton.title = messageText(playingAllowed ? 'ui.preferences.muteSound' : 'ui.preferences.unmuteSound');
+}
+
+trainSound.prepare();
+syncSoundButton();
+soundButton.addEventListener('click', () => {
+    soundEnabled = !soundEnabled || !trainSound.ready;
+    trainSound.setEnabled(soundEnabled);
+    trainSound.unlock();
+    syncSoundButton();
+    try {
+        history.replaceState(history.state, '', mapSoundUrl(new URL(location.href), soundEnabled));
+    } catch {
+        // The live button still works when an embedded page cannot update its address.
+    }
+});
+
+/** Let the sound control handle its own click, including its first unlock. */
+function unlockMapSound(event: Event): void {
+    if (!event.composedPath().includes(soundButton)) {
+        trainSound.unlock();
+    }
+}
+
+window.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse') {
+        unlockMapSound(event);
+    }
+}, { passive: true, capture: true });
+window.addEventListener('pointerup', event => {
+    if (event.pointerType !== 'mouse') {
+        unlockMapSound(event);
+    }
+}, { passive: true, capture: true });
+window.addEventListener('keydown', unlockMapSound, { capture: true });
+window.addEventListener('popstate', () => {
+    soundEnabled = readMapSoundEnabled(new URL(location.href));
+    trainSound.setEnabled(soundEnabled);
+    trainSound.prepare();
+    syncSoundButton();
+});
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        trainSound.update(undefined, Infinity);
+    }
+});
 const shared = restored ? undefined : readMapView(address, navigation);
 if (restored) {
     session.state = restored.state;
@@ -737,7 +794,8 @@ async function loadMap(): Promise<void> {
             adjustExplodeWithWheel,
             setRoutePlaybackStatus,
             setTourActive,
-            updateTourCaption
+            updateTourCaption,
+            (cue, distance) => trainSound.update(cue, distance)
         );
         await loading.show('ready');
         syncFacilityLabels();

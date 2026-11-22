@@ -18,7 +18,9 @@
 }
 
 .brand-copy {
+  min-width: 0;
   gap: 3px;
+  overflow-wrap: anywhere;
 }
 
 .brand small {
@@ -52,4 +54,10 @@
 
 .header-preferences #map-fullscreen {
   display: grid;
+}
+
+@media (max-width: 360px) {
+  .brand-mark {
+    display: none;
+  }
 }

@@ -16,6 +16,7 @@ import { buildGeographicContext, setGeographicContextTheme } from './models/publ
 import * as T from 'three';
 import type { Facility, FacilityKind, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
+import { loopTrainSoundCue, type LoopTrainCue } from '../application/exploration/osaka-loop-train.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
 import { allowsGroundLayer, showsJrConcourseReference, viewLayerRole } from '../application/exploration/view-layer.ts';
 import { LayerAppearance } from './appearance/layer-appearance.ts';
@@ -152,7 +153,8 @@ export class MapScene {
         onSpacingGesture?: (delta?: number) => void,
         private readonly onRoutePlayback?: (status: RoutePlaybackStatus) => void,
         private readonly onTourChange?: (active: boolean) => void,
-        private readonly onTourChapter?: (chapter?: TourChapter) => void
+        private readonly onTourChapter?: (chapter?: TourChapter) => void,
+        private readonly onTrainSound?: (cue: LoopTrainCue | undefined, distance: number) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -403,6 +405,7 @@ export class MapScene {
         window.clearTimeout(this.trainWakeup);
         this.tourLayerFade.clear();
         this.onTourChapter?.();
+        this.onTrainSound?.(undefined, Infinity);
         this.gestures.dispose();
         this.setPointerHover();
         this.labels.dispose();
@@ -849,13 +852,38 @@ export class MapScene {
         this.frame = 0;
         const now = performance.now();
         const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const wait = this.models.loopTrain?.update(now - (this.trainEpoch ?? now), reducedMotion) ?? Infinity;
+        const wait = this.updateTrain(now, reducedMotion);
         const visible = this.models.loopTrain?.intersectsView(this.trainView) ?? false;
         if (visible || this.trainInLastDraw) {
             this.renderer.render(this.scene, this.camera);
         }
         this.trainInLastDraw = visible;
         this.scheduleTrainFrame(wait);
+    }
+
+    /** Use the centre viewing ray on the platform plane for the train's positional sound. */
+    private updateTrain(now: number, reducedMotion: boolean): number {
+        const train = this.models.loopTrain;
+        if (!train) {
+            return Infinity;
+        }
+        const elapsed = now - (this.trainEpoch ?? now);
+        const wait = train.update(elapsed, reducedMotion);
+        if (!this.onTrainSound) {
+            return wait;
+        }
+        const floor = train.group.parent;
+        const center = this.framing?.center;
+        if (!floor?.visible || !center || document.hidden) {
+            this.onTrainSound(undefined, Infinity);
+            return wait;
+        }
+        const { cue, wait: cueWait } = loopTrainSoundCue(elapsed);
+        const offset = (floor.position.y - center.y) / cameraOffset.y;
+        const x = center.x + cameraOffset.x * offset;
+        const z = center.z + cameraOffset.z * offset;
+        this.onTrainSound(cue, Math.hypot(x - train.platformCenter.x, z - train.platformCenter.z));
+        return Math.min(wait, cueWait);
     }
 
     /** Poll offscreen motion without drawing; use animation frames when the train is in view. */
@@ -1238,7 +1266,7 @@ export class MapScene {
         this.camera.position.copy(center).addScaledVector(cameraOffset, 6);
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
-        const trainWait = this.models.loopTrain?.update(now - (this.trainEpoch ?? now), reducedMotion) ?? Infinity;
+        const trainWait = this.updateTrain(now, reducedMotion);
         this.tourLayerFade.draw(tourFrame?.opacity ?? 1, () => this.renderer.render(this.scene, this.camera));
         if (this.models.loopTrain) {
             this.trainView.setFromProjectionMatrix(this.trainViewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));

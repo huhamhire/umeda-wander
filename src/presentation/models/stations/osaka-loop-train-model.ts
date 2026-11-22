@@ -206,6 +206,7 @@ function buildCar(
 /** Reuse one train across cycles; each car follows the chord between its two bogies. */
 export class OsakaLoopTrainModel {
     readonly group = new T.Group();
+    readonly platformCenter: LoopPath['platformCenter'];
     private readonly cars: T.Group[];
     private readonly path: LoopPath;
     private readonly carBounds = new T.Sphere(new T.Vector3(), loopTrainCarPitch / 2 + 4);
@@ -214,6 +215,7 @@ export class OsakaLoopTrainModel {
     /** Assemble two coupled four-car sets for the sampled running line. */
     constructor(path: LoopPath) {
         this.path = path;
+        this.platformCenter = path.platformCenter;
         const clippingPlanes = trainClipPlanes(path);
         /** Share the clipped paint materials between all eight cars. */
         const paint = (color: number, nightColor: number) => new T.MeshStandardMaterial({

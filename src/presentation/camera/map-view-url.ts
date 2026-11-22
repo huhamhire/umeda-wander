@@ -37,6 +37,18 @@ export function mapTourUrl(url: URL, active: boolean): URL {
     return next;
 }
 
+/** Missing sound preference defaults to enabled; explicit zero always mutes. */
+export function readMapSoundEnabled(url: URL): boolean {
+    return url.searchParams.get('sound') !== '0';
+}
+
+/** Share the sound switch independently of the selected camera and tour. */
+export function mapSoundUrl(url: URL, enabled: boolean): URL {
+    const next = new URL(url);
+    next.searchParams.set('sound', enabled ? '1' : '0');
+    return next;
+}
+
 /** Check that a user-supplied number is finite and within the supported display range. */
 function between(value: unknown, min: number, max: number): value is number {
     return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;

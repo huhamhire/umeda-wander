@@ -127,5 +127,7 @@
   "ui.navigation.tabs": "导览页面",
   "ui.page.title": "车站漫游 · UMEDA",
   "ui.preferences.language": "语言",
+  "ui.preferences.muteSound": "静音地图声音",
+  "ui.preferences.unmuteSound": "开启地图声音",
   "ui.preferences.darkTheme": "深色主题"
 }

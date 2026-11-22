@@ -127,5 +127,7 @@
   "ui.navigation.tabs": "Guide tabs",
   "ui.page.title": "Station Explorer · UMEDA",
   "ui.preferences.language": "Language",
+  "ui.preferences.muteSound": "Mute map sound",
+  "ui.preferences.unmuteSound": "Unmute map sound",
   "ui.preferences.darkTheme": "Dark theme"
 }

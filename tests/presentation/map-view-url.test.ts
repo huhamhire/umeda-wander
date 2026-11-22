@@ -1,7 +1,22 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { NavigationData } from '../../src/application/exploration/navigation-data.ts';
-import { bindMapViewUrl, mapTourUrl, mapViewUrl, readMapTourMode, readMapView, type SharedMapView } from '../../src/presentation/camera/map-view-url.ts';
+import {
+    bindMapViewUrl, mapSoundUrl, mapTourUrl, mapViewUrl, readMapSoundEnabled, readMapTourMode, readMapView, type SharedMapView
+} from '../../src/presentation/camera/map-view-url.ts';
+
+test('the sound switch can be set independently of camera, tour and other URL state', () => {
+    const input = new URL('https://example.test/map?tour=1&lang=ja&x=450#station');
+    const muted = mapSoundUrl(input, false);
+    assert(readMapSoundEnabled(input));
+    assert(!readMapSoundEnabled(muted));
+    assert.equal(muted.searchParams.get('sound'), '0');
+    assert.equal(muted.searchParams.get('x'), '450');
+    assert.equal(muted.searchParams.get('lang'), 'ja');
+    assert.equal(muted.hash, '#station');
+    assert(readMapSoundEnabled(mapSoundUrl(muted, true)));
+    assert(!readMapSoundEnabled(mapTourUrl(muted, false)));
+});
 
 const data: NavigationData = {
     levels: [{ id: 'concourse', label: '1F', name: 'Hall', y: 0, description: '' }],

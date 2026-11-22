@@ -1,13 +1,33 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as T from 'three';
-import { loopTrainFrame, loopTrainLength, loopTrainPoint, osakaLoopTrainPath } from '../../src/application/exploration/osaka-loop-train.ts';
+import { loopTrainFrame, loopTrainLength, loopTrainPoint, loopTrainSoundCue, osakaLoopTrainPath } from '../../src/application/exploration/osaka-loop-train.ts';
 import { platformLocalPoint } from '../../src/domain/map/geometry.ts';
 import { platformRail } from '../../src/domain/map/rail-geometry.ts';
 import { layout } from '../../src/infrastructure/district/geographic-map.ts';
 import { OsakaLoopTrainModel } from '../../src/presentation/models/stations/osaka-loop-train-model.ts';
+import { platformGain } from '../../src/presentation/audio/loop-train-sound.ts';
 
 const path = osakaLoopTrainPath(layout)!;
+
+test('approach and departure cues follow each train and fade with distance from the platform', () => {
+    assert.deepEqual(loopTrainSoundCue(8999), { wait: 1 });
+    const firstArrival = { id: 0, kind: 'arrival' };
+    assert.deepEqual(loopTrainSoundCue(9000).cue, firstArrival);
+    assert.deepEqual(loopTrainSoundCue(14000).cue, firstArrival);
+    assert.deepEqual(loopTrainSoundCue(20999).cue, firstArrival);
+    assert.deepEqual(loopTrainSoundCue(21000), { wait: 12000 });
+    const firstDeparture = { id: 0, kind: 'departure' };
+    assert.deepEqual(loopTrainSoundCue(33000).cue, firstDeparture);
+    assert.deepEqual(loopTrainSoundCue(33999).cue, firstDeparture);
+    assert.deepEqual(loopTrainSoundCue(34000), { wait: 35000 });
+    assert.deepEqual(loopTrainSoundCue(69000).cue, { id: 1, kind: 'arrival' });
+    assert.deepEqual(loopTrainSoundCue(93000).cue, { id: 1, kind: 'departure' });
+    assert.equal(platformGain(0), platformGain(65));
+    assert(platformGain(100) < platformGain(65) && platformGain(100) > platformGain(200));
+    assert(platformGain(275) > platformGain(400) && platformGain(400) > 0);
+    assert.equal(platformGain(420), 0);
+});
 
 test('the Osaka Loop Line train starts at three seconds and repeats its stop every minute', () => {
     for (const cycle of [0, 60000, 120000]) {

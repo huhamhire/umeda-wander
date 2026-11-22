@@ -127,5 +127,7 @@
   "ui.navigation.tabs": "案内タブ",
   "ui.page.title": "駅巡り · UMEDA",
   "ui.preferences.language": "言語",
+  "ui.preferences.muteSound": "地図の音をミュート",
+  "ui.preferences.unmuteSound": "地図の音をオン",
   "ui.preferences.darkTheme": "ダークテーマ"
 }

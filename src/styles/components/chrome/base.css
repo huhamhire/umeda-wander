@@ -160,6 +160,8 @@
 
 .header-preferences button[aria-pressed="false"] .theme-sun,
 .header-preferences button[aria-pressed="true"] .theme-moon,
+.header-preferences button[aria-pressed="false"] .sound-off,
+.header-preferences button[aria-pressed="true"] .sound-on,
 .header-preferences button[aria-pressed="false"] .fullscreen-exit,
 .header-preferences button[aria-pressed="true"] .fullscreen-enter {
   display: none;

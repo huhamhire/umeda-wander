@@ -10,6 +10,35 @@ const interval = 60000;
 const arrival = 18000;
 const departure = arrival + 12000;
 const clear = departure + 18000;
+const arrivalChimeAt = arrival - 12000;
+const departureChimeWindow = 1000;
+
+export interface LoopTrainCue {
+    id: number;
+    kind: 'arrival' | 'departure';
+}
+
+/** Identify each platform cue and the next check without replaying cues from an earlier phase. */
+export function loopTrainSoundCue(elapsed: number): { cue?: LoopTrainCue; wait: number } {
+    const time = elapsed - firstEntry;
+    if (time < arrivalChimeAt) {
+        return { wait: arrivalChimeAt - time };
+    }
+    const cycle = time % interval;
+    if (cycle < arrivalChimeAt) {
+        return { wait: arrivalChimeAt - cycle };
+    }
+    if (cycle < arrival) {
+        return { cue: { id: Math.floor(time / interval), kind: 'arrival' }, wait: 80 };
+    }
+    if (cycle < departure) {
+        return { wait: departure - cycle };
+    }
+    if (cycle < departure + departureChimeWindow) {
+        return { cue: { id: Math.floor(time / interval), kind: 'departure' }, wait: 80 };
+    }
+    return { wait: interval + arrivalChimeAt - cycle };
+}
 
 /** Follow only the outward segments connected to the requested platform road. */
 function outwardRoad(approach: RailApproach, platformId: string): Point2[] {
@@ -57,7 +86,8 @@ export function osakaLoopTrainPath(layout: StationLayout) {
         points, distances,
         length: distances.at(-1)!,
         stop: distances[entry.length - 1 + 40]! + loopTrainLength / 2,
-        platformId: platform.id
+        platformId: platform.id,
+        platformCenter: { x: platform.x, z: platform.z }
     };
 }
 
