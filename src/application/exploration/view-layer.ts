@@ -12,6 +12,12 @@ export function allowsGroundLayer(
     return (levels.find(level => level.id === selected)?.y ?? 0) >= 0;
 }
 
+/** B1 inspections can show the JR concourse as an independent, non-active reference surface. */
+export function showsJrConcourseReference(levels: readonly Level[], selected: LevelId | 'all'): boolean {
+    const level = levels.find(candidate => candidate.id === selected);
+    return !!level && explorationElevation(level) === -8;
+}
+
 /**
  * Resolve visibility across exploration groups while retaining each entity’s physical floor identity.
  */

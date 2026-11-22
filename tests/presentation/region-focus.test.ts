@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { isRegionMuted } from '../../src/application/exploration/region-focus.ts';
 import { LayerAppearance, setRegionOwner } from '../../src/presentation/appearance/layer-appearance.ts';
+import { publicUndergroundBlocksByStation } from '../../src/infrastructure/district/geographic-map.ts';
+import { visibleLabelOccluders } from '../../src/presentation/labels/label-occlusion.ts';
 test(
     'station focus mutes other owners and district models without changing shared originals',
     () => {
@@ -31,6 +33,39 @@ test(
         }
     }
 );
+
+test('B1 station focus keeps bound blocks opaque and makes other public floors transparent', () => {
+    const metro = publicUndergroundBlocksByStation.get('metro-umeda')!;
+    const hanshin = publicUndergroundBlocksByStation.get('hanshin-umeda')!;
+    assert.deepEqual([...metro], ['metro-interchange-b1']);
+    assert.deepEqual([...hanshin].sort(), ['crost-b1', 'hanshin-west-b1']);
+    const geometry = new T.BoxGeometry();
+    const material = new T.MeshStandardMaterial({ color: 0xb9ab81 });
+    const metroFloor = setRegionOwner(new T.Mesh(geometry, material), null);
+    metroFloor.userData.publicUndergroundBlock = 'metro-interchange-b1';
+    const crostFloor = setRegionOwner(new T.Mesh(geometry, material), null);
+    crostFloor.userData.publicUndergroundBlock = 'crost-b1';
+    const commercialFloor = setRegionOwner(new T.Mesh(geometry, material), null);
+    for (const mesh of [metroFloor, crostFloor, commercialFloor]) {
+        mesh.castShadow = true;
+    }
+    const root = new T.Group().add(metroFloor, crostFloor, commercialFloor);
+    const style = new LayerAppearance();
+    style.apply(root, false, 'metro-umeda', null, metro);
+    assert.equal(metroFloor.material, material);
+    assert(crostFloor.visible && crostFloor.material.transparent && crostFloor.material.opacity < .5);
+    assert(!crostFloor.material.depthWrite && !crostFloor.castShadow);
+    assert(commercialFloor.material.opacity === 1 && commercialFloor.castShadow);
+    assert.deepEqual(visibleLabelOccluders(root.children), [metroFloor, commercialFloor]);
+    style.setDarkTheme(true);
+    style.apply(root, false, 'hanshin-umeda', null, hanshin);
+    assert(crostFloor.castShadow && crostFloor.material.depthWrite && crostFloor.material.opacity === 1);
+    assert(!metroFloor.castShadow && metroFloor.material.transparent);
+    assert.deepEqual(visibleLabelOccluders(root.children), [crostFloor, commercialFloor]);
+    style.setDarkTheme(false);
+    style.apply(root, false);
+    assert([metroFloor, crostFloor, commercialFloor].every(mesh => mesh.castShadow && mesh.material === material));
+});
 test(
     'explicit commercial ownership overrides its JR layer and lower-floor context remains muted',
     () => {

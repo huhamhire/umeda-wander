@@ -10,7 +10,7 @@ import { createGeographicStations } from './geographic-stations.ts';
 import { metroNorthWallClearance, metroSouthShaftClearance } from '../stations/metro-umeda/geographic.ts';
 import { stationFrontages } from '../public-areas/station-frontages/index.ts';
 import { stationPublicInterfaces } from '../../application/stations/station-public-interfaces.ts';
-import { bindPublicInterfaces } from '../../application/stations/public-interface-bindings.ts';
+import { bindPublicInterfaces, boundPublicBlocksByStation } from '../../application/stations/public-interface-bindings.ts';
 import { partitionPublicAreas } from '../../application/public-areas/public-area-blocks.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../public-areas/underground-blocks.ts';
 import { createNorthPublicAccess, publicGroundLevel } from '../public-areas/north-atrium/access.ts';
@@ -223,6 +223,7 @@ export const levels = [...composed.levels, sharedUndergroundLevel, publicGroundL
     description: resolveMessage(level.description),
 }));
 export const publicInterfaceBindings = bindPublicInterfaces(publicInterfaces.filter(p => p.elevation === -8), composed.layout.areas, levels);
+export const publicUndergroundBlocksByStation = boundPublicBlocksByStation(composed.layout.areas, publicInterfaceBindings);
 export const removedPublicAreas = shared.removed;
 export const layout = {
     ...composed.layout,

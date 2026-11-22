@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
-import { viewLayerRole } from '../../src/application/exploration/view-layer.ts';
+import { showsJrConcourseReference, viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import { levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { floorOptions } from '../../src/presentation/components/floor-options.ts';
 test(
@@ -31,8 +31,10 @@ test(
             ]
         );
         assert.deepEqual(new Set(options.flatMap(o => o.members.map(l => l.id))), new Set(levels.map(l => l.id)));
+        assert.equal(showsJrConcourseReference(levels, 'all'), false);
         for (const option of options) {
             for (const active of option.members) {
+                assert.equal(showsJrConcourseReference(levels, active.id), option.label === 'B1');
                 for (const target of levels) {
                     const expected = explorationElevation(target) === explorationElevation(active) ? 'current' : explorationElevation(target) < explorationElevation(active) ? 'context' : 'hidden';
                     assert.equal(viewLayerRole(levels, { level: active.id, focusStation: active.station }, target.id), expected);

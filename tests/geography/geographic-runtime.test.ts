@@ -34,6 +34,29 @@ test(
         assertFiniteMeshes(root);
         assert.equal(scene.pickables.length, facilities.length);
         assert.equal(scene.connectors.length, layout.connections.length);
+        const reference = scene.jrConcourseReference;
+        const concourse = scene.groups.get('concourse')!;
+        assert.equal(reference.visible, false);
+        assert(reference.getObjectByName('central-public') && reference.getObjectByName('public-north-lift-ground-access'));
+        assert.equal(reference.getObjectByName('metro-umeda-exit-8-street:landing'), undefined);
+        for (const object of reference.children) {
+            assert(object instanceof T.Mesh && object.material instanceof T.MeshBasicMaterial);
+            assert(object.material.transparent && object.material.opacity < .5 && !object.material.depthWrite);
+            assert(!object.castShadow && !object.userData.labelOccluder && !scene.pickables.includes(object));
+            assert(concourse.children.some(slab => slab instanceof T.Mesh && slab.geometry === object.geometry));
+        }
+        reference.visible = true;
+        root.updateMatrixWorld(true);
+        assert.deepEqual(visibleLabelOccluders(reference.children), []);
+        for (const id of ['crost-67', 'public-north-75', 'public-north-lift-b']) {
+            const opening = scene.openings.find(o => o.level === 'concourse' && o.connectionId === id)!;
+            const center = opening.outline.reduce(
+                (p, q) => ({ x: p.x + q.x / opening.outline.length, z: p.z + q.z / opening.outline.length }),
+                { x: 0, z: 0 }
+            );
+            const ray = new T.Raycaster(new T.Vector3(center.x, 6, center.z), new T.Vector3(0, -1, 0), 0, 10);
+            assert.equal(ray.intersectObject(reference, true).length, 0, id + ' is blocked by the 1F reference');
+        }
         const wall = scene.groups.get('metro-hall')!.getObjectByName('metro-umeda-south-partition-east')!;
         assert(wall instanceof T.Mesh && wall.userData.labelOccluder);
         assert.ok(new T.Box3().setFromObject(wall).getSize(new T.Vector3()).y > 2);
@@ -68,6 +91,8 @@ test(
         const basementSlabs = basementFloors.flatMap(floor => floor.children.filter(mesh => mesh.userData.labelOccluder));
         const publicSlabs = b1.children.filter(mesh => mesh.userData.labelOccluder);
         assert(basementSlabs.length && publicSlabs.length);
+        assert(publicSlabs.every(mesh => typeof mesh.userData.publicUndergroundBlock === 'string'));
+        assert(basementSlabs.every(mesh => !mesh.userData.publicUndergroundBlock));
         scene.updateBuildingFloorVisibility(false);
         assert(basementFloors.every(floor => !floor.visible));
         assert(halls.every(hall => hall.visible));

@@ -9,13 +9,14 @@ import { TourLayerFade } from './appearance/tour-layer-fade.ts';
 import { createRoutePlayback, type RoutePlaybackSample, type RoutePlaybackStatus } from '../application/navigation/route-playback.ts';
 import { orbitAboutPoint, orbitPointOnPlane } from './camera/orbit-view.ts';
 import { geographicBuildings } from '../infrastructure/buildings/index.ts';
+import { publicUndergroundBlocksByStation } from '../infrastructure/district/geographic-map.ts';
 import { buildGeographicBuilding } from './models/buildings/geographic-building-model.ts';
 import { buildGeographicContext, setGeographicContextTheme } from './models/public-areas/geographic-context.ts';
 import * as T from 'three';
 import type { Facility, FacilityKind, Level, LevelId, RouteNode, StationLayout } from '../domain/map/model.ts';
 import type { MapViewState } from '../application/map-session.ts';
 import { displayElevation } from '../application/exploration/display-elevation.ts';
-import { allowsGroundLayer, viewLayerRole } from '../application/exploration/view-layer.ts';
+import { allowsGroundLayer, showsJrConcourseReference, viewLayerRole } from '../application/exploration/view-layer.ts';
 import { LayerAppearance } from './appearance/layer-appearance.ts';
 import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts';
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
@@ -840,13 +841,19 @@ export class MapScene {
     private updateModels(state: MapViewState, tourGround?: boolean): void {
         this.modelsDirty = false;
         const activeFloors = new Set<T.Object3D>();
+        const publicBlocks = !this.playback && state.focusStation
+            ? publicUndergroundBlocksByStation.get(state.focusStation)
+            : undefined;
         for (const [id, group] of this.models.groups) {
             const role = this.layerRole(state, id);
             group.visible = role !== 'hidden';
             if (role === 'normal' || role === 'current') {
                 activeFloors.add(group);
             }
-            this.appearance.apply(group, role === 'context', state.focusStation);
+            this.appearance.apply(
+                group, role === 'context', state.focusStation, null,
+                id === 'district-underground' && role === 'current' ? publicBlocks : undefined
+            );
         }
         this.facilityPickables = this.models.pickables.filter(object => object.parent && activeFloors.has(object.parent));
         this.walkingPlatforms.clear();
@@ -892,6 +899,11 @@ export class MapScene {
         const groundVisible = canShowGround && (tourGround ?? this.roadsVisible);
         this.context.roads.visible = groundVisible;
         this.context.buildings.visible = groundVisible;
+        const concourseReference = this.models.jrConcourseReference;
+        concourseReference.visible = !this.playback && showsJrConcourseReference(this.levels, state.level);
+        if (concourseReference.visible) {
+            this.appearance.apply(concourseReference, false);
+        }
         this.models.updateBuildingFloorVisibility(state.roof);
         this.geographicExteriors.visible = groundVisible && state.roof && state.level === 'all';
         this.appearance.apply(this.geographicExteriors, false, state.focusStation, null);
@@ -917,6 +929,7 @@ export class MapScene {
         for (const [id, group] of this.models.groups) {
             group.position.y = levelY(id);
         }
+        this.models.jrConcourseReference.position.y = this.models.groups.get('concourse')?.position.y ?? 0;
         for (const connector of this.models.connectors) {
             if (connector.group.visible) {
                 connector.update(levelY, state.level, this.fullShafts.has(connector.connection.id), preview);
@@ -1039,6 +1052,7 @@ export class MapScene {
     private captureTourLayers(): Map<T.Object3D, boolean> {
         const roots = [
             ...this.models.groups.values(), ...this.models.connectors.map(connector => connector.group),
+            this.models.jrConcourseReference,
             this.context.roads, this.context.buildings, this.geographicExteriors, this.models.roof,
             ...this.models.canopies.map(({ model }) => model), ...this.models.basementBuildingFloors
         ];

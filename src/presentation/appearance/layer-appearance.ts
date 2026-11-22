@@ -3,9 +3,11 @@ import type { StationId } from '../../domain/map/model.ts';
 import { isRegionMuted } from '../../application/exploration/region-focus.ts';
 import { applyNightColor, darkContextColor } from './night-palette.ts';
 
-type MaterialVariant = 'muted' | 'dark' | 'dark-muted';
+type MaterialVariant = 'muted' | 'dark' | 'dark-muted' | 'reference' | 'dark-reference';
 const lightContext = new T.Color(0xcbd0c7);
 const darkContext = new T.Color(darkContextColor);
+export const referenceSurface = { light: 0xb3bfbd, dark: 0xc6d0cc, opacity: .24 };
+const undergroundReferenceNight = 0x829391;
 
 /**
  * Record model ownership for consistent station-focus muting.
@@ -42,13 +44,22 @@ export class LayerAppearance {
     /**
      * Apply the current theme and floor role without changing shared source materials.
      */
-    apply(group: T.Object3D, context: boolean, focus?: StationId | null, owner: StationId | null = null): void {
+    apply(
+        group: T.Object3D, context: boolean, focus?: StationId | null, owner: StationId | null = null,
+        activeUndergroundBlocks?: ReadonlySet<string>
+    ): void {
         group.traverse(object => {
             if (!(object instanceof T.Mesh)) {
                 return;
             }
-            const muted = context || isRegionMuted(focus, regionOwner(object, owner));
-            const role = this.dark ? (muted ? 'dark-muted' : 'dark') : (muted ? 'muted' : 'original');
+            const block = object.userData.publicUndergroundBlock as string | undefined;
+            const focusedPublic = !!block && !!activeUndergroundBlocks;
+            const reference = focusedPublic && !activeUndergroundBlocks.has(block);
+            const muted = context || (!focusedPublic && isRegionMuted(focus, regionOwner(object, owner)));
+            let role: MaterialVariant | 'original' = this.dark ? (muted ? 'dark-muted' : 'dark') : (muted ? 'muted' : 'original');
+            if (reference) {
+                role = this.dark ? 'dark-reference' : 'reference';
+            }
             if (this.roles.get(object) === role) {
                 return;
             }
@@ -59,6 +70,9 @@ export class LayerAppearance {
             }
             else {
                 object.material = Array.isArray(original) ? original.map(m => this.variant(m, role)) : this.variant(original, role);
+            }
+            if (block) {
+                object.castShadow = !reference;
             }
             this.roles.set(object, role);
         });
@@ -76,11 +90,14 @@ export class LayerAppearance {
             return cached;
         }
         const result = original.clone();
-        const muted = role !== 'dark';
-        const dark = role !== 'muted';
+        const reference = role === 'reference' || role === 'dark-reference';
+        const muted = role === 'muted' || role === 'dark-muted';
+        const dark = role === 'dark' || role === 'dark-muted' || role === 'dark-reference';
         result.name = `${original.name}-${role}`;
         if ('color' in result && result.color instanceof T.Color) {
-            if (dark) {
+            if (reference) {
+                result.color.setHex(dark ? undergroundReferenceNight : referenceSurface.light);
+            } else if (dark) {
                 applyNightColor(result.color, original.userData.nightColor);
             }
             if (muted) {
@@ -90,7 +107,11 @@ export class LayerAppearance {
         if (muted && 'emissive' in result && result.emissive instanceof T.Color) {
             result.emissive.multiplyScalar(0.1);
         }
-        if (muted && result.transparent) {
+        if (reference) {
+            result.transparent = true;
+            result.opacity = referenceSurface.opacity;
+            result.depthWrite = false;
+        } else if (muted && result.transparent) {
             result.opacity *= 0.65;
         }
         materialVariants.set(role, result);

@@ -8,7 +8,7 @@ import { planGateBoundaries } from '../../application/connections/gate-boundarie
 import type { GateBoundary } from '../../application/connections/gate-boundaries.ts';
 import { buildFloorGeometry } from './floor-geometry.ts';
 import { VerticalConnectionModel } from './stations/vertical-connection-model.ts';
-import { setRegionOwner } from '../appearance/layer-appearance.ts';
+import { referenceSurface, setRegionOwner } from '../appearance/layer-appearance.ts';
 import { geographicRoofHeightAt, geographicRoofPlan, geographicRoofPoint } from './stations/roof-profile.ts';
 import { stationPalettes } from '../appearance/station-palette.ts';
 import { buildRailApproachModel } from './stations/rail-approach-model.ts';
@@ -36,6 +36,7 @@ export interface MapModelOptions {
 /** Construct map geometry once; expose owned groups for exploration updates and offline inspection. */
 export class MapModels {
     readonly roof = new T.Group();
+    readonly jrConcourseReference = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
     readonly basementBuildingFloors: T.Group[] = [];
     readonly connectors: VerticalConnectionModel[] = [];
@@ -64,7 +65,10 @@ export class MapModels {
             ...planAtriumOpenings(this.layout.atria ?? [])
         ];
         this.gateBoundaries = planGateBoundaries(this.facilities, this.layout.areas);
+        this.jrConcourseReference.name = 'jr-concourse-reference';
+        this.jrConcourseReference.visible = false;
         this.buildStation();
+        this.scene.add(this.jrConcourseReference);
     }
 
     /** Apply the building switch to basement footprints while preserving the parent floor's cutaway visibility. */
@@ -158,6 +162,7 @@ export class MapModels {
             depthWrite: false,
             roughness: 0.3
         });
+        let concourseReferenceMaterial: T.MeshBasicMaterial | undefined;
         for (const area of this.layout.areas) {
             const basement = area.level === 'district-underground' && area.blockId?.startsWith('building:');
             const levelGroup = this.groups.get(area.level)!;
@@ -181,11 +186,28 @@ export class MapModels {
                 this.primitives.material(area.kind === 'paid' ? palette.paid : areaColor(area, this.levels.find(l => l.id === area.level)!.y < 0))
             );
             mesh.userData.labelOccluder = true;
+            if (area.level === 'district-underground' && area.kind === 'public' && area.blockId) {
+                mesh.userData.publicUndergroundBlock = area.blockId;
+            }
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             const owner = area.blockId || area.kind === 'commercial' || area.evidence.source === 'district' ? null : this.levels.find(l => l.id === area.level)!.station ?? 'jr-osaka';
             setRegionOwner(mesh, owner);
             floorGroup.add(mesh);
+            if (area.level === 'concourse' && (area.kind === 'public' || area.kind === 'paid') &&
+                (!area.blockId || area.blockId === 'north-atrium-b1')) {
+                // Share the actual cut slab, including every stairwell and lift shaft.
+                concourseReferenceMaterial ??= new T.MeshBasicMaterial({
+                    color: referenceSurface.light,
+                    transparent: true,
+                    opacity: referenceSurface.opacity,
+                    depthWrite: false,
+                    userData: { nightColor: referenceSurface.dark }
+                });
+                const reference = new T.Mesh(geometry, concourseReferenceMaterial);
+                reference.name = area.id;
+                this.jrConcourseReference.add(reference);
+            }
             if (area.railings) {
                 this.groups.get(area.level)!.add(setRegionOwner(buildPublicDeckRailing(area, this.layout, this.levels), null));
             }
