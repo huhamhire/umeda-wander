@@ -4,6 +4,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Point2, RailApproach } from '../../../domain/map/model.ts';
 import { offsetRailSample, sampleRailSegment, railApproachFootprints } from '../../../domain/map/rail-geometry.ts';
 import { buildFloorGeometry } from '../floor-geometry.ts';
+import { buildRailSleepers, sleeperPitch, type RailSleeper } from './rail-sleepers.ts';
 
 /**
  * Reuse procedural materials for equal colours instead of allocating one per component.
@@ -28,10 +29,7 @@ export function buildRailApproachModel(approach: RailApproach): T.Group {
         -0.77
     ));
     const railParts: T.BufferGeometry[] = [];
-    const sleepers: {
-        point: Point2;
-        angle: number;
-    }[] = [];
+    const sleepers: RailSleeper[] = [];
     for (const path of samples) {
         for (const side of [-0.7, 0.7]) {
             const curve = new T.CatmullRomCurve3(
@@ -44,19 +42,21 @@ export function buildRailApproachModel(approach: RailApproach): T.Group {
             );
             railParts.push(new T.TubeGeometry(curve, 48, 0.06, 4, false));
         }
-        let next = 1.1;
+        const lengths = path.slice(1).map(({ point }, i) => Math.hypot(point.x - path[i]!.point.x, point.z - path[i]!.point.z));
+        const { pitch } = sleeperPitch(lengths.reduce((sum, length) => sum + length, 0));
+        let next = pitch / 2;
         let travelled = 0;
         for (let i = 1; i < path.length; i++) {
             const a = path[i - 1]!;
             const b = path[i]!;
-            const length = Math.hypot(b.point.x - a.point.x, b.point.z - a.point.z);
+            const length = lengths[i - 1]!;
             while (next <= travelled + length) {
                 const t = (next - travelled) / length;
                 sleepers.push({
                     point: { x: a.point.x + (b.point.x - a.point.x) * t, z: a.point.z + (b.point.z - a.point.z) * t },
                     angle: Math.atan2(b.point.z - a.point.z, b.point.x - a.point.x)
                 });
-                next += 2.2;
+                next += pitch;
             }
             travelled += length;
         }
@@ -74,19 +74,6 @@ export function buildRailApproachModel(approach: RailApproach): T.Group {
         group.add(mesh);
         parts.forEach(part => part.dispose());
     }
-    const ties = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), material(0x939c8e), sleepers.length);
-    ties.name = 'approach-sleepers';
-    ties.castShadow = true;
-    ties.receiveShadow = true;
-    const transform = new T.Object3D();
-    sleepers.forEach((tie, i) => {
-        transform.position.set(tie.point.x, -0.45, tie.point.z);
-        transform.rotation.y = -tie.angle;
-        transform.scale.set(0.45, 0.13, 2.2);
-        transform.updateMatrix();
-        ties.setMatrixAt(i, transform.matrix);
-    });
-    ties.instanceMatrix.needsUpdate = true;
-    group.add(ties);
+    group.add(buildRailSleepers('approach-sleepers', sleepers, material(0x939c8e)));
     return group;
 }

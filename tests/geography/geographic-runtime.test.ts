@@ -9,6 +9,7 @@ import { buildGeographicBuilding } from '../../src/presentation/models/buildings
 import { stationPalettes } from '../../src/presentation/appearance/station-palette.ts';
 import { MapModels } from '../../src/presentation/models/map-models.ts';
 import { visibleLabelOccluders } from '../../src/presentation/labels/label-occlusion.ts';
+import { platformRail } from '../../src/domain/map/rail-geometry.ts';
 
 /** Check vertex data on the meshes installed by the production model builders. */
 function assertFiniteMeshes(root: T.Object3D): void {
@@ -34,6 +35,10 @@ test(
         assertFiniteMeshes(root);
         assert.equal(scene.pickables.length, facilities.length);
         assert.equal(scene.connectors.length, layout.connections.length);
+        const loopPlatform = layout.platforms.find(p => p.level === 'platform' && p.tracks.includes(2))!;
+        const rail = platformRail(loopPlatform, loopPlatform.tracks.indexOf(2));
+        const sleepers = scene.groups.get('platform')!.getObjectByName(`platform-sleepers-${loopPlatform.id}-2`);
+        assert(sleepers instanceof T.InstancedMesh && sleepers.count === Math.round(rail.length / 1.8));
         const reference = scene.jrConcourseReference;
         const concourse = scene.groups.get('concourse')!;
         assert.equal(reference.visible, false);

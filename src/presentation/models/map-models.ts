@@ -12,6 +12,7 @@ import { referenceSurface, setRegionOwner } from '../appearance/layer-appearance
 import { geographicRoofHeightAt, geographicRoofPlan, geographicRoofPoint } from './stations/roof-profile.ts';
 import { stationPalettes } from '../appearance/station-palette.ts';
 import { buildRailApproachModel } from './stations/rail-approach-model.ts';
+import { buildRailSleepers, sleeperPitch } from './stations/rail-sleepers.ts';
 import { platformRail } from '../../domain/map/rail-geometry.ts';
 import { planAtriumOpenings } from '../../application/connections/atrium-openings.ts';
 import { buildAtriumRailing } from './public-areas/atrium-model.ts';
@@ -24,6 +25,8 @@ import { colors } from '../appearance/scene-palette.ts';
 import { buildWalkwayCanopy } from './public-areas/walkway-canopy-model.ts';
 import { buildWaterTree } from './public-areas/water-tree-model.ts';
 import type { SceneLabelDefinition } from '../labels/scene-labels.ts';
+import { osakaLoopTrainPath } from '../../application/exploration/osaka-loop-train.ts';
+import { OsakaLoopTrainModel } from './stations/osaka-loop-train-model.ts';
 
 export interface MapModelOptions {
     scene: T.Scene;
@@ -45,6 +48,7 @@ export class MapModels {
     readonly platformSurfaces = new Map<string, T.Mesh>();
     readonly labels: SceneLabelDefinition[] = [];
     readonly openings: FloorOpening[];
+    readonly loopTrain?: OsakaLoopTrainModel;
     private readonly gateBoundaries: GateBoundary[];
     private readonly scene: T.Scene;
     private readonly levels: Level[];
@@ -69,6 +73,11 @@ export class MapModels {
         this.jrConcourseReference.visible = false;
         this.buildStation();
         this.scene.add(this.jrConcourseReference);
+        const loopPath = osakaLoopTrainPath(this.layout);
+        if (loopPath) {
+            this.loopTrain = new OsakaLoopTrainModel(loopPath);
+            this.groups.get('platform')!.add(this.loopTrain.group);
+        }
     }
 
     /** Apply the building switch to basement footprints while preserving the parent floor's cutaway visibility. */
@@ -277,15 +286,19 @@ export class MapModels {
             platformGroup.add(slab);
             slab.userData.labelOccluder = true;
             this.platformSurfaces.set(platform.id, slab);
+            const sleeperGroup = new T.Group();
             for (const [index, number] of tracks.entries()) {
                 const { side, across, length: railLength, center: railCenter } = platformRail(platform, index);
                 block(railCenter, -0.62, across, railLength, 0.3, 2.5, 0xb9bcae);
                 for (const offset of [-0.7, 0.7]) {
                     block(railCenter, -0.36, across + offset, railLength, 0.12, 0.12, 0x6d7c77);
                 }
-                for (let railX = railCenter - railLength / 2; railX <= railCenter + railLength / 2; railX += 2.2) {
-                    block(railX, -0.45, across, 0.45, 0.13, 2.2, 0x939c8e);
-                }
+                const { count, pitch } = sleeperPitch(railLength);
+                const sleepers = Array.from({ length: count }, (_, i) => {
+                    const along = railCenter - railLength / 2 + (i + .5) * pitch;
+                    return { point: position(along, across), angle: platformTangent(platform, along) };
+                });
+                sleeperGroup.add(buildRailSleepers(`platform-sleepers-${platform.id}-${number}`, sleepers, this.primitives.material(0x939c8e)));
                 if (platform.terminal) {
                     block((platform.terminalEnd === 'end' ? 1 : -1) * (length / 2 - 3), 0.3, across, 0.45, 1.4, 2, 0x855c57);
                 }
@@ -322,6 +335,9 @@ export class MapModels {
                         block(px + 1.4, 1.8, edge, 2.6, 0.12, 0.18, 0x779a9d);
                     }
                 }
+            }
+            if (sleeperGroup.children.length) {
+                platformGroup.add(sleeperGroup);
             }
             // Shared alighting strips use the adjacent track edges without drawing
             // another copy of those rails.

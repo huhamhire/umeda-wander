@@ -36,6 +36,14 @@ test(
             const model = buildRailApproachModel(a);
             assert(model.getObjectByName('ballast'));
             assert(model.getObjectByName('paired-rails'));
+            const ties = model.getObjectByName('approach-sleepers');
+            const expected = a.segments.reduce((count, segment) => {
+                const samples = sampleRailSegment(a, segment);
+                const length = samples.slice(1).reduce((sum, { point }, i) =>
+                    sum + Math.hypot(point.x - samples[i]!.point.x, point.z - samples[i]!.point.z), 0);
+                return count + Math.max(1, Math.round(length / 1.8));
+            }, 0);
+            assert(ties instanceof T.InstancedMesh && ties.count === expected);
             model.traverse(o => {
                 if (!(o instanceof T.Mesh)) {
                     return;

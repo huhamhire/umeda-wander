@@ -52,6 +52,12 @@ export class MapScene {
         last?: ReturnType<GuidedTour['advance']>;
     };
     private tourWakeup?: number;
+    private trainWakeup?: number;
+    private trainEpoch?: number;
+    private readonly trainView = new T.Frustum();
+    private readonly trainViewProjection = new T.Matrix4();
+    private trainInLastDraw = false;
+    private trainOnlyFrame = false;
     private nextTourLabelUpdate = 0;
     private readonly tourLayerFade = new TourLayerFade();
     private gestures: MapGestures;
@@ -190,6 +196,7 @@ export class MapScene {
             layout: this.layout,
             maxAnisotropy: this.renderer.capabilities.getMaxAnisotropy()
         });
+        this.renderer.localClippingEnabled = !!this.models.loopTrain;
         this.labels = new SceneLabels(labelHost, this.models.labels);
         this.context = buildGeographicContext(
             this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline),
@@ -393,6 +400,7 @@ export class MapScene {
         }
         this.disposed = true;
         window.clearTimeout(this.tourWakeup);
+        window.clearTimeout(this.trainWakeup);
         this.tourLayerFade.clear();
         this.onTourChapter?.();
         this.gestures.dispose();
@@ -820,9 +828,43 @@ export class MapScene {
     /**
      * Coalesce redraw requests into a single pending animation frame.
      */
-    private requestRender(): void {
+    private requestRender(trainOnly = false): void {
+        if (!trainOnly) {
+            this.trainOnlyFrame = false;
+        }
         if (this.renderingStarted && !this.disposed && !this.frame) {
-            this.frame = requestAnimationFrame(() => this.render());
+            this.trainOnlyFrame = trainOnly;
+            this.frame = requestAnimationFrame(() => {
+                if (this.trainOnlyFrame) {
+                    this.renderTrainFrame();
+                } else {
+                    this.render();
+                }
+            });
+        }
+    }
+
+    /** Draw the moving stock against the last scene without recomputing camera framing or DOM labels. */
+    private renderTrainFrame(): void {
+        this.frame = 0;
+        const now = performance.now();
+        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const wait = this.models.loopTrain?.update(now - (this.trainEpoch ?? now), reducedMotion) ?? Infinity;
+        const visible = this.models.loopTrain?.intersectsView(this.trainView) ?? false;
+        if (visible || this.trainInLastDraw) {
+            this.renderer.render(this.scene, this.camera);
+        }
+        this.trainInLastDraw = visible;
+        this.scheduleTrainFrame(wait);
+    }
+
+    /** Poll offscreen motion without drawing; use animation frames when the train is in view. */
+    private scheduleTrainFrame(wait: number): void {
+        window.clearTimeout(this.trainWakeup);
+        if (wait === 0 && this.trainInLastDraw) {
+            this.requestRender(true);
+        } else if (Number.isFinite(wait)) {
+            this.trainWakeup = window.setTimeout(() => this.requestRender(true), wait === 0 ? 80 : Math.max(1, wait));
         }
     }
 
@@ -830,6 +872,7 @@ export class MapScene {
     renderFirstFrame(): void {
         cancelAnimationFrame(this.frame);
         this.renderingStarted = true;
+        this.trainEpoch ??= performance.now();
         this.render();
     }
 
@@ -1077,6 +1120,7 @@ export class MapScene {
         this.gestures.applyTouchGesture();
         const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
         const now = performance.now();
+        window.clearTimeout(this.trainWakeup);
         const tour = this.tour;
         const previousTour = tour?.last;
         window.clearTimeout(this.tourWakeup);
@@ -1194,7 +1238,12 @@ export class MapScene {
         this.camera.position.copy(center).addScaledVector(cameraOffset, 6);
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
+        const trainWait = this.models.loopTrain?.update(now - (this.trainEpoch ?? now), reducedMotion) ?? Infinity;
         this.tourLayerFade.draw(tourFrame?.opacity ?? 1, () => this.renderer.render(this.scene, this.camera));
+        if (this.models.loopTrain) {
+            this.trainView.setFromProjectionMatrix(this.trainViewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));
+            this.trainInLastDraw = this.models.loopTrain.intersectsView(this.trainView);
+        }
         if (changedModels && this.hoverPoint) {
             this.setPointerHover(this.hoverPoint);
         }
@@ -1233,8 +1282,11 @@ export class MapScene {
         if (tourFrame?.moving || tourFrame?.turning || playback?.status === 'playing' || animate ||
             this.focusTransition || this.controlTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
-        } else if (tourFrame) {
-            this.tourWakeup = window.setTimeout(() => this.requestRender(), Math.max(1, tourFrame.wait));
+        } else {
+            if (tourFrame) {
+                this.tourWakeup = window.setTimeout(() => this.requestRender(), Math.max(1, tourFrame.wait));
+            }
+            this.scheduleTrainFrame(trainWait);
         }
     }
 }
