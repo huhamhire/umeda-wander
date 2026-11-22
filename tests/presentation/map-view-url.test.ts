@@ -44,11 +44,12 @@ const view: SharedMapView = {
 };
 
 test('shared map URLs round-trip the rendered frame and state without replacing other parameters', () => {
-    const address = new URL('https://example.test/maps/index.html?lang=ja&ref=a&ref=b&view=1&view.yaw=12#atlas');
+    const address = new URL('https://example.test/maps/index.html?lang=ja&theme=dark&ref=a&ref=b&view=1&view.yaw=12#atlas');
     const next = mapViewUrl(address, view);
     assert.equal(next.pathname, address.pathname);
     assert.equal(next.hash, address.hash);
     assert.equal(next.searchParams.get('lang'), 'ja');
+    assert.equal(next.searchParams.get('theme'), 'dark');
     assert.deepEqual(next.searchParams.getAll('ref'), ['a', 'b']);
     assert.equal(address.searchParams.get('view.yaw'), '12');
     assert(![...next.searchParams.keys()].some(key => key === 'view' || key.startsWith('view.')));

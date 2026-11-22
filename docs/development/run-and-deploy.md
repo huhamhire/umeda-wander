@@ -31,6 +31,10 @@ npm run build
 
 地图分块和 `osm-derived-data.json` 各交付一份原始文件。本地开发服务按 `Accept-Encoding` 提供 Brotli 或 gzip 响应。静态部署可在主机或 CDN 启用 HTTP 压缩。
 
+### 链接主题
+
+在地图地址中使用 `?theme=dark` 指定深色主题，或用 `?theme=light` 指定浅色主题。可与语言参数组合，例如 `index.html?lang=ja&theme=dark`。链接中的有效主题优先于浏览器保存的偏好，打开链接时不会覆盖该偏好。参数缺失或无效时使用 `umeda-theme` Cookie，默认浅色。手动切换主题会保存偏好并更新当前地址，复制地址即可分享所选主题。
+
 ### 子路径部署
 
 同一份 `dist/` 可部署在站点根目录或子目录。页面、样式、JS 模块和来源弹窗的数据链接使用相对路径，换目录时无需重新构建。

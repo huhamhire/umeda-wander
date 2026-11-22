@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- 地图链接支持 `theme=light` 和 `theme=dark`，手动切换主题时同步更新地址。
+
 ### Changed
 
 - GitHub Pages 发布保留样式检查、类型检查及静态构建，跳过测试。拉取请求和其他分支的 CI 下载测试所需的 Git LFS 原始资料。

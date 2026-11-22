@@ -19,7 +19,7 @@ export function mountLocalizedPage(): void {
     document.title = messageText('ui.page.title');
 }
 
-/** Bind adjacent language and appearance controls and apply the saved theme on startup. */
+/** Bind language and appearance controls and prefer the shared theme over the saved theme. */
 export function bindPagePreferences(saveView: (keyboardFocus: boolean) => void, setMapTheme: (dark: boolean) => void): void {
     const language = element<HTMLSelectElement>('#language');
     const darkTheme = element<HTMLButtonElement>('#dark-theme');
@@ -35,11 +35,24 @@ export function bindPagePreferences(saveView: (keyboardFocus: boolean) => void, 
         setMapTheme(dark);
     }
 
-    applyTheme(readPreference(themeCookie) === 'dark');
+    const requestedTheme = new URLSearchParams(location.search).get('theme');
+    const initialTheme = requestedTheme === 'dark' || requestedTheme === 'light'
+        ? requestedTheme
+        : readPreference(themeCookie);
+    applyTheme(initialTheme === 'dark');
     darkTheme.addEventListener('click', () => {
         const dark = darkTheme.getAttribute('aria-pressed') !== 'true';
-        writePreference(themeCookie, dark ? 'dark' : 'light');
+        const theme = dark ? 'dark' : 'light';
+        writePreference(themeCookie, theme);
         applyTheme(dark);
+        const url = new URL(location.href);
+        url.searchParams.set('theme', theme);
+        try {
+            history.replaceState(history.state, '', url);
+        }
+        catch {
+            // Restricted documents can still apply the theme locally.
+        }
     });
     language.addEventListener('change', () => {
         const locale = language.value;
