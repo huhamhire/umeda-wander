@@ -7,6 +7,7 @@
 ### Added
 
 - 地图链接支持 `theme=light` 和 `theme=dark`，手动切换主题时同步更新地址。
+- 桌面导航可收起，地图链接支持用 `nav=0` 收起或用 `nav=1` 展开导航。
 
 ### Changed
 

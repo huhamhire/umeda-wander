@@ -289,13 +289,13 @@
   overflow: hidden;
 }
 
-.atlas[data-map-fullscreen] .sidebar[data-collapsed] {
+.sidebar[data-collapsed] {
   right: auto;
   width: fit-content;
   padding: 0;
 }
 
-.atlas[data-map-fullscreen] .sidebar[data-collapsed] .sidebar-content {
+.sidebar[data-collapsed] .sidebar-content {
   display: none;
 }
 
@@ -335,13 +335,13 @@
 }
 
 .navigation-toggle {
-  display: none;
+  display: flex;
   flex: none;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sidebar-inline-inset);
   border: 0;
   background: transparent;
   color: var(--color-field-text);
@@ -350,8 +350,8 @@
   font-weight: 600;
 }
 
-.atlas[data-map-fullscreen] .navigation-toggle {
-  display: flex;
+.navigation-toggle:hover {
+  background: var(--color-floor-hover);
 }
 
 .navigation-toggle:focus-visible {

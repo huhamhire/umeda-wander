@@ -48,6 +48,10 @@
   display: none;
 }
 
+.atlas:has(.sidebar[data-collapsed]) .map-loading {
+  --loading-inline-start: var(--desktop-ui-inset);
+}
+
 .map-loading-spinner {
   flex: 0 0 16px;
   height: 16px;

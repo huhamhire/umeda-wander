@@ -49,6 +49,22 @@ export function mapSoundUrl(url: URL, enabled: boolean): URL {
     return next;
 }
 
+/** Read the shared navigation state, or defer to the viewport default. */
+export function readNavigationExpanded(url: URL): boolean | undefined {
+    const value = url.searchParams.get('nav');
+    if (value === '1' || value === '0') {
+        return value === '1';
+    }
+    return undefined;
+}
+
+/** Record the navigation state independently of the camera and other settings. */
+export function mapNavigationUrl(url: URL, expanded: boolean): URL {
+    const next = new URL(url);
+    next.searchParams.set('nav', expanded ? '1' : '0');
+    return next;
+}
+
 /** Check that a user-supplied number is finite and within the supported display range. */
 function between(value: unknown, min: number, max: number): value is number {
     return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;

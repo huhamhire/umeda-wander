@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { NavigationData } from '../../src/application/exploration/navigation-data.ts';
 import {
-    bindMapViewUrl, mapSoundUrl, mapTourUrl, mapViewUrl, readMapSoundEnabled, readMapTourMode, readMapView, type SharedMapView
+    bindMapViewUrl, mapNavigationUrl, mapSoundUrl, mapTourUrl, mapViewUrl, readMapSoundEnabled, readMapTourMode,
+    readMapView, readNavigationExpanded, type SharedMapView
 } from '../../src/presentation/camera/map-view-url.ts';
 
 test('the sound switch can be set independently of camera, tour and other URL state', () => {
@@ -42,6 +43,26 @@ const view: SharedMapView = {
     ground: false,
     itinerary: { ids: ['entry', 'hall'], allowPaid: true }
 };
+
+test('navigation links use an explicit state independently of the camera and viewport default', () => {
+    const base = new URL('https://example.test/maps/?lang=ja&theme=dark&tour=1#atlas');
+    assert.equal(readNavigationExpanded(base), undefined);
+    assert.equal(readNavigationExpanded(new URL('?nav=invalid', base)), undefined);
+    const collapsed = mapNavigationUrl(base, false);
+    assert.equal(readNavigationExpanded(collapsed), false);
+    const shared = mapViewUrl(collapsed, view);
+    assert.equal(readNavigationExpanded(shared), false);
+    const expanded = mapNavigationUrl(shared, true);
+    assert.equal(readNavigationExpanded(expanded), true);
+    assert.deepEqual(readMapView(expanded, data), view);
+    assert.equal(expanded.pathname, base.pathname);
+    assert.equal(expanded.hash, base.hash);
+    assert.deepEqual([...expanded.searchParams].slice(0, 4), [
+        ['lang', 'ja'], ['theme', 'dark'], ['tour', '1'], ['nav', '1']
+    ]);
+    assert.equal(readNavigationExpanded(collapsed), false);
+    assert.equal(readNavigationExpanded(base), undefined);
+});
 
 test('shared map URLs round-trip the rendered frame and state without replacing other parameters', () => {
     const address = new URL('https://example.test/maps/index.html?lang=ja&theme=dark&ref=a&ref=b&view=1&view.yaw=12#atlas');

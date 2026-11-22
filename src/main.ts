@@ -21,7 +21,8 @@ import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
 import {
-    bindMapViewUrl, mapSoundUrl, mapTourUrl, readMapSoundEnabled, readMapTourMode, readMapView, type SharedMapView
+    bindMapViewUrl, mapNavigationUrl, mapSoundUrl, mapTourUrl, readMapSoundEnabled, readMapTourMode, readMapView,
+    readNavigationExpanded, type SharedMapView
 } from './presentation/camera/map-view-url.ts';
 import { planWalkingRoute, type WalkingApproximation } from './application/navigation/walking-route.ts';
 import type { RoutePlaybackStatus } from './application/navigation/route-playback.ts';
@@ -396,22 +397,55 @@ function syncWalkingActions(): void {
     facilityWalkingActions.hidden = !walkingPlaceId(selectedFacilityId);
     facilityWalkingStop.hidden = facilityWalkingActions.hidden || !walkingRoute.canAddStop();
 }
+const atlas = element('.atlas');
 const sidebar = element('.sidebar');
+const navigationContent = element('#navigation-content');
 const navigationToggle = element<HTMLButtonElement>('#navigation-toggle');
+const narrowNavigation = matchMedia('(max-width: 760px)');
+let navigationPreference = readNavigationExpanded(address) ?? restored?.navigationExpanded;
 
 /** Match the navigation drawer visibility to its disclosure state. */
 function setNavigationExpanded(expanded: boolean): void {
     if (!expanded) {
+        const restoreFocus = navigationContent.contains(document.activeElement);
         facilityPicker.close();
         facilityStation.close();
         facilityFloor.close();
+        if (restoreFocus) {
+            navigationToggle.focus({ preventScroll: true });
+        }
     }
     sidebar.toggleAttribute('data-collapsed', !expanded);
     navigationToggle.setAttribute('aria-expanded', String(expanded));
 }
 
-setNavigationExpanded(restored?.navigationExpanded ?? false);
-navigationToggle.addEventListener('click', () => setNavigationExpanded(sidebar.hasAttribute('data-collapsed')));
+/** Apply the shared preference or the layout default when the map is not fullscreen. */
+function syncNavigationLayout(): void {
+    if (!atlas.hasAttribute('data-map-fullscreen')) {
+        setNavigationExpanded(navigationPreference ?? !narrowNavigation.matches);
+    }
+}
+
+syncNavigationLayout();
+narrowNavigation.addEventListener('change', syncNavigationLayout);
+window.addEventListener('popstate', () => {
+    navigationPreference = readNavigationExpanded(new URL(location.href));
+    syncNavigationLayout();
+});
+navigationToggle.addEventListener('click', () => {
+    const expanded = sidebar.hasAttribute('data-collapsed');
+    setNavigationExpanded(expanded);
+    if (atlas.hasAttribute('data-map-fullscreen')) {
+        return;
+    }
+    navigationPreference = expanded;
+    try {
+        history.replaceState(history.state, '', mapNavigationUrl(new URL(location.href), expanded));
+    }
+    catch {
+        // A restricted document can still toggle the navigation locally.
+    }
+});
 
 /** Save only the current view so the locale reload can rebuild all names and labels in place. */
 function saveLanguageChangeView(languageKeyboardFocus: boolean): void {
@@ -422,7 +456,7 @@ function saveLanguageChangeView(languageKeyboardFocus: boolean): void {
         facilityTab: element('#tab-facilities').getAttribute('aria-selected') === 'true',
         walkingTab: !walkingPanel.hidden,
         walkingDraft: walkingRoute.snapshot(),
-        navigationExpanded: !sidebar.hasAttribute('data-collapsed'),
+        navigationExpanded: navigationPreference,
         roadsVisible: groundPreference,
         languageKeyboardFocus,
         categoryScroll: element('#poi-list').scrollLeft,
@@ -437,16 +471,12 @@ function saveLanguageChangeView(languageKeyboardFocus: boolean): void {
     }
 }
 bindPagePreferences(saveLanguageChangeView, dark => scene?.setDarkTheme(dark));
-const atlas = element('.atlas');
-let navigationBeforeFullscreen: boolean | undefined;
 bindMapFullscreen(atlas, element<HTMLButtonElement>('#map-fullscreen'), active => {
     if (active) {
-        navigationBeforeFullscreen = !sidebar.hasAttribute('data-collapsed');
         setNavigationExpanded(false);
     }
-    else if (navigationBeforeFullscreen !== undefined) {
-        setNavigationExpanded(navigationBeforeFullscreen);
-        navigationBeforeFullscreen = undefined;
+    else {
+        syncNavigationLayout();
     }
     scene?.refreshViewport();
 });
