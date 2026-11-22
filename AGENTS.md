@@ -37,6 +37,7 @@
 - CSS 按 `src/styles/foundations/` 和 `components/<领域>/` 维护。各领域的 `index.css` 先引入通用样式，再为 760px 及以下的窄屏加载同级 `mobile.css`。`foundations/palette.css` 维护基础色板，`foundations/theme.css` 定义界面用途及衍生颜色供组件使用。每条属性独占一行，`scripts/styles.ts` 通过 esbuild 合并为 `dist/styles.css`。
 - 显示文案通过 `infrastructure/i18n/` 的领域 key 维护，`zh-CN/`、`ja/`、`en/` 使用同一套界面、车站、建筑、公共区域、设施、线路领域键。版权正文按语言在 `src/content/source-credits.<locale>.html` 整体维护。key 不使用某种语言的整句，参数具名；领域实体 ID、来源 URL、OSM 匹配名称不随显示语言变化。HTML 模板 key 在构建时解析并转义，应用层公共标签在基础设施组装边界解析。门面装饰文字放建筑常量，不作为翻译词条；语言优先使用 Cookie 内的选择，否则按浏览器首选语言列表依次匹配，默认回退简体中文。语言与主题开关同放右上角。维护说明见 `docs/development/i18n.md`。
 - 当前源码入口与目录职责见 `docs/development/architecture.md`，本地运行与部署见 `docs/development/run-and-deploy.md`。Roadmap 记录后续功能改进。测试覆盖现役站模、设施目录、开口和公共接口，历史版本通过 Git 查阅。
+- 影响使用、部署或兼容性的重要变更写入根目录 `CHANGELOG.md` 的 `Unreleased` 区，维护方式见 `docs/development/documentation.md`。
 - 设施目录测试直接核对现役设备落点、站台及稳定编号。`build/geography/` 只保留当前核查结果、必要中间输入及当前来源缓存，生成目录保留范围见 `scripts/geography/README.md`。
 - 日常修改可用 `npm run check:style:changed` 检查改动文件。规则配置或依赖锁文件改动时自动转为全量，`npm run check:style` 可用于提交前与 CI。
 - 根据明确需求选择技术方案，不提前引入无关依赖或大规模脚手架。
