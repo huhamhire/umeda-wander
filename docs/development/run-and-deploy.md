@@ -44,3 +44,9 @@ npm run dev -- --base-path=/maps/umeda/
 ```
 
 开发服务会在终端显示完整预览地址，无末尾斜杠的目录入口会自动重定向。
+
+### GitHub Actions 与 Pages
+
+[CI 工作流](../../.github/workflows/ci.yml)使用 Node.js 24 和 `npm ci` 安装锁定依赖。分支推送和拉取请求均会执行样式检查、类型检查、测试和静态构建。默认分支通过检查后，工作流将 `dist/` 上传为 Pages 构建产物并发布。默认分支也可在 Actions 页面手动运行。
+
+启用站点时，在仓库的 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。项目站点通常位于 `https://<owner>.github.io/<repository>/`，实际地址由部署任务回传。页面资源沿用相对路径。[GitHub Pages 自定义工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
