@@ -2,7 +2,8 @@
 
 ## 单一职责与归属
 
-- 根 `README.md` 介绍项目、主要功能、顶层目录和文档入口。`docs/README.md` 按领域索引文档，本地开发与部署说明归 `development/`。
+- 根 `README.md` 为英文项目入口，`README.zh-CN.md` 和 `README.ja.md` 分别提供简体中文和日文版本。三份 README 的项目范围、功能、目录与许可说明应同步维护。
+- `docs/` 下的设计、开发与数据来源文档以简体中文为主，由 `docs/README.md` 按领域索引。本地开发与部署说明归 `development/`。
 - `docs/roadmap.md` 维护后续功能改进。资料边界与验证方式分别就近记录在领域文档和验证规范中。
 - `design/areas/` 描述跨板块关系；`stations/` 负责构内依据；`public-areas/` 负责公共面；`buildings/` 负责造型与接入。
 - `development/` 负责开发约定；`docs/data/` 负责来源评估和审计。原始文件、哈希和直接事实登记在 `references/catalog.json`；派生资源及重建命令仍放 `data/`、`scripts/` 的就近 README。
