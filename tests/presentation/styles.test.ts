@@ -44,6 +44,9 @@ test(
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\]\s*\{[^}]*right:\s*auto;[^}]*width:\s*fit-content/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/.test(rules ?? '')));
         assert.match(css, /\.map-tools\s*\{/);
+        assert.match(css, /\.local-badge\s*\{[^}]*pointer-events:\s*auto/);
+        assert.match(css, /\.local-badge\[aria-pressed=false\] \.tour-arrow,\s*\.local-badge\[aria-pressed=true\] \.tour-dot\s*\{\s*display:\s*none/);
+        assert(narrowStyles.some(rules => /\.local-badge\s*\{[^}]*min-width:\s*44px;[^}]*min-height:\s*44px/.test(rules ?? '')));
         assert(narrowStyles.some(rules => /\.header-preferences #map-fullscreen\s*\{\s*display:\s*grid/.test(rules ?? '')));
         assert.match(css, /\.atlas\[data-map-fullscreen\] #map-fullscreen\s*\{\s*display:\s*grid/);
         assert.match(css, /\.atlas\[data-map-fullscreen\] \.sidebar\[data-collapsed\] \.sidebar-content\s*\{\s*display:\s*none/);

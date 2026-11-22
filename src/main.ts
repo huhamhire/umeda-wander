@@ -17,7 +17,7 @@ import { bindMapLoading } from './presentation/components/map-loading.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
-import { bindMapViewUrl, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
+import { bindMapViewUrl, mapTourUrl, readMapTourMode, readMapView, type SharedMapView } from './presentation/camera/map-view-url.ts';
 import { planWalkingRoute, type WalkingApproximation } from './application/navigation/walking-route.ts';
 import type { RoutePlaybackStatus } from './application/navigation/route-playback.ts';
 
@@ -63,7 +63,9 @@ bindCreditsDialog(
 );
 let session = new MapSession([]);
 const restored = takeLanguageChangeView();
-const shared = restored ? undefined : readMapView(new URL(location.href), navigation);
+const address = new URL(location.href);
+const requestedTour = readMapTourMode(address);
+const shared = restored ? undefined : readMapView(address, navigation);
 if (restored) {
     session.state = restored.state;
 } else if (shared) {
@@ -116,6 +118,38 @@ const facilityClear = element<HTMLButtonElement>('#facility-clear');
 const facilityStationButton = element<HTMLButtonElement>('#facility-station');
 const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
 const walkingPanel = element('#panel-walking');
+const guidedTour = element<HTMLButtonElement>('#guided-tour');
+const tourLabel = element('#guided-tour-label');
+let tourActive = false;
+
+/** Update the toggle and shareable mode independently of the moving camera. */
+function setTourActive(active: boolean): void {
+    tourActive = active;
+    guidedTour.setAttribute('aria-pressed', String(active));
+    guidedTour.title = messageText(active ? 'ui.header.stopTour' : 'ui.header.startTour');
+    tourLabel.textContent = messageText(active ? 'ui.header.tour' : 'ui.header.badge');
+    try {
+        const next = mapTourUrl(new URL(location.href), active);
+        if (next.href !== location.href) {
+            history.replaceState(history.state, '', next);
+        }
+    } catch {
+        // Embedded maps can still run a tour when the address is not writable.
+    }
+}
+
+guidedTour.addEventListener('click', () => {
+    if (tourActive) {
+        scene?.stopGuidedTour();
+    } else {
+        scene?.startGuidedTour();
+    }
+});
+window.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && tourActive) {
+        scene?.stopGuidedTour();
+    }
+});
 const walkingPlay = element<HTMLButtonElement>('#walking-play');
 walkingPlay.addEventListener('click', () => scene?.toggleRoutePlayback());
 
@@ -215,6 +249,7 @@ const showSidebarTab = bindSidebarTabs(
 const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, stations, facilities, {
     kindLabel: kind => categoryLabels[kind],
     preview: (places, allowPaid) => {
+        scene?.stopGuidedTour();
         scene?.stopRoutePlayback();
         const result = session.previewWalkingRoute(places.map(place => place.id), allowPaid, walkingApproaches);
         if (result.route) {
@@ -241,6 +276,7 @@ const walkingRoute = bindWalkingRoutePanel(walkingPanel, walkingPlaces, levels, 
     },
     pick: (places, onPick) => {
         if (places?.length) {
+            scene?.stopGuidedTour();
             scene?.stopRoutePlayback();
             const first = places[0]!;
             const group = floors.find(item => item.members.some(level => level.id === first.level));
@@ -697,7 +733,8 @@ async function loadMap(): Promise<void> {
             selectFromMap,
             queueMapUrl,
             adjustExplodeWithWheel,
-            setRoutePlaybackStatus
+            setRoutePlaybackStatus,
+            setTourActive
         );
         await loading.show('ready');
         syncFacilityLabels();
@@ -715,6 +752,10 @@ async function loadMap(): Promise<void> {
             scene.selectById(selectedFacilityId, false);
         }
         updateCompass();
+        guidedTour.disabled = false;
+        if (requestedTour) {
+            scene.startGuidedTour();
+        }
         scene.renderFirstFrame();
         walkingRoute.enableMap();
         syncRoutePlaybackButton();
@@ -728,6 +769,7 @@ async function loadMap(): Promise<void> {
         console.error('Map initialization failed', error);
         scene?.dispose();
         scene = undefined;
+        guidedTour.disabled = true;
         syncRoutePlaybackButton();
         const fallback = element('#fallback');
         fallback.hidden = false;

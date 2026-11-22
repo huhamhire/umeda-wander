@@ -28,6 +28,12 @@
 }
 
 .local-badge {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.local-badge span {
   display: none;
 }
 

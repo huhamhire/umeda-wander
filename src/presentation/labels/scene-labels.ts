@@ -33,6 +33,7 @@ export interface SceneLabelView {
     height: number;
     zoom: number;
     occluders: T.Object3D[];
+    guided?: boolean;
     selection?: Pick<SceneLabelDefinition, 'text' | 'position'> & { kind: FacilityKind };
 }
 
@@ -150,29 +151,39 @@ export class SceneLabels {
         );
         const priority = (label: MapLabel) => Number(!labelMuted(label)) * 8 + Number(label.level && viewLayerRole(levels, state, label.level) === 'current') * 4 + Number(label.element.classList.contains('emphasis'));
         const selection = this.selectionLabel(view.selection);
+        const walking = view.guided ? undefined : this.walkingLabels;
+        const filtered = view.guided ? undefined : this.filteredLabels;
         if (selection || this.walkingLabels || this.filteredLabels) {
             for (const label of this.labels) {
                 label.element.hidden = true;
             }
         }
-        if (selection || this.walkingLabels) {
+        if (selection || this.walkingLabels || view.guided) {
             for (const label of this.filteredLabels ?? []) {
                 label.element.hidden = true;
             }
         }
+        if (view.guided) {
+            for (const label of this.walkingLabels ?? []) {
+                label.element.hidden = true;
+            }
+        }
         const orderedLabels = selection ? [selection]
-            : [...this.walkingLabels ?? this.filteredLabels ?? this.labels].sort((a, b) => priority(b) - priority(a));
+            : [...walking ?? filtered ?? this.labels].sort((a, b) => priority(b) - priority(a));
         const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
             if (label.surface && !label.surface.visible) {
                 visible = false;
             }
+            if (view.guided && labelMuted(label)) {
+                visible = false;
+            }
             label.element.classList.toggle('context', role === 'context' || (label !== selection && labelMuted(label)));
             if (role === 'context' && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
-            if (!this.walkingLabels && !this.filteredLabels && (mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
+            if (!walking && !filtered && (mobile || state.level === 'all') && zoom < 1.2 && !label.element.classList.contains('emphasis')) {
                 visible = false;
             }
             if (!visible) {

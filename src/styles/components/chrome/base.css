@@ -68,19 +68,46 @@
 }
 
 .local-badge {
-  font-size: 10px;
-  padding: 5px 9px;
-  border-inline-end: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
   color: var(--color-status-text);
+  font-size: .75rem;
+  white-space: nowrap;
+  pointer-events: auto;
 }
 
-.local-badge i {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  background: var(--color-status-dot);
-  border-radius: 50%;
-  margin-right: 5px;
+.local-badge:hover:not(:disabled),
+.local-badge[aria-pressed="true"] {
+  background: var(--color-floor-hover);
+  color: var(--color-accent);
+}
+
+.local-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tour-dot {
+  fill: var(--color-status-dot);
+}
+
+.tour-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.local-badge[aria-pressed="false"] .tour-arrow,
+.local-badge[aria-pressed="true"] .tour-dot {
+  display: none;
 }
 
 .header-preferences {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { NavigationData } from '../../src/application/exploration/navigation-data.ts';
-import { bindMapViewUrl, mapViewUrl, readMapView, type SharedMapView } from '../../src/presentation/camera/map-view-url.ts';
+import { bindMapViewUrl, mapTourUrl, mapViewUrl, readMapTourMode, readMapView, type SharedMapView } from '../../src/presentation/camera/map-view-url.ts';
 
 const data: NavigationData = {
     levels: [{ id: 'concourse', label: '1F', name: 'Hall', y: 0, description: '' }],
@@ -85,6 +85,22 @@ test('integrators can use camera-only parameters and replace individual settings
     const route = mapViewUrl(prior, { ...parsed, itinerary });
     assert.equal(route.searchParams.get('allow-paid'), '0');
     assert.deepEqual(readMapView(route, data)?.itinerary, itinerary);
+});
+
+test('tour links can restart the tour without a camera and preserve the manual frame on exit', () => {
+    const bare = new URL('https://example.test/map?lang=ja#atlas');
+    const link = mapTourUrl(bare, true);
+    assert(readMapTourMode(link));
+    assert.equal(readMapView(link, data), undefined);
+    assert.equal(readMapTourMode(new URL('https://example.test/?tour=0')), false);
+    const withView = mapViewUrl(link, view);
+    assert(readMapTourMode(withView));
+    assert.deepEqual(readMapView(withView, data), view);
+    const stopped = mapTourUrl(withView, false);
+    assert(!readMapTourMode(stopped));
+    assert.deepEqual(readMapView(stopped, data), view);
+    assert.equal(stopped.hash, bare.hash);
+    assert.equal(stopped.searchParams.get('lang'), 'ja');
 });
 
 test('rapid changes queue one address replacement and an unsettled frame never writes', () => {

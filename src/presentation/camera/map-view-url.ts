@@ -21,6 +21,22 @@ export interface SharedMapView {
     itinerary?: { ids: string[]; allowPaid: boolean };
 }
 
+/** A tour link can restart the itinerary without a shared camera frame. */
+export function readMapTourMode(url: URL): boolean {
+    return url.searchParams.get('tour') === '1';
+}
+
+/** Set the mode independently of the manual view so animated frames never replace it. */
+export function mapTourUrl(url: URL, active: boolean): URL {
+    const next = new URL(url);
+    if (active) {
+        next.searchParams.set('tour', '1');
+    } else {
+        next.searchParams.delete('tour');
+    }
+    return next;
+}
+
 /** Check that a user-supplied number is finite and within the supported display range. */
 function between(value: unknown, min: number, max: number): value is number {
     return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;

@@ -170,6 +170,7 @@ test(
         assert.equal(messageText('ui.page.title', {}, 'ja'), '駅巡り · UMEDA');
         assert.equal(messageText('ui.page.title', {}, 'en'), 'Station Explorer · UMEDA');
         assert(html.includes('aria-label="放大"'));
+        assert.match(html, /<button[^>]*id="guided-tour"[^>]*aria-pressed="false"[^>]*aria-label="自动导览"/);
         assert(html.includes('数据来源与版权 · © OpenStreetMap contributors'));
         assert.throws(() => renderHtmlMessages('{{ui.unknown.key}}'), /Unknown HTML message key/);
     }

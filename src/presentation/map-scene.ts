@@ -4,6 +4,8 @@ import { MapGestures, type OrbitAnchor } from './camera/map-gestures.ts';
 import { RouteModel, routeBeamRadius, routePointElevation } from './models/stations/route-model.ts';
 import { createRoutePositionMarker } from './models/stations/route-position-marker.ts';
 import { RoutePlaybackView } from './camera/route-playback-view.ts';
+import { GuidedTour } from './camera/guided-tour.ts';
+import { TourLayerFade } from './appearance/tour-layer-fade.ts';
 import { createRoutePlayback, type RoutePlaybackSample, type RoutePlaybackStatus } from '../application/navigation/route-playback.ts';
 import { orbitAboutPoint, orbitPointOnPlane } from './camera/orbit-view.ts';
 import { geographicBuildings } from '../infrastructure/buildings/index.ts';
@@ -39,6 +41,16 @@ export class MapScene {
     private routeModel: RouteModel;
     private readonly routePositionMarker = createRoutePositionMarker();
     private playback?: RoutePlaybackView;
+    private tour?: {
+        player: GuidedTour;
+        orientation: T.Vector3;
+        time: number;
+        sampledAt: number;
+        last?: ReturnType<GuidedTour['advance']>;
+    };
+    private tourWakeup?: number;
+    private nextTourLabelUpdate = 0;
+    private readonly tourLayerFade = new TourLayerFade();
     private gestures: MapGestures;
     private readonly resizeObserver: ResizeObserver;
     private renderer: T.WebGLRenderer;
@@ -55,6 +67,7 @@ export class MapScene {
         if (this.roadsVisible === visible) {
             return;
         }
+        this.stopGuidedTour();
         this.roadsVisible = visible;
         this.invalidateModels();
     }
@@ -127,7 +140,8 @@ export class MapScene {
         private onSelect: (facility?: Facility) => void,
         private onViewSettled?: () => void,
         onSpacingGesture?: (delta?: number) => void,
-        private readonly onRoutePlayback?: (status: RoutePlaybackStatus) => void
+        private readonly onRoutePlayback?: (status: RoutePlaybackStatus) => void,
+        private readonly onTourChange?: (active: boolean) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -201,6 +215,7 @@ export class MapScene {
                 return true;
             },
             beginDrag: () => {
+                this.stopGuidedTour(true);
                 this.pauseRoutePlayback();
                 if (this.locatingFacility && this.framing && this.targetCenter) {
                     this.pan.add(this.framing.center.clone().sub(this.targetCenter));
@@ -232,6 +247,7 @@ export class MapScene {
         if (!this.framing) {
             return undefined;
         }
+        this.stopGuidedTour(true);
         this.pauseRoutePlayback();
         this.locatingFacility = false;
         this.focusTransition = false;
@@ -325,6 +341,10 @@ export class MapScene {
 
     /** Select a facility or send the picked walking point to the active route field. */
     private selectAt(clientX: number, clientY: number): void {
+        if (this.tour) {
+            this.stopGuidedTour(true);
+            return;
+        }
         const target = this.pickAt(clientX, clientY);
         if (!this.onWalkingPick) {
             this.onSelect(target);
@@ -340,6 +360,8 @@ export class MapScene {
             return;
         }
         this.disposed = true;
+        window.clearTimeout(this.tourWakeup);
+        this.tourLayerFade.clear();
         this.gestures.dispose();
         this.setPointerHover();
         this.labels.dispose();
@@ -392,6 +414,7 @@ export class MapScene {
         const stationChanged = this.state.focusStation !== state.focusStation;
         if (floorChanged || stationChanged || this.state.route !== state.route || this.state.roof !== state.roof ||
             this.state.explode !== state.explode) {
+            this.stopGuidedTour();
             this.stopRoutePlayback();
         }
         this.modelsDirty ||= floorChanged || stationChanged ||
@@ -418,8 +441,45 @@ export class MapScene {
         this.requestRender();
     }
 
+    /** Start the district's scripted tour from its built-out overview. */
+    startGuidedTour(): void {
+        if (this.tour) {
+            return;
+        }
+        this.stopRoutePlayback();
+        this.focusTransition = false;
+        const orientation = cameraOffset.clone();
+        const overview = this.regionFramingPoints(null, id => displayElevation(this.levels, id, 0));
+        const origin = this.framing && { ...this.framing, orientation, explode: this.displayedExplode };
+        const now = performance.now();
+        this.tour = { player: new GuidedTour(this.layout, this.levels, overview, now, origin), orientation, time: now, sampledAt: now };
+        this.onTourChange?.(true);
+        this.invalidateModels();
+    }
+
+    /** Give manual exploration control back, retaining the live frame when a map gesture takes over. */
+    stopGuidedTour(keepFraming = false): void {
+        if (!this.tour) {
+            return;
+        }
+        if (keepFraming && this.framing) {
+            this.locatingFacility = false;
+            this.freezeFraming(this.framing);
+        } else {
+            cameraOffset.copy(this.tour.orientation);
+            this.orientationChanged = true;
+        }
+        this.tour = undefined;
+        window.clearTimeout(this.tourWakeup);
+        this.tourLayerFade.clear();
+        this.immediateExplode = true;
+        this.onTourChange?.(false);
+        this.invalidateModels();
+    }
+
     /** Play, pause or replay the currently drawn route without changing the itinerary. */
     toggleRoutePlayback(): void {
+        this.stopGuidedTour();
         if (!this.framing || !this.state.route) {
             return;
         }
@@ -557,7 +617,7 @@ export class MapScene {
     /** Capture navigation intent and manual camera framing for a locale reload. */
     snapshotCamera(): MapCameraSnapshot {
         return {
-            offset: cameraOffset.toArray(),
+            offset: (this.tour?.orientation ?? cameraOffset).toArray(),
             pan: this.pan.toArray(),
             zoom: this.zoomValue,
             manual: this.manualView && {
@@ -572,7 +632,7 @@ export class MapScene {
 
     /** Return the actual frame only after pointer motion and scene transitions have settled. */
     snapshotShareCamera(): ShareCamera | undefined {
-        return this.shareSettled && !this.gestures.isMoving && !this.draggingExplode ? this.sharedCamera : undefined;
+        return !this.tour && this.shareSettled && !this.gestures.isMoving && !this.draggingExplode ? this.sharedCamera : undefined;
     }
 
     /** Restore a shared world center and vertical span without following a facility. */
@@ -633,6 +693,7 @@ export class MapScene {
      * Scale the orthographic view within the limits of the currently usable viewport.
      */
     zoom(factor: number, pivot?: T.Vector3): void {
+        this.stopGuidedTour(true);
         this.pauseRoutePlayback();
         this.focusTransition = false;
         const nextZoom = clampCameraZoom(this.zoomValue * factor, this.minimumZoom);
@@ -664,6 +725,7 @@ export class MapScene {
      * Clear manual pan and zoom, optionally restoring the north-facing orientation.
      */
     reset(resetOrientation = false): void {
+        this.stopGuidedTour();
         this.stopRoutePlayback();
         this.manualView = undefined;
         this.gestures.cancelOrbit();
@@ -724,7 +786,7 @@ export class MapScene {
     /**
      * Synchronize material roles and visibility only when the exploration state changes.
      */
-    private updateModels(state: MapViewState): void {
+    private updateModels(state: MapViewState, tourGround?: boolean): void {
         this.modelsDirty = false;
         const activeFloors = new Set<T.Object3D>();
         for (const [id, group] of this.models.groups) {
@@ -733,7 +795,7 @@ export class MapScene {
             if (role === 'normal' || role === 'current') {
                 activeFloors.add(group);
             }
-            this.appearance.apply(group, role === 'context', this.state.focusStation);
+            this.appearance.apply(group, role === 'context', state.focusStation);
         }
         this.facilityPickables = this.models.pickables.filter(object => object.parent && activeFloors.has(object.parent));
         this.walkingPlatforms.clear();
@@ -760,29 +822,34 @@ export class MapScene {
                 continue;
             }
             connector.group.visible = true;
-            const owners = [from, to].map(p => this.levels.find(l => l.id === p.level)!.station ?? 'jr-osaka');
-            const owner = this.activeFacility?.connectionId === connector.connection.id ? this.state.focusStation ?? null :
-                connector.connection.blockId || connector.connection.evidence.source === 'district' ? null : owners[0] === owners[1] ? owners[0]! : null;
+            const owners = [from, to].map(p => this.levels.find(l => l.id === p.level)?.station);
+            const [fromOwner = 'jr-osaka', toOwner = 'jr-osaka'] = owners;
+            let owner = fromOwner === toOwner ? fromOwner : null;
+            if (!this.tour && this.activeFacility?.connectionId === connector.connection.id) {
+                owner = state.focusStation ?? null;
+            } else if (connector.connection.blockId || connector.connection.evidence.source === 'district') {
+                owner = null;
+            }
             this.appearance.apply(
                 connector.group,
                 !roles.some(role => role === 'current' || role === 'normal'),
-                this.state.focusStation,
+                state.focusStation,
                 owner
             );
         }
         const canShowGround = allowsGroundLayer(this.levels, state);
-        const groundVisible = this.roadsVisible && canShowGround;
+        const groundVisible = canShowGround && (tourGround ?? this.roadsVisible);
         this.context.roads.visible = groundVisible;
         this.context.buildings.visible = groundVisible;
         this.models.updateBuildingFloorVisibility(state.roof);
         this.geographicExteriors.visible = groundVisible && state.roof && state.level === 'all';
-        this.appearance.apply(this.geographicExteriors, false, this.state.focusStation, null);
+        this.appearance.apply(this.geographicExteriors, false, state.focusStation, null);
         this.models.roof.visible = canShowGround && state.roof && state.level === 'all';
         for (const { model, ground } of this.models.canopies) {
             model.visible = state.roof && (!ground || groundVisible);
         }
-        this.appearance.apply(this.models.roof, false, this.state.focusStation, 'jr-osaka');
-        this.selected.visible = !!this.activeFacility && ['normal', 'current'].includes(this.layerRole(state, this.activeFacility.level));
+        this.appearance.apply(this.models.roof, false, state.focusStation, 'jr-osaka');
+        this.selected.visible = !this.tour && !!this.activeFacility && ['normal', 'current'].includes(this.layerRole(state, this.activeFacility.level));
     }
 
     /** Cut away physically higher slabs, even when they share an exploration band with the walking floor. */
@@ -805,13 +872,13 @@ export class MapScene {
             }
         }
         this.models.roof.position.y = 26 + this.displayedExplode * 56;
-        if (this.state.route || this.routeModel.group.visible) {
-            this.routeModel.update(this.state.route, levelY, id => {
+        if (state.route || this.routeModel.group.visible) {
+            this.routeModel.update(state.route, levelY, id => {
                 const role = this.layerRole(state, id);
                 return this.playback ? role !== 'hidden' : role === 'normal' || role === 'current';
             }, !this.playback);
         }
-        this.routeModel.group.visible = !!this.state.route;
+        this.routeModel.group.visible = !!state.route;
         if (this.activeFacility) {
             this.selected.position.set(
                 this.activeFacility.x,
@@ -829,8 +896,14 @@ export class MapScene {
         if (this.fitEnvelope) {
             return this.fitEnvelope;
         }
-        const envelope = cameraEnvelope(this.layout, this.levels, this.state, id => this.levelY(id));
-        if (!this.state.focusStation) {
+        this.fitEnvelope = this.regionFramingPoints(this.state.focusStation, id => this.levelY(id));
+        return this.fitEnvelope;
+    }
+
+    /** Share the full district bounds between manual fitting and the tour's overview. */
+    private regionFramingPoints(station: MapViewState['focusStation'], elevation: (id: LevelId) => number): T.Vector3[] {
+        const envelope = cameraEnvelope(this.layout, this.levels, { level: 'all', focusStation: station }, elevation);
+        if (!station) {
             for (const b of geographicBuildings) {
                 if (b.wheel) {
                     envelope.push(new T.Vector3(b.wheel.center.x, b.wheel.centerHeight + b.wheel.radius + 2, b.wheel.center.z));
@@ -842,7 +915,6 @@ export class MapScene {
                 }
             }
         }
-        this.fitEnvelope = envelope;
         return envelope;
     }
 
@@ -912,6 +984,16 @@ export class MapScene {
         return facilityFocusRect(viewport, sidebar, this.width < 761);
     }
 
+    /** Record visibility of the geometry affected by a guided floor cut. */
+    private captureTourLayers(): Map<T.Object3D, boolean> {
+        const roots = [
+            ...this.models.groups.values(), ...this.models.connectors.map(connector => connector.group),
+            this.context.roads, this.context.buildings, this.geographicExteriors, this.models.roof,
+            ...this.models.canopies.map(({ model }) => model), ...this.models.basementBuildingFloors
+        ];
+        return new Map(roots.map(object => [object, object.visible]));
+    }
+
     /** Track the displayed landings of the current segment, including local offsets and expansion. */
     private playbackPosition({ from, to, fraction, x, z }: RoutePlaybackSample): T.Vector3 {
         const levelY = (id: LevelId) => this.levelY(id);
@@ -925,7 +1007,27 @@ export class MapScene {
         this.frame = 0;
         this.gestures.applyTouchGesture();
         const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const { value, animate } = advanceExplode(this.displayedExplode, this.playback ? 0 : this.state.explode, this.immediateExplode, reducedMotion);
+        const now = performance.now();
+        const tour = this.tour;
+        const previousTour = tour?.last;
+        window.clearTimeout(this.tourWakeup);
+        let tourFrame: ReturnType<GuidedTour['advance']> | undefined;
+        if (tour) {
+            // A stalled or backgrounded frame may finish a hold without skipping the next camera move.
+            const remainingHold = previousTour && !previousTour.moving && !previousTour.turning ? previousTour.wait : 0;
+            tour.time += Math.min(now - tour.sampledAt, remainingHold + 50);
+            tour.sampledAt = now;
+            tourFrame = tour.player.advance(tour.time, reducedMotion, this.width, this.height, this.usableViewport());
+            tour.last = tourFrame;
+            this.modelsDirty ||= previousTour?.level !== tourFrame.level || previousTour?.station !== tourFrame.station ||
+                previousTour?.overview !== tourFrame.overview || previousTour?.ground !== tourFrame.ground;
+            this.orientationChanged ||= tourFrame.yaw !== previousTour?.yaw || tourFrame.pitch !== previousTour?.pitch;
+            if (previousTour && previousTour.opacity < 1 && tourFrame.opacity === 1) {
+                this.renderer.shadowMap.needsUpdate = true;
+            }
+        }
+        const { value, animate } = tourFrame ? { value: tourFrame.explode, animate: false } :
+            advanceExplode(this.displayedExplode, this.playback ? 0 : this.state.explode, this.immediateExplode, reducedMotion);
         this.immediateExplode = false;
         const changedElevation = value !== this.displayedExplode;
         if (changedElevation) {
@@ -933,7 +1035,6 @@ export class MapScene {
             this.fitEnvelope = undefined;
         }
         const playback = this.playback;
-        const now = performance.now();
         let playbackFrame: typeof this.framing;
         if (playback?.status === 'playing') {
             const { level, ceiling } = playback.sample;
@@ -945,19 +1046,27 @@ export class MapScene {
             this.modelsDirty ||= level !== playback.sample.level || ceiling !== playback.sample.ceiling;
             this.orientationChanged ||= before.distanceToSquared(cameraOffset) > 1e-8;
         }
-        const state = playback ? { ...this.state, level: playback.sample.level.id, roof: false } : this.state;
+        const state = tourFrame
+            ? { ...this.state, focusStation: tourFrame.station, level: tourFrame.level, roof: tourFrame.overview, route: null }
+            : playback ? { ...this.state, level: playback.sample.level.id, roof: false } : this.state;
         const changedModels = this.modelsDirty;
+        const beforeCut = changedModels && tourFrame && tourFrame.opacity < 1 &&
+            (previousTour?.level !== tourFrame.level || previousTour?.overview !== tourFrame.overview || previousTour?.ground !== tourFrame.ground)
+            ? this.captureTourLayers() : undefined;
         if (changedModels) {
-            this.updateModels(state);
+            this.updateModels(state, tourFrame?.ground);
         }
-        if (changedModels || changedElevation) {
-            this.updateModelElevations(state, this.draggingExplode && !changedModels);
+        if (changedModels || changedElevation || previousTour?.moving && !tourFrame?.moving) {
+            this.updateModelElevations(state, (this.draggingExplode || !!tourFrame?.moving) && !changedModels);
+        }
+        if (beforeCut) {
+            this.tourLayerFade.begin(beforeCut);
         }
         if (this.orientationChanged) {
             this.orientationChanged = false;
             window.dispatchEvent(new Event('map-orientation'));
         }
-        const target = playbackFrame ?? this.cameraTarget();
+        const target = tourFrame ?? playbackFrame ?? this.cameraTarget();
         const { center } = target;
         let span = target.span;
         this.targetCenter = center.clone();
@@ -997,14 +1106,19 @@ export class MapScene {
         this.camera.position.copy(center).addScaledVector(cameraOffset, 6);
         this.camera.lookAt(center);
         this.camera.updateProjectionMatrix();
-        this.renderer.render(this.scene, this.camera);
+        this.tourLayerFade.draw(tourFrame?.opacity ?? 1, () => this.renderer.render(this.scene, this.camera));
         if (changedModels && this.hoverPoint) {
             this.setPointerHover(this.hoverPoint);
         }
         // Label projection and view sharing both wait for the frame to settle.
         const settled = playback?.status !== 'playing' && !animate && !this.focusTransition && !this.draggingExplode && !this.gestures.isMoving;
-        this.labels.setVisible(settled);
-        if (settled) {
+        const showLabels = settled && (!tourFrame || !tourFrame.moving && !!tourFrame.station);
+        this.labels.setVisible(showLabels);
+        if (!showLabels) {
+            this.nextTourLabelUpdate = 0;
+        }
+        if (showLabels && (!tourFrame?.turning || now >= this.nextTourLabelUpdate)) {
+            this.nextTourLabelUpdate = now + 80;
             const facility = this.activeFacility;
             const selection = this.selected.visible && facility
                 ? { text: facility.mapLabel ?? facility.name, position: this.selectionMarker.labelAnchor(), kind: facility.kind }
@@ -1020,12 +1134,16 @@ export class MapScene {
                 height: this.height,
                 zoom: this.zoomValue,
                 occluders: this.labelOccluders,
-                selection
+                selection,
+                guided: !!tour
             });
         }
-        this.reportShareCamera(center, span, settled && !playback);
-        if (playback?.status === 'playing' || animate || this.focusTransition || (this.selected.visible && !reducedMotion)) {
+        this.reportShareCamera(center, span, settled && !playback && !tour);
+        if (tourFrame?.moving || tourFrame?.turning || playback?.status === 'playing' || animate ||
+            this.focusTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
+        } else if (tourFrame) {
+            this.tourWakeup = window.setTimeout(() => this.requestRender(), Math.max(1, tourFrame.wait));
         }
     }
 }
