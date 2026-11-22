@@ -4,6 +4,26 @@ import type { BasementOccupancy } from '../../domain/map/public-area.ts';
 import { districtUndergroundEvidence } from './underground-source.ts';
 import { referenceBasements } from './south-diamor/basement-outlines.ts';
 
+/** Named southern hosts that are shown as flat footprints at street level. */
+const southernHosts = [
+    ['osaka-ekimae-1', messageText('publicAreas.basementBuildings.items.osakaEkimae1.name'), '70561756'],
+    ['osaka-ekimae-2', messageText('publicAreas.basementBuildings.items.osakaEkimae2.name'), '70561758'],
+    ['osaka-ekimae-3', messageText('publicAreas.basementBuildings.items.osakaEkimae3.name'), 'relation/6803731'],
+    ['osaka-ekimae-4', messageText('publicAreas.basementBuildings.items.osakaEkimae4.name'), '135624700'],
+    ['umeda-dt', messageText('publicAreas.basementBuildings.items.umedaDt.name'), '162158019'],
+    ['daiichi-life', messageText('publicAreas.basementBuildings.items.daiichiLife.name'), '162158153'],
+    ['e-ma', 'E-ma', '162158020'],
+    ['hilton-east', 'Hilton Plaza East', '162158151'],
+    ['hilton-west', 'Hilton Plaza West', '162158150'],
+] as const;
+
+/** Street-level labels share names and IDs with the southern basement hosts. */
+export const southernGroundBuildingLabels: ReadonlyMap<string, string> = new Map(southernHosts.map(([id, name, way]) => {
+    const ekimae = id.match(/^osaka-ekimae-(\d)$/);
+    const label = ekimae ? messageText('publicAreas.basementBuildings.ekimaeFloorLabel', { number: ekimae[1]! }) : name;
+    return [way.includes('/') ? way : 'way/' + way, label];
+}));
+
 /** Host envelopes only; underground leasing/interior plans are not represented. */
 const buildings = [
     ['lucua-1100', 'LUCUA 1100', '1313244350'],
@@ -14,15 +34,7 @@ const buildings = [
     ['hankyu-grand', messageText('publicAreas.basementBuildings.items.hankyuGrand.name'), '162157689'],
     ['hanshin-dept', messageText('publicAreas.basementBuildings.items.hanshinDept.name'), '502411898'],
     ['jp-tower', 'JP Tower／KITTE', '1146510724'],
-    ['osaka-ekimae-1', messageText('publicAreas.basementBuildings.items.osakaEkimae1.name'), '70561756'],
-    ['osaka-ekimae-2', messageText('publicAreas.basementBuildings.items.osakaEkimae2.name'), '70561758'],
-    ['osaka-ekimae-3', messageText('publicAreas.basementBuildings.items.osakaEkimae3.name'), 'relation/6803731'],
-    ['osaka-ekimae-4', messageText('publicAreas.basementBuildings.items.osakaEkimae4.name'), '135624700'],
-    ['umeda-dt', messageText('publicAreas.basementBuildings.items.umedaDt.name'), '162158019'],
-    ['daiichi-life', messageText('publicAreas.basementBuildings.items.daiichiLife.name'), '162158153'],
-    ['e-ma', 'E-ma', '162158020'],
-    ['hilton-east', 'Hilton Plaza East', '162158151'],
-    ['hilton-west', 'Hilton Plaza West', '162158150'],
+    ...southernHosts
 ] as const;
 export const basementOccupancies: BasementOccupancy[] = buildings.map(([id, name, way]) => {
     const reference = referenceBasements.find(b => b.id === id);

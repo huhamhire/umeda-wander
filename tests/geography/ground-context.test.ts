@@ -11,7 +11,7 @@ import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion } from '../../src/domain/map/model.ts';
-import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
+import { buildGeographicContext, groundBuildingLabelPlacements } from '../../src/presentation/models/public-areas/geographic-context.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
 
 const geometry = (region: PlanRegion): clipping.Polygon => [region.outline, ...region.holes ?? []].map(r => r.map(p => [p.x, p.z]));
@@ -110,6 +110,33 @@ test(
         );
     }
 );
+
+test('the nine named southern footprints fit ground labels around equipment openings', () => {
+    const openingRings = [
+        ...planFloorOpenings(layout.connections, levels, layout.platforms),
+        ...planAtriumOpenings(layout.atria)
+    ].filter(o => levels.find(l => l.id === o.level)?.y === 0).map(o => o.outline);
+    const labels = groundBuildingLabelPlacements(openingRings);
+    assert.deepEqual(labels.map(l => l.id).sort(), [
+        'relation/6803731', 'way/135624700', 'way/162158019', 'way/162158020', 'way/162158150',
+        'way/162158151', 'way/162158153', 'way/70561756', 'way/70561758'
+    ]);
+    const openings = openingRings.map(outline => geometry({ outline }));
+    const openingUnion = clipping.union(openings[0]!, ...openings.slice(1));
+    for (const label of labels) {
+        assert.ok(label.name.trim() && label.width >= 20, label.id + ' has an unreadable label');
+        const c = Math.cos(label.angle);
+        const s = Math.sin(label.angle);
+        const half = label.width / 2;
+        const corners: clipping.Pair[] = [[-half, -half * .375], [half, -half * .375], [half, half * .375], [-half, half * .375]];
+        const text: clipping.Polygon = [corners.map(([x, z]) => [
+            label.anchor.x + x * c - z * s, label.anchor.z + x * s + z * c
+        ])];
+        const footprint = context.surfaces.find(surface => surface.id === label.id)!.geometry as clipping.MultiPolygon;
+        assert.equal(area(clipping.difference(text, footprint)), 0, label.id + ' name crosses the footprint boundary');
+        assert.equal(area(clipping.intersection(text, openingUnion)), 0, label.id + ' name covers an opening');
+    }
+});
 
 test('the assembled ground leaves the Grand Front and HERBIS plaza openings clear', t => {
     const openings = [

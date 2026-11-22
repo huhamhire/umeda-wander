@@ -57,7 +57,7 @@ function labelPoint(region: PlanRegion): Point2 {
 }
 
 /** Keep the complete label rectangle inside its own clipped island. */
-function labelWidth(region: PlanRegion, p: Point2, angle: number): number {
+function labelWidth(region: PlanRegion, p: Point2, angle: number, maxWidth: number): number {
     const co = Math.cos(angle);
     const si = Math.sin(angle);
     const fits = (width: number) => [
@@ -71,7 +71,7 @@ function labelWidth(region: PlanRegion, p: Point2, angle: number): number {
         return pointInPolygon(q, region.outline) && !region.holes?.some(h => pointInPolygon(q, h));
     }));
     let low = 0;
-    let high = 30;
+    let high = maxWidth;
     for (let i = 0; i < 15; i++) {
         const mid = (low + high) / 2;
         if (fits(mid)) {
@@ -82,6 +82,26 @@ function labelWidth(region: PlanRegion, p: Point2, angle: number): number {
         }
     }
     return low * .9;
+}
+
+/** Use the host's long edge for orientation and fit text inside the displayed island. */
+export function buildingLabelPlacement(region: PlanRegion, host: Point2[], maxWidth = 30) {
+    let angle = 0;
+    let length = 0;
+    for (let i = 0; i < host.length; i++) {
+        const a = host[i]!;
+        const b = host[(i + 1) % host.length]!;
+        const d = Math.hypot(b.x - a.x, b.z - a.z);
+        if (d > length) {
+            length = d;
+            angle = Math.atan2(b.z - a.z, b.x - a.x);
+        }
+    }
+    if (Math.cos(angle) < 0) {
+        angle += Math.PI;
+    }
+    const anchor = labelPoint(region);
+    return { anchor, angle, width: labelWidth(region, anchor, angle, maxWidth) };
 }
 
 /** Building fill yields to the reviewed public excavation and station interiors. */
@@ -110,23 +130,8 @@ export function buildBuildingOccupancies(
             holes: p.slice(1).map(r => r.map(([x, z]) => ({ x, z })))
         }))
             .filter(r => area(r.outline) > 1).sort((a, b) => area(b.outline) - area(a.outline));
-        let angle = 0;
-        let length = 0;
-        for (let i = 0; i < definition.region.outline.length; i++) {
-            const a = definition.region.outline[i]!;
-            const b = definition.region.outline[(i + 1) % definition.region.outline.length]!;
-            const d = Math.hypot(b.x - a.x, b.z - a.z);
-            if (d > length) {
-                length = d;
-                angle = Math.atan2(b.z - a.z, b.x - a.x);
-            }
-        }
-        if (Math.cos(angle) < 0) {
-            angle += Math.PI;
-        }
         for (const [i, region] of sorted.entries()) {
-            const anchor = labelPoint(region);
-            const width = labelWidth(region, anchor, angle);
+            const { anchor, angle, width } = buildingLabelPlacement(region, definition.region.outline);
             areas.push({
                 id: target.prefix + '-' + definition.id + '-' + i,
                 name: definition.name,

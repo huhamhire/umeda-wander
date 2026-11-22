@@ -1,7 +1,11 @@
 import * as T from 'three';
+import clipping from 'polygon-clipping';
 import context from '../../../../data/geography/display-context.json' with { type: 'json' };
 import { buildFloorGeometry } from '../floor-geometry.ts';
 import type { Point2 } from '../../../domain/map/model.ts';
+import { buildingLabelPlacement } from '../../../application/public-areas/building-occupancy.ts';
+import { southernGroundBuildingLabels } from '../../../infrastructure/public-areas/basement-buildings.ts';
+import { buildSurfaceLabel, floorLabelColors } from '../../labels/floor-label.ts';
 
 const groundColors = {
     skin: { light: 0xe8e7dc, dark: 0x263335 },
@@ -9,11 +13,34 @@ const groundColors = {
     building: { light: 0xd6ddce, dark: 0x354641 },
     public: { light: 0xe6dfc5, dark: 0x4a4636 }
 } as const;
+const footprintBase = -1.3;
+const footprintThickness = .3;
+
+/** Convert a display ring in district metres to model coordinates. */
+const points = (ring: number[][]): Point2[] => ring.map(([x, z]) => ({ x: x!, z: z! }));
+
+/** Find one readable patch on each named southern footprint after the ground openings are cut. */
+export function groundBuildingLabelPlacements(groundOpenings: Point2[][]) {
+    const cuts: clipping.Polygon[] = groundOpenings.map(outline => [outline.map(p => [p.x, p.z])]);
+    return context.surfaces.flatMap(surface => {
+        const name = southernGroundBuildingLabels.get(surface.id);
+        if (surface.kind !== 'building' || !name) {
+            return [];
+        }
+        const placements = surface.geometry.flatMap(polygon => {
+            const host = points(polygon[0]!);
+            return clipping.difference(polygon as clipping.Polygon, ...cuts)
+                .map(([outline, ...holes]) => buildingLabelPlacement({ outline: points(outline!), holes: holes.map(points) }, host, 54));
+        }).sort((a, b) => b.width - a.width);
+        const placement = placements[0];
+        return placement && placement.width >= 8 ? [{ id: surface.id, name, ...placement }] : [];
+    });
+}
 
 /**
  * Build the toggleable ground skin, roads and footprints, cutting openings for vertical equipment.
  */
-export function buildGeographicContext(groundOpenings: Point2[][] = []) {
+export function buildGeographicContext(groundOpenings: Point2[][] = [], maxAnisotropy = 1) {
     const roads = new T.Group();
     const buildings = new T.Group();
     const add = (
@@ -25,7 +52,6 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
         name: string,
         cuts: Point2[][] = []
     ) => {
-        const points = (ring: number[][]): Point2[] => ring.map(([x, z]) => ({ x: x!, z: z! }));
         const geometry = buildFloorGeometry(points(rings[0]!), [...rings.slice(1).map(points), ...cuts], height, y);
         if (!geometry.getAttribute('position')?.count) {
             return;
@@ -48,11 +74,16 @@ export function buildGeographicContext(groundOpenings: Point2[][] = []) {
                 building ? buildings : roads,
                 polygon,
                 building ? 'building' : road ? 'road' : 'public',
-                road ? -1 : -1.3,
-                building ? .3 : .15,
+                road ? -1 : footprintBase,
+                building ? footprintThickness : .15,
                 `${surface.kind}-${surface.id}-${i}`,
                 groundOpenings
             );
+        }
+    }
+    if (typeof document !== 'undefined') {
+        for (const { id, name, anchor, angle, width } of groundBuildingLabelPlacements(groundOpenings)) {
+            buildings.add(buildSurfaceLabel('ground-' + id, name, anchor, footprintBase + footprintThickness, angle, width, maxAnisotropy));
         }
     }
     return { roads, buildings };
@@ -66,6 +97,9 @@ export function setGeographicContextTheme(ground: ReturnType<typeof buildGeograp
             const surface = mesh.userData.groundSurface as keyof typeof groundColors;
             if (mesh instanceof T.Mesh && mesh.material instanceof T.MeshStandardMaterial && surface) {
                 mesh.material.color.setHex(groundColors[surface][theme]);
+            }
+            if (mesh instanceof T.Mesh && mesh.material instanceof T.MeshBasicMaterial && mesh.name.startsWith('floor-label-ground-')) {
+                mesh.material.color.setHex(floorLabelColors[theme]);
             }
         }
     }

@@ -188,7 +188,10 @@ export class MapScene {
             maxAnisotropy: this.renderer.capabilities.getMaxAnisotropy()
         });
         this.labels = new SceneLabels(labelHost, this.models.labels);
-        this.context = buildGeographicContext(this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline));
+        this.context = buildGeographicContext(
+            this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline),
+            this.renderer.capabilities.getMaxAnisotropy()
+        );
         this.scene.add(this.context.roads, this.context.buildings);
         for (const building of geographicBuildings) {
             const model = buildGeographicBuilding(building, this.layout.exteriorOpenings);
