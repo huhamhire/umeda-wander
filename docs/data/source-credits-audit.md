@@ -67,3 +67,5 @@ Grand Front 官方梅北广场 1F／B1 图用于南侧广场两处扶梯和宽�
 北门大楼的屋面分带核对同一 PLATEAU 网格中的 LOD2 建筑 `bldg_a7a0f325-c271-44db-bced-7d3066780c65`，测绘年份为 2017。白模采用人工简化的退台和跨空关系，说明见[建筑白模校对](../design/buildings/model-calibration.md)。北侧桥棚覆盖范围依据俯视照片，桥轴仍沿用 OSM。照片未随页面发布，外观参考的授权边界沿用桥棚既有记录。
 
 HEP FIVE／NAVIO 平面轮廓来自现有 OSM 快照；摩天轮直径、最高处及轿厢数量核对 HEP FIVE 官网与阪急介绍，出处见[地标说明](../design/buildings/hep-landmarks.md)。程序化模型及官网链接已加入来源配置。屋面、轮面方向、三番街附属楼、阪神组合体和两段桥棚仍含用户截图观察拟合；未发布照片贴图，截图派生授权待核实，不能套用 OSM 或 PLATEAU 许可。
+
+梅北 Green Place 的三个建筑部件来自仓库 OSM 快照，原始轮廓随纯 OSM 子集交付。设施官网与 JR 西日本用于核对楼层和站前广场关系，未使用其图片或图纸几何。高度和外壳开口按现有模型拟合。[建筑白模校对](../design/buildings/model-calibration.md)

@@ -9,7 +9,7 @@ import { buildGeographicBuilding } from '../../src/presentation/models/buildings
 import { buildingPalette } from '../../src/presentation/appearance/building-palette.ts';
 import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
 import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
-import { exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
+import { elevatedAreas, exteriorOpenings, publicAccess } from '../../src/infrastructure/district/geographic-map.ts';
 
 const polygon = (v: Pick<BuildingVolume, 'outline' | 'holes'>): clipping.Polygon => [v.outline, ...v.holes].map(r => r.map(p => [p.x, p.z]));
 const area = (geometry: clipping.MultiPolygon) => geometry.reduce(
@@ -46,8 +46,10 @@ test(
         for (const building of geographicBuildings) {
             for (const v of building.volumes.filter(v => v.base > 0)) {
                 if (v.support === 'over-atrium') {
-                    // The lintel and upper gallery span between the two North Gate wings.
-                    const wings = geographicBuildings.filter(b => b.id.startsWith('lucua'));
+                    // The North Gate wings are separate hosts. The raised Green Place section abuts its own wing.
+                    const wings = building.id.startsWith('lucua')
+                        ? geographicBuildings.filter(b => b.id.startsWith('lucua'))
+                        : [building];
                     for (const wing of wings) {
                         const neighbors = wing.volumes.filter(w => w !== v && w.base <= v.base && w.top >= v.base - .01);
                         const host = clipping.union(polygon(neighbors[0]!), ...neighbors.slice(1).map(polygon));
@@ -110,6 +112,27 @@ test(
         assert(checked > 0);
     }
 );
+test('Green Place leaves the ground exit landings and west public deck clear', () => {
+    const building = geographicBuildings.find(b => b.id === 'umekita-green-place')!;
+    const model = buildGeographicBuilding(building, exteriorOpenings);
+    model.updateMatrixWorld(true);
+    const access = publicAccess.connections.filter(c => c.id.startsWith('public-umekita-ground-'));
+    assert.equal(access.length, 3);
+    for (const { id, to } of access) {
+        const ray = new T.Raycaster(new T.Vector3(to.x + 20, 1.2, to.z), new T.Vector3(-1, 0, 0), 0, 20);
+        assert.equal(ray.intersectObject(model, true).length, 0, `Green Place obstructs the approach to ${id}`);
+    }
+    const decks = elevatedAreas.filter(a => a.blockId === 'west-decks');
+    assert.ok(decks.length);
+    for (const deck of decks) {
+        for (const wing of building.volumes.filter(v => v.base < 12.5 && v.top >= 8)) {
+            assert.equal(clipping.intersection(polygon(wing), polygon({ ...deck, holes: deck.holes ?? [] })).length, 0);
+        }
+    }
+    const wing = building.volumes[0]!;
+    const solid = new T.Raycaster(new T.Vector3(224, 18, 510), new T.Vector3(0, -1, 0), 0, 6);
+    assert(solid.intersectObject(model, true).some(hit => hit.object.parent?.name === wing.name));
+});
 test(
     'geographic roof uses the calibrated plan size, centre and north-high profile',
     () => {

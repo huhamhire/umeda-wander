@@ -27,6 +27,7 @@ const ids = assembly
         'yodobashi',
         'grand-front-south',
         'lucua-1100',
+        'umekita-green-place',
         'hep-five',
         'hep-navio'
     ];

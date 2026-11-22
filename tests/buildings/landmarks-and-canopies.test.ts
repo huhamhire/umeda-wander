@@ -7,7 +7,7 @@ import { southDeckCanopies } from '../../src/infrastructure/public-areas/south-d
 import { northDeckCanopies } from '../../src/infrastructure/public-areas/north-decks/canopies.ts';
 import { buildWalkwayCanopy } from '../../src/presentation/models/public-areas/walkway-canopy-model.ts';
 import { createGeographicStation } from '../../src/infrastructure/district/geographic-stations.ts';
-import { layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
+import { elevated, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import plan from '../../data/geography/runtime-plan.json' with { type: 'json' };
 import { toGeographicPlan } from '../../src/domain/map/spatial-block.ts';
@@ -93,6 +93,35 @@ test('Yodobashi gallery and eastern bridges have continuous coverage at their mo
     }
     const openFrontage = new T.Raycaster(new T.Vector3(480, 1.8, 354), new T.Vector3(0, 1, 0), 0, 3);
     assert.equal(openFrontage.intersectObjects(meshes, true).length, 0);
+});
+
+test('the LUCUA canopy meets the continuous Green Place roof above the 2F crossing', () => {
+    const canopy = layout.canopies!.find(c => c.id === 'canopy-lucua-umekita-bridge')!;
+    assert(canopy.glazed);
+    const roof = buildWalkwayCanopy(canopy);
+    roof.position.y = levels.find(l => l.id === canopy.level)!.y;
+    const building = geographicBuildings.find(b => b.id === 'umekita-green-place')!;
+    const shell = buildGeographicBuilding(building, layout.exteriorOpenings);
+    const meshes = [roof, shell];
+    meshes.forEach(model => model.updateMatrixWorld(true));
+    const west = elevated.blocks.find(b => b.id === 'west-decks')!;
+    const bridge = west.paths.find(p => p.id === 'lucua-umekita:1347368424')!;
+    const stationApproach = west.paths.find(p => p.id === 'lucua-west-calibrated-concourse')!;
+    const roofVolume = building.volumes.find(volume => volume.source.endsWith('/1371178368'))!;
+    assert(pointInPolygon(canopy.points.at(-1)!, roofVolume.outline));
+    assert.deepEqual(canopy.points[0], stationApproach.points.at(-1));
+    for (const [i, to] of bridge.points.slice(1).entries()) {
+        const from = bridge.points[i]!;
+        for (const t of [.1, .3, .5, .7, .9]) {
+            const x = from.x + (to.x - from.x) * t;
+            const z = from.z + (to.z - from.z) * t;
+            if (i === bridge.points.length - 2 && !pointInPolygon({ x, z }, roofVolume.outline)) {
+                continue;
+            }
+            const ray = new T.Raycaster(new T.Vector3(x, 20, z), new T.Vector3(0, -1, 0), 0, 10);
+            assert(ray.intersectObjects(meshes, true).length, `no roof above ${x}, ${z}`);
+        }
+    }
 });
 
 test('Hanshin lift approaches stay on the door side and join the upper bridge', () => {

@@ -1,8 +1,10 @@
 import { messageText, resolveMessage } from '../i18n/index.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
 import { northDeckCanopies } from '../public-areas/north-decks/canopies.ts';
+import { westDeckCanopies } from '../public-areas/west-decks/canopies.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
 import type { MultiPolygon } from 'polygon-clipping';
+import type { BuildingOpening } from '../../domain/map/model.ts';
 import { composeStationMaps } from '../../application/stations/compose-station-maps.ts';
 import { createGeographicStations } from './geographic-stations.ts';
 import { stationFrontages } from '../public-areas/station-frontages/index.ts';
@@ -42,6 +44,7 @@ import { assemblePublicDecks } from '../../application/public-areas/public-deck-
 import { deckBuildingOpenings, equipmentBuildingOpenings } from '../../application/public-areas/deck-interface-bindings.ts';
 import { deckExtensionLabels } from '../../application/public-areas/deck-extension-labels.ts';
 import { stationBuildingOpenings } from '../../application/stations/station-building-openings.ts';
+import { building as greenPlace } from '../buildings/umekita-green-place/index.ts';
 import {
     hankyuConcourses, hankyuConcourseAreas, hankyuConcourseBasementAreas, hankyuConcourseConnections,
     hankyuConcourseOpenings, hankyuConcourseAtria
@@ -133,7 +136,13 @@ for (const b of elevated.blocks) {
 }
 
 export const elevatedAreas = assemblePublicDecks(elevated.blocks, shared.stations, assemblyLevels);
-export const exteriorOpenings = [
+// The lift stands below the raised central section; only the two sloped flights cut the north wing.
+const greenPlaceGroundAccess = northAccess.connections.filter(c =>
+    c.id === 'public-umekita-ground-stairs' || c.id === 'public-umekita-ground-escalator'
+);
+const greenPlaceGroundLandings = northAccess.areas.filter(a => a.level === 'district-ground' &&
+    greenPlaceGroundAccess.some(c => a.id === c.to.id + ':landing'));
+export const exteriorOpenings: BuildingOpening[] = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
     ...elevated.buildingOpenings,
     ...jpAccess.buildingOpenings,
@@ -141,6 +150,18 @@ export const exteriorOpenings = [
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorth2Access.connections, whityNorth2Access.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(puchishanAccess.connections, puchishanAccess.buildingEquipment, assemblyLevels),
+    ...equipmentBuildingOpenings(
+        greenPlaceGroundAccess,
+        greenPlaceGroundAccess.map(c => ({ connectionId: c.id, buildingId: greenPlace.id })),
+        assemblyLevels
+    ),
+    ...greenPlaceGroundLandings.map(a => ({
+        buildingId: greenPlace.id,
+        outline: a.outline,
+        base: -.1,
+        top: 4.5,
+        evidence: a.evidence
+    })),
     ...stationBuildingOpenings(shared.stations),
     ...hankyuConcourseOpenings,
 ];
@@ -161,7 +182,9 @@ const composed = composeStationMaps(
         connections: externalConnections,
         exteriorOpenings,
         canopies: [
-            ...northDeckCanopies(), ...southDeckCanopies(), ...metroAccess.canopies, ...sonechikaAccess.canopies,
+            ...northDeckCanopies(), ...southDeckCanopies(),
+            ...westDeckCanopies(elevated.blocks.find(block => block.id === 'west-decks')!),
+            ...metroAccess.canopies, ...sonechikaAccess.canopies,
             ...diamorNorthAccess.canopies,
             ...diamorCentralAccess.canopies,
             ...diamorSouthAccess.canopies,

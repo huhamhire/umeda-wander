@@ -9,6 +9,8 @@ import { footprint } from '../../src/infrastructure/buildings/building-data.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
+import { hankyuSunPlazaAreas } from '../../src/infrastructure/buildings/hankyu-dept/upper-concourse.ts';
+import { hankyuBridgeGroundLanding } from '../../src/infrastructure/public-areas/south-decks/north-arm-stairs.ts';
 import { calibrateGardenAvenueOutline, createGardenAvenueAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-access.ts';
 import { createGardenAvenueBuildingAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-building-access.ts';
 import { platformOutline, passageOutline } from '../../src/domain/map/geometry.ts';
@@ -25,6 +27,8 @@ const protectedOutlines = [
     ...basementOccupancies.map(b => b.region.outline),
     ...inogateHosts.map(host => host.region.outline),
     ...hankyuConcourseAreas.map(area => area.outline),
+    ...hankyuSunPlazaAreas.map(area => area.outline),
+    hankyuBridgeGroundLanding.outline,
     ...createGardenAvenueAccess().areas.map(area => area.outline),
     ...createGardenAvenueBuildingAccess().areas.map(area => area.outline),
     ...decks.blocks.flatMap(b => b.regions.map(r => r.outline)),

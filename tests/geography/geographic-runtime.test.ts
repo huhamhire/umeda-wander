@@ -79,7 +79,7 @@ test(
 test(
     'geographic commercial exteriors separate podiums and towers with finite metre heights',
     () => {
-        assert.equal(geographicBuildings.length, 14);
+        assert.equal(geographicBuildings.length, 15);
         for (const b of geographicBuildings) {
             assert.ok(b.volumes.length);
             for (const v of b.volumes) {

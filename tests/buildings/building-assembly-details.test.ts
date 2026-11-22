@@ -4,7 +4,7 @@ import clipping from 'polygon-clipping';
 import * as T from 'three';
 import { building as hanshin } from '../../src/infrastructure/buildings/hanshin-dept/index.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { facilities, layout, levels, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
+import { elevated, facilities, layout, levels, exteriorOpenings } from '../../src/infrastructure/district/geographic-map.ts';
 import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildCommercialConcourse } from '../../src/presentation/models/buildings/commercial-concourse-model.ts';
@@ -151,5 +151,41 @@ test('Hankyu south concourse exposes the stairs and all six escalator lanes thro
     for (const [z, blocked] of [[613, false], [610, true], [600, true]] as const) {
         const ray = new T.Raycaster(new T.Vector3(723.2, 1.2, z), new T.Vector3(0, -1, 0), 0, 1);
         assert.equal(ray.intersectObject(model, true).length > 0, blocked);
+    }
+});
+
+test('Hankyu north bridge continues indoors before the stairs and escalator descend to Sun Plaza', () => {
+    const south = elevated.blocks.find(b => b.id === 'south-decks')!;
+    const upper = south.paths.filter(p => p.id.startsWith('hankyu-dept-upper-concourse-'));
+    const bridge = south.paths.find(p => p.id === 'bridge-north:336421843')!;
+    assert.equal(upper.length, 3);
+    assert.deepEqual(upper[0]!.points[0], bridge.points.at(-1));
+    const connections = layout.connections.filter(c => c.id.startsWith('hankyu-concourse-sun-'));
+    assert.deepEqual(connections.map(c => c.kind), ['stairs', 'escalator']);
+    const ground = layout.areas.filter(a => a.id.startsWith('hankyu-concourse-sun-ground-'));
+    const approaches = layout.areas.filter(a => a.id.startsWith('hankyu-concourse-north-ground-'));
+    const deck = layout.areas.filter(a => a.level === 'district-south-deck' && a.blockId === south.id);
+    const endpoints = [bridge.points[0]!, ...connections.map(connection => connection.to)];
+    assert(deck.some(a => endpoints.every(p => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h)))));
+    const cuts = planFloorOpenings(connections, levels, []);
+    for (const connection of connections) {
+        assert(ground.some(a => pointInPolygon(connection.from, a.outline)));
+        assert(cuts.some(c => c.connectionId === connection.id && c.level === connection.to.level));
+        assert(facilities.some(f => f.connectionId === connection.id && f.level === connection.from.level));
+    }
+    assert(ground.some(a => approaches.some(b => clipping.intersection(
+        [a.outline.map((p): clipping.Pair => [p.x, p.z])], [b.outline.map((p): clipping.Pair => [p.x, p.z])]
+    ).length)));
+
+    const shells = geographicBuildings.filter(b => b.id === 'hankyu-dept' || b.id === 'hankyu-grand')
+        .map(b => buildGeographicBuilding(b, exteriorOpenings));
+    shells.forEach(model => model.updateMatrixWorld(true));
+    for (const path of upper) {
+        for (const [i, to] of path.points.slice(1).entries()) {
+            const from = path.points[i]!;
+            const direction = new T.Vector3(to.x - from.x, 0, to.z - from.z);
+            const ray = new T.Raycaster(new T.Vector3(from.x, 5.8, from.z), direction.clone().normalize(), 0, direction.length());
+            assert.equal(ray.intersectObjects(shells, true).length, 0, path.id + ' crosses a solid facade');
+        }
     }
 });

@@ -111,6 +111,26 @@ test(
         assert(layout.areas.some(area => area.blockId === 'building:hankyu-grand' && area.level === 'district-underground'));
     }
 );
+test('the Hankyu bridge north arm ends at an open stair down to its 1F footway', () => {
+    const stair = deckAccess.connections.find(c => c.id === 'public-south-hankyu-bridge-stairs')!;
+    const block = elevated.blocks.find(b => b.id === stair.blockId)!;
+    const endpoint = block.paths.find(p => p.id === 'bridge-north:336421843')!.points[0]!;
+    assert.deepEqual({ x: stair.to.x, z: stair.to.z }, endpoint);
+    const deck = elevatedAreas.find(a => a.blockId === stair.blockId && contains(a, endpoint))!;
+    const landing = deckAccess.areas.find(a => a.id === stair.from.id + ':landing')!;
+    assert.equal(landing.level, 'district-ground');
+    assert(contains(landing, stair.from) && contains(landing, { x: 624.4, z: 625 }));
+    const run = Math.hypot(stair.from.x - endpoint.x, stair.from.z - endpoint.z);
+    const dx = (stair.from.x - endpoint.x) / run;
+    const dz = (stair.from.z - endpoint.z) / run;
+    assert(!contains(deck, { x: endpoint.x + dx, z: endpoint.z + dz }), 'bridge cap hides the top steps');
+    const railings = deckBoundarySegments(deck, layout.areas, levels, exteriorOpenings, layout.connections);
+    assert(!railings.some(s => [s.from, s.to].some(p => {
+        const x = p.x - endpoint.x;
+        const z = p.z - endpoint.z;
+        return Math.abs(x * dx + z * dz) < .4 && Math.abs(z * dx - x * dz) < stair.width! / 2;
+    })), 'a railing crosses the stair mouth');
+});
 test(
     'public lifts use existing upper floors at the door and overlapping slabs keep real equipment openings',
     () => {

@@ -36,6 +36,9 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('hankyu-concourse-south-')) {
             return messageText('buildings.hankyuDept.entities.hankyuNorthSouthConcourse.name');
         }
+        if (id.startsWith('hankyu-concourse-sun-')) {
+            return messageText('buildings.hankyuDept.entities.hankyuEastWestConcourse.name');
+        }
         if (id === 'public-south-lift-9') {
             return messageText('facilities.locations.hankyuDeptBridgeLift');
         }

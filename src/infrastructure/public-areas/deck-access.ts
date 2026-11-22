@@ -4,6 +4,8 @@ import { passageOutline } from '../../domain/map/geometry.ts';
 import { elevatorDoorApproach } from '../../application/connections/connection-openings.ts';
 import { deckEvidence, sourceDeckPaths } from './elevated-source.ts';
 import { midosujiSouthLift } from './metro-interchange/street-exits.ts';
+import { hankyuSunPlazaAreas, hankyuSunPlazaConnections } from '../buildings/hankyu-dept/upper-concourse.ts';
+import { hankyuBridgeGroundLanding, hankyuBridgeStairs } from './south-decks/north-arm-stairs.ts';
 
 /** Only public equipment explicitly marked by the supplied elevated/2F plans. */
 export function createDeckAccess(atriumLift: VerticalConnection) {
@@ -179,8 +181,8 @@ export function createDeckAccess(atriumLift: VerticalConnection) {
     };
     // The public stair owns its landing independently of the calibrated JR envelope.
     return {
-        connections,
-        areas,
+        connections: [...connections, hankyuBridgeStairs, ...hankyuSunPlazaConnections],
+        areas: [...areas, hankyuBridgeGroundLanding, ...hankyuSunPlazaAreas],
         buildingEquipment: [
             { connectionId: 'public-north-lift-26', buildingId: 'lucua' },
             { connectionId: 'public-north-lift-26-bridge', buildingId: 'lucua' },

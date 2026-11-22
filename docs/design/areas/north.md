@@ -20,7 +20,7 @@
 - Grand Front 与 Yodobashi 隔道路相邻。JR 北侧二层公共分支分别接两者；南北馆之间保持横跨道路的连桥关系。
 - Yodobashi 外圈回廊只由公共高架板块绘制，建筑绘制内层裙楼；不能让外壳封住回廊或重画桥面。
 - 阪急三线各收束为独立双线北行，横向东京都、西神户。公共接口与 JR／Yodobashi 连桥分别核对，不能直接连通付费区。
-- Inogate—Grand Green 与 LUCUA—Green Place 是独立连桥，不接梅北付费站台；尚未建模的目标只保留有依据的公共落台或占位。
+- Inogate—Grand Green 与 LUCUA 1100—Green Place 是两条独立公共连桥。Green Place 地上体量按既有公共落台和桥面留出净空，与梅北地下付费站台分开。[建筑白模校对](../buildings/model-calibration.md)
 
 ## 所有者与待核对
 

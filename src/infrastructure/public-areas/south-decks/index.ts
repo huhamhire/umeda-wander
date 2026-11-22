@@ -5,9 +5,11 @@ import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { joinedPassageOutlines } from '../../../domain/map/geometry.ts';
 import { building as daimaru } from '../../buildings/daimaru/index.ts';
 import { building as hanshinDept } from '../../buildings/hanshin-dept/index.ts';
+import { hankyuUpperConcourseOpenings, hankyuUpperDeckPaths } from '../../buildings/hankyu-dept/upper-concourse.ts';
 import { deckEvidence, sourceDeckPaths, deckPath, elevatedLevels } from '../elevated-source.ts';
 import { cityLiftMap, southLiftDeckApproach } from '../../stations/hanshin-umeda/south-exit.ts';
 import { midosujiSouthLift } from '../metro-interchange/street-exits.ts';
+import { hankyuBridgeStairNotch } from './north-arm-stairs.ts';
 
 /**
  * Build the recessed south forecourt and east pedestrian bridge in the entrance frame, avoiding existing interiors.
@@ -43,7 +45,10 @@ export function southDecks(stations: StationMap[]): {
         'bridge-spine',
         'bridge-south'
     ]), ...hanshinPaths];
+    const hankyuBridge = paths.find(path => path.id === 'bridge-north:336421843')!;
+    const hankyuPaths = hankyuUpperDeckPaths(hankyuBridge.points.at(-1)!);
     paths.push(
+        ...hankyuPaths,
         {
             ...deckPath('midosuji-south-lift-approach', messageText('facilities.locations.midosuji'), [
                 midosujiSouthLift.deckJoin,
@@ -105,14 +110,14 @@ export function southDecks(stations: StationMap[]): {
             }
         }));
     return {
-        buildingOpenings,
+        buildingOpenings: [...buildingOpenings, ...hankyuUpperConcourseOpenings(hankyuPaths, deckY)],
         blocks: [{
             id: 'south-decks',
             name: messageText('publicAreas.southDecks.entities.southDecks.name'),
             level: 'district-south-deck',
             paths,
             regions: [],
-            voids: [setback],
+            voids: [setback, hankyuBridgeStairNotch],
             evidence: deckEvidence
         }],
         portals: [
