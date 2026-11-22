@@ -8,7 +8,6 @@ import { sampleRailSegment, platformRail, railApproachFootprints } from '../../s
 import clipping from 'polygon-clipping';
 import { nishiAxis } from '../../src/infrastructure/stations/nishi-umeda/geographic.ts';
 import { jrAxisPoint, jrGroundFrame } from '../../src/infrastructure/stations/jr-osaka/ground-frame.ts';
-import { jrRailCorridors } from '../../src/infrastructure/stations/jr-osaka/rail-corridors.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 
 const stations = createGeographicStations();
@@ -107,21 +106,15 @@ test(
     }
 );
 test(
-    'JR main bends north at both ends and east loop avoids Hankyu building envelopes',
+    'JR east main follows the northeast corridor and east loop avoids Hankyu building envelopes',
     () => {
         const jr = stations[0]!;
-        const angle = jr.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
-        for (const side of [-1, 1]) {
-            const main = jr.layout.railApproaches!.find(a => a.id === `map-rail-jr-osaka-platform-main-${side}`)!;
-            const tail = main.segments.at(-1)!;
-            const a = main.nodes.find(n => n.id === tail.from)!.point;
-            const b = main.nodes.find(n => n.id === tail.to)!.point;
-            assert.ok(
-                side === 1 ? b.z < a.z : (b.z - a.z) / Math.hypot(b.x - a.x, b.z - a.z) < side * Math.sin(angle),
-                'main must turn toward geographic north'
-            );
-            assert.ok(main.name.includes(side === 1 ? '新大阪' : '神户'));
-        }
+        const main = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-main-1')!;
+        const tail = main.segments.at(-1)!;
+        const a = main.nodes.find(n => n.id === tail.from)!.point;
+        const b = main.nodes.find(n => n.id === tail.to)!.point;
+        assert.ok(b.z < a.z);
+        assert.ok(main.name.includes('新大阪'));
         const loop = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-loop-1')!;
         assert.ok(loop.name.includes('京桥'));
         for (const segment of loop.segments) {
@@ -191,39 +184,51 @@ test(
     }
 );
 test(
-    'west loop pair narrows and approaches the mainline bundle before continuing',
+    'JR west tracks converge gradually and leave on a common tangent south of the platform axis',
     () => {
         const jr = stations[0]!;
         const angle = jr.layout.platforms.find(p => p.level === 'platform')!.rotationRad;
         const across = (p: Point2) => -p.x * Math.sin(angle) + p.z * Math.cos(angle);
         const main = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-main--1')!;
         const loop = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-loop--1')!;
+        assert.ok(main.name.includes('神户'));
         const positions = (a: RailApproach, kind: string) => a.nodes.filter(n => n.kind === kind).map(n => across(n.point));
         const mean = (values: number[]) => values.reduce((sum, v) => sum + v, 0) / values.length;
         const rootGap = mean(positions(loop, 'platform-end')) - mean(positions(main, 'platform-end'));
         const throatGap = mean(positions(loop, 'junction')) - mean(positions(main, 'junction'));
         const loopRoots = positions(loop, 'platform-end');
         const loopThroat = positions(loop, 'junction');
-        assert.ok(throatGap > 0 && throatGap < rootGap * .6, 'separate western corridors do not draw closer');
+        assert.ok(throatGap > 0 && throatGap < rootGap * .7, 'separate western corridors do not draw closer');
         assert.ok(
             Math.max(...loopThroat) - Math.min(...loopThroat) < (Math.max(...loopRoots) - Math.min(...loopRoots)) * .5,
             'loop roads remain platform-width apart'
         );
+        const turn = (normal: Point2) => {
+            const forward = -normal.z * Math.cos(angle) + normal.x * Math.sin(angle);
+            return Math.atan2(normal.z * Math.sin(angle) + normal.x * Math.cos(angle), forward);
+        };
         for (const approach of [main, loop]) {
+            const junctions = approach.nodes.filter(n => n.kind === 'junction');
+            assert.equal(junctions.length, approach === main ? 4 : 2);
+            for (const junction of junctions) {
+                const tails = approach.segments.filter(s => s.from === junction.id);
+                assert.equal(tails.length, 1);
+                const tailNormal = sampleRailSegment(approach, tails[0]!, 1)[0]!.normal;
+                const tailTurn = turn(tailNormal) * 180 / Math.PI;
+                assert.ok(tailTurn > -10 && tailTurn < -6, junction.id + ' misses the OSM corridor heading');
+            }
             for (const segment of approach.segments.filter(s => s.platformId)) {
                 const samples = sampleRailSegment(approach, segment, 100);
                 const first = samples[0]!.point;
                 const last = samples.at(-1)!.point;
                 const run = (first.x - last.x) * Math.cos(angle) + (first.z - last.z) * Math.sin(angle);
-                assert.ok(run > 185, segment.id + ' compresses the west fan');
-                let previousTurn = 0;
+                assert.ok(run > 320, segment.id + ' compresses the west fan');
                 for (const { normal } of samples) {
-                    const forward = -normal.z * Math.cos(angle) + normal.x * Math.sin(angle);
-                    const turn = Math.atan2(normal.z * Math.sin(angle) + normal.x * Math.cos(angle), forward);
-                    assert.ok(turn >= previousTurn - 1e-7, segment.id + ' reverses its westward curve');
-                    previousTurn = turn;
+                    assert.ok(Math.abs(turn(normal)) < 12 * Math.PI / 180, segment.id + ' deviates sharply from the west corridor');
                 }
-                assert.ok(Math.abs(previousTurn - jrRailCorridors.mainNorthTurn) < 1e-7, segment.id + ' misses the common departure tangent');
+                const tail = approach.segments.find(s => s.from === segment.to)!;
+                const tailStart = sampleRailSegment(approach, tail, 1)[0]!.normal;
+                assert.ok(Math.abs(turn(samples.at(-1)!.normal) - turn(tailStart)) < 1e-7, segment.id + ' misses the shared tangent');
             }
         }
     }
@@ -265,7 +270,7 @@ test('JR eastern apron retains six running roads with a gentle departure rather 
     }
 });
 
-test('the east loop outer road turns in before Hankyu department store (阪急うめだ本店)', () => {
+test('the east loop narrows by Hankyu department store (阪急うめだ本店) and continues as a parallel pair', () => {
     const jr = stations[0]!;
     const loop = jr.layout.railApproaches!.find(a => a.id === 'map-rail-jr-osaka-platform-loop-1')!;
     const outer = loop.segments.find(s => s.track === 1)!;
@@ -278,9 +283,26 @@ test('the east loop outer road turns in before Hankyu department store (阪急�
     });
     const lateral = (p: Point2) => -(p.x - e.x) * Math.sin(angle) + (p.z - e.z) * Math.cos(angle);
     assert.ok(lateral(beforeFrontage.point) < 41.5);
-    const innerPieces = railPieces({ ...loop, segments: [inner, ...loop.segments.filter(s => s.from === inner.to)] });
-    const outerPieces = railPieces({ ...loop, segments: [outer, ...loop.segments.filter(s => s.from === outer.to)] });
+    const innerTail = loop.segments.find(s => s.from === inner.to)!;
+    const outerTail = loop.segments.find(s => s.from === outer.to)!;
+    const innerPieces = railPieces({ ...loop, segments: [inner, innerTail] });
+    const outerPieces = railPieces({ ...loop, segments: [outer, outerTail] });
     for (const [a, b] of outerPieces) {
         assert.ok(innerPieces.every(([c, d]) => !crossing(a, b, c, d) && pointSegmentDistance(a, c, d) > 4));
     }
+    const innerSamples = sampleRailSegment(loop, innerTail, 100);
+    const outerSamples = sampleRailSegment(loop, outerTail, 100);
+    const direction = ({ normal }: { normal: Point2 }) => Math.atan2(-normal.x, normal.z) - angle;
+    for (const [segment, tailSamples] of [[inner, innerSamples], [outer, outerSamples]] as const) {
+        const arrival = sampleRailSegment(loop, segment, 1).at(-1)!;
+        assert.ok(Math.abs(direction(arrival) - direction(tailSamples[0]!)) < 1e-7, segment.id + ' has a kink at the join');
+    }
+    for (const [i, sample] of innerSamples.entries()) {
+        const other = outerSamples[i]!;
+        const spacing = Math.hypot(other.point.x - sample.point.x, other.point.z - sample.point.z);
+        assert.ok(spacing > 4.5 && spacing < 5.1, 'the loop pair spreads after the frontage');
+        assert.ok(Math.abs(direction(sample) - direction(other)) < 1e-7, 'the loop roads have different headings');
+    }
+    const terminalTurn = direction(innerSamples.at(-1)!) * 180 / Math.PI;
+    assert.ok(terminalTurn > 5 && terminalTurn < 9, 'the loop pair misses the Kyobashi corridor heading');
 });

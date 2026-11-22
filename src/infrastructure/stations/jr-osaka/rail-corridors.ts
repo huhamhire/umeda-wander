@@ -1,6 +1,5 @@
 /** Reviewed district layout: relative corridor guides, not surveyed railway geometry. */
 export const jrRailCorridors = {
-    mainNorthTurn: 12 * Math.PI / 180,
     // The satellite-photo fit follows the frontages of Hankyu Osaka-Umeda Station (阪急大阪梅田駅)
     // to the north and Hankyu Umeda Main Store (阪急うめだ本店) to the south.
     // These running-road guides are illustrative and do not locate individual switches.
@@ -10,16 +9,24 @@ export const jrRailCorridors = {
         { along: 460, across: 18 },
         { along: 460, across: 24 }
     ],
-    eastLoopRoads: [
-        { along: 460, across: 30 },
-        // Draw the outer road inward before the Hankyu department store (阪急うめだ本店) frontage.
-        { along: 245, across: 38.5, departureHandle: 22 }
-    ],
     eastMainTail: 70,
-    eastLoopEnd: 530,
-    // Keep the west loop south of the four main roads, but bring both bundles closer.
-    westLoopAcrossMain: 18,
-    // Take up the northward turn over the full fan, while the two bundles converge.
-    westMergeRun: 280,
-    westNorthShift: 31,
+    // Fit the Osaka Loop Line (大阪環状線) pair against both source centrelines and
+    // the Hankyu department store (阪急うめだ本店) / HEP FIVE frontages.
+    eastLoop: {
+        along: 270,
+        innerAcross: 32,
+        spacing: 4.8,
+        outerDepartureHandle: 22,
+        endAlong: 530,
+        endAcrossShift: 10.7,
+        endHeadingOffset: 7 * Math.PI / 180,
+        sourceWays: [139439191, 91831267]
+    },
+    // OSM Tokaido Main Line (東海道本線) and Osaka Loop Line (大阪環状線) turn
+    // gradually toward the south side of the platform axis beyond the west apron.
+    westAlong: -550,
+    westMainAcross: 30,
+    westLoopAcross: 54,
+    westHeadingOffset: -8 * Math.PI / 180,
+    westSourceWays: { main: [200902479, 200875165], loop: [23853069, 91831268] }
 };
