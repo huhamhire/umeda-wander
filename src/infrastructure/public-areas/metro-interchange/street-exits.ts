@@ -6,6 +6,7 @@ import { messageText } from '../../i18n/index.ts';
 import { elevatorDoorApproach } from '../../../application/connections/connection-openings.ts';
 
 const operatorPlan = 'https://subway.osakametro.co.jp/station_guide/station/M16_%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3_1.pdf';
+export const m16NorthExitLanding = { x: 556, z: 472.5 };
 const exitPhotos = 'https://commons.wikimedia.org/wiki/File:大阪メトロ梅田駅';
 const southLiftCenter = toGeographicPlan({ lon: 135.4976487, lat: 34.7026307 }, geographicFrame);
 const southLiftDeckJoin = toGeographicPlan({ lon: 135.497715, lat: 34.7026454 }, geographicFrame);
@@ -20,9 +21,10 @@ export const midosujiSouthLift = {
             operatorPlan,
             'https://www.openstreetmap.org/node/5340839338',
             'https://www.openstreetmap.org/way/553268918',
-            'https://www.openstreetmap.org/way/879781086'
+            'https://www.openstreetmap.org/way/879781086',
+            'https://www.openstreetmap.org/way/1010195576'
         ],
-        detail: 'The Osaka Metro plan identifies the public concourse–street–footbridge lift at JR Midosuji South Gate (御堂筋南口). OSM places the shaft and approach axes. Door positions and apron extents are fitted.'
+        detail: 'The Osaka Metro plan identifies the public concourse–street–footbridge lift at JR Midosuji South Gate (御堂筋南口). The B1 door approach is fitted to the mapped JR public corridor; shaft and street/deck axes follow OSM.'
     } satisfies Evidence
 };
 
@@ -38,7 +40,7 @@ export function createMetroStreetExits() {
             osm: '3512355893',
             engineeringRef: '3-1',
             point: { lon: 135.4969421, lat: 34.7037769 },
-            lower: { x: 556, z: 472.5 },
+            lower: m16NorthExitLanding,
             lowerApron: { x: 565, z: 472.5 },
             width: 5.2,
             canopy: { clearHeight: 3.15, width: 6.4 },
@@ -75,7 +77,7 @@ export function createMetroStreetExits() {
             lower: toGeographicPlan({ lon: 135.4977362, lat: 34.7020506 }, geographicFrame),
             width: 3.1,
             trace: 'https://www.openstreetmap.org/way/1338274269',
-            detail: 'The two endpoints follow OSM way 1338274269. The nearby public B1 apron is fitted; the continuity of the wider underground connection is unresolved in the current map.'
+            detail: 'The two endpoints follow OSM way 1338274269. Its lower landing joins the mapped south public passage via way 1338274268.'
         }
     ]) {
         const top = toGeographicPlan(exit.point, geographicFrame);
@@ -158,6 +160,11 @@ export function createMetroStreetExits() {
         to: { id: 'metro-umeda-midosuji-south-lift-street', level: 'district-ground', ...center },
         doorFacingRad: deckFacing + Math.PI
     };
+    const b1Join = toGeographicPlan({ lon: 135.4974613, lat: 34.7025872 }, geographicFrame);
+    const door = {
+        x: center.x + Math.cos(lift.doorFacingRad!) * 1.55,
+        z: center.z + Math.sin(lift.doorFacingRad!) * 1.55
+    };
     for (const stop of [lift.from, lift.to]) {
         areas.push({
             id: stop.id + ':landing',
@@ -166,7 +173,9 @@ export function createMetroStreetExits() {
             name: messageText('facilities.locations.midosuji'),
             kind: 'public',
             evidence,
-            outline: elevatorDoorApproach(stop, lift.doorFacingRad!),
+            outline: elevatorDoorApproach(
+                stop, lift.doorFacingRad!, stop === lift.from ? passageOutline(door, b1Join, 4.4) : undefined
+            ),
             height: .55,
             label: false
         });

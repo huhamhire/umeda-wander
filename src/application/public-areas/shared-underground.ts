@@ -1,6 +1,6 @@
 import clipping from 'polygon-clipping';
 import type { MultiPolygon } from 'polygon-clipping';
-import type { StationMap, FloorArea, Level } from '../../domain/map/model.ts';
+import type { StationMap, FloorArea, Level, PlanRegion } from '../../domain/map/model.ts';
 
 export const sharedUndergroundLevel: Level = {
     id: 'district-underground',
@@ -11,7 +11,9 @@ export const sharedUndergroundLevel: Level = {
     description: 'publicAreas.underground.description'
 };
 /** The reference network owns B1 public space; station models own paid interiors. */
-export function assembleSharedUnderground(stations: StationMap[], network: MultiPolygon, frontages: FloorArea[] = []) {
+export function assembleSharedUnderground(
+    stations: StationMap[], network: MultiPolygon, frontages: FloorArea[] = [], localClearances: PlanRegion[] = []
+) {
     const removed: string[] = [];
     const maps = stations.map(s => ({
         ...s,
@@ -27,7 +29,7 @@ export function assembleSharedUnderground(stations: StationMap[], network: Multi
         }
     }));
     const occupied = maps.flatMap(s => s.layout.areas.filter(a => a.kind !== 'public' && s.levels.find(l => l.id === a.level)?.y === -8));
-    const cuts = occupied.map(a => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
+    const cuts = [...occupied, ...localClearances].map(a => [a.outline, ...a.holes ?? []].map(r => r.map(p => [p.x, p.z] as [
         number,
         number
     ])));

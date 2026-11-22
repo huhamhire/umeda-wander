@@ -12,6 +12,7 @@ import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-
 import { hankyuSunPlazaAreas } from '../../src/infrastructure/buildings/hankyu-dept/upper-concourse.ts';
 import { hankyuBridgeGroundLanding } from '../../src/infrastructure/public-areas/south-decks/north-arm-stairs.ts';
 import { calibrateGardenAvenueOutline, createGardenAvenueAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-access.ts';
+import { calibrateMetroSouthPublicOutline, metroSouthPublicApproaches } from '../../src/infrastructure/public-areas/metro-interchange/south-public.ts';
 import { createGardenAvenueBuildingAccess } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-building-access.ts';
 import { platformOutline, passageOutline } from '../../src/domain/map/geometry.ts';
 import type { Point2 } from '../../src/domain/map/model.ts';
@@ -21,6 +22,7 @@ import { retainRoadSpans } from './road-continuity.ts';
 const stations = createGeographicStations();
 const decks = createElevatedBlocks(stations);
 const protectedOutlines = [
+    ...metroSouthPublicApproaches().map(area => area.outline),
     ...stations.flatMap(s => [...s.layout.areas.map(a => a.outline), ...s.layout.platforms.map(platformOutline)]),
     // Ground scope follows the declared source host, not a rounded facade decoration.
     ...geographicBuildings.map(b => footprint(b.volumes[0]!.source.split('/').at(-1)!).outline),
@@ -34,7 +36,7 @@ const protectedOutlines = [
     ...decks.blocks.flatMap(b => b.regions.map(r => r.outline)),
     ...decks.blocks.flatMap(b => b.paths.flatMap(p => p.points.slice(1).map((to, i) => passageOutline(p.points[i]!, to, p.width)))),
 ];
-const underground = calibrateGardenAvenueOutline(plan.underground as clipping.MultiPolygon);
+const underground = calibrateMetroSouthPublicOutline(calibrateGardenAvenueOutline(plan.underground as clipping.MultiPolygon));
 const coreScope = contextEnvelope(
     [
         ...underground.map(p => p[0]!.map(([x, z]) => ({ x, z }))),

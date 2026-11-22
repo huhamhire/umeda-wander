@@ -6,7 +6,7 @@ import { planFloorOpenings } from '../../src/application/connections/connection-
 import { connectionLanes } from '../../src/application/connections/connection-lanes.ts';
 import { partitionPublicAreas } from '../../src/application/public-areas/public-area-blocks.ts';
 import { assembleSharedUnderground } from '../../src/application/public-areas/shared-underground.ts';
-import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import { findRoute } from '../../src/domain/navigation/find-route.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
@@ -15,6 +15,8 @@ import { createGeographicStations } from '../../src/infrastructure/district/geog
 import { createWalkingNetwork } from '../../src/infrastructure/district/walking-network.ts';
 import { calibrateGardenAvenueOutline } from '../../src/infrastructure/public-areas/south-diamor/garden-avenue-access.ts';
 import { undergroundBlockDefinitions, undergroundPatches } from '../../src/infrastructure/public-areas/underground-blocks.ts';
+import { metroNorthWallClearance, metroPlanOutline, metroSouthShaftClearance } from '../../src/infrastructure/stations/metro-umeda/geographic.ts';
+import { calibrateMetroSouthPublicOutline } from '../../src/infrastructure/public-areas/metro-interchange/south-public.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { VerticalConnectionModel } from '../../src/presentation/models/stations/vertical-connection-model.ts';
@@ -47,12 +49,13 @@ test(
         }));
         const shared = assembleSharedUnderground(
             createGeographicStations(),
-            calibrateGardenAvenueOutline(geographicPlan.underground as clipping.MultiPolygon),
+            calibrateMetroSouthPublicOutline(calibrateGardenAvenueOutline(geographicPlan.underground as clipping.MultiPolygon)),
             [
                 ...publicFrontages,
                 ...patches,
                 ...publicAccess.areas.filter(a => a.level === 'district-underground')
-            ]
+            ],
+            [metroSouthShaftClearance(), metroNorthWallClearance()]
         );
         const expected = shared.areas.filter(a => !a.elevationOffset).map(geometry);
         assert.ok(area(clipping.xor(union, clipping.union(expected[0]!, ...expected.slice(1)))) < 1e-5);
@@ -77,7 +80,7 @@ test(
     }
 );
 test(
-    'all sixteen B1 gate seams reach the same regional public component, including both M16 central forecourts',
+    'all B1 gate seams reach the same regional public component, including the three M16 central gates',
     () => {
         const ports = publicInterfaces.filter(p => p.elevation === -8);
         const components = ports.map(p => union.findIndex(poly => contains(
@@ -87,7 +90,7 @@ test(
             },
             p.outside
         )));
-        assert.equal(ports.length, 16);
+        assert.equal(ports.length, 17);
         assert.ok(components.every(i => i >= 0));
         assert.equal(new Set(components).size, 1);
         for (const b of publicInterfaceBindings) {
@@ -101,6 +104,90 @@ test(
         }
     }
 );
+test('M16 central cross-passage separates gate banks and the southern E/J shafts stay outside public floors', () => {
+    const cross = publicFrontages.find(a => a.id === 'metro-umeda-central-cross-public')!;
+    const gate = (id: string) => publicInterfaces.find(p => p.gateId === 'metro-umeda-' + id + '-gate')!;
+    const north = ['east', 'west'].map(gate);
+    const south = gate('central-south');
+    for (const port of [...north, south]) {
+        assert(contains(cross, port.outside) && !contains(cross, port.inside));
+        assert(layout.areas.some(a => a.level === 'metro-hall' && a.kind === 'paid' && contains(a, port.inside)));
+    }
+    const direction = (p: typeof south) => ({ x: p.outside.x - p.inside.x, z: p.outside.z - p.inside.z });
+    const s = direction(south);
+    for (const p of north) {
+        const n = direction(p);
+        assert(n.x * s.x + n.z * s.z < -15.9, 'middle-south bank faces the opposite side of the cross-passage');
+    }
+    assert.ok(area(clipping.difference(geometry(cross), union)) < 1e-5);
+    for (const letter of ['C', 'H']) {
+        const shaft = openings.find(o => o.connectionId === `metro-umeda-rise-${letter}` && o.level === 'district-underground')!;
+        assert.equal(clipping.intersection(geometry(shaft), geometry(cross)).length, 0);
+    }
+    const clearance = geometry(metroSouthShaftClearance());
+    assert.ok(area(clipping.intersection(union, clearance)) < 1e-5);
+    assert(basements.areas.every(a => area(clipping.intersection(geometry(a), clearance)) < 1e-5));
+    for (const letter of ['E', 'J']) {
+        const flight = layout.connections.find(c => c.id === `metro-umeda-rise-${letter}`)!;
+        assert(layout.areas.some(a => a.id === 'metro-umeda-south-middle' && contains(a, flight.from)));
+        assert(layout.areas.some(a => a.id === 'metro-umeda-south-paid' && contains(a, flight.to)));
+        const shaft = openings.find(o => o.connectionId === flight.id && o.level === 'district-underground')!;
+        assert.equal(clipping.intersection(geometry(shaft), union).length, 0);
+    }
+});
+test('M16 ekimo stays on B1 beside the partitions, clear of the gate and E/J stair mouths', () => {
+    const ekimo = publicFrontages.find(a => a.id === 'metro-umeda-ekimo-public')!;
+    assert.equal(levels.find(l => l.id === ekimo.level)!.y + (ekimo.elevationOffset ?? 0), -8);
+    assert.ok(area(clipping.difference(geometry(ekimo), union)) < 1e-5);
+    const partitions = layout.partitions.filter(p => p.id.startsWith('metro-umeda-south-partition-'));
+    assert.equal(partitions.length, 4);
+    const walls = partitions.map(p => geometry({ outline: passageOutline(p.from, p.to, p.thickness) }));
+    const mainWall = walls[partitions.findIndex(p => p.id.endsWith('-east'))]!;
+    assert.ok(area(clipping.intersection(mainWall, geometry(ekimo))) > 1);
+    for (const connectionId of ['metro-umeda-rise-E', 'metro-umeda-rise-J']) {
+        const aperture = openings.find(o => o.connectionId === connectionId && o.level === 'metro-hall')!;
+        assert(walls.every(w => clipping.intersection(w, geometry(aperture)).length === 0));
+    }
+    const gate = publicInterfaces.find(p => p.gateId === 'metro-umeda-south-gate')!;
+    const gateMouth = geometry({ outline: passageOutline(gate.inside, gate.outside, gate.width) });
+    assert(walls.every(w => clipping.intersection(w, gateMouth).length === 0));
+});
+test('M16 exit 18 joins the south public passage away from the former spur beside the paid wall', () => {
+    const exit = layout.connections.find(c => c.id === 'metro-umeda-exit-18')!;
+    const southGate = publicInterfaces.find(p => p.gateId === 'metro-umeda-south-gate')!;
+    const branch = publicAccess.areas.filter(a => a.id.startsWith('m16-exit-18-approach-'));
+    assert.equal(branch.length, 2);
+    assert.ok(branch.some(a => contains(a, exit.to)));
+    const component = union.map(([outline, ...holes]) => ({
+        outline: outline!.map(([x, z]) => ({ x, z })),
+        holes: holes.map(ring => ring.map(([x, z]) => ({ x, z }))),
+    })).find(a => contains(a, exit.to));
+    assert(component && contains(component, southGate.outside));
+    for (const point of metroPlanOutline([[-42, -15], [-47, -19]])) {
+        assert(!flat.some(a => contains(a, point)), 'the old public spur still reaches the paid wall');
+    }
+});
+test('M16 3A junction and Midosuji South Lift have continuous B1 public approaches', () => {
+    const lift = layout.connections.find(c => c.id === 'metro-umeda-midosuji-south-lift')!;
+    const facing = lift.doorFacingRad!;
+    const door = { x: lift.from.x + Math.cos(facing) * 2, z: lift.from.z + Math.sin(facing) * 2 };
+    const liftWalk = { outline: passageOutline(door, { x: 591.288, z: 602.553 }, 2.6) };
+    const jrJunction = { outline: passageOutline({ x: 535.87, z: 494.27 }, { x: 555, z: 483.1 }, 5) };
+    const north = layout.connections.find(c => c.id === 'district-jr-metro-stairs')!;
+    const stairsWalk = { outline: passageOutline(north.to, { x: 555, z: 483.1 }, 2.6) };
+    for (const walk of [liftWalk, jrJunction, stairsWalk]) {
+        assert.ok(area(clipping.difference(geometry(walk), union)) < 1e-5);
+    }
+    assert(openings.some(o => o.connectionId === lift.id && o.level === 'district-underground'));
+    const spur = geometry(metroNorthWallClearance());
+    assert.ok(area(clipping.intersection(union, spur)) < 1e-5);
+    const partition = layout.partitions.find(p => p.id === 'metro-umeda-north-partition-west')!;
+    const gate = publicInterfaces.find(p => p.gateId === 'metro-umeda-north-gate')!;
+    assert.equal(clipping.intersection(
+        geometry({ outline: passageOutline(partition.from, partition.to, partition.thickness) }),
+        geometry({ outline: passageOutline(gate.inside, gate.outside, gate.width) })
+    ).length, 0);
+});
 test(
     'Y11 public hall and north/middle gate exits face east while its paid concourse stays west',
     () => {

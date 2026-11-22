@@ -803,6 +803,7 @@ export const facilityCodes: Record<string, string> = {
     'connection-metro-umeda-exit-18-from': 'M16-048',
     'connection-metro-umeda-exit-18-to': 'M16-049',
     'connection-metro-umeda-midosuji-south-lift-from': 'M16-050',
+    'metro-umeda-central-south-gate': 'M16-051',
     'higashi-umeda-north-lockers': 'T20-055',
     'higashi-umeda-central-lockers': 'T20-056',
     'higashi-umeda-south-lockers': 'T20-057',

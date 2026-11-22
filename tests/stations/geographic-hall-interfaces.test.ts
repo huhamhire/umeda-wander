@@ -124,7 +124,7 @@ test(
     'every B1 gate exposes a stable outward public interface bound at the shared display elevation',
     () => {
         const ports = publicInterfaces.filter(p => p.elevation === -8);
-        assert.equal(ports.length, 16);
+        assert.equal(ports.length, 17);
         assert.equal(publicInterfaceBindings.length, ports.length);
         assert.equal(new Set(publicInterfaces.map(p => p.id)).size, publicInterfaces.length);
         for (const p of ports) {

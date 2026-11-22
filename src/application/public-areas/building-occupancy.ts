@@ -88,7 +88,7 @@ function labelWidth(region: PlanRegion, p: Point2, angle: number): number {
 export function buildBuildingOccupancies(
     definitions: BuildingOccupancy[],
     publicAreas: FloorArea[],
-    stationInteriors: FloorArea[],
+    stationInteriors: PlanRegion[],
     target: {
         level: LevelId;
         prefix: string;

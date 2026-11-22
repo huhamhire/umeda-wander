@@ -268,7 +268,8 @@
       "checkedAt": "2026-11-17",
       "verification": "local-diagram-checked; publisher link is not identical-file verification",
       "factsUsed": [
-        "站内楼层、改札、站台及竖向设施的图示关系"
+        "站内楼层、改札、站台及竖向设施的图示关系",
+        "中北东、中北西及中南改札面向中央闸外横通道，E／J 梯组接南改札内侧"
       ],
       "limitations": "可支持图示拓扑及相对关系；米制坐标、宽度、标高与外观简化须在实现文档另列，不能据此声称现场导航已核验。",
       "permission": "几何改编、原图再发布或其他派生用途的授权待核实；公开下载和本地归档不表示取得许可。",

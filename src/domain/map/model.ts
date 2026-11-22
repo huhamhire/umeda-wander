@@ -154,6 +154,18 @@ export interface StationLayout {
     exteriorOpenings?: BuildingOpening[];
     canopies?: WalkwayCanopy[];
     landmarks?: PublicLandmark[];
+    partitions?: StationPartition[];
+}
+
+/** An opaque station divider on a named floor, without route semantics. */
+export interface StationPartition {
+    id: string;
+    level: LevelId;
+    from: Point2;
+    to: Point2;
+    height: number;
+    thickness: number;
+    evidence: Evidence;
 }
 
 /** A public visual reference attached to a floor, without navigation semantics. */

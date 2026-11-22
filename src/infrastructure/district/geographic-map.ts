@@ -7,6 +7,7 @@ import type { MultiPolygon } from 'polygon-clipping';
 import type { BuildingOpening } from '../../domain/map/model.ts';
 import { composeStationMaps } from '../../application/stations/compose-station-maps.ts';
 import { createGeographicStations } from './geographic-stations.ts';
+import { metroNorthWallClearance, metroSouthShaftClearance } from '../stations/metro-umeda/geographic.ts';
 import { stationFrontages } from '../public-areas/station-frontages/index.ts';
 import { stationPublicInterfaces } from '../../application/stations/station-public-interfaces.ts';
 import { bindPublicInterfaces } from '../../application/stations/public-interface-bindings.ts';
@@ -14,6 +15,7 @@ import { partitionPublicAreas } from '../../application/public-areas/public-area
 import { undergroundBlockDefinitions, undergroundPatches } from '../public-areas/underground-blocks.ts';
 import { createNorthPublicAccess, publicGroundLevel } from '../public-areas/north-atrium/access.ts';
 import { createMetroStreetExits } from '../public-areas/metro-interchange/street-exits.ts';
+import { calibrateMetroSouthPublicOutline, metroSouthPublicApproaches } from '../public-areas/metro-interchange/south-public.ts';
 import { buildBasementOccupancies } from '../../application/public-areas/basement-occupancy.ts';
 import { basementOccupancies } from '../public-areas/basement-buildings.ts';
 import { completeFacilityDirectory } from '../facility-directory.ts';
@@ -96,7 +98,7 @@ const streetConnections = [
 export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
     areas: [
-        ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas,
+        ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas, ...metroSouthPublicApproaches(),
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
         ...diamorEastAccess.areas, ...gardenAvenueAccess.areas, ...gardenAvenueBuildings.areas, ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
@@ -112,21 +114,26 @@ const patchFloors = undergroundPatches.map(p => ({
     evidence: p.evidence,
     label: false
 }));
+const undergroundClearances = [metroSouthShaftClearance(), metroNorthWallClearance()];
 const shared = assembleSharedUnderground(
     stationMaps,
-    calibrateGardenAvenueOutline(plan.underground as MultiPolygon),
+    calibrateMetroSouthPublicOutline(calibrateGardenAvenueOutline(plan.underground as MultiPolygon)),
     [
         ...publicFrontages,
         ...patchFloors,
         ...publicAccess.areas.filter(a => a.level === 'district-underground')
-    ]
+    ],
+    undergroundClearances
 );
 export const undergroundBlocks = partitionPublicAreas(shared.areas, undergroundBlockDefinitions);
 export const undergroundPublicAreas = undergroundBlocks.flatMap(b => b.areas);
 export const basements = buildBasementOccupancies(
     basementOccupancies,
     undergroundPublicAreas,
-    shared.stations.flatMap(s => s.layout.areas.filter(a => a.kind !== 'public' && s.levels.find(l => l.id === a.level)?.y === -8))
+    [
+        ...shared.stations.flatMap(s => s.layout.areas.filter(a => a.kind !== 'public' && s.levels.find(l => l.id === a.level)?.y === -8)),
+        ...undergroundClearances
+    ]
 );
 export const elevated = createElevatedBlocks(shared.stations);
 const assemblyLevels = [...shared.stations.flatMap(s => s.levels), ...elevatedLevels, sharedUndergroundLevel, publicGroundLevel];

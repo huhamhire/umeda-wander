@@ -109,6 +109,26 @@ export class MapModels {
             this.groups.set(level.id, group);
             this.scene.add(group);
         }
+        for (const partition of this.layout.partitions ?? []) {
+            const dx = partition.to.x - partition.from.x;
+            const dz = partition.to.z - partition.from.z;
+            const group = this.groups.get(partition.level)!;
+            const station = this.levels.find(l => l.id === partition.level)?.station;
+            const wall = this.primitives.box(
+                group,
+                (partition.from.x + partition.to.x) / 2,
+                .55 + partition.height / 2,
+                (partition.from.z + partition.to.z) / 2,
+                Math.hypot(dx, dz),
+                partition.height,
+                partition.thickness,
+                0xb9b3a7
+            );
+            wall.name = partition.id;
+            wall.rotation.y = -Math.atan2(dz, dx);
+            wall.userData.labelOccluder = true;
+            setRegionOwner(wall, station ?? null);
+        }
         for (const hall of this.layout.concourses ?? []) {
             const openings = this.openings.filter(opening => opening.level === hall.level).map(opening => opening.outline);
             const model = setRegionOwner(buildCommercialConcourse(hall, this.layout.concourses, openings), null);

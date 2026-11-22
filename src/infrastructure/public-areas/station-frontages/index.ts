@@ -13,6 +13,8 @@ const core: Record<StationId, string[]> = {
         'north-public',
         'east-public',
         'west-public',
+        'central-cross-public',
+        'ekimo-public',
         'jr-interface',
         'south-public'
     ],

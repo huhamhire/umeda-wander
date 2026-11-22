@@ -1,15 +1,20 @@
 import { messageText } from '../../i18n/index.ts';
 import type { PublicBlockDefinition, PublicRegionPatch } from '../../../domain/map/public-area.ts';
+import { passageOutline } from '../../../domain/map/geometry.ts';
 import { box, districtUndergroundEvidence } from '../underground-source.ts';
+import { m16NorthExitLanding } from './street-exits.ts';
+
+const northJunction = { x: 555, z: 483.1 };
 
 const proof = {
     ...districtUndergroundEvidence,
     urls: [
         ...districtUndergroundEvidence.urls!,
         'https://subway.osakametro.co.jp/station_guide/station/M16_%E6%A2%85%E7%94%B0_%E6%A7%8B%E5%86%85%E5%9B%B3.pdf',
-        'https://www.westjr.co.jp/global/en/timetable/pdf/station_osaka.pdf'
+        'https://www.westjr.co.jp/global/en/timetable/pdf/station_osaka.pdf',
+        'https://www.openstreetmap.org/way/1010195566'
     ],
-    detail: 'M16 p1: central-west exit toward JR (3A/3B), central-east toward Hankyu and underground streets; JR p6 north B1 eastward destination. Authored landing adapters in the calibrated metre frame, estimated widths and corners; not extracted from OSM or inferred by proximity.'
+    detail: 'M16 p1: the central public cross-passage serves JR exits 7–9 and the Hankyu side at exit 6; 3A/3B belong to the north gate. JR p6 shows the north B1 eastward destination. Regional landing adapters and widths are fitted.'
 };
 export const metroInterchangeBlock: PublicBlockDefinition = {
     id: 'metro-interchange-b1',
@@ -56,14 +61,33 @@ export const metroPublicPatches: PublicRegionPatch[] = [
         }
     },
     {
+        id: 'm16-north-jr-junction',
+        blockId: 'metro-interchange-b1',
+        name: messageText('publicAreas.metroInterchange.entities.jrNorthM16Bypass.name'),
+        evidence: {
+            ...proof,
+            detail: 'The JR Osaka Station (JR大阪駅) B1 footway meets the fitted public landing at exit 3A (3A号出入口). The corner between the paths is a fitted continuous apron.'
+        },
+        region: { outline: passageOutline({ x: 535.87, z: 494.27 }, northJunction, 7.5) }
+    },
+    {
+        id: 'm16-north-3a-apron',
+        blockId: 'metro-interchange-b1',
+        name: messageText('publicAreas.metroInterchange.entities.jrNorthM16Bypass.name'),
+        evidence: proof,
+        region: { outline: passageOutline(northJunction, m16NorthExitLanding, 5.5) }
+    },
+    {
         id: 'jr-north-m16-bypass',
         blockId: 'metro-interchange-b1',
         name: messageText('publicAreas.metroInterchange.entities.jrNorthM16Bypass.name'),
         evidence: proof,
         region: {
             outline: [
-                [549, 490],
-                [561, 487],
+                [550, 491],
+                [556, 498],
+                [564, 497],
+                [564, 487],
                 [570, 475],
                 [579, 471],
                 [573, 460],

@@ -34,6 +34,9 @@ test(
         assertFiniteMeshes(root);
         assert.equal(scene.pickables.length, facilities.length);
         assert.equal(scene.connectors.length, layout.connections.length);
+        const wall = scene.groups.get('metro-hall')!.getObjectByName('metro-umeda-south-partition-east')!;
+        assert(wall instanceof T.Mesh && wall.userData.labelOccluder);
+        assert.ok(new T.Box3().setFromObject(wall).getSize(new T.Vector3()).y > 2);
         const ids = new Set(nodes.map(node => node.id));
         for (const edge of edges) {
             assert.ok(ids.has(edge.from) && ids.has(edge.to));

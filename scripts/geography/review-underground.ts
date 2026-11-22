@@ -72,6 +72,9 @@ for (const a of undergroundPublicAreas) {
 for (const a of layout.areas.filter(a => !a.blockId && a.kind !== 'public' && levels.find(l => l.id === a.level)?.y === -8)) {
     shapes.push(`<path d="${shape(a)}" fill="#abc4b3" stroke="#537b69" stroke-width=".7" fill-rule="evenodd"/>`);
 }
+for (const wall of layout.partitions.filter(w => levels.find(l => l.id === w.level)?.y === -8)) {
+    shapes.push(`<path d="M${wall.from.x},${wall.from.z}L${wall.to.x},${wall.to.z}" stroke="#45534e" stroke-width="${Math.max(.7, wall.thickness)}"/>`);
+}
 for (const patch of undergroundPatches) {
     shapes.push(`<path d="${shape(patch.region)}" fill="none" stroke="#ad604b" stroke-dasharray="2 1" stroke-width=".8"/>`);
 }
