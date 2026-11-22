@@ -28,7 +28,7 @@
 ## ディレクトリ構成
 
 ```text
-umeda-h5/
+umeda-wander/
 ├── src/          # 地図と画面のソースコード
 ├── data/         # 派生データと地理情報の設定
 ├── references/   # 参照資料の原本と出典一覧

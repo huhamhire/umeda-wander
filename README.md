@@ -1,8 +1,8 @@
-# UMEDA · Station Explorer
+# Umeda Wander
 
 English · [简体中文](./README.zh-CN.md) · [日本語](./README.ja.md)
 
-UMEDA is an interactive 3D map of Osaka’s Umeda station district. Explore station levels, platforms, and ticket gates on one map, and see how underground passages and second-floor pedestrian decks connect the stations to nearby buildings.
+Umeda Wander is an interactive 3D map of Osaka’s Umeda station district. Explore station levels, platforms, and ticket gates on one map, and see how underground passages and second-floor pedestrian decks connect the stations to nearby buildings.
 
 The map covers seven stations: JR Osaka, Hankyu Osaka-Umeda, Umeda on the Midosuji Line, Hanshin Osaka-Umeda, Higashi-Umeda on the Tanimachi Line, Nishi-Umeda on the Yotsubashi Line, and JR Kitashinchi.
 
@@ -28,7 +28,7 @@ The project began after the author spent several days in Umeda. Stations run by 
 ## Repository structure
 
 ```text
-umeda-h5/
+umeda-wander/
 ├── src/          # Map and interface source code
 ├── data/         # Derived data and geographic configuration
 ├── references/   # Original reference materials and their catalog
@@ -53,6 +53,6 @@ The design, development, and data-source documents under `docs/` are primarily w
 
 The project’s original code and documentation are licensed under the [MIT License](./LICENSE). Retain the original copyright and license notices when copying or distributing all or a substantial portion of the software.
 
-If you use the project in your work, crediting “UMEDA · Station Explorer” and linking to this repository is welcome and optional.
+If you use the project in your work, crediting “Umeda Wander” and linking to this repository is welcome and optional.
 
 Third-party dependencies, map data, reference materials, and other third-party works retain their respective terms. OpenStreetMap data is used under ODbL 1.0, and the PLATEAU data selected for this project is used under CC BY 4.0. The [source and copyright audit](./docs/data/source-credits-audit.md) documents the publication scope for mixed-source geometry and adapted materials.

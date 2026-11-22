@@ -5,7 +5,7 @@
 ## 项目结构
 
 ```text
-umeda-h5/
+umeda-wander/
 ├── src/
 │   ├── domain/            # 地图实体、几何与通行规则
 │   ├── application/       # 站点与公共网装配、导航和探索用例

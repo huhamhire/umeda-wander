@@ -28,7 +28,7 @@
 ## 目录结构
 
 ```text
-umeda-h5/
+umeda-wander/
 ├── src/          # 地图与界面源码
 ├── data/         # 派生数据和地理配置
 ├── references/   # 原始参考资料及来源索引

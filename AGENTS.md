@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- 仓库名称为 `umeda-h5`，已实现 JR 大阪站、阪急大阪梅田、御堂筋线梅田、阪神大阪梅田、谷町线东梅田、四桥线西梅田及 JR 北新地站的局部样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
+- 仓库名称为 `umeda-wander`，已实现 JR 大阪站、阪急大阪梅田、御堂筋线梅田、阪神大阪梅田、谷町线东梅田、四桥线西梅田及 JR 北新地站的局部样板，采用 TypeScript、Three.js 和 esbuild，无 UI 框架。
 - `references/` 按 `stations/`、`district/`、`connections/`、`commercial/` 分类原始资料，`catalog.json` 登记来源、核对事实、SHA-256 与授权边界；入口见 `references/README.md`。移动资料同步更新源码、脚本、测试和派生数据的路径，不能只改文件名。
 - Node.js 版本要求为 24 或以上。使用 `npm install` 安装锁定依赖，`npm run dev` 启动本地服务，`npm run typecheck` 检查类型，`npm test` 运行测试，`npm run build` 构建网页。Windows PowerShell 如阻止 npm 脚本，使用 `npm.cmd`。
 - 应用代码采用 TypeScript，源码放在 `src/`；构建产物输出到 `dist/`，最终入口为 `dist/index.html`。
