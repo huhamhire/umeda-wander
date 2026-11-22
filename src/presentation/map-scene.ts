@@ -5,6 +5,7 @@ import { RouteModel, routeBeamRadius, routePointElevation } from './models/stati
 import { createRoutePositionMarker } from './models/stations/route-position-marker.ts';
 import { RoutePlaybackView } from './camera/route-playback-view.ts';
 import { GuidedTour } from './camera/guided-tour.ts';
+import type { TourChapter } from './components/tour-caption.ts';
 import { TourLayerFade } from './appearance/tour-layer-fade.ts';
 import { createRoutePlayback, type RoutePlaybackSample, type RoutePlaybackStatus } from '../application/navigation/route-playback.ts';
 import { orbitAboutPoint, orbitPointOnPlane } from './camera/orbit-view.ts';
@@ -144,7 +145,8 @@ export class MapScene {
         private onViewSettled?: () => void,
         onSpacingGesture?: (delta?: number) => void,
         private readonly onRoutePlayback?: (status: RoutePlaybackStatus) => void,
-        private readonly onTourChange?: (active: boolean) => void
+        private readonly onTourChange?: (active: boolean) => void,
+        private readonly onTourChapter?: (chapter?: TourChapter) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -392,6 +394,7 @@ export class MapScene {
         this.disposed = true;
         window.clearTimeout(this.tourWakeup);
         this.tourLayerFade.clear();
+        this.onTourChapter?.();
         this.gestures.dispose();
         this.setPointerHover();
         this.labels.dispose();
@@ -506,6 +509,7 @@ export class MapScene {
         this.tour = undefined;
         window.clearTimeout(this.tourWakeup);
         this.tourLayerFade.clear();
+        this.onTourChapter?.();
         this.immediateExplode = true;
         this.onTourChange?.(false);
         this.invalidateModels();
@@ -1084,6 +1088,9 @@ export class MapScene {
             tour.sampledAt = now;
             tourFrame = tour.player.advance(tour.time, reducedMotion, this.width, this.height, this.usableViewport());
             tour.last = tourFrame;
+            if (previousTour?.chapter !== tourFrame.chapter) {
+                this.onTourChapter?.(tourFrame.chapter);
+            }
             this.modelsDirty ||= previousTour?.level !== tourFrame.level || previousTour?.station !== tourFrame.station ||
                 previousTour?.overview !== tourFrame.overview || previousTour?.ground !== tourFrame.ground;
             this.orientationChanged ||= tourFrame.yaw !== previousTour?.yaw || tourFrame.pitch !== previousTour?.pitch;
@@ -1100,7 +1107,7 @@ export class MapScene {
             this.fitEnvelope = undefined;
         }
         const playback = this.playback;
-        let playbackFrame: typeof this.framing;
+        let playbackFrame: ReturnType<RoutePlaybackView['advance']> | undefined;
         if (playback?.status === 'playing') {
             const { level, ceiling } = playback.sample;
             const before = cameraOffset.clone();
@@ -1122,7 +1129,7 @@ export class MapScene {
             this.updateModels(state, tourFrame?.ground);
         }
         if (changedModels || changedElevation || previousTour?.moving && !tourFrame?.moving) {
-            this.updateModelElevations(state, (this.draggingExplode || !!tourFrame?.moving) && !changedModels);
+            this.updateModelElevations(state, this.draggingExplode && !tourFrame && !changedModels);
         }
         if (beforeCut) {
             this.tourLayerFade.begin(beforeCut);

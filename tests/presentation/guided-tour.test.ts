@@ -10,6 +10,23 @@ import { cameraOffset } from '../../src/presentation/camera/view-orientation.ts'
 import { TourLayerFade } from '../../src/presentation/appearance/tour-layer-fade.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
 import { geographicRoofHeightAt, geographicRoofPoint } from '../../src/presentation/models/stations/roof-profile.ts';
+import { bindTourCaption } from '../../src/presentation/components/tour-caption.ts';
+
+test('the tour caption changes with the chapter and hides on exit', () => {
+    const title = { textContent: '' };
+    const description = { textContent: '' };
+    const overlay = { hidden: true, querySelector: (tag: string) => tag === 'h2' ? title : description };
+    const update = bindTourCaption(overlay as unknown as HTMLElement);
+    update('jrUmekita');
+    assert.equal(title.textContent, 'JR 大阪站');
+    assert.match(description.textContent, /B1.*21–24 号站台.*B2/);
+    assert.equal(overlay.hidden, false);
+    update('hankyu');
+    assert.equal(title.textContent, '阪急大阪梅田站');
+    assert.match(description.textContent, /京都线、宝冢线和神户线/);
+    update();
+    assert.equal(overlay.hidden, true);
+});
 
 test('the guided tour orbits the full district, visits the requested floors and returns to the same frame', t => {
     const original = cameraOffset.clone();
@@ -20,10 +37,12 @@ test('the guided tour orbits the full district, visits the requested floors and 
     const tour = new GuidedTour(layout, levels, points, 0);
     const usable = { left: 340, top: 0, width: 660, height: 700 };
     const start = tour.advance(0, false, 1000, 700, usable);
+    assert.equal(start.chapter, 'overview');
     assert(start.overview && start.ground && start.level === 'all' && start.explode === 0);
     const earlyOrbit = tour.advance(900, false, 1000, 700, usable);
     const closingIn = tour.advance(4100, false, 1000, 700, usable);
     const west = tour.advance(7100, false, 1000, 700, usable);
+    assert.equal(west.chapter, 'jrBridge');
     const fading = tour.advance(7400, false, 1000, 700, usable);
     const expanding = tour.advance(9300, false, 1000, 700, usable);
     const expanded = tour.advance(11500, false, 1000, 700, usable);
@@ -90,6 +109,7 @@ test('the guided tour orbits the full district, visits the requested floors and 
     }
     const cutting = tour.advance(15250, false, 1000, 700, usable);
     const umekitaArrival = tour.advance(15800, false, 1000, 700, usable);
+    assert.equal(umekitaArrival.chapter, 'jrUmekita');
     const umekitaDeparture = tour.advance(18750, false, 1000, 700, usable);
     assert(cutting.level === 'underground-hall' && cutting.opacity > 0 && cutting.opacity < 1);
     assert(anchor(cutting).distanceTo(anchor(umekitaArrival)) < 1e-9 && cutting.span === umekitaArrival.span);

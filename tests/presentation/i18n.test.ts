@@ -124,7 +124,9 @@ test(
     () => {
         assert.equal(formatMessage('{number} / {name}', { number: 0, name: '<b>{other}</b>' }), '0 / <b>{other}</b>');
         assert.throws(() => formatMessage('{missing}'), /Missing message parameter/);
-        assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }), '21 番线');
+        assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }), '21 号站台');
+        assert.equal(messageText('facilities.labels.platformTracks', { tracks: '7 / 8' }), '7 / 8 号站台');
+        assert.equal(messageText('facilities.labels.trackNumber', { number: 21 }, 'ja'), '21 番のりば');
     }
 );
 

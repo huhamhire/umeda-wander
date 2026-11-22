@@ -14,6 +14,7 @@ import { bindCreditsDialog } from './presentation/components/source-credits-dial
 import { bindPagePreferences, mountLocalizedPage } from './presentation/components/page-preferences.ts';
 import { bindMapFullscreen } from './presentation/components/map-fullscreen.ts';
 import { bindMapLoading } from './presentation/components/map-loading.ts';
+import { bindTourCaption } from './presentation/components/tour-caption.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
 import { bindWalkingRoutePanel, type WalkingDraft } from './presentation/components/walking-route-panel.ts';
@@ -120,6 +121,7 @@ const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
 const walkingPanel = element('#panel-walking');
 const guidedTour = element<HTMLButtonElement>('#guided-tour');
 const tourLabel = element('#guided-tour-label');
+const updateTourCaption = bindTourCaption(element('#tour-caption'));
 let tourActive = false;
 
 /** Update the toggle and shareable mode independently of the moving camera. */
@@ -734,7 +736,8 @@ async function loadMap(): Promise<void> {
             queueMapUrl,
             adjustExplodeWithWheel,
             setRoutePlaybackStatus,
-            setTourActive
+            setTourActive,
+            updateTourCaption
         );
         await loading.show('ready');
         syncFacilityLabels();

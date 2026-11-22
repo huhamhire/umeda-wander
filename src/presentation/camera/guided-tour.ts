@@ -7,8 +7,10 @@ import { allowsGroundLayer, viewLayerRole } from '../../application/exploration/
 import { facilityCameraCenter } from './facility-focus.ts';
 import { cameraOffset } from './view-orientation.ts';
 import { geographicRoofHeightAt, geographicRoofPoint } from '../models/stations/roof-profile.ts';
+import type { TourChapter } from '../components/tour-caption.ts';
 
 interface Shot {
+    chapter: TourChapter;
     station: StationId | null;
     level: LevelId | 'all';
     mode: 'overview' | 'station' | 'transfer';
@@ -33,7 +35,7 @@ type FramedShot = Shot & { anchor: T.Vector3; width: number; height: number; gro
 type TourOrigin = { center: T.Vector3; span: number; orientation: T.Vector3; explode: number };
 type YawKey = { time: number; yaw: number; speed: number };
 
-const overview: Shot = { station: null, level: 'all', mode: 'overview', explode: 0, yaw: 0, pitch: 32, travel: 3000, hold: 1100 };
+const overview: Shot = { chapter: 'overview', station: null, level: 'all', mode: 'overview', explode: 0, yaw: 0, pitch: 32, travel: 3000, hold: 1100 };
 const detail = { mode: 'station', pitch: 25, explode: 1.2 } as const;
 const jrDetail = { ...detail, station: 'jr-osaka', ground: false } as const;
 const westYaw = -90;
@@ -41,29 +43,29 @@ const layerFadeDuration = 600;
 const entranceDuration = 1100;
 
 const jrArrival: Shot = {
-    ...jrDetail, level: 'all', yaw: -112, pitch: 30, travel: 4400, hold: 350, cutProgress: 0,
+    ...jrDetail, chapter: 'jrBridge', level: 'all', yaw: -112, pitch: 30, travel: 4400, hold: 350, cutProgress: 0,
     areas: ['bridge-public', 'bridge-paid', 'bridge-south'],
     framingScale: 1.15
 };
 
 const stops: Shot[] = [
-    { ...jrDetail, level: 'underground-hall', yaw: -100, orbit: 26, travel: 0, hold: 3500,
+    { ...jrDetail, chapter: 'jrUmekita', level: 'underground-hall', yaw: -100, orbit: 26, travel: 0, hold: 3500,
         areas: ['umekita-public', 'umekita-paid'] },
-    { ...jrDetail, level: 'all', yaw: -94, orbit: 16, travel: 2400, hold: 2500, cutProgress: .4,
+    { ...jrDetail, chapter: 'jrLayers', level: 'all', yaw: -94, orbit: 16, travel: 2400, hold: 2500, cutProgress: .4,
         areas: ['bridge-public', 'bridge-paid', 'bridge-south', 'central-public', 'central-paid'] },
-    { ...jrDetail, level: 'bridge', yaw: -70, orbit: 18, travel: 1900, hold: 2900, cutProgress: .4,
+    { ...jrDetail, chapter: 'jrBridge', level: 'bridge', yaw: -70, orbit: 18, travel: 1900, hold: 2900, cutProgress: .4,
         areas: ['bridge-public', 'bridge-paid', 'bridge-south'] },
-    { ...jrDetail, level: 'concourse', yaw: -48, orbit: 14, travel: 1900, hold: 2900,
+    { ...jrDetail, chapter: 'jrCentral', level: 'concourse', yaw: -48, orbit: 14, travel: 1900, hold: 2900,
         areas: ['central-public', 'central-paid', 'south-central-raised'] },
-    { ...detail, station: 'hankyu-umeda', level: 'hankyu-platform', yaw: -26, orbit: 24, travel: 1800, hold: 3500 },
-    { ...detail, station: 'metro-umeda', level: 'metro-hall', yaw: 24, orbit: 24, travel: 1700, hold: 2700 },
-    { ...detail, station: 'higashi-umeda', level: 't20-hall', yaw: 33, orbit: 24, travel: 1700, hold: 2700 },
+    { ...detail, chapter: 'hankyu', station: 'hankyu-umeda', level: 'hankyu-platform', yaw: -26, orbit: 24, travel: 1800, hold: 3500 },
+    { ...detail, chapter: 'midosuji', station: 'metro-umeda', level: 'metro-hall', yaw: 24, orbit: 24, travel: 1700, hold: 2700 },
+    { ...detail, chapter: 'tanimachi', station: 'higashi-umeda', level: 't20-hall', yaw: 33, orbit: 24, travel: 1700, hold: 2700 },
     // Carry a single sweep across Hanshin (阪神)'s hall and platform views.
-    { ...detail, station: 'hanshin-umeda', level: 'hanshin-hall', yaw: 3, broadsideOffset: 11, orbit: -10, travel: 1700, hold: 2600 },
-    { ...detail, station: 'hanshin-umeda', level: 'hanshin-platform', yaw: 3, broadsideOffset: -8, orbit: -16, travel: 1800, hold: 3300 },
-    { ...detail, station: 'nishi-umeda', level: 'y11-hall', yaw: -24, orbit: -24, travel: 1700, hold: 2700 },
+    { ...detail, chapter: 'hanshinHall', station: 'hanshin-umeda', level: 'hanshin-hall', yaw: 3, broadsideOffset: 11, orbit: -10, travel: 1700, hold: 2600 },
+    { ...detail, chapter: 'hanshinPlatform', station: 'hanshin-umeda', level: 'hanshin-platform', yaw: 3, broadsideOffset: -8, orbit: -16, travel: 1800, hold: 3300 },
+    { ...detail, chapter: 'yotsubashi', station: 'nishi-umeda', level: 'y11-hall', yaw: -24, orbit: -24, travel: 1700, hold: 2700 },
     // Leave Kitashinchi (北新地) on the approach to the opening heading so the sweep can continue through it.
-    { ...detail, station: 'kitashinchi', level: 'kitashinchi-hall', yaw: 17, broadsideOffset: 24, orbit: -18, travel: 1700, hold: 3000 }
+    { ...detail, chapter: 'kitashinchi', station: 'kitashinchi', level: 'kitashinchi-hall', yaw: 17, broadsideOffset: 24, orbit: -18, travel: 1700, hold: 3000 }
 ];
 
 /** Establish the incoming station at a wider scale before moving in for detail. */
@@ -298,6 +300,7 @@ export class GuidedTour {
         const opacity = arriving ? entranceMix : !reducedMotion && fade > 0 && cutting ? eased((time - cutAt) / fade) : 1;
         const moving = !reducedMotion && (progress < 1 || opacity < 1);
         return {
+            chapter: shot.chapter,
             center, span, yaw, pitch, opacity, wait: end - elapsed,
             moving, turning: !reducedMotion,
             showLabels: to.detailLabels === 'orbit' || to.detailLabels === 'hold' && !moving,

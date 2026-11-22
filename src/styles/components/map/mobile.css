@@ -7,6 +7,23 @@
   top: calc((100% - var(--navigation-height)) / 2);
 }
 
+.tour-caption {
+  inset-block-start: calc(67px + env(safe-area-inset-top, 0px));
+  inset-inline-start: max(12px, env(safe-area-inset-left, 0px));
+  inset-inline-end: max(12px, env(safe-area-inset-right, 0px));
+  inline-size: auto;
+  max-inline-size: 320px;
+  padding: 8px 11px;
+}
+
+.tour-caption h2 {
+  font-size: 16px;
+}
+
+.tour-caption p {
+  font-size: 12px;
+}
+
 .map-tools {
   right: 16px;
   bottom: 318px;
