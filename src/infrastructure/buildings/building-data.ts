@@ -53,6 +53,18 @@ export interface GeographicBuilding {
     entrance?: BuildingEntrance;
     galleries?: BuildingGallery[];
     wheel?: FerrisWheel;
+    panoramicElevators?: PanoramicElevatorPair;
+}
+
+/** Two facade-mounted shafts with a local B1 landing; this models the building exterior. */
+export interface PanoramicElevatorPair {
+    center: Point2;
+    heading: number;
+    spacing: number;
+    width: number;
+    depth: number;
+    base: number;
+    top: number;
 }
 
 /** Procedural landmark dimensions; placement is a reference fit, not a surveyed asset. */
@@ -64,6 +76,10 @@ export interface FerrisWheel {
     depth: number;
     cabins: number;
     source: string;
+    /** Heights from the bottom of the recess to the upper roof cap. */
+    roofRecessLevels: number[];
+    /** Footing positions use the wheel's local x/z frame and district y. */
+    supportFeet: (Point2 & { y: number })[];
 }
 
 /**

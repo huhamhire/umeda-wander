@@ -5,7 +5,11 @@ import type { BuildingVolume } from '../../../infrastructure/buildings/building-
 import { pointInPolygon } from '../../../domain/map/geometry.ts';
 
 /** Shallow, untextured fins give white models rhythm without a photographic facade. */
-export function buildingFacade(volume: BuildingVolume, openings: BuildingOpening[], material: T.Material): T.Mesh | undefined {
+export function buildingFacade(
+    volume: BuildingVolume,
+    openings: Pick<BuildingOpening, 'outline' | 'base' | 'top'>[],
+    material: T.Material
+): T.Mesh | undefined {
     if (volume.facade !== 'vertical' && volume.facade !== 'grid') {
         return undefined;
     }

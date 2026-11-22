@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
+import clipping from 'polygon-clipping';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { southDeckCanopies } from '../../src/infrastructure/public-areas/south-decks/canopies.ts';
@@ -12,6 +13,9 @@ import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import plan from '../../data/geography/runtime-plan.json' with { type: 'json' };
 import { toGeographicPlan } from '../../src/domain/map/spatial-block.ts';
 import { geographicFrame } from '../../src/infrastructure/geography/frame.ts';
+import { buildPanoramicElevators } from '../../src/presentation/models/buildings/panoramic-elevator-model.ts';
+import { railApproachFootprints } from '../../src/domain/map/rail-geometry.ts';
+import type { Point2 } from '../../src/domain/map/model.ts';
 
 test('HEP landmark has finite red wheel geometry at the official diameter and height', () => {
     const building = geographicBuildings.find(b => b.id === 'hep-five')!;
@@ -36,6 +40,65 @@ test('HEP landmark has finite red wheel geometry at the official diameter and he
     const red = landmark.getObjectByName('red-wheel-structure') as T.Mesh;
     assert.equal((red.material as T.MeshStandardMaterial).color.getHex(), 0xb85b61);
     assert(geographicBuildings.some(b => b.id === 'hep-navio'));
+});
+
+test('HEP FIVE roof clears the lower wheel and cabins while retaining the recess floor and support shoulders', () => {
+    const building = geographicBuildings.find(b => b.id === 'hep-five')!;
+    const model = buildGeographicBuilding(building, layout.exteriorOpenings);
+    model.updateMatrixWorld(true);
+    const landmark = model.getObjectByName('hep-five-ferris-wheel')!;
+    const shells = model.children.filter(object => building.volumes.some(volume => volume.name === object.name));
+    const wheel = building.wheel!;
+    const down = new T.Vector3(0, -1, 0);
+    /** Trace the first actual shell surface at a position in the wheel's plan frame. */
+    const surfaceAt = (x: number, z: number) => {
+        const origin = new T.Vector3(x, 0, z).applyMatrix4(landmark.matrixWorld);
+        return new T.Raycaster(origin, down).intersectObjects(shells, true)[0]!.point.y;
+    };
+    assert(Math.abs(surfaceAt(0, 0) - 27.5) < 1e-6);
+    for (const [x, z, y] of [[12, 1.3, 31], [23, 3.38, 39], [27, 1.3, 41.5], [30, 1.3, 46]]) {
+        for (const sign of [-1, 1]) {
+            assert(surfaceAt(-x!, sign * z!) < y!, 'a roof face crosses the lower wheel sweep');
+        }
+    }
+    for (const foot of wheel.supportFeet) {
+        assert(Math.abs(surfaceAt(foot.x, foot.z) - foot.y) < 1e-5, 'wheel support misses its roof bearing');
+    }
+});
+
+test('HEP FIVE capsule shafts recess into the west facade and land on B1 clear of the public network and rail beds', () => {
+    const building = geographicBuildings.find(b => b.id === 'hep-five')!;
+    const pair = building.panoramicElevators!;
+    const model = buildGeographicBuilding(building, layout.exteriorOpenings);
+    model.updateMatrixWorld(true);
+    const elevators = model.getObjectByName('panoramic-elevator-pair')!;
+    const podium = model.getObjectByName(building.volumes[0]!.name)!;
+    const b1 = levels.find(level => level.id === 'district-underground')!.y;
+    assert.equal(elevators.children.length, 2);
+    for (const shaft of elevators.children) {
+        const glass = shaft.getObjectByName('panoramic-elevator-glass') as T.Mesh;
+        const bounds = new T.Box3().setFromObject(glass);
+        assert((glass.material as T.MeshStandardMaterial).transparent);
+        const landing = shaft.getObjectByName('panoramic-elevator-b1-landing')!;
+        assert(Math.abs(new T.Box3().setFromObject(landing).max.y - b1) < 1e-6);
+        const point = shaft.getWorldPosition(new T.Vector3());
+        const down = new T.Raycaster(point.setY(pair.top + .5), new T.Vector3(0, -1, 0), 0, pair.top - b1);
+        assert.equal(down.intersectObject(podium, true).length, 0, 'the podium slab or its bands seal the shaft recess');
+        assert(down.intersectObject(shaft, true).some(hit => hit.object.name === 'panoramic-elevator-red-crown'));
+        assert(!bounds.isEmpty() && bounds.max.y < pair.top);
+    }
+    const ring = (outline: Point2[]): clipping.Ring => outline.map(p => [p.x, p.z]);
+    const publicAreas = layout.areas.filter(a => a.kind === 'public' && a.level === 'district-underground');
+    const jr = createGeographicStation('jr-osaka');
+    const railBeds = jr.layout.railApproaches!.filter(a => a.level === 'platform' && !a.id.endsWith('--1'))
+        .flatMap(a => railApproachFootprints(a, 2.75));
+    for (const opening of buildPanoramicElevators(pair).openings) {
+        const recess = [ring(opening)];
+        assert(publicAreas.every(area =>
+            clipping.intersection(recess, [ring(area.outline), ...(area.holes ?? []).map(ring)]).length === 0));
+        assert(railBeds.every(bed => clipping.intersection(recess, [ring(bed)]).length === 0));
+    }
+    assert(layout.connections.some(c => c.id === 'whity-exit-h-30' && c.kind === 'stairs'));
 });
 
 test('north and south bridge canopies leave a clear walking centreline under their roofs', () => {

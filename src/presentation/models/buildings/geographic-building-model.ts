@@ -6,7 +6,8 @@ import type { BuildingOpening } from '../../../domain/map/model.ts';
 import { buildFloorGeometry } from '../floor-geometry.ts';
 import { buildingFacade } from './building-facade.ts';
 import { buildingPalette } from '../../appearance/building-palette.ts';
-import { buildFerrisWheel } from './ferris-wheel-model.ts';
+import { buildFerrisWheel, ferrisWheelRoofRecess } from './ferris-wheel-model.ts';
+import { buildPanoramicElevators } from './panoramic-elevator-model.ts';
 
 /** Shared metre-scale exterior; detached from walkable floors and their openings. */
 export function buildGeographicBuilding(building: GeographicBuilding, openings: BuildingOpening[] = []) {
@@ -16,6 +17,15 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
         group.add(buildFerrisWheel(building.wheel));
     }
     const doors = openings.filter(o => o.buildingId === building.id);
+    const elevatorPair = building.panoramicElevators;
+    const shaftRecesses: Pick<BuildingOpening, 'outline' | 'base' | 'top'>[] = [];
+    if (elevatorPair) {
+        const elevators = buildPanoramicElevators(elevatorPair);
+        group.add(elevators.group);
+        shaftRecesses.push(...elevators.openings.map(outline => ({ outline, base: elevatorPair.base, top: elevatorPair.top })));
+    }
+    const wheelRecess = building.wheel ? ferrisWheelRoofRecess(building.wheel) : [];
+    const exteriorCuts = [...doors, ...shaftRecesses, ...wheelRecess];
     const materials = new Map<ReturnType<typeof buildingPalette>, {
         wall: T.Material;
         glass: T.Material;
@@ -42,13 +52,13 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
         const cutsAt = (y: number) => [
             ...volume.holes,
             ...(entrance && y < entrance.height ? [entranceVoid(entrance)] : []),
-            ...doors.filter(d => d.base <= y && d.top > y).map(d => d.outline),
+            ...exteriorCuts.filter(d => d.base <= y && d.top > y).map(d => d.outline),
         ];
         const bounds = [...new Set([
             volume.base,
             volume.top,
             ...(entrance ? [entrance.height] : []),
-            ...doors.flatMap(d => [d.base, d.top]),
+            ...exteriorCuts.flatMap(d => [d.base, d.top]),
         ].filter(y => y >= volume.base && y <= volume.top))].sort((a, b) => a - b);
         const pieces = bounds.slice(1).map((top, i) => ({ base: bounds[i]!, top, holes: cutsAt((top + bounds[i]!) / 2) }));
         for (const piece of pieces) {
@@ -87,7 +97,7 @@ export function buildGeographicBuilding(building: GeographicBuilding, openings: 
         const defaultFins = (volume.base > 0 && ['hankyu-grand', 'daimaru'].includes(building.id))
             || building.id === 'yodobashi';
         const facadeVolume = !volume.facade && defaultFins ? { ...volume, facade: 'vertical' as const } : volume;
-        const facade = buildingFacade(facadeVolume, doors, trim);
+        const facade = buildingFacade(facadeVolume, exteriorCuts, trim);
         if (facade) {
             section.add(facade);
         }
