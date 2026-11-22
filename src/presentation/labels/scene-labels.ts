@@ -22,6 +22,9 @@ interface MapLabel extends SceneLabelDefinition {
     element: HTMLElement;
 }
 
+type LabelViewport = Pick<SceneLabelView, 'rect' | 'width' | 'height'>;
+type LabelSize = { w: number; h: number };
+
 export interface SceneLabelView {
     state: MapViewState;
     levels: Level[];
@@ -35,6 +38,11 @@ export interface SceneLabelView {
     occluders: T.Object3D[];
     guided?: boolean;
     selection?: Pick<SceneLabelDefinition, 'text' | 'position'> & { kind: FacilityKind };
+}
+
+/** Move an absolute label without changing its layout or measured size. */
+function positionLabel(label: MapLabel, x: number, y: number): void {
+    label.element.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) translate(-50%, -50%)`;
 }
 
 /** Apply the same icon and name treatment to every facility label. */
@@ -57,10 +65,21 @@ export class SceneLabels {
     private readonly labelOcclusion = new LabelOcclusion();
     private selectionElement?: HTMLElement;
     private selectionKind?: FacilityKind;
+    private guidedCandidates?: { station: MapViewState['focusStation']; level: MapViewState['level']; labels: MapLabel[] };
+    private guidedViewport?: LabelViewport;
+    private readonly guidedPlacements: { label: MapLabel; anchor: T.Vector3; offsetY: number }[] = [];
+    private readonly guidedPoint = new T.Vector3();
+    private guidedSizes = new WeakMap<HTMLElement, LabelSize>();
+    private readonly fonts = document.fonts;
+    /** Discard dimensions after the browser replaces fallback fonts. */
+    private readonly invalidateGuidedSizes = () => {
+        this.guidedSizes = new WeakMap();
+    };
 
     /** Create DOM labels from model-owned anchors without copying station layout logic. */
     constructor(host: HTMLElement, definitions: readonly SceneLabelDefinition[]) {
         this.host = host;
+        this.fonts?.addEventListener('loadingdone', this.invalidateGuidedSizes);
         for (const definition of definitions) {
             this.labels.push(this.createLabel(definition));
         }
@@ -130,13 +149,51 @@ export class SceneLabels {
         else if (this.selectionElement.textContent !== definition.text || this.selectionKind !== definition.kind) {
             this.selectionKind = definition.kind;
             setLabelContent(this.selectionElement, definition);
+            this.guidedSizes.delete(this.selectionElement);
         }
         return { ...definition, element: this.selectionElement, emphasis: true };
+    }
+
+    /** Reuse station priorities while the camera orbits the same floor. */
+    private guidedOrder(state: MapViewState, muted: (label: MapLabel) => boolean, compare: (a: MapLabel, b: MapLabel) => number): MapLabel[] {
+        if (this.guidedCandidates && this.guidedCandidates.station === state.focusStation && this.guidedCandidates.level === state.level) {
+            return this.guidedCandidates.labels;
+        }
+        const labels = this.labels.filter(label => {
+            if (muted(label)) {
+                label.element.hidden = true;
+                return false;
+            }
+            return true;
+        }).sort(compare);
+        this.guidedCandidates = { station: state.focusStation, level: state.level, labels };
+        return labels;
+    }
+
+    /** Follow the live camera between full occlusion and collision passes. */
+    moveGuided(camera: T.OrthographicCamera): void {
+        if (!this.guidedViewport) {
+            return;
+        }
+        const { rect, width, height } = this.guidedViewport;
+        for (const { label, anchor, offsetY } of this.guidedPlacements) {
+            const point = this.guidedPoint.copy(anchor).project(camera);
+            positionLabel(label, rect.left + (point.x + 1) * width / 2, rect.top + (1 - point.y) * height / 2 - offsetY);
+        }
     }
 
     /** Project, mute, occlude and deconflict labels using one DOM measurement pass. */
     update(view: SceneLabelView): void {
         const { state, levels, levelY, camera, roof, rect, width, height, zoom } = view;
+        this.guidedPlacements.length = 0;
+        if (view.guided) {
+            if (this.guidedViewport?.width !== width || this.guidedViewport.height !== height) {
+                this.invalidateGuidedSizes();
+            }
+            this.guidedViewport = { rect, width, height };
+        } else {
+            this.guidedCandidates = undefined;
+        }
         const mobile = width < 761;
         const occupied: {
             x: number;
@@ -153,7 +210,7 @@ export class SceneLabels {
         const selection = this.selectionLabel(view.selection);
         const walking = view.guided ? undefined : this.walkingLabels;
         const filtered = view.guided ? undefined : this.filteredLabels;
-        if (selection || this.walkingLabels || this.filteredLabels) {
+        if (selection || (!view.guided && (this.walkingLabels || this.filteredLabels))) {
             for (const label of this.labels) {
                 label.element.hidden = true;
             }
@@ -168,8 +225,9 @@ export class SceneLabels {
                 label.element.hidden = true;
             }
         }
-        const orderedLabels = selection ? [selection]
-            : [...walking ?? filtered ?? this.labels].sort((a, b) => priority(b) - priority(a));
+        const compare = (a: MapLabel, b: MapLabel) => priority(b) - priority(a);
+        const orderedLabels = selection ? [selection] : view.guided
+            ? this.guidedOrder(state, labelMuted, compare) : [...walking ?? filtered ?? this.labels].sort(compare);
         const placements = orderedLabels.flatMap(label => {
             const role = label.level ? viewLayerRole(levels, state, label.level) : 'normal';
             let visible = label.roof ? roof.visible : role !== 'hidden';
@@ -197,37 +255,53 @@ export class SceneLabels {
             if (visible && this.labelOcclusion.isOccluded(anchor, camera, occluders)) {
                 visible = false;
             }
-            label.element.hidden = !visible;
             if (!visible) {
+                label.element.hidden = true;
                 return [];
             }
+            const offsetY = label === selection ? 14 : 0;
             const x = rect.left + (point.x + 1) * width / 2;
-            const y = rect.top + (1 - point.y) * height / 2 - (label === selection ? 14 : 0);
-            label.element.style.left = `${x}px`;
-            label.element.style.top = `${y}px`;
+            const y = rect.top + (1 - point.y) * height / 2 - offsetY;
+            const size = view.guided ? this.guidedSizes.get(label.element) : undefined;
+            if (!size) {
+                label.element.hidden = false;
+            }
             return [{
                 label,
+                anchor,
+                offsetY,
+                size,
                 x,
                 y
             }];
         });
         // Batch DOM writes and measurements, avoiding a forced layout for every label.
-        const measured = placements.map(p => ({
-            ...p,
-            w: p.label.element.offsetWidth,
-            h: p.label.element.offsetHeight
-        }));
-        for (const { label, x, y, w, h } of measured) {
+        const measured = placements.map(({ size, ...placement }) => {
+            const { element } = placement.label;
+            const dimensions = size ?? { w: element.offsetWidth, h: element.offsetHeight };
+            if (view.guided && !size && this.fonts?.status !== 'loading') {
+                this.guidedSizes.set(element, dimensions);
+            }
+            return { ...placement, ...dimensions };
+        });
+        for (const { label, anchor, offsetY, x, y, w, h } of measured) {
             const collides = occupied.some(other => Math.abs(x - other.x) < (w + other.w) / 2 + 5 && Math.abs(y - other.y) < (h + other.h) / 2 + 4);
             label.element.hidden = collides;
             if (!collides) {
+                positionLabel(label, x, y);
                 occupied.push({ x, y, w, h });
+                if (view.guided) {
+                    this.guidedPlacements.push({ label, anchor, offsetY });
+                }
             }
         }
     }
 
     /** Remove only labels owned by this instance when the scene is released. */
     dispose(): void {
+        this.fonts?.removeEventListener('loadingdone', this.invalidateGuidedSizes);
+        this.guidedPlacements.length = 0;
+        this.guidedCandidates = undefined;
         this.setWalkingTargets();
         this.setFacilityFilter();
         for (const label of this.labels) {

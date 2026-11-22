@@ -77,6 +77,8 @@
 
 .map-label {
   position: absolute;
+  top: 0;
+  left: 0;
   transform: translate(-50%,-50%);
   white-space: nowrap;
   color: var(--color-map-label-text);

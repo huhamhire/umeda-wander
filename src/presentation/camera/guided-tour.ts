@@ -6,6 +6,7 @@ import { explorationElevation } from '../../application/exploration/exploration-
 import { allowsGroundLayer, viewLayerRole } from '../../application/exploration/view-layer.ts';
 import { facilityCameraCenter } from './facility-focus.ts';
 import { cameraOffset } from './view-orientation.ts';
+import { geographicRoofHeightAt, geographicRoofPoint } from '../models/stations/roof-profile.ts';
 
 interface Shot {
     station: StationId | null;
@@ -18,8 +19,10 @@ interface Shot {
     hold: number;
     areas?: string[];
     orbit?: number;
+    broadsideOffset?: number;
+    detailLabels?: 'hold' | 'orbit';
+    fitStation?: StationId;
     fitLevel?: LevelId;
-    lockFrame?: boolean;
     cutProgress?: number;
     ground?: boolean;
     framingScale?: number;
@@ -31,34 +34,36 @@ type TourOrigin = { center: T.Vector3; span: number; orientation: T.Vector3; exp
 type YawKey = { time: number; yaw: number; speed: number };
 
 const overview: Shot = { station: null, level: 'all', mode: 'overview', explode: 0, yaw: 0, pitch: 32, travel: 3000, hold: 1100 };
-const detail = { mode: 'station', pitch: 25 } as const;
+const detail = { mode: 'station', pitch: 25, explode: 1.2 } as const;
 const jrDetail = { ...detail, station: 'jr-osaka', ground: false } as const;
-const openingYaw = -36;
+const westYaw = -90;
 const layerFadeDuration = 600;
 const entranceDuration = 1100;
 
 const jrArrival: Shot = {
-    ...detail, station: 'jr-osaka', level: 'all', explode: 0, yaw: -42, pitch: 30, travel: 2600, hold: 350,
+    ...jrDetail, level: 'all', yaw: -112, pitch: 30, travel: 4400, hold: 350, cutProgress: 0,
     areas: ['bridge-public', 'bridge-paid', 'bridge-south'],
     framingScale: 1.15
 };
 
 const stops: Shot[] = [
-    { ...jrDetail, level: 'underground-hall', explode: .88, yaw: 34, orbit: 26, travel: 0, hold: 3500,
+    { ...jrDetail, level: 'underground-hall', yaw: -100, orbit: 26, travel: 0, hold: 3500,
         areas: ['umekita-public', 'umekita-paid'] },
-    { ...jrDetail, level: 'all', explode: .78, yaw: 17, orbit: 28, travel: 2400, hold: 2500, cutProgress: .4,
+    { ...jrDetail, level: 'all', yaw: -94, orbit: 16, travel: 2400, hold: 2500, cutProgress: .4,
         areas: ['bridge-public', 'bridge-paid', 'bridge-south', 'central-public', 'central-paid'] },
-    { ...jrDetail, level: 'bridge', explode: .72, yaw: 45, orbit: 18, travel: 1900, hold: 2900, cutProgress: .4,
+    { ...jrDetail, level: 'bridge', yaw: -70, orbit: 18, travel: 1900, hold: 2900, cutProgress: .4,
         areas: ['bridge-public', 'bridge-paid', 'bridge-south'] },
-    { ...jrDetail, level: 'concourse', explode: .55, yaw: 37, orbit: -22, travel: 1900, hold: 2900,
+    { ...jrDetail, level: 'concourse', yaw: -48, orbit: 14, travel: 1900, hold: 2900,
         areas: ['central-public', 'central-paid', 'south-central-raised'] },
-    { ...detail, station: 'hankyu-umeda', level: 'hankyu-platform', explode: .62, yaw: -26, orbit: 24, travel: 1800, hold: 3500 },
-    { ...detail, station: 'metro-umeda', level: 'metro-hall', explode: .92, yaw: 24, orbit: 24, travel: 1700, hold: 2700 },
-    { ...detail, station: 'higashi-umeda', level: 't20-hall', explode: .9, yaw: 33, orbit: 24, travel: 1700, hold: 2700 },
-    { ...detail, station: 'hanshin-umeda', level: 'hanshin-hall', explode: .9, yaw: 3, orbit: 24, travel: 1700, hold: 2600 },
-    { ...detail, station: 'hanshin-umeda', level: 'hanshin-platform', explode: .9, yaw: -16, orbit: 20, travel: 1800, hold: 3300 },
-    { ...detail, station: 'nishi-umeda', level: 'y11-hall', explode: .9, yaw: -24, orbit: -24, travel: 1700, hold: 2700 },
-    { ...detail, station: 'kitashinchi', level: 'kitashinchi-hall', explode: .92, yaw: 17, orbit: -34, travel: 1700, hold: 3000 }
+    { ...detail, station: 'hankyu-umeda', level: 'hankyu-platform', yaw: -26, orbit: 24, travel: 1800, hold: 3500 },
+    { ...detail, station: 'metro-umeda', level: 'metro-hall', yaw: 24, orbit: 24, travel: 1700, hold: 2700 },
+    { ...detail, station: 'higashi-umeda', level: 't20-hall', yaw: 33, orbit: 24, travel: 1700, hold: 2700 },
+    // Carry a single sweep across Hanshin (阪神)'s hall and platform views.
+    { ...detail, station: 'hanshin-umeda', level: 'hanshin-hall', yaw: 3, broadsideOffset: 11, orbit: -10, travel: 1700, hold: 2600 },
+    { ...detail, station: 'hanshin-umeda', level: 'hanshin-platform', yaw: 3, broadsideOffset: -8, orbit: -16, travel: 1800, hold: 3300 },
+    { ...detail, station: 'nishi-umeda', level: 'y11-hall', yaw: -24, orbit: -24, travel: 1700, hold: 2700 },
+    // Leave Kitashinchi (北新地) on the approach to the opening heading so the sweep can continue through it.
+    { ...detail, station: 'kitashinchi', level: 'kitashinchi-hall', yaw: 17, broadsideOffset: 24, orbit: -18, travel: 1700, hold: 3000 }
 ];
 
 /** Establish the incoming station at a wider scale before moving in for detail. */
@@ -79,7 +84,7 @@ function transferLevel(from: Shot, to: Shot, levels: Level[]): Shot['level'] {
     return explorationElevation(a) >= explorationElevation(b) ? a.id : b.id;
 }
 
-/** Center each underground orbit on a side view of the station's real platform axis. */
+/** Frame each underground orbit relative to a side view of the real platform axis. */
 function broadside(shot: Shot, layout: StationLayout, levels: Level[]): Shot {
     const floor = levels.find(level => level.id === shot.level);
     if (!floor || floor.y >= 0) {
@@ -92,17 +97,19 @@ function broadside(shot: Shot, layout: StationLayout, levels: Level[]): Shot {
         return shot;
     }
     const normal = -T.MathUtils.radToDeg(platform.rotationRad);
-    const yaw = normal + 180 * Math.round((shot.yaw - normal) / 180) - (shot.orbit ?? 0) / 2;
+    const side = normal + 180 * Math.round((shot.yaw - normal) / 180);
+    const yaw = side + (shot.broadsideOffset ?? 0) - (shot.orbit ?? 0) / 2;
     return { ...shot, yaw };
 }
 
 /** Fit the named floors and platforms at the shot's own yaw and display elevation. */
 function frameShot(shot: Shot, layout: StationLayout, levels: Level[], overviewPoints: T.Vector3[]): FramedShot {
-    const points = shot.mode === 'overview' ? overviewPoints : [];
+    const points = shot.mode === 'overview' && !shot.fitStation ? overviewPoints : [];
     if (!points.length) {
+        const station = shot.fitStation ?? shot.station;
         const fitLevel = shot.fitLevel ?? shot.level;
         const underground = (levels.find(level => level.id === fitLevel)?.y ?? 0) < 0;
-        const targetLevels = new Set(levels.filter(level => level.station === shot.station &&
+        const targetLevels = new Set(levels.filter(level => level.station === station &&
             (fitLevel === 'all' || level.id === fitLevel ||
                 underground && viewLayerRole(levels, { level: fitLevel }, level.id) !== 'hidden')).map(level => level.id));
         for (const area of layout.areas) {
@@ -116,6 +123,14 @@ function frameShot(shot: Shot, layout: StationLayout, levels: Level[], overviewP
                 if (targetLevels.has(platform.level)) {
                     const y = displayElevation(levels, platform.level, shot.explode);
                     points.push(...platformOutline(platform).map(point => new T.Vector3(point.x, y + 2, point.z)));
+                }
+            }
+        }
+        if (shot.mode === 'overview' && station === 'jr-osaka') {
+            for (const z of [-36, 36]) {
+                for (const x of [-63.5, 63.5]) {
+                    const point = geographicRoofPoint(x, z);
+                    points.push(new T.Vector3(point.x, 26 + geographicRoofHeightAt(z), point.z));
                 }
             }
         }
@@ -133,7 +148,7 @@ function frameShot(shot: Shot, layout: StationLayout, levels: Level[], overviewP
     const center = bounds.getCenter(new T.Vector2());
     anchor.addScaledVector(right, center.x - anchor.dot(right)).addScaledVector(up, center.y - anchor.dot(up));
     const size = bounds.getSize(new T.Vector2());
-    const margin = shot.mode === 'transfer' ? 1.75 : shot.mode === 'overview' ? .96 : 1.15;
+    const margin = shot.mode === 'transfer' ? 1.75 : shot.mode === 'overview' && !shot.fitStation ? .96 : 1.15;
     const scale = margin * (shot.framingScale ?? 1);
     const ground = shot.ground ?? allowsGroundLayer(levels, { level: shot.level, focusStation: shot.station });
     return { ...shot, anchor, width: size.x * scale, height: size.y * scale, ground };
@@ -200,8 +215,8 @@ export class GuidedTour {
         const framedStops = stops.map(shot => broadside(shot, layout, levels));
         const umekita = framedStops[0]!;
         const shots: Shot[] = [
-            { ...overview, travel: 0 }, { ...overview, yaw: openingYaw, framingScale: .89, travel: 4200, hold: 500 },
-            jrArrival, { ...jrArrival, yaw: -48, ground: false, cutProgress: 0, explode: umekita.explode, lockFrame: true, travel: 2400 },
+            { ...overview, fitStation: 'jr-osaka', yaw: westYaw, travel: 7100, hold: 0 },
+            jrArrival,
             { ...umekita, level: 'all', fitLevel: 'underground-hall', travel: 3200, hold: 0 }
         ];
         for (const [index, stop] of framedStops.entries()) {
@@ -211,16 +226,15 @@ export class GuidedTour {
                 shots.push(transfer({ ...previous, yaw: previous.yaw + (previous.orbit ?? 0) }, 1000, level));
                 shots.push(transfer(stop, 2250, level, .4));
             }
-            shots.push({ ...stop, hold: 420 });
-            shots.push({ ...stop, yaw: stop.yaw + (stop.orbit ?? 0), travel: stop.hold - 1120, hold: 700 });
+            shots.push({ ...stop, detailLabels: 'hold', hold: 420 });
+            shots.push({ ...stop, detailLabels: 'orbit', yaw: stop.yaw + (stop.orbit ?? 0), travel: stop.hold - 1120, hold: 700 });
         }
         const last = framedStops.at(-1)!;
         shots.push(transfer({ ...last, yaw: last.yaw + (last.orbit ?? 0) }, 1400, last.level), overview);
         let from = frameShot(overview, layout, levels, overviewPoints);
         let end = 0;
         for (const shot of shots) {
-            const framed = frameShot(shot, layout, levels, overviewPoints);
-            const to = shot.lockFrame ? { ...framed, anchor: from.anchor, width: from.width, height: from.height } : framed;
+            const to = frameShot(shot, layout, levels, overviewPoints);
             const visibilityChanges = from.level !== to.level || from.ground !== to.ground || (from.mode === 'overview') !== (to.mode === 'overview');
             const fade = visibilityChanges ? layerFadeDuration : 0;
             const cutAt = to.travel * (fade ? to.cutProgress ?? 1 : 1);
@@ -253,7 +267,7 @@ export class GuidedTour {
     advance(now: number, reducedMotion: boolean, width: number, height: number, usable: Viewport) {
         const sinceStart = Math.max(0, now - this.startedAt);
         const entrance = this.origin && !reducedMotion ? entranceDuration : 0;
-        const elapsed = Math.max(0, sinceStart - entrance) % this.duration;
+        const elapsed = sinceStart % this.duration;
         const { from, to, fade, cutAt, start, end } = this.sequence.find(shot => shot.end > elapsed)!;
         const time = elapsed - start;
         const progress = to.travel ? T.MathUtils.clamp(time / to.travel, 0, 1) : 1;
@@ -274,16 +288,19 @@ export class GuidedTour {
         const radius = cameraOffset.length();
         cameraOffset.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)).multiplyScalar(radius);
         const spanFor = (frame: FramedShot) => Math.max(74, frame.width * height / usable.width, frame.height * height / usable.height);
-        let span = zoomBetween(spanFor(from), spanFor(to), mix);
-        const center = facilityCameraCenter(from.anchor.clone().lerp(to.anchor, mix), span, width, height, usable);
-        if (arriving && this.origin) {
-            span = zoomBetween(this.origin.span, span, entranceMix);
-            center.lerpVectors(this.origin.center, center, entranceMix);
-        }
+        // On the first lap, move directly from the live view to the west-side station framing.
+        const origin = !reducedMotion && sinceStart < this.sequence[0]!.end ? this.origin : undefined;
+        const targetSpan = spanFor(to);
+        const span = zoomBetween(origin?.span ?? spanFor(from), targetSpan, mix);
+        const center = origin
+            ? origin.center.clone().lerp(facilityCameraCenter(to.anchor, targetSpan, width, height, usable), mix)
+            : facilityCameraCenter(from.anchor.clone().lerp(to.anchor, mix), span, width, height, usable);
         const opacity = arriving ? entranceMix : !reducedMotion && fade > 0 && cutting ? eased((time - cutAt) / fade) : 1;
+        const moving = !reducedMotion && (progress < 1 || opacity < 1);
         return {
             center, span, yaw, pitch, opacity, wait: end - elapsed,
-            moving: !reducedMotion && (progress < 1 || opacity < 1), turning: !reducedMotion,
+            moving, turning: !reducedMotion,
+            showLabels: to.detailLabels === 'orbit' || to.detailLabels === 'hold' && !moving,
             station: shot.mode === 'station' ? shot.station : null, level: shot.level,
             overview: shot.mode === 'overview', ground: shot.ground,
             explode: T.MathUtils.lerp(this.origin?.explode ?? 0, T.MathUtils.lerp(from.explode, to.explode, mix), entranceMix)

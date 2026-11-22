@@ -758,6 +758,7 @@ export class MapScene {
     private resize(): void {
         this.width = this.host.clientWidth;
         this.height = this.host.clientHeight;
+        this.nextTourLabelUpdate = 0;
         this.renderer.setSize(this.width, this.height);
         this.requestRender();
     }
@@ -1110,14 +1111,14 @@ export class MapScene {
         if (changedModels && this.hoverPoint) {
             this.setPointerHover(this.hoverPoint);
         }
-        // Label projection and view sharing both wait for the frame to settle.
+        // While the tour owns the camera, it controls when station labels are useful.
         const settled = playback?.status !== 'playing' && !animate && !this.focusTransition && !this.draggingExplode && !this.gestures.isMoving;
-        const showLabels = settled && (!tourFrame || !tourFrame.moving && !!tourFrame.station);
+        const showLabels = settled && (tourFrame?.showLabels ?? true);
         this.labels.setVisible(showLabels);
         if (!showLabels) {
             this.nextTourLabelUpdate = 0;
         }
-        if (showLabels && (!tourFrame?.turning || now >= this.nextTourLabelUpdate)) {
+        if (showLabels && (!tourFrame?.turning || changedModels || now >= this.nextTourLabelUpdate)) {
             this.nextTourLabelUpdate = now + 80;
             const facility = this.activeFacility;
             const selection = this.selected.visible && facility
@@ -1137,6 +1138,8 @@ export class MapScene {
                 selection,
                 guided: !!tour
             });
+        } else if (showLabels && tourFrame?.turning) {
+            this.labels.moveGuided(this.camera);
         }
         this.reportShareCamera(center, span, settled && !playback && !tour);
         if (tourFrame?.moving || tourFrame?.turning || playback?.status === 'playing' || animate ||

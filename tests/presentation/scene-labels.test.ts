@@ -8,10 +8,10 @@ class LabelStub extends EventTarget {
     className = '';
     textContent = '';
     hidden = false;
-    style = { left: '', top: '' };
+    style = { transform: '' };
     removed = false;
     icon?: { attributes: Map<string, string> };
-    offsetWidth = 80;
+    widthReads = 0;
     offsetHeight = 24;
     classList = {
         contains: (value: string) => this.className.split(' ').includes(value),
@@ -26,6 +26,11 @@ class LabelStub extends EventTarget {
             this.className = [...names].join(' ');
         }
     };
+
+    get offsetWidth(): number {
+        this.widthReads++;
+        return 80;
+    }
 
     setAttribute(): void {}
 
@@ -71,7 +76,7 @@ function withLabels(definitions: SceneLabelDefinition[], run: (labels: SceneLabe
     }
 }
 
-function render(labels: SceneLabels, selection?: SceneLabelView['selection']): void {
+function render(labels: SceneLabels, selection?: SceneLabelView['selection'], overrides: Partial<SceneLabelView> = {}): T.OrthographicCamera {
     const camera = new T.OrthographicCamera(-100, 100, 100, -100, 0.1, 1000);
     camera.position.set(0, 100, 100);
     camera.lookAt(0, 0, 0);
@@ -89,8 +94,10 @@ function render(labels: SceneLabels, selection?: SceneLabelView['selection']): v
         height: 800,
         zoom: 2,
         occluders: [],
-        selection
+        selection,
+        ...overrides
     });
+    return camera;
 }
 
 test('current-floor labels win collisions, context labels mute, hidden roofs do not leak labels', () => {
@@ -107,8 +114,38 @@ test('current-floor labels win collisions, context labels mute, hidden roofs do 
         assert(!elements[1]!.hidden);
         assert(elements[2]!.hidden);
         assert(elements[3]!.hidden);
-        assert(Math.abs(Number.parseFloat(elements[1]!.style.left) - 500) < 1e-9);
-        assert(Math.abs(Number.parseFloat(elements[1]!.style.top) - 400) < 1e-9);
+        assert.equal(elements[1]!.style.transform, 'translate(500.00px, 400.00px) translate(-50%, -50%)');
+    });
+});
+
+test('guided labels follow the camera between visibility passes and reuse collision sizes', () => {
+    const position = new T.Vector3();
+    const guided = { guided: true, state: { level: 'platform', focusStation: 'jr-osaka', explode: 0, roof: false, route: null } } as const;
+    withLabels([
+        { text: 'priority', position, level: 'platform', emphasis: true },
+        { text: 'overlap', position, level: 'platform' },
+        { text: 'neighbor', position: new T.Vector3(55, 0, 0), owner: 'hankyu-umeda' }
+    ], (labels, elements) => {
+        const [priority, overlap, neighbor] = elements;
+        const camera = render(labels, undefined, guided);
+        assert.deepEqual(elements.map(element => element.hidden), [false, true, true]);
+        assert.deepEqual(elements.map(element => element.widthReads), [1, 1, 0]);
+        const previousPosition = priority!.style.transform;
+        camera.position.x += 20;
+        camera.updateMatrixWorld(true);
+        labels.moveGuided(camera);
+        assert.notEqual(priority!.style.transform, previousPosition);
+        assert.equal(overlap!.style.transform, '');
+        assert.deepEqual(elements.map(element => element.widthReads), [1, 1, 0]);
+        render(labels, undefined, guided);
+        assert.deepEqual(elements.map(element => element.widthReads), [1, 1, 0]);
+        assert(overlap!.hidden);
+        render(labels, undefined, { ...guided, width: 390 });
+        assert.deepEqual(elements.map(element => element.widthReads), [2, 2, 0]);
+        render(labels, undefined, { ...guided, state: { ...guided.state, focusStation: 'hankyu-umeda' } });
+        assert.deepEqual(elements.map(element => element.hidden), [true, true, false]);
+        render(labels);
+        assert(!priority!.hidden && !neighbor!.hidden);
     });
 });
 
