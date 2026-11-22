@@ -15,6 +15,7 @@ import { bindPagePreferences, mountLocalizedPage } from './presentation/componen
 import { bindMapFullscreen } from './presentation/components/map-fullscreen.ts';
 import { bindMapLoading } from './presentation/components/map-loading.ts';
 import { bindTourCaption } from './presentation/components/tour-caption.ts';
+import { bindPlaybackWakeLock } from './presentation/components/playback-wake-lock.ts';
 import { LoopTrainSound } from './presentation/audio/loop-train-sound.ts';
 import { allowsGroundLayer } from './application/exploration/view-layer.ts';
 import { createFacilityIcon } from './presentation/components/facility-icon.ts';
@@ -176,6 +177,7 @@ const facilityClear = element<HTMLButtonElement>('#facility-clear');
 const facilityStationButton = element<HTMLButtonElement>('#facility-station');
 const facilityFloorButton = element<HTMLButtonElement>('#facility-floor');
 const walkingPanel = element('#panel-walking');
+const setPlaybackWakeLock = bindPlaybackWakeLock();
 const guidedTour = element<HTMLButtonElement>('#guided-tour');
 const tourLabel = element('#guided-tour-label');
 const updateTourCaption = bindTourCaption(element('#tour-caption'));
@@ -184,6 +186,7 @@ let tourActive = false;
 /** Update the toggle and shareable mode independently of the moving camera. */
 function setTourActive(active: boolean): void {
     tourActive = active;
+    setPlaybackWakeLock('tour', active);
     guidedTour.setAttribute('aria-pressed', String(active));
     guidedTour.title = messageText(active ? 'ui.header.stopTour' : 'ui.header.startTour');
     tourLabel.textContent = messageText(active ? 'ui.header.tour' : 'ui.header.badge');
@@ -214,6 +217,7 @@ walkingPlay.addEventListener('click', () => scene?.toggleRoutePlayback());
 
 /** Keep the playback control labelled for the action it will perform next. */
 function setRoutePlaybackStatus(status: RoutePlaybackStatus): void {
+    setPlaybackWakeLock('route', status === 'playing');
     const actions = { ready: 'play', playing: 'pause', paused: 'resume', finished: 'replay' } as const;
     const label = messageText(`ui.walking.${actions[status]}`);
     walkingPlay.title = label;
@@ -795,7 +799,8 @@ async function loadMap(): Promise<void> {
             setRoutePlaybackStatus,
             setTourActive,
             updateTourCaption,
-            (cue, distance) => trainSound.update(cue, distance)
+            (cue, distance) => trainSound.update(cue, distance),
+            moving => setPlaybackWakeLock('train', moving)
         );
         await loading.show('ready');
         syncFacilityLabels();
@@ -829,6 +834,8 @@ async function loadMap(): Promise<void> {
     catch (error) {
         console.error('Map initialization failed', error);
         scene?.dispose();
+        setPlaybackWakeLock('tour', false);
+        setPlaybackWakeLock('route', false);
         scene = undefined;
         guidedTour.disabled = true;
         syncRoutePlaybackButton();

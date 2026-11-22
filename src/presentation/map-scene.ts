@@ -154,7 +154,8 @@ export class MapScene {
         private readonly onRoutePlayback?: (status: RoutePlaybackStatus) => void,
         private readonly onTourChange?: (active: boolean) => void,
         private readonly onTourChapter?: (chapter?: TourChapter) => void,
-        private readonly onTrainSound?: (cue: LoopTrainCue | undefined, distance: number) => void
+        private readonly onTrainSound?: (cue: LoopTrainCue | undefined, distance: number) => void,
+        private readonly onTrainMotion?: (moving: boolean) => void
     ) {
         this.state = { ...initial };
         this.displayedExplode = initial.explode;
@@ -406,6 +407,7 @@ export class MapScene {
         this.tourLayerFade.clear();
         this.onTourChapter?.();
         this.onTrainSound?.(undefined, Infinity);
+        this.onTrainMotion?.(false);
         this.gestures.dispose();
         this.setPointerHover();
         this.labels.dispose();
@@ -858,6 +860,7 @@ export class MapScene {
             this.renderer.render(this.scene, this.camera);
         }
         this.trainInLastDraw = visible;
+        this.onTrainMotion?.(visible && wait === 0);
         this.scheduleTrainFrame(wait);
     }
 
@@ -874,7 +877,7 @@ export class MapScene {
         }
         const floor = train.group.parent;
         const center = this.framing?.center;
-        if (!floor?.visible || !center || document.hidden) {
+        if (!floor || !center || document.hidden) {
             this.onTrainSound(undefined, Infinity);
             return wait;
         }
@@ -1271,6 +1274,7 @@ export class MapScene {
         if (this.models.loopTrain) {
             this.trainView.setFromProjectionMatrix(this.trainViewProjection.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));
             this.trainInLastDraw = this.models.loopTrain.intersectsView(this.trainView);
+            this.onTrainMotion?.(this.trainInLastDraw && trainWait === 0);
         }
         if (changedModels && this.hoverPoint) {
             this.setPointerHover(this.hoverPoint);

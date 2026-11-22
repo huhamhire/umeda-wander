@@ -152,7 +152,7 @@ export class LoopTrainSound {
         }
     }
 
-    /** Fade an active voice in place; an infinite distance marks a hidden tab or platform. */
+    /** Fade an active voice in place; a nonfinite distance stops it when the page cannot play it. */
     update(cue: LoopTrainCue | undefined, distance: number): void {
         const { context, output } = this;
         if (!context || !output) {
