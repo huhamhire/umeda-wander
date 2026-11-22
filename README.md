@@ -8,6 +8,20 @@ The map covers seven stations: JR Osaka, Hankyu Osaka-Umeda, Umeda on the Midosu
 
 **The geometry, facility locations, and routes are illustrative and should not be used for on-site navigation.**
 
+## Demo
+
+**[Open the interactive demo →](https://huhamhire.github.io/umeda-wander/?tour=1&sound=0)**
+
+Once the GitHub Pages site is live, the link starts the tour automatically with sound muted.
+
+**Station district overview**
+
+[![Umeda station district overview in dark mode with the Japanese interface](./resource/overview-ja.webp)](https://huhamhire.github.io/umeda-wander/?tour=1&sound=0)
+
+**Exploded floor view**
+
+![JR Osaka Station with its floors separated in dark mode with the Japanese interface](./resource/exploded-ja.webp)
+
 ## Project background
 
 The project began after the author spent several days in Umeda. Stations run by different railway operators connect through underground shopping arcades, street-level entrances, and pedestrian decks. This network is often called the “Umeda Dungeon.” The project explores how AI can help organize public station plans and geographic data, model the district, and build an interactive map.
@@ -32,6 +46,7 @@ umeda-wander/
 ├── src/          # Map and interface source code
 ├── data/         # Derived data and geographic configuration
 ├── references/   # Original reference materials and their catalog
+├── resource/     # README screenshots
 ├── scripts/      # Development server, build tools, and offline checks
 ├── tests/        # Regression tests grouped by domain
 └── docs/         # Design, development, and data-source documentation

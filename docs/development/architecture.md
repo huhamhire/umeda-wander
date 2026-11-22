@@ -18,6 +18,7 @@ umeda-wander/
 │   └── index.html         # 单入口模板
 ├── data/geography/        # 派生资源与可复现的地理配置
 ├── references/           # 原始资料与来源索引
+├── resource/             # README 展示截图
 ├── scripts/              # 构建、开发服务和离线核查
 ├── tests/                # 按领域组织的回归测试
 ├── docs/                 # 设计、开发、来源与维护待办

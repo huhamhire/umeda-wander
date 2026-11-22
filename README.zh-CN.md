@@ -8,6 +8,20 @@
 
 **当前几何、设施位置和路线均为示意，不能用于现场导航。**
 
+## 在线演示
+
+**[打开在线演示 →](https://huhamhire.github.io/umeda-wander/?tour=1&sound=0)**
+
+GitHub Pages 发布后，打开链接会自动开始静音导览。
+
+**站区总览**
+
+[![日语深色界面的梅田站区总览](./resource/overview-ja.webp)](https://huhamhire.github.io/umeda-wander/?tour=1&sound=0)
+
+**楼层展开**
+
+![日语深色界面的 JR 大阪站楼层展开图](./resource/exploded-ja.webp)
+
 ## 项目背景
 
 本项目源于作者在大阪梅田停留数日的经历。当地多家铁路运营方的车站经地下商业街、地面出入口和二层连廊相接，构成常被称为「梅田迷宫」的多层步行网络。项目以公开的车站平面图和地理资料为参考，尝试借助 AI 完成资料整理、空间建模和交互开发。
@@ -32,6 +46,7 @@ umeda-wander/
 ├── src/          # 地图与界面源码
 ├── data/         # 派生数据和地理配置
 ├── references/   # 原始参考资料及来源索引
+├── resource/     # README 展示截图
 ├── scripts/      # 开发服务、构建和离线核查
 ├── tests/        # 按领域组织的回归测试
 └── docs/         # 设计、开发和数据来源文档
