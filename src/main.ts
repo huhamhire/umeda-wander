@@ -665,24 +665,24 @@ facilityPickerButton.addEventListener(
 /**
  * Reset exploration, camera and manual filters, then return to the floor tab.
  */
-function reset(): void {
+function reset(animated = false): void {
     walkingRoute.reset();
     clearFacilitySelection();
     pendingFacility = undefined;
     savedCamera = undefined;
     sharedCamera = undefined;
     session.reset();
-    scene?.reset(true);
     Object.assign(facilityFilter, { station: null, level: 'all', kind: 'all' });
     refreshFacilities();
     showSidebarTab(0);
     sync();
+    scene?.reset(true, animated);
 }
 const zoomIn = element<HTMLButtonElement>('#zoom-in');
 const zoomOut = element<HTMLButtonElement>('#zoom-out');
-zoomIn.addEventListener('click', () => scene?.zoom(1.18));
-zoomOut.addEventListener('click', () => scene?.zoom(1 / 1.18));
-element('#reset').addEventListener('click', reset);
+zoomIn.addEventListener('click', () => scene?.zoom(1.18, undefined, true));
+zoomOut.addEventListener('click', () => scene?.zoom(1 / 1.18, undefined, true));
+element('#reset').addEventListener('click', () => reset(true));
 element('.brand').addEventListener('click', e => {
     e.preventDefault();
     reset();

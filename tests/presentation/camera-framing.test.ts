@@ -2,10 +2,36 @@ import { MapSession } from '../../src/application/map-session.ts';
 import { allowsGroundLayer, viewLayerRole } from '../../src/application/exploration/view-layer.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import * as T from 'three';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import type { StationId } from '../../src/domain/map/model.ts';
 import { edges, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
 import { cameraEnvelope, manualZoomSpan } from '../../src/presentation/camera/camera-framing.ts';
+import { interpolateCameraPose } from '../../src/presentation/camera/camera-transition.ts';
+
+test('toolbar motion starts at the displayed camera and reaches the exact target on the short compass arc', () => {
+    const from = {
+        center: new T.Vector3(30, 10, 60),
+        span: 100,
+        offset: new T.Vector3().setFromSphericalCoords(300, Math.PI / 3, T.MathUtils.degToRad(170))
+    };
+    const to = {
+        center: new T.Vector3(80, 20, 10),
+        span: 400,
+        offset: new T.Vector3().setFromSphericalCoords(300, Math.PI / 6, T.MathUtils.degToRad(-170))
+    };
+    assert.equal(interpolateCameraPose(from, to, 0), from);
+    assert.equal(interpolateCameraPose(from, to, 1), to);
+    const middle = interpolateCameraPose(from, to, .5);
+    assert.deepEqual(middle.center.toArray(), [55, 15, 35]);
+    assert.equal(middle.span, 200);
+    const orientation = new T.Spherical().setFromVector3(middle.offset);
+    assert(Math.abs(Math.abs(orientation.theta) - Math.PI) < 1e-9);
+    assert(Math.abs(orientation.phi - Math.PI / 4) < 1e-9);
+    const zoomOnly = interpolateCameraPose(from, { ...from, span: 100 / 1.18 }, .5);
+    assert(zoomOnly.offset.equals(from.offset) && zoomOnly.center.equals(from.center));
+    assert(zoomOnly.span > 100 / 1.18 && zoomOnly.span < 100);
+});
 
 test('a shallow wide view can zoom out past the automatic vertical fit and zoom in again', () => {
     // The wide desktop overview at 5° needs a larger span than the vertical fit alone allows.

@@ -21,6 +21,7 @@ import { cameraOffset, viewBasis, resetView } from './camera/view-orientation.ts
 import { visibleElevatorConnections } from '../application/connections/elevator-visibility.ts';
 import { advanceExplode } from './appearance/explode-transition.ts';
 import { cameraEnvelope, clampCameraZoom, manualZoomSpan } from './camera/camera-framing.ts';
+import { interpolateCameraPose, type CameraPose } from './camera/camera-transition.ts';
 import { facilityFocusRect, facilityCameraCenter, minimumMapZoom } from './camera/facility-focus.ts';
 import { SelectionMarker } from './components/selection-marker.ts';
 import { visibleLabelOccluders } from './labels/label-occlusion.ts';
@@ -103,6 +104,7 @@ export class MapScene {
         span: number;
     };
     private focusTransition = false;
+    private controlTransition?: { from: CameraPose; offset: T.Vector3; startedAt: number; duration: number };
     private locatingFacility = false;
     private targetCenter?: T.Vector3;
     private zoomValue = 1;
@@ -217,6 +219,7 @@ export class MapScene {
             beginDrag: () => {
                 this.stopGuidedTour(true);
                 this.pauseRoutePlayback();
+                this.interruptControlTransition();
                 if (this.locatingFacility && this.framing && this.targetCenter) {
                     this.pan.add(this.framing.center.clone().sub(this.targetCenter));
                 }
@@ -249,6 +252,7 @@ export class MapScene {
         }
         this.stopGuidedTour(true);
         this.pauseRoutePlayback();
+        this.controlTransition = undefined;
         this.locatingFacility = false;
         this.focusTransition = false;
         this.freezeFraming(this.framing);
@@ -278,6 +282,28 @@ export class MapScene {
             span: frame.span,
             referenceSpan: this.manualView?.referenceSpan ?? frame.span
         };
+    }
+
+    /** Start a toolbar move from the displayed pose, even when replacing a pending move. */
+    private animateControl(duration: number, fromOffset: T.Vector3): void {
+        if (this.framing) {
+            this.controlTransition = {
+                from: { ...this.framing, offset: fromOffset.clone() },
+                offset: cameraOffset.clone(),
+                startedAt: performance.now(),
+                duration
+            };
+            cameraOffset.copy(fromOffset);
+            this.shareSettled = false;
+        }
+    }
+
+    /** Let direct input take over without jumping to the toolbar's pending target. */
+    private interruptControlTransition(): void {
+        if (this.controlTransition && this.framing) {
+            this.freezeFraming(this.framing);
+        }
+        this.controlTransition = undefined;
     }
 
     /** Convert canvas coordinates into the shared raycaster used by orbit pivots and facility picking. */
@@ -422,6 +448,9 @@ export class MapScene {
         if (floorChanged || options.preserveFraming) {
             this.locatingFacility = false;
         }
+        if (floorChanged || stationChanged || options.preserveFraming) {
+            this.controlTransition = undefined;
+        }
         if (stationChanged) {
             this.fitEnvelope = undefined;
         }
@@ -447,6 +476,7 @@ export class MapScene {
             return;
         }
         this.stopRoutePlayback();
+        this.controlTransition = undefined;
         this.focusTransition = false;
         const orientation = cameraOffset.clone();
         const overview = this.regionFramingPoints(null, id => displayElevation(this.levels, id, 0));
@@ -487,6 +517,7 @@ export class MapScene {
             this.pauseRoutePlayback();
             return;
         }
+        this.controlTransition = undefined;
         if (this.playback?.status === 'paused') {
             this.playback.resume(this.framing);
         } else {
@@ -536,6 +567,9 @@ export class MapScene {
             return;
         }
         this.draggingExplode = dragging;
+        if (dragging) {
+            this.interruptControlTransition();
+        }
         this.sun.shadow.intensity = dragging ? 0 : 1;
         if (!dragging) {
             this.modelsDirty = true;
@@ -551,6 +585,7 @@ export class MapScene {
             return;
         }
         if (follow) {
+            this.controlTransition = undefined;
             this.manualView = undefined;
             this.gestures.cancelOrbit();
         }
@@ -673,6 +708,7 @@ export class MapScene {
 
     /** Restore the camera and marker without jumping or restarting the focus transition. */
     restoreCamera(snapshot: MapCameraSnapshot): void {
+        this.controlTransition = undefined;
         cameraOffset.fromArray(snapshot.offset);
         this.pan.fromArray(snapshot.pan);
         this.zoomValue = snapshot.zoom;
@@ -689,15 +725,17 @@ export class MapScene {
         window.dispatchEvent(new Event('map-orientation'));
         this.invalidateModels();
     }
-    /**
-     * Scale the orthographic view within the limits of the currently usable viewport.
-     */
-    zoom(factor: number, pivot?: T.Vector3): void {
+    /** Scale the orthographic view, animating toolbar steps while keeping gestures direct. */
+    zoom(factor: number, pivot?: T.Vector3, animated = false): void {
         this.stopGuidedTour(true);
         this.pauseRoutePlayback();
         this.focusTransition = false;
+        if (!animated) {
+            this.interruptControlTransition();
+        }
         const nextZoom = clampCameraZoom(this.zoomValue * factor, this.minimumZoom);
-        const beyondAutomaticFit = factor < 1 && nextZoom >= this.zoomValue ? this.framing : undefined;
+        const beyondAutomaticFit = factor < 1 && nextZoom >= this.zoomValue
+            ? (this.controlTransition ? this.cameraTarget() : this.framing) : undefined;
         const current = this.manualView ?? beyondAutomaticFit;
         if (current) {
             const { baseSpan, minimumZoom } = this.cameraFit();
@@ -719,25 +757,34 @@ export class MapScene {
         else {
             this.zoomValue = nextZoom;
         }
+        if (animated) {
+            this.animateControl(220, cameraOffset);
+        }
         this.requestRender();
     }
     /**
      * Clear manual pan and zoom, optionally restoring the north-facing orientation.
      */
-    reset(resetOrientation = false): void {
+    reset(resetOrientation = false, animated = false): void {
+        const fromOffset = animated && this.framing
+            ? this.camera.position.clone().sub(this.framing.center).setLength(cameraOffset.length()) : undefined;
         this.stopGuidedTour();
         this.stopRoutePlayback();
+        this.controlTransition = undefined;
         this.manualView = undefined;
         this.gestures.cancelOrbit();
         if (resetOrientation) {
             resetView();
-            window.dispatchEvent(new Event('map-orientation'));
+            this.orientationChanged = true;
         }
         this.locatingFacility = false;
         this.focusTransition = false;
         this.zoomValue = 1;
         this.pan.set(0, 0, 0);
         this.activeFacility = undefined;
+        if (fromOffset) {
+            this.animateControl(420, fromOffset);
+        }
         this.invalidateModels();
     }
     /**
@@ -1063,15 +1110,27 @@ export class MapScene {
         if (beforeCut) {
             this.tourLayerFade.begin(beforeCut);
         }
-        if (this.orientationChanged) {
-            this.orientationChanged = false;
-            window.dispatchEvent(new Event('map-orientation'));
+        const control = this.controlTransition;
+        const previousOffset = control && cameraOffset.clone();
+        if (control) {
+            cameraOffset.copy(control.offset);
         }
         const target = tourFrame ?? playbackFrame ?? this.cameraTarget();
-        const { center } = target;
+        let { center } = target;
         let span = target.span;
         this.targetCenter = center.clone();
-        if (this.framing && this.focusTransition && !reducedMotion) {
+        if (control) {
+            const unchanged = control.from.span === span && control.from.center.equals(center) && control.from.offset.equals(cameraOffset);
+            const progress = reducedMotion || unchanged ? 1 : (now - control.startedAt) / control.duration;
+            const pose = interpolateCameraPose(control.from, { center, span, offset: cameraOffset }, progress);
+            center = pose.center;
+            span = pose.span;
+            cameraOffset.copy(pose.offset);
+            this.orientationChanged ||= previousOffset !== undefined && !previousOffset.equals(cameraOffset);
+            if (progress >= 1) {
+                this.controlTransition = undefined;
+            }
+        } else if (this.framing && this.focusTransition && !reducedMotion) {
             this.framing.center.lerp(center, 0.24);
             this.framing.span += (span - this.framing.span) * 0.24;
             this.focusTransition = this.framing.center.distanceTo(center) > 0.02 || Math.abs(this.framing.span - span) > 0.02;
@@ -1082,6 +1141,10 @@ export class MapScene {
         }
         else {
             this.focusTransition = false;
+        }
+        if (this.orientationChanged) {
+            this.orientationChanged = false;
+            window.dispatchEvent(new Event('map-orientation'));
         }
         this.framing = { center: center.clone(), span };
         const worldUnitsPerPixel = span / Math.max(1, this.height);
@@ -1112,7 +1175,8 @@ export class MapScene {
             this.setPointerHover(this.hoverPoint);
         }
         // While the tour owns the camera, it controls when station labels are useful.
-        const settled = playback?.status !== 'playing' && !animate && !this.focusTransition && !this.draggingExplode && !this.gestures.isMoving;
+        const settled = playback?.status !== 'playing' && !animate && !this.focusTransition && !this.controlTransition &&
+            !this.draggingExplode && !this.gestures.isMoving;
         const showLabels = settled && (tourFrame?.showLabels ?? true);
         this.labels.setVisible(showLabels);
         if (!showLabels) {
@@ -1143,7 +1207,7 @@ export class MapScene {
         }
         this.reportShareCamera(center, span, settled && !playback && !tour);
         if (tourFrame?.moving || tourFrame?.turning || playback?.status === 'playing' || animate ||
-            this.focusTransition || (this.selected.visible && !reducedMotion)) {
+            this.focusTransition || this.controlTransition || (this.selected.visible && !reducedMotion)) {
             this.requestRender();
         } else if (tourFrame) {
             this.tourWakeup = window.setTimeout(() => this.requestRender(), Math.max(1, tourFrame.wait));
