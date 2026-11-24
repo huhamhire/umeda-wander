@@ -5,8 +5,9 @@ import { passageOutline } from '../../domain/map/geometry.ts';
 /** Declared wall mouths; no closest-building selection or implicit walking edge. */
 export function deckBuildingOpenings(portals: DeckPortal[], levels: Level[]): BuildingOpening[] {
     return portals.filter(p => !p.target.startsWith('station:')).map(p => {
-        const dx = Math.cos(p.angle) * 8;
-        const dz = Math.sin(p.angle) * 8;
+        const halfDepth = p.openingHalfDepth ?? 8;
+        const dx = Math.cos(p.angle) * halfDepth;
+        const dz = Math.sin(p.angle) * halfDepth;
         const y = levels.find(l => l.id === p.level)!.y;
         return {
             buildingId: p.target,

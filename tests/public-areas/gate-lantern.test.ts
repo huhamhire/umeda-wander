@@ -3,7 +3,10 @@ import test from 'node:test';
 import * as T from 'three';
 import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion, Point2 } from '../../src/domain/map/model.ts';
-import { elevated, elevatedAreas, layout, levels, publicInterfaces, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { elevated, elevatedAreas, exteriorOpenings, layout, levels, publicInterfaces, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
+import { deckBoundarySegments } from '../../src/application/public-areas/deck-boundaries.ts';
+import { grandGreenSouthBuildings } from '../../src/infrastructure/buildings/grand-green-south/index.ts';
+import { buildGeographicBuilding } from '../../src/presentation/models/buildings/geographic-building-model.ts';
 import { buildFloorGeometry } from '../../src/presentation/models/floor-geometry.ts';
 import { buildGeographicContext } from '../../src/presentation/models/public-areas/geographic-context.ts';
 import { SpiralStairModel } from '../../src/presentation/models/public-areas/spiral-stair-model.ts';
@@ -30,6 +33,27 @@ test('Gate Lantern joins the B1 gate exterior and the existing park deck around 
     const down = new T.Vector3(0, -1, 0);
     assert.equal(new T.Raycaster(new T.Vector3(center.x, 3, center.z), down).intersectObject(floor).length, 0);
     assert.ok(new T.Raycaster(new T.Vector3(spiral.from.x, 3, spiral.from.z), down).intersectObject(floor).length);
+});
+
+test('Gate Lantern reaches the South Building 2F threshold through a clear opening with railings along the bridge', () => {
+    const west = elevated.blocks.find(block => block.id === 'west-decks')!;
+    const approach = west.paths.find(path => path.id === 'gate-lantern-south-building:1313936488')!;
+    const spine = west.paths.find(path => path.id === 'umekita-public:1313936486')!;
+    const door = elevated.portals.find(portal => portal.id === 'gate-lantern-south-building-2f')!;
+    assert.deepEqual(approach.points.at(-1), spine.points[0]);
+    const floor = elevatedAreas.find(area => area.blockId === west.id && approach.points.every(point => contains(area, point)))!;
+    assert.ok(floor && contains(floor, door.point));
+    const building = grandGreenSouthBuildings.find(item => item.id === door.target)!;
+    const threshold = approach.points[0]!;
+    assert.ok(contains(building.volumes[0]!, threshold));
+    const shell = buildGeographicBuilding(building, exteriorOpenings);
+    for (const point of [threshold, door.point, approach.points[1]!]) {
+        const ray = new T.Raycaster(new T.Vector3(point.x, 8.65, point.z), new T.Vector3(0, 1, 0), 0, 3);
+        assert.equal(ray.intersectObject(shell).length, 0);
+    }
+    const rails = deckBoundarySegments(floor, layout.areas, levels, exteriorOpenings, layout.connections);
+    assert.ok(rails.some(({ from }) => from.x > 138 && from.x < 145 && from.z > 588 && from.z < 594));
+    assert.ok(rails.some(({ from }) => from.x > 138 && from.x < 145 && from.z > 581 && from.z < 588));
 });
 
 test('the South Building garden opens to the sky and its stairs meet the same B1 public floor as Gate Lantern', () => {

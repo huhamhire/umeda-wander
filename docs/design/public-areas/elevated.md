@@ -70,6 +70,10 @@ Inogate 连桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-d
 
 Step Plaza 跨路桥的南端另设一组落向南公园 1F 的楼梯。下端经 `1347756740`、`1314528006` 接园路 `1314528009`，上端经 `1347756741` 接南段桥轴的共享端点。按 OSM 楼梯主折点画两段，下段和中间平台使用 1F 局部标高。阶宽和层间高程为展示拟合。[OSM 楼梯](https://www.openstreetmap.org/way/1314528010) · [现场下楼记录](https://www.youtube.com/watch?v=4wNCIRHmkvc&t=2033s)
 
+Gate Lantern 旁的公园高架在南端向西分支，沿 OSM `1313936488` 接 Grand Green 南馆 2F。南馆门户按现役 Gate Tower 裙楼的下沉花园退界拟合，桥面延至门槛。桥边护栏保留，门口局部留通孔。这一处与 Inogate 连桥、下沉花园 B1 入口分别维护。[日建设计剖面](https://www.nikken.jp/ja/dbook/nj202503/pageindices/index16.html) · [OSM 支桥](https://www.openstreetmap.org/way/1313936488)
+
+北接续桥沿 OSM `1327400333` 在 2F 横接 Grand Green 北馆东侧和 Grand Front 北馆西侧，两端沿共点桥轴接进各自门槛。桥宽参考 OSM 屋盖宽度，顶棚参考运营方照片，门区和标高为展示拟合。Grand Green 北馆沿 OSM 宿主绘裙楼，上部取大阪市 PLATEAU LOD2 屋面轮廓。北馆内部 3F 由馆内扶梯和电梯到达。[JAM BASE 官方路线](https://umekita.com/jambase/access/) · [Grand Green 北馆楼层图](https://umekita.com/floor/north/)
+
 两端坐标、7 m 桥宽及北侧统一展示标高按参考图拟合。两处宿主在地面用 OSM 轮廓标示，桥面保留已登记的入口与落台。公共面避让孔洞、同高楼板和付费区。回归检查覆盖 JR 至目标处的连续公共分量，入口栏杆按声明的门户留口。
 
 ## 桥面顶棚

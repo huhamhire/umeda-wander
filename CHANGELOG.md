@@ -4,8 +4,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- 补齐 Gate Lantern 旁公园步道接入 Grand Green 南馆 2F 的支桥和入口。
+
 ### Added
 
+- 加入 Grand Green 北馆及通往 Grand Front 北馆的 2F 北接续桥。
 - 梅北阶梯广场接入道路两侧人行道，南公园增加 2F 天桥落地楼梯，Grand Green 南馆展示下沉花园的 B1 至 1F 露天步阶。
 - 补齐梅北南公园的草坪、水盘、花园、银杏步道和南广场，加入 SANAA 大屋顶、公园低层建筑及 Grand Green 南馆三塔。
 - 梅北西侧加入梅田蓝天大厦双塔、空中庭园、中层连桥、高空扶梯和 Wonder Square 地面广场。

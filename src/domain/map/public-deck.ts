@@ -28,5 +28,7 @@ export interface DeckPortal {
     point: Point2;
     width: number;
     angle: number;
+    /** Half-length of the facade cut along the portal axis, in display metres. */
+    openingHalfDepth?: number;
     evidence: Evidence;
 }

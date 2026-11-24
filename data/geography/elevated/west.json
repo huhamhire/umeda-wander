@@ -28,6 +28,17 @@
       "levelEvidence": "与 Gate Lantern 接续，归入现有北侧 2F 展示标高"
     },
     {
+      "id": "gate-lantern-south-building",
+      "name": "Gate Lantern—Grand Green 南馆",
+      "ways": [1313936488],
+      "source": "references/connections/grand-green-osaka/south-building-2f.png",
+      "sourceUrls": ["https://www.nikken.jp/ja/dbook/nj202503/pageindices/index16.html"],
+      "displayLevel": "2F",
+      "widthMetres": 5,
+      "geometryEvidence": "保留 OSM 桥轴和南段共用端点，按现有白模裁边拟合室外门槛。",
+      "levelEvidence": "日建设计剖面明确标注接入南馆 2F。"
+    },
+    {
       "id": "umekita-grove-deck",
       "name": "ひらめきの道跨路段及北段",
       "ways": [
@@ -43,6 +54,17 @@
       "widthMetres": 4,
       "geometryEvidence": "仓库快照保留两个施工标签及桥轴，开园公告确认实际贯通。桥宽沿用日建设计的 4 米。",
       "levelEvidence": "跨 Step Plaza 道路进入梅北之森，并沿西侧曲线抵达北端公共平台。"
+    },
+    {
+      "id": "grand-green-north-connection",
+      "name": "Grand Green 北馆—Grand Front 北馆",
+      "ways": [1327400333],
+      "source": "references/connections/grand-green-osaka/jambase-2f-route.jpg",
+      "sourceUrls": ["https://umekita.com/jambase/access/", "https://umekita.com/floor/north/?floor=2F"],
+      "displayLevel": "2F",
+      "widthMetres": 6.4,
+      "geometryEvidence": "OSM 桥轴两端与北馆轮廓共点；桥宽参考相应屋盖轮廓，门槛为展示拟合。",
+      "levelEvidence": "JAM BASE 运营方导览明确连接 Grand Green 北馆 2F 和 Grand Front 北馆 2F。"
     },
     {
       "id": "inogate-grand-green-review",

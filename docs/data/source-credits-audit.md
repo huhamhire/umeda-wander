@@ -44,7 +44,7 @@
 
 地下公共网使用混合来源。`public-areas/metro-interchange/` 的三处局部接驳面依据 JR p6、M16 p1 与地区图编写；`north-atrium/access.ts` 的公共设备依据 JR p2–3／5–6／8。`basement-buildings.ts` 的 OSM 宿主轮廓经 `basement-occupancy.ts` 与参考 PDF 公共面相减，属于混合来源结果，不纳入纯 OSM 下载。原始资料适用上表的待授权事项。
 
-高架资料保留 OSM 轴线和独立的混合几何。`data/geography/elevated/ways.json` 摘取仓库 OSM 的 34 条高架步行轴线，原坐标及估计宽度在 OSM 下载中交付。`public-areas/north-decks/`、`south-decks/`、`west-decks/` 的公共平台、`deck-access.ts` 的公共设备及建筑裁口结合高架步行图、站城楼层图和既有参考照片；其混合几何不作为纯 OSM 子集发布，仍对应上表的待授权事项。Yodobashi 外圈的沿边界退让是程序化拟合，没有新增图片贴图或第三方模型。
+高架资料保留 OSM 轴线和独立的混合几何。`data/geography/elevated/ways.json` 摘取仓库 OSM 的 38 条高架步行轴线（含 2 条快照仍标为施工的步道），原坐标及估计宽度在 OSM 下载中交付。`public-areas/north-decks/`、`south-decks/`、`west-decks/` 的公共平台、`deck-access.ts` 的公共设备及建筑裁口结合高架步行图、站城楼层图和既有参考照片；其混合几何不作为纯 OSM 子集发布，仍对应上表的待授权事项。Yodobashi 外圈的沿边界退让是程序化拟合，没有新增图片贴图或第三方模型。
 
 `west-decks/inogate.ts` 根据 JR 位置图及两端 2F 图拟合独立公共前沿／新桥，具体资源为 `data/geography/elevated/inogate.json`。宿主轮廓来自仓库 OSM，前沿、桥面、门口及统一展示标高仍为混合来源参考拟合，适用原有待授权事项。`display-context.json` 根据地下公共面、核心站体及连廊裁剪地面铺装，不能当作纯 OSM 下载。
 

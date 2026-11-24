@@ -18,6 +18,7 @@
 - 梅北与 JR 地面斜交并保留缓弧；轨道北端向 Grand Front 西侧道路地下收转，不穿入南北馆。
 - JR 北中庭分别接 LUCUA、梅北公共侧和 M16 北改札外，不新增到南侧 Crost 的未核验 B1 直线。
 - Grand Front 与 Yodobashi 隔道路相邻。JR 北侧二层公共分支分别接两者；南北馆之间保持横跨道路的连桥关系。
+- Grand Green 北馆与 Grand Front 北馆另有一座东西向 2F 北接续桥。梅北之森与南馆之间的高架步道走公园，北端落向园路；园侧直接进入北馆 2F 的门位尚待核对。[JAM BASE 官方路线](https://umekita.com/jambase/access/) · [UR 公园动线图](https://www.ur-net.go.jp/west/press/bn5k4400000037c7-att/20260409_ur_umekita_prerelease.pdf#page=2)
 - Yodobashi 外圈回廊只由公共高架板块绘制，建筑绘制内层裙楼；不能让外壳封住回廊或重画桥面。
 - 阪急三线各收束为独立双线北行，横向东京都、西神户。公共接口与 JR／Yodobashi 连桥分别核对，不能直接连通付费区。
 - Inogate—Grand Green 与 LUCUA 1100—Green Place 是两条独立公共连桥。Green Place 地上体量按既有公共落台和桥面留出净空，与梅北地下付费站台分开。[建筑白模校对](../buildings/model-calibration.md)

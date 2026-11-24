@@ -1,7 +1,8 @@
 import { messageText } from '../../i18n/index.ts';
 import { passageOutline } from '../../../domain/map/geometry.ts';
 import type { AtriumVoid, Evidence, FloorArea, Point2, StairSpiral, VerticalConnection } from '../../../domain/map/model.ts';
-import type { DeckPath } from '../../../domain/map/public-deck.ts';
+import type { DeckPath, DeckPortal } from '../../../domain/map/public-deck.ts';
+import { sourceDeckPaths } from '../elevated-source.ts';
 
 const blockId = 'north-atrium-b1';
 const center = { x: 167, z: 591 };
@@ -50,6 +51,31 @@ export function gateLanternDeck(join: Point2): DeckPath {
         points: [join, upperStop],
         width: 5,
         evidence: gateLanternEvidence
+    };
+}
+
+/** Join the mapped bridge to the recessed Gate Tower (ゲートタワー) podium mouth. */
+export function gateLanternSouthBuilding(): { path: DeckPath; portal: DeckPortal } {
+    const source = sourceDeckPaths(['gate-lantern-south-building'])[0]!;
+    const [end, next] = source.points;
+    const angle = Math.atan2(end!.z - next!.z, end!.x - next!.x);
+    // The display podium recess for the Sunken Garden (サンクンガーデン) moves the wall inward.
+    const recess = 5.6;
+    const point = { x: end!.x + Math.cos(angle) * recess, z: end!.z + Math.sin(angle) * recess };
+    const threshold = { x: point.x + Math.cos(angle) * 1.5, z: point.z + Math.sin(angle) * 1.5 };
+    return {
+        path: { ...source, points: [threshold, ...source.points] },
+        portal: {
+            id: 'gate-lantern-south-building-2f',
+            target: 'grand-green-south-gate',
+            blockId: 'west-decks',
+            level: 'district-north-deck',
+            point,
+            width: source.width,
+            angle,
+            openingHalfDepth: 2.5,
+            evidence: source.evidence
+        }
     };
 }
 

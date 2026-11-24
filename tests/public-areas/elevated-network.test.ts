@@ -39,7 +39,7 @@ const size = (g: clipping.MultiPolygon) => g.reduce(
 test(
     'elevated blocks retain OSM axes and add the separately evidenced Inogate bridge',
     () => {
-        assert.equal(ways.ways.filter(w => w.tags.highway === 'footway').length, 34);
+        assert.equal(ways.ways.filter(w => w.tags.highway === 'footway').length, 36);
         assert.deepEqual(ways.ways.filter(w => w.tags.highway === 'construction').map(w => w.id), ['1313936489', '1313936490']);
         assert.equal(elevated.blocks.length, 4);
         assert.ok(elevated.blocks.every(b => b.paths.length && b.evidence.source === 'district'));
@@ -296,6 +296,28 @@ test(
                 }
             });
         }
+    }
+);
+test(
+    'the North Connection Bridge reaches clear 2F thresholds in both north buildings',
+    () => {
+        const west = elevated.blocks.find(block => block.id === 'west-decks')!;
+        const bridge = west.paths.find(path => path.id === 'grand-green-north-connection:1327400333')!;
+        const doors = ['grand-green-north-connection-door', 'grand-front-north-connection-door']
+            .map(id => elevated.portals.find(portal => portal.id === id)!);
+        assert.deepEqual(doors.map(door => door.level), ['district-north-deck', 'district-north-deck']);
+        assert.ok(elevatedAreas.some(area => area.blockId === west.id && bridge.points.every(point => contains(area, point))));
+        const thresholds = [bridge.points[0]!, bridge.points.at(-1)!];
+        doors.forEach((door, index) => {
+            const building = geographicBuildings.find(b => b.id === door.target)!;
+            const point = thresholds[index]!;
+            assert.ok(contains(building.volumes[0]!, point));
+            const shell = buildGeographicBuilding(building, exteriorOpenings);
+            const ray = new T.Raycaster(new T.Vector3(point.x, 8.65, point.z), new T.Vector3(0, 1, 0), 0, 3);
+            assert.equal(ray.intersectObject(shell).length, 0);
+        });
+        const canopy = layout.canopies!.find(item => item.id === 'canopy-grand-green-north-connection')!;
+        assert.deepEqual(canopy.points, doors.map(door => door.point));
     }
 );
 test(

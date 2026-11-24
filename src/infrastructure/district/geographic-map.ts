@@ -167,6 +167,7 @@ export const exteriorOpenings: BuildingOpening[] = [
         outline: sunkenGarden.areas.find(area => area.level === 'district-ground')!.outline,
         base: -.1,
         top: 36,
+        suppressRailings: false,
         evidence: sunkenGarden.atrium.evidence
     },
     ...jpAccess.buildingOpenings,
