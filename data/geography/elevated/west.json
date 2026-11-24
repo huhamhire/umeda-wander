@@ -16,15 +16,33 @@
     },
     {
       "id": "umekita-public",
-      "name": "梅北地上公共步道",
+      "name": "ひらめきの道南段",
       "ways": [
         1313936486
       ],
       "source": "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=1",
+      "sourceUrls": ["https://www.nikken.jp/ja/dbook/nj202503/pageindices/index12.html"],
       "displayLevel": "2F",
-      "widthMetres": 7,
-      "geometryEvidence": "OSM 线位；桥面宽度为示意",
-      "levelEvidence": "参考图对应高架公共步道；不直接由 OSM level 数字推断建筑楼层"
+      "widthMetres": 4,
+      "geometryEvidence": "OSM 线位，4 米采用日建设计公开尺寸",
+      "levelEvidence": "与 Gate Lantern 接续，归入现有北侧 2F 展示标高"
+    },
+    {
+      "id": "umekita-grove-deck",
+      "name": "ひらめきの道跨路段及北段",
+      "ways": [
+        1313936489,
+        1313936490
+      ],
+      "source": "references/connections/grand-green-osaka/north-park-opening.pdf#page=2",
+      "sourceUrls": [
+        "https://www.mec.co.jp/news/detail/2026/11/20_mec261120_ggo",
+        "https://www.nikken.jp/ja/dbook/nj202503/pageindices/index12.html"
+      ],
+      "displayLevel": "2F",
+      "widthMetres": 4,
+      "geometryEvidence": "仓库快照保留两个施工标签及桥轴，开园公告确认实际贯通。桥宽沿用日建设计的 4 米。",
+      "levelEvidence": "跨 Step Plaza 道路进入梅北之森，并沿西侧曲线抵达北端公共平台。"
     },
     {
       "id": "inogate-grand-green-review",

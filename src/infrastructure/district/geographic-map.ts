@@ -2,6 +2,10 @@ import { messageText, resolveMessage } from '../i18n/index.ts';
 import { southDeckCanopies } from '../public-areas/south-decks/canopies.ts';
 import { northDeckCanopies } from '../public-areas/north-decks/canopies.ts';
 import { westDeckCanopies } from '../public-areas/west-decks/canopies.ts';
+import { createGateLantern } from '../public-areas/west-decks/gate-lantern.ts';
+import { groveNorthStairLanding, groveNorthStairs, umekitaGrove } from '../public-areas/west-decks/umekita-grove.ts';
+import { parkGroundAccess } from '../public-areas/west-decks/park-access.ts';
+import { sunkenGarden } from '../public-areas/west-decks/sunken-garden.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
 import type { MultiPolygon } from 'polygon-clipping';
 import type { BuildingOpening } from '../../domain/map/model.ts';
@@ -56,6 +60,7 @@ const stationMaps = createGeographicStations();
 export const publicInterfaces = stationMaps.flatMap(stationPublicInterfaces);
 export const publicFrontages = stationFrontages(stationMaps);
 const northAccess = createNorthPublicAccess(publicInterfaces);
+const gateLantern = createGateLantern();
 const metroAccess = createMetroStreetExits();
 export const deckAccess = createDeckAccess(northAccess.northLift);
 export const jpAccess = createJpBasementAccess(
@@ -81,6 +86,8 @@ const whityAccess = [
 ];
 const streetConnections = [
     ...northAccess.connections,
+    gateLantern.escalator,
+    ...sunkenGarden.connections,
     ...jpAccess.connections,
     ...grandFrontPlazaAccess.connections,
     ...metroAccess.connections,
@@ -98,7 +105,8 @@ const streetConnections = [
 export const publicAccess = {
     connections: [...streetConnections, metroAccess.lift],
     areas: [
-        ...northAccess.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas, ...metroAccess.areas, ...metroSouthPublicApproaches(),
+        ...northAccess.areas, ...gateLantern.areas, ...sunkenGarden.areas, ...jpAccess.areas, ...grandFrontPlazaAccess.areas,
+        ...metroAccess.areas, ...metroSouthPublicApproaches(),
         ...sonechikaAccess.areas, ...diamorNorthAccess.areas, ...diamorCentralAccess.areas, ...diamorSouthAccess.areas,
         ...diamorEastAccess.areas, ...gardenAvenueAccess.areas, ...gardenAvenueBuildings.areas, ...doticaAccess.areas,
         ...whityAccess.flatMap(access => access.areas), ...eastMallAccess.areas, ...hankyuConcourseBasementAreas
@@ -173,7 +181,10 @@ export const exteriorOpenings: BuildingOpening[] = [
     ...hankyuConcourseOpenings,
 ];
 // Preserve the existing ground facility ID shared by both segments of the Midosuji lift.
-const externalConnections = [...streetConnections, ...deckAccess.connections, metroAccess.lift];
+const externalConnections = [
+    ...streetConnections, ...deckAccess.connections, ...parkGroundAccess.connections,
+    gateLantern.stairs, groveNorthStairs, metroAccess.lift
+];
 const composed = composeStationMaps(
     shared.stations,
     {
@@ -183,6 +194,8 @@ const composed = composeStationMaps(
             ...publicAccess.areas.filter(a => a.level !== 'district-underground'),
             ...elevatedAreas,
             ...deckAccess.areas.filter(a => a.level === 'district-ground'),
+            groveNorthStairLanding,
+            ...parkGroundAccess.areas,
             ...hankyuConcourseAreas,
         ],
         platforms: [],
@@ -201,8 +214,9 @@ const composed = composeStationMaps(
             ...whityAccess.flatMap(access => access.canopies)
         ],
         landmarks: izumiAccess.landmarks,
+        parks: [umekitaGrove],
         concourses: hankyuConcourses,
-        atria: [...hankyuConcourseAtria, ...gardenAvenueBuildings.atria],
+        atria: [...hankyuConcourseAtria, ...gardenAvenueBuildings.atria, gateLantern.atrium, sunkenGarden.atrium],
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
     }
 );
@@ -228,6 +242,7 @@ export const removedPublicAreas = shared.removed;
 export const layout = {
     ...composed.layout,
     areas: composed.layout.areas.map(area => ({ ...area, name: resolveMessage(area.name) })),
+    parks: composed.layout.parks.map(park => ({ ...park, name: resolveMessage(park.name) })),
     passages: composed.layout.passages?.map(passage => ({
         ...passage,
         name: resolveMessage(passage.name),

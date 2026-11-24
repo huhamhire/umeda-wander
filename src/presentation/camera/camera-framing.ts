@@ -40,6 +40,17 @@ export function cameraEnvelope(
             points.push(new T.Vector3(p.x, elevation(area.level) + (area.elevationOffset ?? 0) + (area.height ?? 0.55), p.z));
         }
     }
+    for (const park of layout.parks ?? []) {
+        if (matches(park.level)) {
+            const y = elevation(park.level);
+            for (const p of park.outline) {
+                points.push(new T.Vector3(p.x, y + .3, p.z));
+            }
+            for (const tree of park.trees) {
+                points.push(new T.Vector3(tree.x, y + tree.height + 1, tree.z));
+            }
+        }
+    }
     for (const platform of layout.platforms) {
         if (!matches(platform.level)) {
             continue;

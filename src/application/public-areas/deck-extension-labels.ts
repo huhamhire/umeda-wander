@@ -6,7 +6,7 @@ import { pointInPolygon } from '../../domain/map/geometry.ts';
 export function deckExtensionLabels(blocks: DeckBlock[], areas: FloorArea[]): PublicPassage[] {
     const extensions = [
         { path: 'southeast-extension:610936152', name: "publicAreas.extensions.southeast.name" },
-        { path: 'umekita-public:1313936486', name: "publicAreas.extensions.umekitaNorth.name" }
+        { path: 'umekita-grove-deck:1313936490', name: "publicAreas.extensions.umekitaNorth.name" }
     ];
     return extensions.map(e => {
         const b = blocks.find(b => b.paths.some(p => p.id === e.path))!;

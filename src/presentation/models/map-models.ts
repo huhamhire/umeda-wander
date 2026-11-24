@@ -1,7 +1,7 @@
 import { messageText } from '../../infrastructure/i18n/index.ts';
 import { showAreaLabel } from '../../application/exploration/area-label-policy.ts';
 import * as T from 'three';
-import type { Facility, Level, LevelId, StationLayout, FloorOpening, StationId } from '../../domain/map/model.ts';
+import type { Facility, Level, LevelId, StationLayout, FloorOpening, StationId, Point2 } from '../../domain/map/model.ts';
 import { platformPoint, platformOutline, platformTangent, pointInPolygon } from '../../domain/map/geometry.ts';
 import { planFloorOpenings } from '../../application/connections/connection-openings.ts';
 import { planGateBoundaries } from '../../application/connections/gate-boundaries.ts';
@@ -24,6 +24,8 @@ import { ModelPrimitives } from './model-primitives.ts';
 import { colors } from '../appearance/scene-palette.ts';
 import { buildWalkwayCanopy } from './public-areas/walkway-canopy-model.ts';
 import { buildWaterTree } from './public-areas/water-tree-model.ts';
+import { buildParkLandscape } from './public-areas/park-landscape-model.ts';
+import { buildSpiralCanopy, SpiralStairModel } from './public-areas/spiral-stair-model.ts';
 import type { SceneLabelDefinition } from '../labels/scene-labels.ts';
 import { osakaLoopTrainPath } from '../../application/exploration/osaka-loop-train.ts';
 import { OsakaLoopTrainModel } from './stations/osaka-loop-train-model.ts';
@@ -42,7 +44,7 @@ export class MapModels {
     readonly jrConcourseReference = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
     readonly basementBuildingFloors: T.Group[] = [];
-    readonly connectors: VerticalConnectionModel[] = [];
+    readonly connectors: (VerticalConnectionModel | SpiralStairModel)[] = [];
     readonly canopies: { model: T.Group; ground: boolean }[] = [];
     readonly pickables: T.Object3D[] = [];
     readonly platformSurfaces = new Map<string, T.Mesh>();
@@ -85,6 +87,14 @@ export class MapModels {
         for (const floor of this.basementBuildingFloors) {
             floor.visible = buildingsVisible;
         }
+    }
+
+    /** Cut the flat context wherever station access or a modeled terrain surface replaces it. */
+    get groundCutouts(): Point2[][] {
+        return [
+            ...this.openings.filter(opening => this.levels.find(level => level.id === opening.level)!.y === 0).map(opening => opening.outline),
+            ...this.layout.parks?.map(park => park.outline) ?? []
+        ];
     }
 
     /** Store label anchors independently of DOM creation and screen placement. */
@@ -410,6 +420,11 @@ export class MapModels {
             this.groups.get(landmark.level)!.add(model);
             this.label(landmark.name, landmark.x, 4.45, landmark.z, landmark.level, false, false, null, model);
         }
+        for (const park of this.layout.parks ?? []) {
+            const model = setRegionOwner(buildParkLandscape(park), null);
+            this.groups.get(park.level)!.add(model);
+            this.label(park.name, park.labelPoint.x, 5, park.labelPoint.z, park.level, false, false, null, model);
+        }
         for (const guide of this.layout.guides ?? []) {
             for (const p of guide.points) {
                 if (p.caption) {
@@ -464,9 +479,18 @@ export class MapModels {
             }
         }
         for (const connection of this.layout.connections) {
-            const model = new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
+            const model = connection.spiral
+                ? new SpiralStairModel(connection, this.levels)
+                : new VerticalConnectionModel(connection, this.levels, this.layout.platforms);
             this.connectors.push(model);
             this.scene.add(model.group);
+            if (connection.spiral?.canopy) {
+                const low = this.levels.find(level => level.id === connection.from.level)!.y;
+                const high = this.levels.find(level => level.id === connection.to.level)!.y;
+                const canopy = setRegionOwner(buildSpiralCanopy(connection.spiral, high - low), null);
+                this.groups.get(connection.to.level)!.add(canopy);
+                this.canopies.push({ model: canopy, ground: low === 0 });
+            }
         }
         this.buildRoof();
         this.roof.position.set(geographicRoofPlan.center.x, 0, geographicRoofPlan.center.z);

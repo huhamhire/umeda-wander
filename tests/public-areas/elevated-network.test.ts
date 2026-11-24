@@ -39,8 +39,8 @@ const size = (g: clipping.MultiPolygon) => g.reduce(
 test(
     'elevated blocks retain OSM axes and add the separately evidenced Inogate bridge',
     () => {
-        assert.equal(ways.ways.length, 34);
-        assert.ok(ways.ways.every(w => w.tags.highway === 'footway'));
+        assert.equal(ways.ways.filter(w => w.tags.highway === 'footway').length, 34);
+        assert.deepEqual(ways.ways.filter(w => w.tags.highway === 'construction').map(w => w.id), ['1313936489', '1313936490']);
         assert.equal(elevated.blocks.length, 4);
         assert.ok(elevated.blocks.every(b => b.paths.length && b.evidence.source === 'district'));
         assert.equal(pendingDecks.length, 0);

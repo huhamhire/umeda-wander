@@ -34,7 +34,8 @@ export const deckEvidence: Evidence = {
  * Project source longitude and latitude into the shared district metre frame, with east x and south z.
  */
 const project = ([lon, lat]: number[]): Point2 => ({ x: (lon! - 135.491) * 111320 * Math.cos(34.708 * Math.PI / 180), z: (34.708 - lat!) * 111320 });
-const configs = [north, south, west].flatMap(c => c.links);
+const configs: ((typeof north.links)[number] & { sourceUrls?: string[] })[] =
+    [north, south, west].flatMap(c => c.links);
 export const elevatedWidthEstimates = configs.filter(l => l.ways.length).map(l => ({
     id: l.id,
     ways: l.ways,
@@ -63,7 +64,11 @@ export function sourceDeckPaths(ids: string[]): DeckPath[] {
                 width: link.widthMetres,
                 evidence: {
                     ...deckEvidence,
-                    urls: [...deckEvidence.urls!, 'https://www.openstreetmap.org/way/' + way],
+                    urls: [
+                        ...deckEvidence.urls!,
+                        ...link.sourceUrls ?? [],
+                        'https://www.openstreetmap.org/way/' + way
+                    ],
                     detail: deckEvidence.detail + ' ' + link.source + '; ' + link.geometryEvidence
                 }
             };

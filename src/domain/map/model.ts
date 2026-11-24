@@ -131,6 +131,8 @@ export interface VerticalConnection {
     lanes?: 1 | 2 | 6;
     laneSpacing?: number;
     stairLandingLength?: number;
+    /** Curved exterior stair around an open court, from the lower stop to the upper stop. */
+    spiral?: StairSpiral;
     /** Clear slab opening width when a stair and its flanking escalators share one well. */
     openingWidth?: number;
     doorFacingRad?: number;
@@ -140,6 +142,14 @@ export interface VerticalConnection {
     reverseLowerDoor?: boolean;
     placement?: 'exterior';
     blockId?: string;
+}
+
+export interface StairSpiral {
+    center: Point2;
+    radius: number;
+    startRad: number;
+    sweepRad: number;
+    canopy?: { clearance: number; mastRadius: number };
 }
 
 export interface StationLayout {
@@ -154,6 +164,7 @@ export interface StationLayout {
     exteriorOpenings?: BuildingOpening[];
     canopies?: WalkwayCanopy[];
     landmarks?: PublicLandmark[];
+    parks?: PublicPark[];
     partitions?: StationPartition[];
 }
 
@@ -174,6 +185,27 @@ export interface PublicLandmark extends Point2 {
     name: string;
     kind: 'water-tree';
     level: LevelId;
+    evidence: Evidence;
+}
+
+/** Landscape geometry and approximate planting, independent of the walking graph. */
+export interface PublicPark extends PlanRegion {
+    id: string;
+    name: string;
+    level: LevelId;
+    labelPoint: Point2;
+    lawns: PlanRegion[];
+    pond: PlanRegion;
+    waterfall: { from: Point2; to: Point2; drop: number };
+    paths: PlanRegion[];
+    trees: (Point2 & { height: number })[];
+    landform: {
+        basin: Point2[];
+        boundaryY: number;
+        basinY: number;
+        moundRise: number;
+        pondY: number;
+    };
     evidence: Evidence;
 }
 

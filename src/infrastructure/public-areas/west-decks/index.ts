@@ -2,6 +2,9 @@ import { messageText } from '../../i18n/index.ts';
 import type { DeckBlock, DeckPortal } from '../../../domain/map/public-deck.ts';
 import { deckEvidence, sourceDeckPaths, deckPath } from '../elevated-source.ts';
 import { jrGroundPoint } from '../../stations/jr-osaka/geographic.ts';
+import { gateLanternDeck } from './gate-lantern.ts';
+import { groveNorthLanding } from './umekita-grove.ts';
+import { southParkDeckLanding } from './park-access.ts';
 
 /**
  * Register the public deck west of LUCUA without connecting it to the underground paid platforms.
@@ -11,13 +14,22 @@ export function westDecks(): {
     portals: DeckPortal[];
 } {
     const stationDoor = jrGroundPoint({ x: -53, z: -47 });
+    const parkPaths = sourceDeckPaths(['umekita-public']);
+    const parkSouth = parkPaths[0]!.points[0]!;
+    const grovePaths = sourceDeckPaths(['umekita-grove-deck']);
+    const groveEnd = grovePaths.at(-1)!.points.at(-1)!;
     return {
         blocks: [{
             id: 'west-decks',
             name: messageText('publicAreas.westDecks.entities.westDecks.name'),
             level: 'district-north-deck',
             paths: [
-                ...sourceDeckPaths(['lucua-umekita', 'umekita-public']),
+                ...sourceDeckPaths(['lucua-umekita']),
+                ...parkPaths,
+                ...grovePaths,
+                groveNorthLanding(groveEnd),
+                southParkDeckLanding(parkPaths[0]!.points.at(-1)!),
+                gateLanternDeck(parkSouth),
                 deckPath('lucua-west-calibrated-concourse', messageText('publicAreas.westDecks.entities.westDecks.name'), [{ x: 293.9, z: 616 }, stationDoor], 7)
             ],
             regions: [],

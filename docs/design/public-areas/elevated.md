@@ -66,6 +66,10 @@ OSM 原始轴线及估计宽度随 OSM 下载提供；公共平台、建筑裁�
 
 Inogate 连桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-decks` 板块。JR 发布资料第 1 页位置图、第 4 页两端及楼层说明，与两份本地 2F 图、OSM Inogate／Grand Green 南馆 Gate Tower 外围轮廓联合拟合：从 JR 北侧 2F 公共面接 Inogate 前沿，再从西端朝西北接南馆。它与更北面的 LUCUA—Green Place 连桥保持独立，不误接 Grand Front 或梅北付费站台。
 
+「ひらめきの道」由 `west-decks` 从 Gate Lantern 接南段，跨 Step Plaza 再延伸至梅北之森。南段和新开放段沿 OSM `1313936486`、`1313936489`、`1313936490` 的共用端点接续。11 月 16 日快照保留后两段的施工标签，由运营方 11 月 20 日公告确认贯通。桥宽用日建设计公布的 4 米；公告全长 350 米，当前 OSM 轴线按仓库投影约 396 米，保留原线位及共用端点。2F 标高沿用北侧组；北端按 OSM `1314528005`、`1347368415` 取平台走线，并按 `1347368414` 拟合落地楼梯。桥端平台、扶手、踏步及高差为示意。配套地形、来源哈希见 `data/geography/elevated/umekita-grove.json`。[开通公告](https://www.mec.co.jp/news/detail/2026/11/20_mec261120_ggo) · [日建设计步道资料](https://www.nikken.jp/ja/dbook/nj202503/pageindices/index12.html)
+
+Step Plaza 跨路桥的南端另设一组落向南公园 1F 的楼梯。下端经 `1347756740`、`1314528006` 接园路 `1314528009`，上端经 `1347756741` 接南段桥轴的共享端点。按 OSM 楼梯主折点画两段，下段和中间平台使用 1F 局部标高。阶宽和层间高程为展示拟合。[OSM 楼梯](https://www.openstreetmap.org/way/1314528010) · [现场下楼记录](https://www.youtube.com/watch?v=4wNCIRHmkvc&t=2033s)
+
 两端坐标、7 m 桥宽及北侧统一展示标高按参考图拟合。两处宿主在地面用 OSM 轮廓标示，桥面保留已登记的入口与落台。公共面避让孔洞、同高楼板和付费区。回归检查覆盖 JR 至目标处的连续公共分量，入口栏杆按声明的门户留口。
 
 ## 桥面顶棚

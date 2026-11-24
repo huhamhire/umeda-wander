@@ -29,11 +29,10 @@ finally {
 const start = performance.now();
 const root = new T.Scene();
 const scene = new ModelConstructor({ scene: root, layout, levels, facilities, maxAnisotropy: 1 });
-const openings = scene.openings;
 for (const c of scene.connectors) {
     c.update((id: string) => levels.find(l => l.id === id)!.y, 'all');
 }
-const context = buildGeographicContext(openings.filter(o => levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline));
+const context = buildGeographicContext(scene.groundCutouts);
 root.add(
     ...Object.values(context),
     ...geographicBuildings.map(b => buildGeographicBuilding(b, layout.exteriorOpenings))

@@ -22,6 +22,7 @@ export function composeStationMaps(stations: StationMap[], district: StationLayo
         exteriorOpenings: parts.flatMap(p => p.exteriorOpenings ?? []),
         canopies: parts.flatMap(p => p.canopies ?? []),
         landmarks: parts.flatMap(p => p.landmarks ?? []),
+        parks: parts.flatMap(p => p.parks ?? []),
         partitions: parts.flatMap(p => p.partitions ?? []),
     };
     return {

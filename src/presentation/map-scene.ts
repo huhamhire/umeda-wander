@@ -202,7 +202,7 @@ export class MapScene {
         this.renderer.localClippingEnabled = !!this.models.loopTrain;
         this.labels = new SceneLabels(labelHost, this.models.labels);
         this.context = buildGeographicContext(
-            this.models.openings.filter(o => this.levels.find(l => l.id === o.level)!.y === 0).map(o => o.outline),
+            this.models.groundCutouts,
             this.renderer.capabilities.getMaxAnisotropy()
         );
         this.scene.add(this.context.roads, this.context.buildings);

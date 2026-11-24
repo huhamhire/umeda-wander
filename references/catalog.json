@@ -141,6 +141,41 @@
       "formerPath": "references/Umeda Walkway Maps/jr-west-umekita-decks.pdf"
     },
     {
+      "id": "connections-grand-green-osaka-north-park-opening",
+      "path": "connections/grand-green-osaka/north-park-opening.pdf",
+      "sha256": "5592d8c0139191c58a16b51b8376a6b7403e99e1d886d78e4e1fffc527d09a00",
+      "bytes": 440485,
+      "publisher": "UR 都市机构",
+      "sourceUrls": [
+        "https://www.ur-net.go.jp/west/press/pcbnj1000000aj8u-att/20261027_ur_umekita_prerelease.pdf"
+      ],
+      "checkedAt": "2026-11-23",
+      "verification": "official-file-downloaded-and-page-2-rendered",
+      "factsUsed": [
+        "第 2 页标出 2026 年 11 月 20 日开放范围、跨路步道、北端多功能空间及余下施工地块"
+      ],
+      "limitations": "斜视图用于开放边界及设施关系核对；无可直接读取的米制平面或高程。",
+      "permission": "几何改编及原图公开再发布授权待核实。"
+    },
+    {
+      "id": "connections-grand-green-osaka-park-plan",
+      "path": "connections/grand-green-osaka/park-plan.png",
+      "sha256": "d3dfe242e9764f4a7c4e66e8fc4c9f3a4c5f17ccf755259a069332b395aeef46",
+      "bytes": 1190916,
+      "publisher": "Grand Green Osaka",
+      "sourceUrls": [
+        "https://umekita.com/midori/map/",
+        "https://umekita.com/midori/assets/map.png"
+      ],
+      "checkedAt": "2026-11-23",
+      "verification": "official-site-plan-downloaded-and-diagram-checked",
+      "factsUsed": [
+        "北公园水面、园路、草坪和高架步道的相对位置"
+      ],
+      "limitations": "包含规划状态；开放边界以开园公告为准，几何为人工拟合。",
+      "permission": "几何改编及原图公开再发布授权待核实。"
+    },
+    {
       "id": "connections-grand-green-osaka-south-building-2f",
       "path": "connections/grand-green-osaka/south-building-2f.png",
       "sha256": "74868204b36858195f343af7d465bf95f736e92ca2e65940d6d832a5ad281673",

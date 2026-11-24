@@ -8,6 +8,9 @@ import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts
 import { footprint } from '../../src/infrastructure/buildings/building-data.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
+import { umekitaGrove } from '../../src/infrastructure/public-areas/west-decks/umekita-grove.ts';
+import { parkGroundAccess } from '../../src/infrastructure/public-areas/west-decks/park-access.ts';
+import { sunkenGarden } from '../../src/infrastructure/public-areas/west-decks/sunken-garden.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 import { hankyuSunPlazaAreas } from '../../src/infrastructure/buildings/hankyu-dept/upper-concourse.ts';
 import { hankyuBridgeGroundLanding } from '../../src/infrastructure/public-areas/south-decks/north-arm-stairs.ts';
@@ -28,6 +31,9 @@ const protectedOutlines = [
     ...geographicBuildings.map(b => footprint(b.volumes[0]!.source.split('/').at(-1)!).outline),
     ...basementOccupancies.map(b => b.region.outline),
     ...inogateHosts.map(host => host.region.outline),
+    umekitaGrove.outline,
+    ...parkGroundAccess.areas.map(area => area.outline),
+    ...sunkenGarden.areas.map(area => area.outline),
     ...hankyuConcourseAreas.map(area => area.outline),
     ...hankyuSunPlazaAreas.map(area => area.outline),
     hankyuBridgeGroundLanding.outline,

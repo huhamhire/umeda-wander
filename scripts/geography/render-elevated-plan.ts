@@ -49,7 +49,8 @@ for (const region of ['north', 'south', 'west'] as const) {
         const lines: Point[][] = [];
         for (const id of link.ways) {
             const f = features.find(f => f.id === String(id));
-            if (!f || f.tags.highway !== 'footway') {
+            if (!f || (f.tags.highway !== 'footway' &&
+                !(f.tags.highway === 'construction' && f.tags.construction === 'footway' && f.tags.bridge === 'yes'))) {
                 throw new Error(`Invalid walking way ${id}`);
             }
             const points = f.coordinates.map(project);

@@ -11,7 +11,10 @@ const ids = new Set(['north', 'south', 'west'].flatMap(region => (JSON.parse(rea
     }[];
 }).links.flatMap(l => l.ways.map(String))));
 const ways = features.filter(f => ids.has(f.id));
-if (ways.length !== ids.size || ways.some(w => w.tags.highway !== 'footway')) {
+if (ways.length !== ids.size || ways.some(w =>
+    w.tags.highway !== 'footway' &&
+    !(w.tags.highway === 'construction' && w.tags.construction === 'footway' && w.tags.bridge === 'yes')
+)) {
     throw new Error('Missing/non-footway elevated source');
 }
 writeFileSync(

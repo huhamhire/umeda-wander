@@ -35,7 +35,14 @@ test(
                     }
                 }
                 for (const id of link.ways) {
-                    assert.equal(way(id)?.tags.highway, 'footway');
+                    const tags = way(id).tags;
+                    if (link.id === 'umekita-grove-deck') {
+                        assert.equal(tags.highway, 'construction');
+                        assert.equal(tags.construction, 'footway');
+                        assert.equal(tags.bridge, 'yes');
+                    } else {
+                        assert.equal(tags.highway, 'footway');
+                    }
                     assert.ok(way(id).coordinates.length >= 2);
                 }
             }

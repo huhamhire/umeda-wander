@@ -54,6 +54,21 @@ export function completeFacilityDirectory(existing: Facility[], connections: Ver
         if (id.startsWith('grand-front-plaza')) {
             return messageText('facilities.locations.grandFrontPlaza');
         }
+        if (id.startsWith('gate-lantern-')) {
+            return messageText('publicAreas.westDecks.entities.gateLantern.name');
+        }
+        if (id === 'umekita-grove-north-stairs') {
+            return messageText('publicAreas.westDecks.entities.umekitaGrove.name');
+        }
+        if (id.startsWith('umekita-step-plaza-')) {
+            return messageText('publicAreas.westDecks.entities.stepPlaza.name');
+        }
+        if (id.startsWith('umekita-south-park-stairs-')) {
+            return messageText('publicAreas.westDecks.entities.southPark.name');
+        }
+        if (id.startsWith('umekita-sunken-garden-')) {
+            return messageText('publicAreas.westDecks.entities.sunkenGarden.name');
+        }
         if (id.startsWith('public-south')) {
             return messageText('facilities.locations.southBridge');
         }
