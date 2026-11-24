@@ -769,6 +769,7 @@ export const facilityCodes: Record<string, string> = {
     'connection-umekita-sunken-garden-north-to': 'PUB-276',
     'connection-umekita-sunken-garden-south-from': 'PUB-277',
     'connection-umekita-sunken-garden-south-to': 'PUB-278',
+    'umeda-sky-tower-east-entrance': 'PUB-279',
     'connection-bridge-lift-h-from': 'JR-223',
     'connection-bridge-lift-h-to': 'JR-224',
     'connection-south-building-stairs-50-from': 'JR-225',

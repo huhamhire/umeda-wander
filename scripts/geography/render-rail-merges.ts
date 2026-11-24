@@ -63,7 +63,7 @@ function renderDistrictRailContext(): void {
     for (const area of hankyu.layout.areas) {
         shapes.push(`<polygon points="${points(area.outline)}" fill="#e4dcdb" stroke="#ac9a9c" stroke-width=".6"/>`);
     }
-    for (const b of geographicBuildings.filter(b => !['grand-front-north', 'jp-tower', 'hanshin-dept'].includes(b.id))) {
+    for (const b of geographicBuildings.filter(b => b.volumes.length && !['grand-front-north', 'jp-tower', 'hanshin-dept'].includes(b.id))) {
         const outline = b.volumes[0]!.outline;
         shapes.push(`<polygon points="${points(outline)}" fill="#e2e4db" fill-opacity=".6" stroke="#a8b6ab" stroke-width=".8"/>`);
     }

@@ -7,6 +7,7 @@ import { buildFloorGeometry } from '../floor-geometry.ts';
 
 const ground = new T.MeshStandardMaterial({ color: 0x91a66f, roughness: .96 });
 const lawn = new T.MeshStandardMaterial({ color: 0xaec683, roughness: .96 });
+const planting = new T.MeshStandardMaterial({ color: 0x769165, roughness: .96 });
 const pavement = new T.MeshStandardMaterial({ color: 0xded6ba, roughness: .92 });
 const water = new T.MeshStandardMaterial({ color: 0x68a4a6, roughness: .45 });
 const cascade = new T.MeshStandardMaterial({ color: 0x9ac9c9, roughness: .55 });
@@ -89,8 +90,17 @@ export function buildParkLandscape(park: PublicPark): T.Group {
     surface('park-ground', terrainGeometry(park, { outline: park.outline, holes: [park.pond.outline] }, 0), ground);
     surface('pond', buildFloorGeometry(park.pond.outline, [], .12, pondY - .12), water);
     park.lawns.forEach(region => surface('lawn', terrainGeometry(park, { ...region, holes: [park.pond.outline] }, .06), lawn));
+    park.planting?.forEach(region => surface('planting', terrainGeometry(park, region, .07), planting));
     park.paths.forEach(region => surface('park-path', terrainGeometry(park, region, .10), pavement));
-    const { from, to, drop } = park.waterfall;
+    if (park.waterfall) {
+        group.add(buildWaterfall(park.waterfall, pondY));
+    }
+    addParkTrees(group, park);
+    return group;
+}
+
+/** Render the separate cascade where the park has a documented drop into its pond. */
+function buildWaterfall({ from, to, drop }: NonNullable<PublicPark['waterfall']>, pondY: number): T.Group {
     const width = Math.hypot(to.x - from.x, to.z - from.z);
     const angle = Math.atan2(to.z - from.z, to.x - from.x);
     const falls = new T.Group();
@@ -102,7 +112,5 @@ export function buildParkLandscape(park: PublicPark): T.Group {
     const curtain = new T.Mesh(new T.BoxGeometry(width, drop, .17), cascade);
     curtain.position.set(0, drop / 2 + .05, -.46);
     falls.add(ledge, curtain);
-    group.add(falls);
-    addParkTrees(group, park);
-    return group;
+    return falls;
 }

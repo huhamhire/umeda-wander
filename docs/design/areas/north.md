@@ -26,6 +26,9 @@
 
 - 阶梯广场（Step Plaza）在大阪站北 1 号线两侧分别接人行道。现场与 OSM 核对两侧各有多段浅阶和园路接点。模型分别以一处含中段平台的 1F 局部高差表达，阶宽、阶数及高程为示意。[UR 开园平面](https://www.ur-net.go.jp/west/press/bn5k4400000037c7-att/20260409_ur_umekita_prerelease.pdf#page=2) · [运营方道路设计](https://umekita.com/midori/features/fon_20221121_12/)
 - Grand Green 南馆 B1 下沉花园位于 1F 的 S10 和 S11 之间。运营方两张楼层图标出露天台阶，现场照片确认下方花园与 Time Out Market 外门相邻。模型以 B1 露天庭院、两翼步阶和 1F 实际开口表达，庭院位置、尺寸和两翼几何为拟合。南馆 B1 公共面接向既有 Gate Lantern 南馆端，馆内接入线位为示意。梅北之森的市街入口与这条南馆层间接驳分开，北公园直下 B1 的接驳仍待确认。[运营方 B1 图](https://umekita.com/assets/S-B1.webp) · [运营方 1F 图](https://umekita.com/assets/S-1F_1.png) · [开放现场照片](https://www.rbayakyu.jp/rbay-kodawari/item/8033-3-21)
+- 南公园 1F 包含草坪广场、水盘、南丘、色彩花园、银杏步道和靠南馆的南广场。地形根据日建设计说明拟合，水盘与路面实际分层；园路沿 OSM 地面轴线接 Step Plaza、南公园天桥楼梯和 Gate Lantern 方向的园侧路。道路、B1 和 2F 保留现有归属。种植位置、分区边界和局部高程为示意。[运营方公园图](https://umekita.com/midori/map/) · [日建设计地形说明](https://www.nikken.co.jp/ja/news/press_release/2024_09_06.html)
+- SANAA 大屋顶与公园西侧低层建筑沿用 PLATEAU LOD2 屋面和墙面。大屋顶保留曲面及下方开敞区域，跟随 1F 和建筑开关。南馆三塔只在总览显示，Inogate 2F 桥口及下沉花园按已有落台和开口裁空。[运营方公园楼层图](https://umekita.com/floor/park/) · [建筑白模校对](../buildings/model-calibration.md)
+- 梅田蓝天大厦向西延伸总览范围。1F 表达双塔间的 Wonder Square，并标出往东塔的地面入口区域。运营方指引从地下道回到地面、过街后到大厦，常规观景台入口在东塔 3F。地下道两端及标高待单独校准，旧 OSM `306860236` 保留在原始数据，当前地面图不采用该旧线位。[运营方现行路线](https://www.skybldg.co.jp/access/) · [地面广场说明](https://www.skybldg.co.jp/convention/room/wonder/)
 
 ## 所有者与待核对
 

@@ -6,6 +6,8 @@ import { createGateLantern } from '../public-areas/west-decks/gate-lantern.ts';
 import { groveNorthStairLanding, groveNorthStairs, umekitaGrove } from '../public-areas/west-decks/umekita-grove.ts';
 import { parkGroundAccess } from '../public-areas/west-decks/park-access.ts';
 import { sunkenGarden } from '../public-areas/west-decks/sunken-garden.ts';
+import { umekitaSouthPark } from '../public-areas/west-decks/south-park.ts';
+import { skyBuildingEntrance, skyBuildingPlaza } from '../public-areas/west-decks/sky-building-plaza.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
 import type { MultiPolygon } from 'polygon-clipping';
 import type { BuildingOpening } from '../../domain/map/model.ts';
@@ -160,6 +162,13 @@ const greenPlaceGroundLandings = northAccess.areas.filter(a => a.level === 'dist
 export const exteriorOpenings: BuildingOpening[] = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
     ...elevated.buildingOpenings,
+    {
+        buildingId: 'grand-green-south-gate',
+        outline: sunkenGarden.areas.find(area => area.level === 'district-ground')!.outline,
+        base: -.1,
+        top: 36,
+        evidence: sunkenGarden.atrium.evidence
+    },
     ...jpAccess.buildingOpenings,
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
@@ -196,6 +205,7 @@ const composed = composeStationMaps(
             ...deckAccess.areas.filter(a => a.level === 'district-ground'),
             groveNorthStairLanding,
             ...parkGroundAccess.areas,
+            skyBuildingPlaza,
             ...hankyuConcourseAreas,
         ],
         platforms: [],
@@ -214,7 +224,7 @@ const composed = composeStationMaps(
             ...whityAccess.flatMap(access => access.canopies)
         ],
         landmarks: izumiAccess.landmarks,
-        parks: [umekitaGrove],
+        parks: [umekitaGrove, umekitaSouthPark],
         concourses: hankyuConcourses,
         atria: [...hankyuConcourseAtria, ...gardenAvenueBuildings.atria, gateLantern.atrium, sunkenGarden.atrium],
         passages: deckExtensionLabels(elevated.blocks, elevatedAreas),
@@ -242,7 +252,11 @@ export const removedPublicAreas = shared.removed;
 export const layout = {
     ...composed.layout,
     areas: composed.layout.areas.map(area => ({ ...area, name: resolveMessage(area.name) })),
-    parks: composed.layout.parks.map(park => ({ ...park, name: resolveMessage(park.name) })),
+    parks: composed.layout.parks.map(park => ({
+        ...park,
+        name: resolveMessage(park.name),
+        labels: park.labels?.map(label => ({ ...label, name: resolveMessage(label.name) }))
+    })),
     passages: composed.layout.passages?.map(passage => ({
         ...passage,
         name: resolveMessage(passage.name),
@@ -254,7 +268,7 @@ export const layout = {
 };
 export const facilities = completeFacilityDirectory(
     [
-        ...composed.sourceFacilities, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities,
+        ...composed.sourceFacilities, skyBuildingEntrance, ...sonechikaAccess.facilities, ...diamorCentralAccess.facilities,
         ...diamorEastAccess.facilities, ...gardenAvenueAccess.facilities, ...gardenAvenueBuildings.facilities, ...eastMallAccess.facilities
     ],
     layout.connections,

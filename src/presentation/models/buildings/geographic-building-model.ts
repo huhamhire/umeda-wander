@@ -8,11 +8,43 @@ import { buildingFacade } from './building-facade.ts';
 import { buildingPalette } from '../../appearance/building-palette.ts';
 import { buildFerrisWheel, ferrisWheelRoofRecess } from './ferris-wheel-model.ts';
 import { buildPanoramicElevators } from './panoramic-elevator-model.ts';
+import { surfaceGeometry } from '../polygon-surface-geometry.ts';
+
+/** Draw the imported exterior surfaces without inferring solid floors across the openings. */
+function addLod2Shell(group: T.Group, shell: NonNullable<GeographicBuilding['shell']>): void {
+    for (const [kind, color, nightColor] of [
+        ['roof', 0xe2e5e8, 0x616c77],
+        ['wall', 0xbfcdd7, 0x3b5264],
+        ['soffit', 0xb4bdc2, 0x505a63],
+        ['detail', 0xd2dce3, 0x566d7d],
+        ['glazing', 0x8bb9ce, 0x426e87]
+    ] as const) {
+        const glazed = kind === 'glazing';
+        const material = new T.MeshStandardMaterial({
+            color,
+            side: T.DoubleSide,
+            opacity: glazed ? .76 : 1,
+            transparent: glazed,
+            depthWrite: !glazed,
+            roughness: glazed ? .38 : .8,
+            userData: { nightColor }
+        });
+        const mesh = new T.Mesh(surfaceGeometry(shell.surfaces[kind]), material);
+        mesh.name = 'lod2-' + kind;
+        mesh.userData.labelOccluder = !glazed;
+        mesh.castShadow = !glazed;
+        mesh.receiveShadow = true;
+        group.add(mesh);
+    }
+}
 
 /** Shared metre-scale exterior; detached from walkable floors and their openings. */
 export function buildGeographicBuilding(building: GeographicBuilding, openings: BuildingOpening[] = []) {
     const group = new T.Group();
     group.name = 'geographic-building-' + building.id;
+    if (building.shell) {
+        addLod2Shell(group, building.shell);
+    }
     if (building.wheel) {
         group.add(buildFerrisWheel(building.wheel));
     }

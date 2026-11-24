@@ -1047,6 +1047,11 @@ export class MapScene {
         const envelope = cameraEnvelope(this.layout, this.levels, { level: 'all', focusStation: station }, elevation);
         if (!station) {
             for (const b of geographicBuildings) {
+                if (b.shell) {
+                    for (const p of b.shell.scopeOutline) {
+                        envelope.push(new T.Vector3(p.x, b.shell.top, p.z), new T.Vector3(p.x, 0, p.z));
+                    }
+                }
                 if (b.wheel) {
                     envelope.push(new T.Vector3(b.wheel.center.x, b.wheel.centerHeight + b.wheel.radius + 2, b.wheel.center.z));
                 }

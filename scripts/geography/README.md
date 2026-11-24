@@ -38,6 +38,8 @@ node scripts/geography/build-ground-context.ts
 
 ```powershell
 python scripts/geography/extract-plateau-buildings.py
+python scripts/geography/extract-umekita-south.py
+python scripts/geography/extract-umeda-sky-building.py
 node scripts/geography/build-building-profiles.ts
 ```
 

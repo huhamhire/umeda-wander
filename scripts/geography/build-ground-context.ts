@@ -5,12 +5,14 @@ import policy from '../../data/geography/context-policy.json' with { type: 'json
 import { createGeographicStations } from '../../src/infrastructure/district/geographic-stations.ts';
 import { createElevatedBlocks } from '../../src/infrastructure/public-areas/elevated-blocks.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
-import { footprint } from '../../src/infrastructure/buildings/building-data.ts';
+import { buildingScopeOutline } from '../../src/infrastructure/buildings/building-data.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { umekitaGrove } from '../../src/infrastructure/public-areas/west-decks/umekita-grove.ts';
 import { parkGroundAccess } from '../../src/infrastructure/public-areas/west-decks/park-access.ts';
 import { sunkenGarden } from '../../src/infrastructure/public-areas/west-decks/sunken-garden.ts';
+import { umekitaSouthPark } from '../../src/infrastructure/public-areas/west-decks/south-park.ts';
+import { skyBuildingPlaza } from '../../src/infrastructure/public-areas/west-decks/sky-building-plaza.ts';
 import { hankyuConcourseAreas } from '../../src/infrastructure/buildings/hankyu-dept/concourse.ts';
 import { hankyuSunPlazaAreas } from '../../src/infrastructure/buildings/hankyu-dept/upper-concourse.ts';
 import { hankyuBridgeGroundLanding } from '../../src/infrastructure/public-areas/south-decks/north-arm-stairs.ts';
@@ -28,10 +30,12 @@ const protectedOutlines = [
     ...metroSouthPublicApproaches().map(area => area.outline),
     ...stations.flatMap(s => [...s.layout.areas.map(a => a.outline), ...s.layout.platforms.map(platformOutline)]),
     // Ground scope follows the declared source host, not a rounded facade decoration.
-    ...geographicBuildings.map(b => footprint(b.volumes[0]!.source.split('/').at(-1)!).outline),
+    ...geographicBuildings.map(buildingScopeOutline),
     ...basementOccupancies.map(b => b.region.outline),
     ...inogateHosts.map(host => host.region.outline),
     umekitaGrove.outline,
+    umekitaSouthPark.outline,
+    skyBuildingPlaza.outline,
     ...parkGroundAccess.areas.map(area => area.outline),
     ...sunkenGarden.areas.map(area => area.outline),
     ...hankyuConcourseAreas.map(area => area.outline),
@@ -73,7 +77,9 @@ interface SourceFeature {
     };
 }
 const features = plan.ground as unknown as SourceFeature[];
-const roads = features.filter(f => f.geometry.type === 'LineString').map(feature => ({
+// The western 2014 survey predates the current underground approach.
+const excludedGroundWays = new Set(policy.excludedGroundWayIds);
+const roads = features.filter(f => f.geometry.type === 'LineString' && !excludedGroundWays.has(f.id)).map(feature => ({
     id: feature.id,
     name: feature.properties.ref || feature.properties.name || feature.properties['name:ja'],
     points: (feature.geometry.coordinates as number[][]).map(project),

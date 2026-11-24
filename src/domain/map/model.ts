@@ -194,10 +194,13 @@ export interface PublicPark extends PlanRegion {
     name: string;
     level: LevelId;
     labelPoint: Point2;
+    labels?: { name: string; point: Point2; height: number }[];
     lawns: PlanRegion[];
     pond: PlanRegion;
-    waterfall: { from: Point2; to: Point2; drop: number };
+    waterfall?: { from: Point2; to: Point2; drop: number };
     paths: PlanRegion[];
+    planting?: PlanRegion[];
+    pavilions?: ParkPavilion[];
     trees: (Point2 & { height: number })[];
     landform: {
         basin: Point2[];
@@ -205,8 +208,18 @@ export interface PublicPark extends PlanRegion {
         basinY: number;
         moundRise: number;
         pondY: number;
+        seams?: { point: Point2; y: number; radius: number }[];
     };
     evidence: Evidence;
+}
+
+/** Source roof and wall polygons keep the original height at each ring vertex. */
+export type SurfacePolygon = (Point2 & { y: number })[][];
+
+export interface ParkPavilion {
+    id: string;
+    roofs: SurfacePolygon[];
+    walls: SurfacePolygon[];
 }
 
 /** Roof over a confirmed public approach, independent of its floor and walking graph. */

@@ -1,7 +1,7 @@
 import clipping from 'polygon-clipping';
 import plan from '../../../data/geography/runtime-plan.json' with { type: 'json' };
 import parts from '../../../data/geography/building-parts.json' with { type: 'json' };
-import type { Point2 } from '../../domain/map/model.ts';
+import type { Point2, SurfacePolygon } from '../../domain/map/model.ts';
 
 export interface BuildingVolume {
     name: string;
@@ -54,6 +54,16 @@ export interface GeographicBuilding {
     galleries?: BuildingGallery[];
     wheel?: FerrisWheel;
     panoramicElevators?: PanoramicElevatorPair;
+    shell?: {
+        scopeOutline: Point2[];
+        top: number;
+        surfaces: Record<'roof' | 'wall' | 'soffit' | 'detail' | 'glazing', SurfacePolygon[]>;
+    };
+}
+
+/** Surround either the original ground host or the projected extent of an imported shell. */
+export function buildingScopeOutline(building: GeographicBuilding): Point2[] {
+    return building.shell?.scopeOutline ?? footprint(building.volumes[0]!.source.split('/').at(-1)!).outline;
 }
 
 /** Two facade-mounted shafts with a local B1 landing; this models the building exterior. */

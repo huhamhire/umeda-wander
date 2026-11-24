@@ -10,6 +10,9 @@ import { buildingPalette } from '../../src/presentation/appearance/building-pale
 import { LayerAppearance } from '../../src/presentation/appearance/layer-appearance.ts';
 import { geographicRoofPlan, geographicRoofPoint, geographicRoofHeightAt } from '../../src/presentation/models/stations/roof-profile.ts';
 import { elevatedAreas, exteriorOpenings, publicAccess } from '../../src/infrastructure/district/geographic-map.ts';
+import { umedaSkyBuilding } from '../../src/infrastructure/buildings/umeda-sky-building.ts';
+import { skyBuildingEntrance, skyBuildingPlaza } from '../../src/infrastructure/public-areas/west-decks/sky-building-plaza.ts';
+import { pointInPolygon } from '../../src/domain/map/geometry.ts';
 
 const polygon = (v: Pick<BuildingVolume, 'outline' | 'holes'>): clipping.Polygon => [v.outline, ...v.holes].map(r => r.map(p => [p.x, p.z]));
 const area = (geometry: clipping.MultiPolygon) => geometry.reduce(
@@ -25,6 +28,24 @@ const area = (geometry: clipping.MultiPolygon) => geometry.reduce(
     ),
     0
 );
+
+test('the Sky Building shell preserves the roof opening, the suspended bridge and the public court', () => {
+    const model = buildGeographicBuilding(umedaSkyBuilding);
+    const down = new T.Vector3(0, -1, 0);
+    const roof = model.getObjectByName('lod2-roof')!;
+    const glass = model.getObjectByName('lod2-glazing') as T.Mesh<T.BufferGeometry, T.MeshStandardMaterial>;
+    const center = new T.Raycaster(new T.Vector3(-79, 180, 301), down);
+    const ring = new T.Raycaster(new T.Vector3(-97, 180, 301), down, 0, 15);
+    assert.equal(center.intersectObject(roof).length, 0);
+    assert.ok(ring.intersectObject(roof).length, 'the ring must surround the open shaft');
+    const centralHits = center.intersectObject(model);
+    assert.ok(centralHits.some(hit => Math.abs(hit.point.y - 87.1) < .2));
+    assert.ok(centralHits.every(hit => hit.point.y > 75), 'the 1F courtyard stays open beneath the bridges');
+    assert.ok(glass.material.transparent);
+    const tube = new T.Raycaster(new T.Vector3(-86, 170, 302), down, 0, 35);
+    assert.ok(tube.intersectObject(glass).length);
+    assert.ok(pointInPolygon(skyBuildingEntrance, skyBuildingPlaza.outline));
+});
 test(
     'audited open-model profiles use LOD2 roof geometry and retain survey provenance',
     () => {

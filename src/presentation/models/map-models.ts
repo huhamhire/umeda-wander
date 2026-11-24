@@ -25,6 +25,7 @@ import { colors } from '../appearance/scene-palette.ts';
 import { buildWalkwayCanopy } from './public-areas/walkway-canopy-model.ts';
 import { buildWaterTree } from './public-areas/water-tree-model.ts';
 import { buildParkLandscape } from './public-areas/park-landscape-model.ts';
+import { buildParkPavilion } from './public-areas/park-pavilion-model.ts';
 import { buildSpiralCanopy, SpiralStairModel } from './public-areas/spiral-stair-model.ts';
 import type { SceneLabelDefinition } from '../labels/scene-labels.ts';
 import { osakaLoopTrainPath } from '../../application/exploration/osaka-loop-train.ts';
@@ -44,6 +45,7 @@ export class MapModels {
     readonly jrConcourseReference = new T.Group();
     readonly groups = new Map<LevelId, T.Group>();
     readonly basementBuildingFloors: T.Group[] = [];
+    private readonly parkBuildings: T.Group[] = [];
     readonly connectors: (VerticalConnectionModel | SpiralStairModel)[] = [];
     readonly canopies: { model: T.Group; ground: boolean }[] = [];
     readonly pickables: T.Object3D[] = [];
@@ -82,9 +84,9 @@ export class MapModels {
         }
     }
 
-    /** Apply the building switch to basement footprints while preserving the parent floor's cutaway visibility. */
+    /** Apply the building switch while preserving the parent floor's cutaway visibility. */
     updateBuildingFloorVisibility(buildingsVisible: boolean): void {
-        for (const floor of this.basementBuildingFloors) {
+        for (const floor of [...this.basementBuildingFloors, ...this.parkBuildings]) {
             floor.visible = buildingsVisible;
         }
     }
@@ -423,7 +425,15 @@ export class MapModels {
         for (const park of this.layout.parks ?? []) {
             const model = setRegionOwner(buildParkLandscape(park), null);
             this.groups.get(park.level)!.add(model);
+            for (const pavilion of park.pavilions ?? []) {
+                const roof = setRegionOwner(buildParkPavilion(pavilion), null);
+                this.parkBuildings.push(roof);
+                this.groups.get(park.level)!.add(roof);
+            }
             this.label(park.name, park.labelPoint.x, 5, park.labelPoint.z, park.level, false, false, null, model);
+            for (const { name, point, height } of park.labels ?? []) {
+                this.label(name, point.x, height, point.z, park.level, false, false, null, model);
+            }
         }
         for (const guide of this.layout.guides ?? []) {
             for (const p of guide.points) {

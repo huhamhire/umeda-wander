@@ -8,6 +8,7 @@ import { planAtriumOpenings } from '../../src/application/connections/atrium-ope
 import { planFloorOpenings } from '../../src/application/connections/connection-openings.ts';
 import { grandFrontPlazaAccess, layout, levels, undergroundPublicAreas } from '../../src/infrastructure/district/geographic-map.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
+import { buildingScopeOutline } from '../../src/infrastructure/buildings/building-data.ts';
 import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { platformOutline } from '../../src/domain/map/geometry.ts';
 import type { PlanRegion } from '../../src/domain/map/model.ts';
@@ -29,6 +30,13 @@ const area = (g: clipping.MultiPolygon) => g.reduce(
     0
 );
 const scope = context.scope as clipping.MultiPolygon;
+
+test('the western building scope keeps its plaza without promoting the historical footway to a current ground route', () => {
+    const square = layout.areas.find(area => area.id === 'umeda-sky-wonder-square')!;
+    assert.ok(area(clipping.difference(geometry(square), scope)) < .01);
+    assert.ok(plan.ground.some(feature => feature.id === 'way/306860236'));
+    assert.ok(!context.surfaces.some(surface => surface.id === 'way/306860236'));
+});
 
 /** Release the complete terrain fixture after all opening samples have been checked. */
 function disposeGround(groups: T.Group[]): void {
@@ -52,7 +60,7 @@ test(
             ...layout.platforms.map(p => ({ outline: platformOutline(p) })),
             ...layout.areas.filter(a => a.railings),
             ...layout.areas.filter(a => a.id.startsWith('hankyu-concourse-north-ground-')),
-            ...geographicBuildings.map(b => ({ outline: b.volumes[0]!.outline })),
+            ...geographicBuildings.map(b => ({ outline: b.shell ? buildingScopeOutline(b) : b.volumes[0]!.outline })),
             ...inogateHosts.map(host => host.region),
         ];
         for (const region of regions) {

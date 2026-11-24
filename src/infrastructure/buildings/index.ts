@@ -13,6 +13,8 @@ import { building as hepFive } from './hep-five/index.ts';
 import { building as hepNavio } from './hep-navio/index.ts';
 import { building as osBuilding } from './os-building/index.ts';
 import { building as umekitaGreenPlace } from './umekita-green-place/index.ts';
+import { grandGreenSouthBuildings } from './grand-green-south/index.ts';
+import { umedaSkyBuilding } from './umeda-sky-building.ts';
 
 export const geographicBuildings = [
     b0,
@@ -29,5 +31,7 @@ export const geographicBuildings = [
     hepFive,
     hepNavio,
     osBuilding,
-    umekitaGreenPlace
+    umekitaGreenPlace,
+    ...grandGreenSouthBuildings,
+    umedaSkyBuilding
 ];

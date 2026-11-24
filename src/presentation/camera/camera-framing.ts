@@ -49,6 +49,13 @@ export function cameraEnvelope(
             for (const tree of park.trees) {
                 points.push(new T.Vector3(tree.x, y + tree.height + 1, tree.z));
             }
+            for (const pavilion of park.pavilions ?? []) {
+                for (const face of pavilion.roofs) {
+                    for (const p of face[0]!) {
+                        points.push(new T.Vector3(p.x, y + p.y, p.z));
+                    }
+                }
+            }
         }
     }
     for (const platform of layout.platforms) {
