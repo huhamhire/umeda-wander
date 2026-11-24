@@ -16,6 +16,7 @@ import { building as umekitaGreenPlace } from './umekita-green-place/index.ts';
 import { grandGreenSouthBuildings } from './grand-green-south/index.ts';
 import { umedaSkyBuilding } from './umeda-sky-building.ts';
 import { grandGreenNorth } from './grand-green-north.ts';
+import { inogateBuilding, osakaStationCityParking } from './inogate.ts';
 
 export const geographicBuildings = [
     b0,
@@ -35,5 +36,7 @@ export const geographicBuildings = [
     umekitaGreenPlace,
     ...grandGreenSouthBuildings,
     umedaSkyBuilding,
-    grandGreenNorth
+    grandGreenNorth,
+    inogateBuilding,
+    osakaStationCityParking
 ];

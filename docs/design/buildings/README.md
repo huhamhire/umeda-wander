@@ -7,6 +7,7 @@
 | 大丸／南门大楼／Hotel Granvia | `daimaru/` | 真实楼板开口、50/T、南侧两组扶梯、酒店屋顶内庭及“大阪駅”门面 |
 | LUCUA／LUCUA 1100 | `lucua/`、`lucua-1100/` | 北中庭开放空间、办公体与西侧连廊分开 |
 | 梅北 Green Place | `umekita-green-place/` | 三个 OSM 建筑部件，保留梅北地下口地面落台及西侧二层桥面净空 |
+| Inogate 大阪／大阪站城停车楼 | `inogate.ts` | 分开建模。Inogate 裙楼留「彩の路」通行净空，西侧跨街桥见[高架公共空间](../public-areas/elevated.md#inogate-连桥与桥面外观) |
 | Grand Front 南北馆 | `grand-front-south/`、`grand-front-north/` | 裙楼承接独立塔楼；馆间桥横跨道路，不按最近点斜接 |
 | Yodobashi／LINKS／RESPIRE | `yodobashi/` | 同一综合体；内层弧形裙楼与公共二层外回廊分开，酒店连续承接 |
 | 阪急百货／Grand Building | `hankyu-dept/`、`hankyu-grand/` | 独立建筑；百货南侧主塔及 1F 公共通廊，不能把邻楼凹口切进主塔 |

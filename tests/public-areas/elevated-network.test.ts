@@ -8,7 +8,7 @@ import { visibleElevatorConnections } from '../../src/application/connections/el
 import { deckBoundarySegments } from '../../src/application/public-areas/deck-boundaries.ts';
 import { displayElevation } from '../../src/application/exploration/display-elevation.ts';
 import { explorationElevation } from '../../src/application/exploration/exploration-level.ts';
-import { pointInPolygon } from '../../src/domain/map/geometry.ts';
+import { passageOutline, pointInPolygon } from '../../src/domain/map/geometry.ts';
 import type { FloorArea, PlanRegion, Point2 } from '../../src/domain/map/model.ts';
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { deckAccess, elevated, elevatedAreas, exteriorOpenings, facilities, layout, levels } from '../../src/infrastructure/district/geographic-map.ts';
@@ -41,7 +41,7 @@ test(
     () => {
         assert.equal(ways.ways.filter(w => w.tags.highway === 'footway').length, 36);
         assert.deepEqual(ways.ways.filter(w => w.tags.highway === 'construction').map(w => w.id), ['1313936489', '1313936490']);
-        assert.equal(elevated.blocks.length, 4);
+        assert.equal(elevated.blocks.length, 5);
         assert.ok(elevated.blocks.every(b => b.paths.length && b.evidence.source === 'district'));
         assert.equal(pendingDecks.length, 0);
         assert.ok(elevated.blocks.flatMap(b => b.paths).some(p => p.id === 'inogate-grand-green-bridge'));
@@ -57,10 +57,14 @@ test(
     () => {
         for (const a of elevatedAreas) {
             assert.ok(a.blockId && a.railings && !a.label);
-            assert.equal(explorationElevation(levels.find(l => l.id === a.level)!), 8);
+            const valleyUpper = a.level === 'district-south-valley-3f';
+            assert.equal(explorationElevation(levels.find(l => l.id === a.level)!), valleyUpper ? 16 : 8);
             const y = levels.find(l => l.id === a.level)!.y;
             for (const b of layout.areas.filter(b => b.id !== a.id && levels.find(l => l.id === b.level)!.y + (b.elevationOffset ?? 0) === y)) {
                 assert.ok(size(clipping.intersection(geometry(a), geometry(b))) < 1e-5, a.id + ' overlaps ' + b.id);
+            }
+            if (valleyUpper) {
+                continue;
             }
             for (const t of [0, .5, 1]) {
                 assert.equal(
@@ -343,9 +347,27 @@ test(
             end.x < bridge.points[0]!.x && end.z < bridge.points[0]!.z,
             'Grand Green branch must leave the west end northwestward'
         );
-        const host = inogateHosts.find(host => host.id === 'grand-green-south-gate');
-        const mouth = exteriorOpenings.find(o => o.buildingId === 'grand-green-south-gate')!;
-        assert.ok(host && mouth, 'destination context and declared mouth are missing');
+        const destination = elevated.portals.find(portal => portal.id === 'grand-green-south-bridge')!;
+        assert.equal(destination.target, 'grand-green-south-south');
+        assert.deepEqual(end, destination.point);
+        const inogate = geographicBuildings.find(building => building.id === 'inogate')!;
+        const parking = geographicBuildings.find(building => building.id === 'osaka-station-city-parking')!;
+        const frontage = block.paths.find(p => p.id === 'inogate-2f-frontage')!;
+        assert.deepEqual(frontage.points.at(-1), bridge.points[0]);
+        const shell = buildGeographicBuilding(inogate, exteriorOpenings);
+        shell.updateMatrixWorld(true);
+        for (const [i, end] of frontage.points.slice(2, -1).entries()) {
+            const start = frontage.points[i + 1]!;
+            const direction = new T.Vector3(end.x - start.x, 0, end.z - start.z);
+            const length = direction.length();
+            direction.normalize();
+            for (const offset of [-1.5, 0, 1.5]) {
+                const origin = new T.Vector3(start.x - direction.z * offset, 9.8, start.z + direction.x * offset);
+                assert.ok(!new T.Raycaster(origin, direction, .05, length - .05).intersectObject(shell).length);
+            }
+        }
+        const bridgeOutline = passageOutline(bridge.points[0]!, end, bridge.width);
+        assert.equal(clipping.intersection(geometry({ outline: bridgeOutline }), geometry(parking.volumes[0]!)).length, 0);
         assert.ok(bridge.evidence.detail?.includes('人工拟合'), 'do not present authored endpoints as surveyed');
     }
 );

@@ -7,7 +7,7 @@
 | `public-areas/north-decks/` | Grand Front 南北馆直桥、Grand Front—北中庭、Yodobashi 西／东桥与外圈回廊、LUCUA／JR 公共廊至阪急接口 |
 | `public-areas/south-decks/` | JP Tower—大丸前庭、梅田新步道桥北／南支臂及沿路主干、阪急百货西侧两个接入口、阪神百货和南出口直梯接入、东南延伸 |
 | `public-areas/west-decks/` | LUCUA 1100 西侧公共廊至梅北上方公共步道；不绘对侧建筑，不接地下付费站台 |
-| `west-decks/inogate.ts` | 独立 Inogate 2F 公共前沿及西端至 Grand Green 南馆连桥，目标轮廓留在地面 |
+| `west-decks/inogate.ts` | Inogate 2F「彩の路」、西端室外平台及 Grand Green 南馆跨街桥 |
 
 `src/infrastructure/public-areas/elevated-blocks.ts` 登记板块，`data/geography/elevated/` 保存 OSM 轴线配置及 Inogate 参考拟合。桥宽通常取 6–7 m；源轴线保留原经纬度、标签和版本。OSM `level=1` 不直接对应建筑 1F。
 
@@ -64,13 +64,19 @@ OSM 原始轴线及估计宽度随 OSM 下载提供；公共平台、建筑裁�
 
 公共高架桥面统一使用暖赭色 `elevatedPublicColor`，与浅色商业占位分开；细浅栏杆、付费区主题及区域灰化规则保持。离线平面图沿用桥面的展示色。
 
-Inogate 连桥采用 `data/geography/elevated/inogate.json` 与独立 `inogate-decks` 板块。JR 发布资料第 1 页位置图、第 4 页两端及楼层说明，与两份本地 2F 图、OSM Inogate／Grand Green 南馆 Gate Tower 外围轮廓联合拟合：从 JR 北侧 2F 公共面接 Inogate 前沿，再从西端朝西北接南馆。它与更北面的 LUCUA—Green Place 连桥保持独立，不误接 Grand Front 或梅北付费站台。
+JR 西日本公告第 1、4 页记载，Inogate 大阪 2F 西端至 Grand Green 大阪南馆 2F 的步行桥于 2025 年 4 月 11 日开通。大林组第 10 页 2F 平面显示，JR 北门大楼经「風光の庭」接 Inogate 东门，楼内「彩の路」通向西门。出西门后沿停车楼侧平台，到转角跨街接 Grand Green 南馆酒店侧 2F 入口。南馆购物楼层图标出了该入口和靠公园的另一处大阪站连接口。[JR 西日本公告](https://www.westjr.co.jp/press/article/items/250219_00_press_umekitagreenplace.pdf#page=4) · [大林组 2F 平面](https://www.pref.osaka.lg.jp/documents/120455/inogate.pdf#page=10) · [南馆 2F 图](https://umekita.com/floor/south/?floor=2F)
+
+`data/geography/elevated/inogate.json` 按该平面及 OSM 轮廓拟合楼内轴线、两端门户、停车楼旁转角和南馆 South Tower 外墙。楼内段在 Inogate 裙楼留通行净空，外部跨街段单独画桥顶。桥宽、屋面和统一展示标高为示意，停车楼采用独立外壳。Inogate 裙楼与办公塔楼采用 OSM `1147394005` 及 PLATEAU `52350349_bldg_6697_op.gml` 的 `bldg_4fbf020a-6f1c-4298-9136-d881ebd394f0` 屋面，停车楼采用 OSM `179071473` 及同网格的 `bldg_f263341d-9d79-45c5-bae4-0d55869f7560` 主屋面高度。[Inogate 设施规格](https://osakastationcity.com/newbuilding_office/facilities.html) · [PLATEAU 大阪市模型](https://www.geospatial.jp/ckan/dataset/plateau-27100-osaka-shi-2025)
 
 「ひらめきの道」由 `west-decks` 从 Gate Lantern 接南段，跨 Step Plaza 再延伸至梅北之森。南段和新开放段沿 OSM `1313936486`、`1313936489`、`1313936490` 的共用端点接续。11 月 16 日快照保留后两段的施工标签，由运营方 11 月 20 日公告确认贯通。桥宽用日建设计公布的 4 米；公告全长 350 米，当前 OSM 轴线按仓库投影约 396 米，保留原线位及共用端点。2F 标高沿用北侧组；北端按 OSM `1314528005`、`1347368415` 取平台走线，并按 `1347368414` 拟合落地楼梯。桥端平台、扶手、踏步及高差为示意。配套地形、来源哈希见 `data/geography/elevated/umekita-grove.json`。[开通公告](https://www.mec.co.jp/news/detail/2026/11/20_mec261120_ggo) · [日建设计步道资料](https://www.nikken.jp/ja/dbook/nj202503/pageindices/index12.html)
 
 Step Plaza 跨路桥的南端另设一组落向南公园 1F 的楼梯。下端经 `1347756740`、`1314528006` 接园路 `1314528009`，上端经 `1347756741` 接南段桥轴的共享端点。按 OSM 楼梯主折点画两段，下段和中间平台使用 1F 局部标高。阶宽和层间高程为展示拟合。[OSM 楼梯](https://www.openstreetmap.org/way/1314528010) · [现场下楼记录](https://www.youtube.com/watch?v=4wNCIRHmkvc&t=2033s)
 
-Gate Lantern 旁的公园高架在南端向西分支，沿 OSM `1313936488` 接 Grand Green 南馆 2F。南馆门户按现役 Gate Tower 裙楼的下沉花园退界拟合，桥面延至门槛。桥边护栏保留，门口局部留通孔。这一处与 Inogate 连桥、下沉花园 B1 入口分别维护。[日建设计剖面](https://www.nikken.jp/ja/dbook/nj202503/pageindices/index16.html) · [OSM 支桥](https://www.openstreetmap.org/way/1313936488)
+Gate Lantern 旁的公园高架在南端向西分支，沿 OSM `1313936488` 接 Grand Green 南馆 2F。门户沿桥轴接现役 Gate Tower 裙楼门槛，门口局部留通孔。塔间下沉花园位于门槛以西。[日建设计剖面](https://www.nikken.jp/ja/dbook/nj202503/pageindices/index16.html) · [OSM 支桥](https://www.openstreetmap.org/way/1313936488)
+
+南馆 Park Tower 和 Gate Tower 之间的 Valley 有独立的 2F 和 3F 连廊。PLATEAU 网格 `52350349_bldg_6697_op.gml` 的 `bldg_48c93b52-5a94-47c0-9b92-76ff79735d4b` 和 `bldg_a18409c2-096f-4865-b9c7-24f149057635` 分别提供两跨的屋面位置。桥面按 2F y=8 和 3F y=14 拟合到裙楼门槛，3F 对应运营方图上通向 Wellbeing Park 的连廊。此处仅建连廊和门户，室内范围与通行条件未纳入模型。[南馆 2F 图](https://umekita.com/floor/south/?floor=2F) · [南馆 3F 图](https://umekita.com/assets/S-3F_1.png)
+
+运营方手册的南街区效果图显示两跨都有玻璃侧墙，Valley 实景照可见全高玻璃和深色窗框。模型据此为两跨加上玻璃侧墙和深色窗框，屋面按实体板简化，窗框分格为示意。玻璃覆盖的桥边省去重复栏杆。[运营方手册效果图](https://umekita.com/assets/GGO_ooyane_eventspace.pdf#page=32) · [Valley 实景照片](https://umekita.com/assets/GGO_ooyane_eventspace.pdf#page=34)
 
 北接续桥沿 OSM `1327400333` 在 2F 横接 Grand Green 北馆东侧和 Grand Front 北馆西侧，两端沿共点桥轴接进各自门槛。桥宽参考 OSM 屋盖宽度，顶棚参考运营方照片，门区和标高为展示拟合。Grand Green 北馆沿 OSM 宿主绘裙楼，上部取大阪市 PLATEAU LOD2 屋面轮廓。北馆内部 3F 由馆内扶梯和电梯到达。[JAM BASE 官方路线](https://umekita.com/jambase/access/) · [Grand Green 北馆楼层图](https://umekita.com/floor/north/)
 

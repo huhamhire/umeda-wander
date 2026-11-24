@@ -7,7 +7,6 @@ import { createElevatedBlocks } from '../../src/infrastructure/public-areas/elev
 import { geographicBuildings } from '../../src/infrastructure/buildings/index.ts';
 import { buildingScopeOutline } from '../../src/infrastructure/buildings/building-data.ts';
 import { basementOccupancies } from '../../src/infrastructure/public-areas/basement-buildings.ts';
-import { inogateHosts } from '../../src/infrastructure/public-areas/west-decks/inogate.ts';
 import { umekitaGrove } from '../../src/infrastructure/public-areas/west-decks/umekita-grove.ts';
 import { parkGroundAccess } from '../../src/infrastructure/public-areas/west-decks/park-access.ts';
 import { sunkenGarden } from '../../src/infrastructure/public-areas/west-decks/sunken-garden.ts';
@@ -32,7 +31,6 @@ const protectedOutlines = [
     // Ground scope follows the declared source host, not a rounded facade decoration.
     ...geographicBuildings.map(buildingScopeOutline),
     ...basementOccupancies.map(b => b.region.outline),
-    ...inogateHosts.map(host => host.region.outline),
     umekitaGrove.outline,
     umekitaSouthPark.outline,
     skyBuildingPlaza.outline,
@@ -58,7 +56,6 @@ const coreScope = contextEnvelope(
 const relatedBuildingIds = new Set([
     ...geographicBuildings.flatMap(b => b.volumes.map(v => new URL(v.source).pathname.slice(1))),
     ...basementOccupancies.flatMap(b => b.evidence.urls ?? []).filter(url => url.includes('openstreetmap.org/')).map(url => new URL(url).pathname.slice(1)),
-    ...inogateHosts.map(host => 'way/' + host.way),
     ...policy.additionalBuildingIds,
 ]);
 /**

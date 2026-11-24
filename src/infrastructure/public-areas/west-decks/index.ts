@@ -6,6 +6,7 @@ import { gateLanternDeck, gateLanternSouthBuilding } from './gate-lantern.ts';
 import { groveNorthLanding } from './umekita-grove.ts';
 import { southParkDeckLanding } from './park-access.ts';
 import { northConnectionBridge } from './north-connection.ts';
+import { southValleyName, southValleySpans } from './south-valley.ts';
 
 /**
  * Register the public deck west of LUCUA without connecting it to the underground paid platforms.
@@ -35,10 +36,18 @@ export function westDecks(): {
                 gateLanternDeck(parkSouth),
                 southBuilding.path,
                 northConnection.path,
+                southValleySpans.lower.path,
                 deckPath('lucua-west-calibrated-concourse', messageText('publicAreas.westDecks.entities.westDecks.name'), [{ x: 293.9, z: 616 }, stationDoor], 7)
             ],
             regions: [],
             evidence: deckEvidence
+        }, {
+            id: 'south-valley-3f',
+            name: southValleyName,
+            level: 'district-south-valley-3f',
+            paths: [southValleySpans.upper.path],
+            regions: [],
+            evidence: southValleySpans.upper.path.evidence
         }],
         portals: [{
             id: 'lucua-west-concourse',
@@ -49,6 +58,6 @@ export function westDecks(): {
             angle: Math.PI / 3,
             level: 'district-north-deck',
             evidence: deckEvidence
-        }, southBuilding.portal, ...northConnection.portals],
+        }, southBuilding.portal, ...northConnection.portals, ...southValleySpans.lower.portals, ...southValleySpans.upper.portals],
     };
 }

@@ -16,6 +16,14 @@ export const elevatedLevels: Level[] = [
         description: '北中庭、Yodobashi、Grand Front、阪急公共连廊；展示标高，非测绘高程。'
     },
     {
+        id: 'district-south-valley-3f',
+        label: '3F',
+        name: messageText('publicAreas.westDecks.entities.southValley.name'),
+        y: 14,
+        stackIndex: 3,
+        description: 'Grand Green 南馆两塔间 3F 连廊，展示标高。'
+    },
+    {
         id: 'district-south-deck',
         label: '2F',
         name: messageText('publicAreas.elevatedSource.entities.districtSouthDeck.name'),

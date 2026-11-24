@@ -1,5 +1,5 @@
 export type StationId = 'jr-osaka' | 'hankyu-umeda' | 'metro-umeda' | 'hanshin-umeda' | 'higashi-umeda' | 'nishi-umeda' | 'kitashinchi';
-export type LevelId = 'district-north-deck' | 'district-south-deck' | 'district-ground' | 'district-underground' | 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge' | 'jr-toki-plaza' | 'hankyu-ground' | 'hankyu-hall' | 'hankyu-platform' | 'metro-hall' | 'metro-intermediate' | 'metro-platform' | 'south-deck' | 'hanshin-hall' | 'hanshin-platform' | 'hanshin-ground' | 'hanshin-deck' | 't20-hall' | 't20-platform' | 't20-ground' | 'y11-hall' | 'y11-platform' | 'y11-ground' | 'kitashinchi-hall' | 'kitashinchi-platform' | 'kitashinchi-ground';
+export type LevelId = 'district-south-valley-3f' | 'district-north-deck' | 'district-south-deck' | 'district-ground' | 'district-underground' | 'underground-platform' | 'underground-hall' | 'concourse' | 'mezzanine' | 'platform' | 'bridge' | 'jr-toki-plaza' | 'hankyu-ground' | 'hankyu-hall' | 'hankyu-platform' | 'metro-hall' | 'metro-intermediate' | 'metro-platform' | 'south-deck' | 'hanshin-hall' | 'hanshin-platform' | 'hanshin-ground' | 'hanshin-deck' | 't20-hall' | 't20-platform' | 't20-ground' | 'y11-hall' | 'y11-platform' | 'y11-ground' | 'kitashinchi-hall' | 'kitashinchi-platform' | 'kitashinchi-ground';
 export type FacilityKind = 'entrance' | 'gate' | 'ticket' | 'ticket-machine' | 'escalator' | 'elevator' | 'stairs' | 'information' | 'convenience-store' | 'platform' | 'police' | 'luggage-storage' | 'locker';
 export interface Point2 {
     x: number;
@@ -230,6 +230,8 @@ export interface WalkwayCanopy {
     width: number;
     clearHeight: number;
     glazed?: boolean;
+    /** Full-height glazing along both sides of a straight span. */
+    sideGlazing?: boolean;
     postClearances?: { point: Point2; radius: number }[];
     evidence: Evidence;
 }

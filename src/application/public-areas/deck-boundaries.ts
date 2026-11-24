@@ -1,5 +1,5 @@
-import { pointInPolygon, closestPolygonPoint } from '../../domain/map/geometry.ts';
-import type { FloorArea, Level, Point2, BuildingOpening, VerticalConnection } from '../../domain/map/model.ts';
+import { pointInPolygon, closestPolygonPoint, passageOutline } from '../../domain/map/geometry.ts';
+import type { FloorArea, Level, Point2, BuildingOpening, VerticalConnection, WalkwayCanopy } from '../../domain/map/model.ts';
 
 /**
  * Test the outer boundary while excluding holes.
@@ -8,13 +8,14 @@ const contains = (p: Point2, a: {
     outline: Point2[];
     holes?: Point2[][];
 }) => pointInPolygon(p, a.outline) && !a.holes?.some(h => pointInPolygon(p, h));
-/** Exposed edges only; continuation surfaces, declared doors and equipment mouths remain open. */
+/** Keep railings on exposed edges, clear of openings and glazed enclosures. */
 export function deckBoundarySegments(
     area: FloorArea,
     areas: FloorArea[],
     levels: Level[],
     doors: BuildingOpening[],
-    connections: VerticalConnection[]
+    connections: VerticalConnection[],
+    canopies: WalkwayCanopy[] = []
 ) {
     const y = levels.find(l => l.id === area.level)!.y;
     const neighbours = areas.filter(a => a.id !== area.id && a.kind === 'public' && Math.abs(levels.find(l => l.id === a.level)!.y + (a.elevationOffset ?? 0) - y) < .01);
@@ -22,11 +23,14 @@ export function deckBoundarySegments(
         node,
         clearance: Math.max(2.5, (c.width ?? 0) / 2 + 1)
     }))).filter(({ node }) => levels.find(l => l.id === node.level)!.y + (node.elevationOffset ?? 0) === y);
+    const enclosures = canopies.filter(canopy => canopy.level === area.level && canopy.sideGlazing)
+        .flatMap(canopy => canopy.points.slice(1).map((end, i) => passageOutline(canopy.points[i]!, end, canopy.width + .2)));
     const atSeam = (p: Point2, a: FloorArea) => contains(p, a) || [a.outline, ...a.holes ?? []].some(r => {
         const q = closestPolygonPoint(p, r);
         return Math.hypot(q.x - p.x, q.z - p.z) < .12;
     });
     const open = (p: Point2) => neighbours.some(a => atSeam(p, a)) ||
+        enclosures.some(outline => pointInPolygon(p, outline)) ||
         doors.some(d => d.suppressRailings !== false && d.base <= y + .55 && d.top > y && contains(p, d)) ||
         endpoints.some(({ node, clearance }) => Math.hypot(node.x - p.x, node.z - p.z) < clearance);
     const result: {

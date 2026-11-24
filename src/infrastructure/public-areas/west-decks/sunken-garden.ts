@@ -14,23 +14,23 @@ const evidence: Evidence = {
         'https://umekita.com/assets/S-B1.webp',
         'https://www.rbayakyu.jp/rbay-kodawari/item/8033-3-21'
     ],
-    detail: 'The operator maps show the Sunken Garden (サンクンガーデン) between the ground retail wings with stairs from B1 to the park side. ' +
-        'The opening, two stair arms and the approach within the South Building are schematic fits. Reference-derived geometry permission pending.'
+    detail: 'The operator maps show the Sunken Garden (サンクンガーデン) between Park Tower and Gate Tower, with outdoor stairs beside Time Out Market Osaka on B1. ' +
+        'The triangular opening follows the observed valley shape. Its three vertices, stair arms and B1 approach are schematic fits. Reference-derived geometry permission pending.'
 };
 
 const opening: Point2[] = [
-    { x: 129, z: 579 }, { x: 144.5, z: 575 }, { x: 151.7, z: 590 }, { x: 137, z: 595 }, { x: 130, z: 591 }
+    { x: 102, z: 571 }, { x: 117.3, z: 577.6 }, { x: 101.3, z: 595 }
 ];
 
 /** Fit one of the open-air stair arms, keeping its upper landing beyond the court rim. */
-function gardenStair(side: 'north' | 'south', foot: Point2, head: Point2): VerticalConnection {
+function gardenStair(side: 'north' | 'south', foot: Point2, head: Point2, width = 2.5): VerticalConnection {
     const id = 'umekita-sunken-garden-' + side;
     return {
         id,
         kind: 'stairs',
         from: { ...foot, id: id + '-b1', level: b1 },
         to: { ...head, id: id + '-ground', level: ground },
-        width: 2.5,
+        width,
         blockId,
         placement: 'exterior',
         evidence
@@ -59,7 +59,7 @@ export const sunkenGarden: {
             name,
             kind: 'public',
             blockId,
-            outline: passageOutline({ x: 137, z: 589 }, { x: 144, z: 605 }, 6),
+            outline: passageOutline({ x: 105, z: 585 }, { x: 144, z: 605 }, 6),
             evidence
         },
         {
@@ -69,18 +69,19 @@ export const sunkenGarden: {
             kind: 'public',
             blockId,
             label: true,
-            labelAnchor: { x: 152, z: 588 },
+            labelAnchor: { x: 113, z: 573 },
             outline: [
-                { x: 125, z: 576 }, { x: 147, z: 571 }, { x: 152.8, z: 591 },
-                { x: 148, z: 602 }, { x: 136, z: 599 }, { x: 127, z: 593 }
+                { x: 104, z: 567 }, { x: 118.5, z: 573 }, { x: 120, z: 576.2 },
+                { x: 114.4, z: 584 }, { x: 109, z: 589 }, { x: 102.3, z: 596 },
+                { x: 97.5, z: 597 }, { x: 98.2, z: 581 }, { x: 100.8, z: 571 }
             ],
             holes: [opening],
             evidence
         }
     ],
     connections: [
-        gardenStair('north', { x: 133.5, z: 583.5 }, { x: 147.5, z: 577.5 }),
-        gardenStair('south', { x: 137, z: 590.5 }, { x: 148.5, z: 593 })
+        gardenStair('north', { x: 104, z: 582.5 }, { x: 108.6, z: 572.7 }),
+        gardenStair('south', { x: 103.5, z: 590 }, { x: 113, z: 583.5 }, 2.1)
     ],
     atrium: { id: 'umekita-sunken-garden', name, openings: [{ level: ground, outline: opening }], evidence }
 };

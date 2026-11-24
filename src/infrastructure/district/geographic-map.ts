@@ -6,6 +6,7 @@ import { createGateLantern } from '../public-areas/west-decks/gate-lantern.ts';
 import { groveNorthStairLanding, groveNorthStairs, umekitaGrove } from '../public-areas/west-decks/umekita-grove.ts';
 import { parkGroundAccess } from '../public-areas/west-decks/park-access.ts';
 import { sunkenGarden } from '../public-areas/west-decks/sunken-garden.ts';
+import { southValleySpans } from '../public-areas/west-decks/south-valley.ts';
 import { umekitaSouthPark } from '../public-areas/west-decks/south-park.ts';
 import { skyBuildingEntrance, skyBuildingPlaza } from '../public-areas/west-decks/sky-building-plaza.ts';
 import { assembleSharedUnderground, sharedUndergroundLevel } from '../../application/public-areas/shared-underground.ts';
@@ -162,14 +163,6 @@ const greenPlaceGroundLandings = northAccess.areas.filter(a => a.level === 'dist
 export const exteriorOpenings: BuildingOpening[] = [
     ...deckBuildingOpenings(elevated.portals, assemblyLevels),
     ...elevated.buildingOpenings,
-    {
-        buildingId: 'grand-green-south-gate',
-        outline: sunkenGarden.areas.find(area => area.level === 'district-ground')!.outline,
-        base: -.1,
-        top: 36,
-        suppressRailings: false,
-        evidence: sunkenGarden.atrium.evidence
-    },
     ...jpAccess.buildingOpenings,
     ...equipmentBuildingOpenings(deckAccess.connections, deckAccess.buildingEquipment, assemblyLevels),
     ...equipmentBuildingOpenings(whityNorthAccess.connections, whityNorthAccess.buildingEquipment, assemblyLevels),
@@ -215,6 +208,8 @@ const composed = composeStationMaps(
         canopies: [
             ...northDeckCanopies(), ...southDeckCanopies(),
             ...westDeckCanopies(elevated.blocks.find(block => block.id === 'west-decks')!),
+            elevated.inogateCanopy,
+            southValleySpans.lower.canopy, southValleySpans.upper.canopy,
             ...metroAccess.canopies, ...sonechikaAccess.canopies,
             ...diamorNorthAccess.canopies,
             ...diamorCentralAccess.canopies,

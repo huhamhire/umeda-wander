@@ -5,7 +5,7 @@ import { deckBoundarySegments } from '../../../application/public-areas/deck-bou
 const unit = new T.BoxGeometry(1, 1, 1);
 /** Fine, pale, dense balustrades on the shared exposed perimeter; floor is rendered once by MapScene. */
 export function buildPublicDeckRailing(area: FloorArea, layout: StationLayout, levels: Level[]) {
-    const segments = deckBoundarySegments(area, layout.areas, levels, layout.exteriorOpenings ?? [], layout.connections);
+    const segments = deckBoundarySegments(area, layout.areas, levels, layout.exteriorOpenings ?? [], layout.connections, layout.canopies);
     const mesh = new T.InstancedMesh(unit, new T.MeshStandardMaterial({ color: 0xcbd6ce, roughness: 1 }), segments.length * 2);
     mesh.name = 'public-deck-railing-' + area.id;
     const matrix = new T.Matrix4();

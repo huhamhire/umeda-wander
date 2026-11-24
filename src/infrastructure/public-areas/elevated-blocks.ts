@@ -9,6 +9,12 @@ import { inogateDecks } from './west-decks/inogate.ts';
  */
 export function createElevatedBlocks(stations: StationMap[]) {
     const south = southDecks(stations);
-    const parts = [northDecks(stations), south, westDecks(), inogateDecks()];
-    return { blocks: parts.flatMap(p => p.blocks), portals: parts.flatMap(p => p.portals), buildingOpenings: south.buildingOpenings };
+    const inogate = inogateDecks();
+    const parts = [northDecks(stations), south, westDecks(), inogate];
+    return {
+        blocks: parts.flatMap(p => p.blocks),
+        portals: parts.flatMap(p => p.portals),
+        buildingOpenings: [...south.buildingOpenings, ...inogate.buildingOpenings],
+        inogateCanopy: inogate.canopy
+    };
 }

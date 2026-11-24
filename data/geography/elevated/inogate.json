@@ -1,15 +1,15 @@
 {
   "id": "inogate-grand-green",
   "level": "district-north-deck",
-  "widthMetres": 7,
+  "widthMetres": 5,
   "hosts": [
     {
       "id": "inogate",
       "way": "1147394005"
     },
     {
-      "id": "grand-green-south-gate",
-      "way": "1347368433"
+      "id": "grand-green-south-south",
+      "way": "1147394027"
     }
   ],
   "paths": [
@@ -22,26 +22,39 @@
           "z": 634.7124909450758
         },
         {
-          "x": 248,
-          "z": 657
+          "x": 258,
+          "z": 655
         },
         {
-          "x": 157,
-          "z": 728
+          "x": 213.57,
+          "z": 680.52
+        },
+        {
+          "x": 183.25,
+          "z": 704.14
+        },
+        {
+          "x": 153,
+          "z": 726.5
+        },
+        {
+          "x": 132.6,
+          "z": 739.2
         }
       ]
     },
     {
       "id": "inogate-grand-green-bridge",
       "name": "Inogate—Grand Green 南馆 2F 连桥",
+      "width": 4.2,
       "points": [
         {
-          "x": 157,
-          "z": 728
+          "x": 132.6,
+          "z": 739.2
         },
         {
-          "x": 105,
-          "z": 687
+          "x": 92.5,
+          "z": 702.5
         }
       ]
     }
@@ -57,30 +70,40 @@
       "angle": -0.57
     },
     {
+      "id": "inogate-east-entrance",
+      "target": "inogate",
+      "point": {
+        "x": 258,
+        "z": 655
+      },
+      "angle": 2.18
+    },
+    {
       "id": "inogate-west-bridge",
       "target": "inogate",
       "point": {
-        "x": 157,
-        "z": 728
+        "x": 153,
+        "z": 726.5
       },
-      "angle": -2.47
+      "angle": 2.59
     },
     {
       "id": "grand-green-south-bridge",
-      "target": "grand-green-south-gate",
+      "target": "grand-green-south-south",
       "point": {
-        "x": 105,
-        "z": 687
+        "x": 92.5,
+        "z": 702.5
       },
-      "angle": -2.47
+      "angle": -2.36
     }
   ],
   "sources": [
     "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=1",
     "references/connections/grand-green-osaka/jr-umekita-decks.pdf#page=4",
     "references/connections/osaka-station-city/2f-map.png",
-    "references/connections/grand-green-osaka/south-building-2f.png"
+    "references/connections/grand-green-osaka/south-building-2f.png",
+    "https://www.pref.osaka.lg.jp/documents/120455/inogate.pdf#page=10"
   ],
   "certainty": "reference-fit",
-  "note": "目标与楼层来自参考图；前沿、门位、桥宽及统一展示标高为人工拟合。2F 显示公共连接，宿主轮廓留在地面。"
+  "note": "2025 年 4 月 11 日开通。楼内彩の路、西端停车楼旁平台和跨街桥取自大林组 2F 平面及 JR 西日本接驳图；门位、桥宽及统一展示标高为人工拟合。"
 }

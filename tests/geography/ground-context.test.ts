@@ -78,8 +78,8 @@ test(
         assert.ok(hosts.size < 30 && hosts.size > 10, 'unexpected broad building context or missing related hosts');
         assert.ok(context.surfaces.length < plan.ground.length * .6, 'outer road/occupancy clutter was not reduced');
         assert.ok(
-            hosts.has('way/1147394005') && hosts.has('way/1347368433'),
-            'new bridge targets lost their ground context'
+            ['way/1147394005', 'way/1147394027', 'way/179071473'].every(id => hosts.has(id)),
+            'Inogate, South Tower or the garage lost its ground context'
         );
         const sourceIds = new Set(plan.ground.map(f => f.id));
         for (const surface of context.surfaces) {
